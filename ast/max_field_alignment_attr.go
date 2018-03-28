@@ -1,6 +1,6 @@
 package ast
 
-import "github.com/elliotchance/c2go/util"
+import "github.com/Konstantin8105/c4go/util"
 
 // MaxFieldAlignmentAttr is a type of attribute that is optionally attached to a variable
 // or struct field definition.

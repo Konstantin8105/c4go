@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/elliotchance/c2go/program"
-	"github.com/elliotchance/c2go/util"
+	"github.com/Konstantin8105/c4go/program"
+	"github.com/Konstantin8105/c4go/util"
 )
 
 // cIntegerType - slice of C integer type
@@ -96,26 +96,26 @@ var simpleResolveTypes = map[string]string{
 	"__mbstate_t":                  "int64",
 	"__sbuf":                       "int64",
 	"__sFILEX":                     "interface{}",
-	"FILE":                         "github.com/elliotchance/c2go/noarch.File",
+	"FILE":                         "github.com/Konstantin8105/c4go/noarch.File",
 }
 
 var otherStructType = map[string]string{
-	"div_t":   "github.com/elliotchance/c2go/noarch.DivT",
-	"ldiv_t":  "github.com/elliotchance/c2go/noarch.LdivT",
-	"lldiv_t": "github.com/elliotchance/c2go/noarch.LldivT",
+	"div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
+	"ldiv_t":  "github.com/Konstantin8105/c4go/noarch.LdivT",
+	"lldiv_t": "github.com/Konstantin8105/c4go/noarch.LldivT",
 
 	// time.h
-	"tm":        "github.com/elliotchance/c2go/noarch.Tm",
-	"struct tm": "github.com/elliotchance/c2go/noarch.Tm",
-	"time_t":    "github.com/elliotchance/c2go/noarch.TimeT",
+	"tm":        "github.com/Konstantin8105/c4go/noarch.Tm",
+	"struct tm": "github.com/Konstantin8105/c4go/noarch.Tm",
+	"time_t":    "github.com/Konstantin8105/c4go/noarch.TimeT",
 
 	// Darwin specific
-	"__darwin_ct_rune_t": "github.com/elliotchance/c2go/darwin.CtRuneT",
+	"__darwin_ct_rune_t": "github.com/Konstantin8105/c4go/darwin.CtRuneT",
 	"fpos_t":             "int",
-	"struct __float2":    "github.com/elliotchance/c2go/darwin.Float2",
-	"struct __double2":   "github.com/elliotchance/c2go/darwin.Double2",
-	"Float2":             "github.com/elliotchance/c2go/darwin.Float2",
-	"Double2":            "github.com/elliotchance/c2go/darwin.Double2",
+	"struct __float2":    "github.com/Konstantin8105/c4go/darwin.Float2",
+	"struct __double2":   "github.com/Konstantin8105/c4go/darwin.Double2",
+	"Float2":             "github.com/Konstantin8105/c4go/darwin.Float2",
+	"Double2":            "github.com/Konstantin8105/c4go/darwin.Double2",
 }
 
 // NullPointer - is look : (double *)(nil) or (FILE *)(nil)
@@ -185,7 +185,7 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 	}
 
 	// FIXME: I have no idea, how to solve.
-	// See : https://github.com/elliotchance/c2go/issues/628
+	// See : https://github.com/Konstantin8105/c4go/issues/628
 	if strings.Contains(s, "__locale_data") {
 		s = strings.Replace(s, "struct __locale_data", "int", -1)
 		s = strings.Replace(s, "__locale_data", "int", -1)
@@ -207,7 +207,7 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 	// No need resolve typedef types
 	if _, ok := p.TypedefType[s]; ok {
 		if tt, ok := otherStructType[s]; ok {
-			// "div_t":   "github.com/elliotchance/c2go/noarch.DivT",
+			// "div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
 			ii := p.ImportType(tt)
 			return ii, nil
 		} else {
@@ -216,7 +216,7 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 	}
 
 	if tt, ok := otherStructType[s]; ok {
-		// "div_t":   "github.com/elliotchance/c2go/noarch.DivT",
+		// "div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
 		ii := p.ImportType(tt)
 		return ii, nil
 	}

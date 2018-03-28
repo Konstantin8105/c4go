@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/elliotchance/c2go/program"
+	"github.com/Konstantin8105/c4go/program"
 )
 
 // SizeOf returns the number of bytes for a type. This the same as using the

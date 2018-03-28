@@ -6,9 +6,9 @@ import (
 	goast "go/ast"
 	"go/token"
 
-	"github.com/elliotchance/c2go/ast"
-	"github.com/elliotchance/c2go/program"
-	"github.com/elliotchance/c2go/util"
+	"github.com/Konstantin8105/c4go/ast"
+	"github.com/Konstantin8105/c4go/program"
+	"github.com/Konstantin8105/c4go/util"
 )
 
 func transpileLabelStmt(n *ast.LabelStmt, p *program.Program) (*goast.LabeledStmt, []goast.Stmt, []goast.Stmt, error) {

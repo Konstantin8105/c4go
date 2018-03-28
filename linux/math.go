@@ -3,7 +3,7 @@ package linux
 import (
 	"math"
 
-	"github.com/elliotchance/c2go/noarch"
+	"github.com/Konstantin8105/c4go/noarch"
 )
 
 func IsNanf(x float32) int {

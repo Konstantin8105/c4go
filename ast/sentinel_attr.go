@@ -3,7 +3,7 @@ package ast
 import (
 	"strings"
 
-	"github.com/elliotchance/c2go/util"
+	"github.com/Konstantin8105/c4go/util"
 )
 
 // SentinelAttr is a type of attribute that is optionally attached to a variable

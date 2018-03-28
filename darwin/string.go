@@ -1,6 +1,6 @@
 package darwin
 
-import "github.com/elliotchance/c2go/noarch"
+import "github.com/Konstantin8105/c4go/noarch"
 
 // BuiltinStrcpy is for __builtin___strcpy_chk.
 // https://opensource.apple.com/source/Libc/Libc-498/include/secure/_string.h
@@ -9,7 +9,7 @@ func BuiltinStrcpy(dest, src []byte, size int) []byte {
 }
 
 // BuiltinObjectSize is for __builtin_object_size.
-// https://github.com/elliotchance/c2go/issues/359
+// https://github.com/Konstantin8105/c4go/issues/359
 func BuiltinObjectSize(ptr []byte, theType int) int {
 	return 5
 }

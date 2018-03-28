@@ -12,8 +12,8 @@ import (
 	"strings"
 	"text/scanner"
 
-	"github.com/elliotchance/c2go/program"
-	"github.com/elliotchance/c2go/util"
+	"github.com/Konstantin8105/c4go/program"
+	"github.com/Konstantin8105/c4go/util"
 )
 
 // One simple part of preprocessor code

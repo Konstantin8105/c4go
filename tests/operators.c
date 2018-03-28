@@ -2,7 +2,7 @@
 #include "tests.h"
 
 // TODO: More comprehensive operator tests
-// https://github.com/elliotchance/c2go/issues/143
+// https://github.com/Konstantin8105/c4go/issues/143
 
 void empty(){;}
 

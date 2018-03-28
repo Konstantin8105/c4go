@@ -8,10 +8,10 @@ import (
 	"go/token"
 	"strings"
 
-	"github.com/elliotchance/c2go/ast"
-	"github.com/elliotchance/c2go/program"
-	"github.com/elliotchance/c2go/types"
-	"github.com/elliotchance/c2go/util"
+	"github.com/Konstantin8105/c4go/ast"
+	"github.com/Konstantin8105/c4go/program"
+	"github.com/Konstantin8105/c4go/types"
+	"github.com/Konstantin8105/c4go/util"
 )
 
 // Comma problem. Example:
@@ -439,7 +439,7 @@ func getAllocationSizeNode(p *program.Program, node ast.Node) ast.Node {
 	}
 
 	// TODO: realloc() is not supported
-	// https://github.com/elliotchance/c2go/issues/118
+	// https://github.com/Konstantin8105/c4go/issues/118
 	//
 	// Realloc will be treated as calloc which will almost certainly cause
 	// bugs in your code.

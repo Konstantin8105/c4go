@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/elliotchance/c2go/util"
+	"github.com/Konstantin8105/c4go/util"
 )
 
 // Node represents any node in the AST.

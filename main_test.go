@@ -19,8 +19,8 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/elliotchance/c2go/cc"
-	"github.com/elliotchance/c2go/util"
+	"github.com/Konstantin8105/c4go/cc"
+	"github.com/Konstantin8105/c4go/util"
 )
 
 type programOut struct {
@@ -67,7 +67,7 @@ func TestIntegrationScripts(t *testing.T) {
 	)
 
 	// Parallel is not acceptable, before solving issue:
-	// https://github.com/elliotchance/c2go/issues/376
+	// https://github.com/Konstantin8105/c4go/issues/376
 	// t.Parallel()
 
 	for _, file := range files {
@@ -520,7 +520,7 @@ func TestCodeQuality(t *testing.T) {
 	}
 
 	// Parallel is not acceptable, before solving issue:
-	// https://github.com/elliotchance/c2go/issues/376
+	// https://github.com/Konstantin8105/c4go/issues/376
 	// t.Parallel()
 
 	suffix := ".expected.c"

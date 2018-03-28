@@ -57,7 +57,7 @@ echo "Integration tests: ${INT_TESTS}"
 # documented.
 go build
 
-export C2GO_DIR=$GOPATH/src/github.com/elliotchance/c2go
+export C2GO_DIR=$GOPATH/src/github.com/Konstantin8105/c4go
 export C2GO=$C2GO_DIR/c2go
 
 echo "Run: c2go transpile prime.c"
@@ -103,9 +103,9 @@ echo "In files (sqlite3.go and shell.go) summary : $SQLITE_WARNINGS warnings."
 # information about the number of tests run and how many warnings are generated
 # in the SQLite3 transpile.
 if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-    curl -H "Authorization: token ${GITHUB_API_TOKEN}" -H "Content-Type: application/json" https://api.github.com/repos/elliotchance/c2go/statuses/${TRAVIS_COMMIT} -d "{\"state\": \"success\",\"target_url\": \"https://travis-ci.org/elliotchance/c2go/builds/${TRAVIS_JOB_ID}\", \"description\": \"$(($UNIT_TESTS + $INT_TESTS)) tests passed (${UNIT_TESTS} unit + ${INT_TESTS} integration)\", \"context\": \"c2go/tests\"}"
+    curl -H "Authorization: token ${GITHUB_API_TOKEN}" -H "Content-Type: application/json" https://api.github.com/repos/Konstantin8105/c4go/statuses/${TRAVIS_COMMIT} -d "{\"state\": \"success\",\"target_url\": \"https://travis-ci.org/Konstantin8105/c4go/builds/${TRAVIS_JOB_ID}\", \"description\": \"$(($UNIT_TESTS + $INT_TESTS)) tests passed (${UNIT_TESTS} unit + ${INT_TESTS} integration)\", \"context\": \"c2go/tests\"}"
 
-    curl -H "Authorization: token ${GITHUB_API_TOKEN}" -H "Content-Type: application/json" https://api.github.com/repos/elliotchance/c2go/statuses/${TRAVIS_COMMIT} -d "{\"state\": \"success\",\"target_url\": \"https://travis-ci.org/elliotchance/c2go/builds/${TRAVIS_JOB_ID}\", \"description\": \"$(($SQLITE_WARNINGS)) warnings\", \"context\": \"c2go/sqlite3\"}" 
+    curl -H "Authorization: token ${GITHUB_API_TOKEN}" -H "Content-Type: application/json" https://api.github.com/repos/Konstantin8105/c4go/statuses/${TRAVIS_COMMIT} -d "{\"state\": \"success\",\"target_url\": \"https://travis-ci.org/Konstantin8105/c4go/builds/${TRAVIS_JOB_ID}\", \"description\": \"$(($SQLITE_WARNINGS)) warnings\", \"context\": \"c2go/sqlite3\"}" 
 fi
 
 # SQLITE

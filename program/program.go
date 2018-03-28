@@ -12,8 +12,8 @@ import (
 
 	"strings"
 
-	"github.com/elliotchance/c2go/ast"
-	"github.com/elliotchance/c2go/util"
+	"github.com/Konstantin8105/c4go/ast"
+	"github.com/Konstantin8105/c4go/util"
 )
 
 // StructRegistry is a map of Struct for struct types and union type
@@ -326,7 +326,7 @@ func (p *Program) String() string {
 	Package main - transpiled by c2go version: %s
 
 	If you have found any issues, please raise an issue at:
-	https://github.com/elliotchance/c2go/
+	https://github.com/Konstantin8105/c4go/
 */
 
 `, Version))

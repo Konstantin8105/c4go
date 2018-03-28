@@ -10,8 +10,8 @@ import (
 	"go/parser"
 	"go/token"
 
-	"github.com/elliotchance/c2go/ast"
-	"github.com/elliotchance/c2go/program"
+	"github.com/Konstantin8105/c4go/ast"
+	"github.com/Konstantin8105/c4go/program"
 )
 
 func transpileUnion(name string, size int, fields []*goast.Field) (

@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/elliotchance/c2go/util"
+	"github.com/Konstantin8105/c4go/util"
 )
 
 func TestArrayFiller(t *testing.T) {

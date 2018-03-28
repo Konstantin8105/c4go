@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/elliotchance/c2go/ast"
-	"github.com/elliotchance/c2go/program"
-	"github.com/elliotchance/c2go/types"
-	"github.com/elliotchance/c2go/util"
+	"github.com/Konstantin8105/c4go/ast"
+	"github.com/Konstantin8105/c4go/program"
+	"github.com/Konstantin8105/c4go/types"
+	"github.com/Konstantin8105/c4go/util"
 
 	goast "go/ast"
 	"go/parser"
@@ -325,7 +325,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			// Make sure that any string parameters (const char*) are truncated
 			// to the NULL byte.
 			if arraySize != -1 {
-				p.AddImport("github.com/elliotchance/c2go/noarch")
+				p.AddImport("github.com/Konstantin8105/c4go/noarch")
 				e = util.NewCallExpr(
 					"noarch.CStringToString",
 					&goast.SliceExpr{X: e},
@@ -338,7 +338,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			// fprintf, etc.
 			if i > len(functionDef.ArgumentTypes)-1 &&
 				(eType == "char *" || eType == "char*") {
-				p.AddImport("github.com/elliotchance/c2go/noarch")
+				p.AddImport("github.com/Konstantin8105/c4go/noarch")
 				e = util.NewCallExpr("noarch.CStringToString", e)
 			}
 		}

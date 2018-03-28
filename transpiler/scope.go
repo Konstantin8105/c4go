@@ -7,8 +7,8 @@ import (
 	"fmt"
 	goast "go/ast"
 
-	"github.com/elliotchance/c2go/ast"
-	"github.com/elliotchance/c2go/program"
+	"github.com/Konstantin8105/c4go/ast"
+	"github.com/Konstantin8105/c4go/program"
 )
 
 func transpileCompoundStmt(n *ast.CompoundStmt, p *program.Program) (

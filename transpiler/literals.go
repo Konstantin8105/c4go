@@ -12,10 +12,10 @@ import (
 
 	"strconv"
 
-	"github.com/elliotchance/c2go/ast"
-	"github.com/elliotchance/c2go/program"
-	"github.com/elliotchance/c2go/types"
-	"github.com/elliotchance/c2go/util"
+	"github.com/Konstantin8105/c4go/ast"
+	"github.com/Konstantin8105/c4go/program"
+	"github.com/Konstantin8105/c4go/types"
+	"github.com/Konstantin8105/c4go/util"
 )
 
 func transpileFloatingLiteral(n *ast.FloatingLiteral) *goast.BasicLit {
@@ -57,7 +57,7 @@ func transpilePredefinedExpr(n *ast.PredefinedExpr, p *program.Program) (goast.E
 	// compile time.
 	//
 	// TODO: Predefined expressions are not evaluated
-	// https://github.com/elliotchance/c2go/issues/81
+	// https://github.com/Konstantin8105/c4go/issues/81
 
 	switch n.Name {
 	case "__PRETTY_FUNCTION__":

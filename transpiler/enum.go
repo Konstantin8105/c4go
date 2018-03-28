@@ -9,10 +9,10 @@ import (
 
 	goast "go/ast"
 
-	"github.com/elliotchance/c2go/ast"
-	"github.com/elliotchance/c2go/program"
-	"github.com/elliotchance/c2go/types"
-	"github.com/elliotchance/c2go/util"
+	"github.com/Konstantin8105/c4go/ast"
+	"github.com/Konstantin8105/c4go/program"
+	"github.com/Konstantin8105/c4go/types"
+	"github.com/Konstantin8105/c4go/util"
 )
 
 // ctypeEnumValue generates a specific expression for values used by some
@@ -20,7 +20,7 @@ import (
 // need to be evaulated by the compiler; which c2go does not yet do.
 //
 // TODO: Ability to evaluate constant expressions at compile time
-// https://github.com/elliotchance/c2go/issues/77
+// https://github.com/Konstantin8105/c4go/issues/77
 func ctypeEnumValue(value int, t token.Token) goast.Expr {
 	// Produces an expression like: ((1 << (0)) << 8)
 	return &goast.ParenExpr{

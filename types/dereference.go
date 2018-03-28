@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/elliotchance/c2go/util"
+	"github.com/Konstantin8105/c4go/util"
 )
 
 // IsDereferenceType - check is that type dereference

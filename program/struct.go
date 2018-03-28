@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/elliotchance/c2go/ast"
+	"github.com/Konstantin8105/c4go/ast"
 )
 
 // Struct represents the definition for a C struct.

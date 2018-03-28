@@ -5,7 +5,7 @@ import (
 	"testing"
 	"unicode/utf8"
 
-	"github.com/elliotchance/c2go/ast"
+	"github.com/Konstantin8105/c4go/ast"
 	goast "go/ast"
 	"go/token"
 )

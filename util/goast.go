@@ -181,7 +181,7 @@ func NewBinaryExpr(left goast.Expr, operator token.Token, right goast.Expr,
 // NewIdent - create a new Go ast Ident
 func NewIdent(name string) *goast.Ident {
 	// TODO: The name of a variable or field cannot be a reserved word
-	// https://github.com/elliotchance/c2go/issues/83
+	// https://github.com/Konstantin8105/c4go/issues/83
 	// Search for this issue in other areas of the codebase.
 	if IsGoKeyword(name) {
 		name += "_"

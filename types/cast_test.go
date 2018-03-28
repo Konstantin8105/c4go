@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/elliotchance/c2go/program"
-	"github.com/elliotchance/c2go/util"
+	"github.com/Konstantin8105/c4go/program"
+	"github.com/Konstantin8105/c4go/util"
 
 	goast "go/ast"
 	"go/token"

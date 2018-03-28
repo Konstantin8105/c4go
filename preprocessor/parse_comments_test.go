@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/elliotchance/c2go/program"
+	"github.com/Konstantin8105/c4go/program"
 )
 
 func TestParseComments(t *testing.T) {

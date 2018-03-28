@@ -9,10 +9,10 @@ import (
 	"fmt"
 	"go/token"
 
-	"github.com/elliotchance/c2go/ast"
-	"github.com/elliotchance/c2go/program"
-	"github.com/elliotchance/c2go/types"
-	"github.com/elliotchance/c2go/util"
+	"github.com/Konstantin8105/c4go/ast"
+	"github.com/Konstantin8105/c4go/program"
+	"github.com/Konstantin8105/c4go/types"
+	"github.com/Konstantin8105/c4go/util"
 
 	goast "go/ast"
 )

@@ -6,7 +6,7 @@ int main()
     plan(29);
 
     diag("TODO: __builtin_object_size")
-    // https://github.com/elliotchance/c2go/issues/359
+    // https://github.com/Konstantin8105/c4go/issues/359
 
     {
         diag("strcpy")

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/elliotchance/c2go/cc"
+	"github.com/Konstantin8105/c4go/cc"
 )
 
 // FloatingLiteral is type of float literal

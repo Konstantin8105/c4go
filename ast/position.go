@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/elliotchance/c2go/util"
+	"github.com/Konstantin8105/c4go/util"
 )
 
 // Position is type of position in source code

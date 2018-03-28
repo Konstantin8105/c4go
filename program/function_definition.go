@@ -3,7 +3,7 @@ package program
 import (
 	"strings"
 
-	"github.com/elliotchance/c2go/util"
+	"github.com/Konstantin8105/c4go/util"
 )
 
 // FunctionDefinition contains the prototype definition for a function.
@@ -39,7 +39,7 @@ type FunctionDefinition struct {
 // only on Mac) with a specific substitution provided. This means that it should
 // replace any instance of __builtin_fabs with:
 //
-//     github.com/elliotchance/c2go/darwin.Fabs
+//     github.com/Konstantin8105/c4go/darwin.Fabs
 //
 // The substitution is optional.
 //
@@ -343,7 +343,7 @@ func (p *Program) loadFunctionDefinitions() {
 			if strings.HasPrefix(substitution, "darwin.") ||
 				strings.HasPrefix(substitution, "linux.") ||
 				strings.HasPrefix(substitution, "noarch.") {
-				substitution = "github.com/elliotchance/c2go/" + substitution
+				substitution = "github.com/Konstantin8105/c4go/" + substitution
 			}
 
 			p.AddFunctionDefinition(FunctionDefinition{

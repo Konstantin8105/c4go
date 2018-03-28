@@ -2,7 +2,7 @@
 //
 // Installation
 //
-//     go get -u github.com/elliotchance/c2go
+//     go get -u github.com/Konstantin8105/c4go
 //
 // Usage
 //
@@ -24,10 +24,10 @@ import (
 
 	"errors"
 
-	"github.com/elliotchance/c2go/ast"
-	"github.com/elliotchance/c2go/preprocessor"
-	"github.com/elliotchance/c2go/program"
-	"github.com/elliotchance/c2go/transpiler"
+	"github.com/Konstantin8105/c4go/ast"
+	"github.com/Konstantin8105/c4go/preprocessor"
+	"github.com/Konstantin8105/c4go/program"
+	"github.com/Konstantin8105/c4go/transpiler"
 )
 
 var stderr io.Writer = os.Stderr
@@ -37,7 +37,7 @@ var stderr io.Writer = os.Stderr
 // you need only set the options you need.
 //
 // TODO: Better separation on CLI modes
-// https://github.com/elliotchance/c2go/issues/134
+// https://github.com/Konstantin8105/c4go/issues/134
 //
 // Do not instantiate this directly. Instead use DefaultProgramArgs(); then
 // modify any specific attributes.

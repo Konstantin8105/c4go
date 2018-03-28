@@ -10,10 +10,10 @@ import (
 	"go/token"
 	"strings"
 
-	"github.com/elliotchance/c2go/ast"
-	"github.com/elliotchance/c2go/program"
-	"github.com/elliotchance/c2go/types"
-	"github.com/elliotchance/c2go/util"
+	"github.com/Konstantin8105/c4go/ast"
+	"github.com/Konstantin8105/c4go/program"
+	"github.com/Konstantin8105/c4go/types"
+	"github.com/Konstantin8105/c4go/util"
 )
 
 func newFunctionField(p *program.Program, name, cType string) (_ *goast.Field, err error) {
@@ -84,7 +84,7 @@ func transpileFieldDecl(p *program.Program, n *ast.FieldDecl) (field *goast.Fiel
 	p.AddMessage(p.GenerateWarningMessage(err, n))
 
 	// TODO: The name of a variable or field cannot be a reserved word
-	// https://github.com/elliotchance/c2go/issues/83
+	// https://github.com/Konstantin8105/c4go/issues/83
 	// Search for this issue in other areas of the codebase.
 	if util.IsGoKeyword(name) {
 		name += "_"
@@ -116,7 +116,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (decls []goast.D
 	p.DefineType(name)
 
 	// TODO: Some platform structs are ignored.
-	// https://github.com/elliotchance/c2go/issues/85
+	// https://github.com/Konstantin8105/c4go/issues/85
 	if name == "__locale_struct" ||
 		name == "__sigaction" ||
 		name == "sigaction" {
@@ -344,7 +344,7 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (decls []goast
 	}
 
 	if name == "__darwin_ct_rune_t" {
-		resolvedType = p.ImportType("github.com/elliotchance/c2go/darwin.CtRuneT")
+		resolvedType = p.ImportType("github.com/Konstantin8105/c4go/darwin.CtRuneT")
 	}
 
 	if name == "div_t" || name == "ldiv_t" || name == "lldiv_t" {
@@ -413,7 +413,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 		// Below are for macOS.
 		case "__stdinp", "__stdoutp":
 			theType = "*noarch.File"
-			p.AddImport("github.com/elliotchance/c2go/noarch")
+			p.AddImport("github.com/Konstantin8105/c4go/noarch")
 			p.AppendStartupExpr(
 				util.NewBinaryExpr(
 					goast.NewIdent(name),
@@ -435,7 +435,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 		// Below are for linux.
 		case "stdout", "stdin", "stderr":
 			theType = "*noarch.File"
-			p.AddImport("github.com/elliotchance/c2go/noarch")
+			p.AddImport("github.com/Konstantin8105/c4go/noarch")
 			p.AppendStartupExpr(
 				util.NewBinaryExpr(
 					goast.NewIdent(name),
@@ -570,7 +570,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 	postStmts := []goast.Stmt{}
 
 	// TODO: Some platform structs are ignored.
-	// https://github.com/elliotchance/c2go/issues/85
+	// https://github.com/Konstantin8105/c4go/issues/85
 	if name == "_LIB_VERSION" ||
 		name == "_IO_2_1_stdin_" ||
 		name == "_IO_2_1_stdout_" ||

@@ -1,6 +1,6 @@
 package darwin
 
-import "github.com/elliotchance/c2go/noarch"
+import "github.com/Konstantin8105/c4go/noarch"
 
 // BuiltinVsprintfChk - implementation __builtin___vsprintf_chk
 func BuiltinVsprintfChk(buffer []byte, _ int, n int, format []byte, args ...interface{}) int {

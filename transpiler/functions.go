@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/elliotchance/c2go/ast"
-	"github.com/elliotchance/c2go/program"
-	"github.com/elliotchance/c2go/types"
-	"github.com/elliotchance/c2go/util"
+	"github.com/Konstantin8105/c4go/ast"
+	"github.com/Konstantin8105/c4go/program"
+	"github.com/Konstantin8105/c4go/types"
+	"github.com/Konstantin8105/c4go/util"
 
 	goast "go/ast"
 	"go/token"
@@ -94,7 +94,7 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 	// even work now.
 	//
 	// TODO: Some functions are ignored because they are too much trouble
-	// https://github.com/elliotchance/c2go/issues/78
+	// https://github.com/Konstantin8105/c4go/issues/78
 	if n.Name == "__istype" ||
 		n.Name == "__isctype" ||
 		n.Name == "__wcwidth" ||

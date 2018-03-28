@@ -9,8 +9,8 @@ import (
 
 	"strconv"
 
-	"github.com/elliotchance/c2go/program"
-	"github.com/elliotchance/c2go/util"
+	"github.com/Konstantin8105/c4go/program"
+	"github.com/Konstantin8105/c4go/util"
 )
 
 // GetArrayTypeAndSize returns the size and type of a fixed array. If the type
@@ -411,7 +411,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return util.NewCallExpr(toType, expr), nil
 	}
 
-	p.AddImport("github.com/elliotchance/c2go/noarch")
+	p.AddImport("github.com/Konstantin8105/c4go/noarch")
 
 	leftName := fromType
 	rightName := toType

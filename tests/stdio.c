@@ -35,7 +35,7 @@ void test_puts()
 void test_printf()
 {
     // TODO: printf() has a different syntax to Go
-    // https://github.com/elliotchance/c2go/issues/94
+    // https://github.com/Konstantin8105/c4go/issues/94
 
     printf("# Characters: %c %c \n", 'a', 65);
     //printf("Decimals: %d %ld\n", 1977, 650000L);

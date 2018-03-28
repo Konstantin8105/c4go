@@ -1,11 +1,11 @@
-[![Build Status](https://travis-ci.org/elliotchance/c2go.svg?branch=master)](https://travis-ci.org/elliotchance/c2go)
+[![Build Status](https://travis-ci.org/Konstantin8105/c4go.svg?branch=master)](https://travis-ci.org/Konstantin8105/c4go)
 [![GitHub version](https://badge.fury.io/gh/elliotchance%2Fc2go.svg)](https://badge.fury.io/gh/elliotchance%2Fc2go)
-[![Go Report Card](https://goreportcard.com/badge/github.com/elliotchance/c2go)](https://goreportcard.com/report/github.com/elliotchance/c2go)
-[![codecov](https://codecov.io/gh/elliotchance/c2go/branch/master/graph/badge.svg)](https://codecov.io/gh/elliotchance/c2go)
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/elliotchance/c2go/master/LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Konstantin8105/c4go)](https://goreportcard.com/report/github.com/Konstantin8105/c4go)
+[![codecov](https://codecov.io/gh/Konstantin8105/c4go/branch/master/graph/badge.svg)](https://codecov.io/gh/Konstantin8105/c4go)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Konstantin8105/c4go/master/LICENSE)
 [![Join the chat at https://gitter.im/c2goproject](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/c2goproject?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Twitter](https://img.shields.io/twitter/url/https/github.com/elliotchance/c2go.svg?style=social)](https://twitter.com/intent/tweet?text=Wow:&url=%5Bobject%20Object%5D)
-[![GoDoc](https://godoc.org/github.com/elliotchance/c2go?status.svg)](https://godoc.org/github.com/elliotchance/c2go)
+[![Twitter](https://img.shields.io/twitter/url/https/github.com/Konstantin8105/c4go.svg?style=social)](https://twitter.com/intent/tweet?text=Wow:&url=%5Bobject%20Object%5D)
+[![GoDoc](https://godoc.org/github.com/Konstantin8105/c4go?status.svg)](https://godoc.org/github.com/Konstantin8105/c4go)
 
 A tool for converting C to Go.
 
@@ -24,7 +24,7 @@ without modification. This will be the 1.0.0 release.
 # Installation
 
 ```bash
-go get -u github.com/elliotchance/c2go
+go get -u github.com/Konstantin8105/c4go
 ```
 
 # Usage
@@ -35,7 +35,7 @@ c2go transpile myfile.c
 
 The `c2go` program processes a single C file and outputs the translated code
 in Go. Let's use an included example,
-[prime.c](https://github.com/elliotchance/c2go/blob/master/examples/prime.c):
+[prime.c](https://github.com/Konstantin8105/c4go/blob/master/examples/prime.c):
 
 ```c
 #include <stdio.h>
@@ -83,7 +83,7 @@ package main
 
 import "unsafe"
 
-import "github.com/elliotchance/c2go/noarch"
+import "github.com/Konstantin8105/c4go/noarch"
 
 // ... lots of system types in Go removed for brevity.
 
@@ -127,7 +127,7 @@ func __init() {
 # What Is Supported?
 
 See the
-[Project Progress](https://github.com/elliotchance/c2go/wiki/Project-Progress).
+[Project Progress](https://github.com/Konstantin8105/c4go/wiki/Project-Progress).
 
 # How It Works
 
@@ -157,7 +157,7 @@ go test -tags=integration ./...
 ```
 
 Integration tests in the form of complete C programs that can be found in the
-[tests](https://github.com/elliotchance/c2go/tree/master/tests) directory.
+[tests](https://github.com/Konstantin8105/c4go/tree/master/tests) directory.
 
 Integration tests work like this:
 

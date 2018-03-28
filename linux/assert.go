@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/elliotchance/c2go/noarch"
+	"github.com/Konstantin8105/c4go/noarch"
 )
 
 // AssertFail handles __assert_fail().

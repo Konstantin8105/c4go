@@ -2,7 +2,7 @@
 // http://read.cs.ucla.edu/sqlite-anvil/trunk/sqlite-3.6.0/src/hwtime.h
 //
 // For more information see the original issue:
-// https://github.com/elliotchance/c2go/issues/228
+// https://github.com/Konstantin8105/c4go/issues/228
 
 #include "tests.h"
 

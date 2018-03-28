@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/elliotchance/c2go/ast"
+	"github.com/Konstantin8105/c4go/ast"
 )
 
 // GenerateErrorMessage - generate error message
