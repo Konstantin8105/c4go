@@ -349,7 +349,7 @@ func main() {
 func runCommand() int {
 
 	flag.Usage = func() {
-		usage := "Usage: %s [-v] [<command>] [<flags>] file1.c ...\n\n"
+		usage := "Usage: %s [<command>] [<flags>] file1.c ...\n\n"
 		usage += "Commands:\n"
 		usage += "  transpile\ttranspile an input C source file or files to Go\n"
 		usage += "  ast\t\tprint AST before translated Go code\n\n"
