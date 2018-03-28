@@ -135,7 +135,9 @@ func TestIntegrationScripts(t *testing.T) {
 				testName := strings.Split(file, ".")[0][6:]
 				args = append(
 					args,
-					"-race",
+					// Flag `race` is no need, because we are check in
+					// integration test
+					// "-race",
 					"-covermode=atomic",
 					"-coverprofile="+testName+".coverprofile",
 					"-coverpkg=./noarch,./linux,./darwin",

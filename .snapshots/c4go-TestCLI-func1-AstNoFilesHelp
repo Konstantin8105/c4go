@@ -1,0 +1,3 @@
+(*bytes.Buffer)(Usage: test ast file.c
+  -h	print help information
+)
