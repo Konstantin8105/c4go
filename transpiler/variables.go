@@ -113,13 +113,13 @@ func getDefaultValueForVar(p *program.Program, a *ast.VarDecl) (
 		src := fmt.Sprintf(`package main
 var temp = func() %s {
 	var ret %s
-	if v, ok := %s[c2goVaListPosition].(int32); ok{
+	if v, ok := %s[c4goVaListPosition].(int32); ok{
 		// for 'rune' type
 		ret = %s(v)
 	} else {
-		ret = %s[c2goVaListPosition].(%s)
+		ret = %s[c4goVaListPosition].(%s)
 	}
-	c2goVaListPosition++
+	c4goVaListPosition++
 	return ret
 }()`, outType,
 			outType,

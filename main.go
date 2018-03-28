@@ -1,4 +1,4 @@
-// Package c2go contains the main function for running the executable.
+// Package c4go contains the main function for running the executable.
 //
 // Installation
 //
@@ -6,7 +6,7 @@
 //
 // Usage
 //
-//     c2go myfile.c
+//     c4go myfile.c
 //
 package main
 
@@ -202,7 +202,7 @@ func Start(args ProgramArgs) (err error) {
 	if args.verbose {
 		fmt.Println("Writing preprocessor ...")
 	}
-	dir, err := ioutil.TempDir("", "c2go")
+	dir, err := ioutil.TempDir("", "c4go")
 	if err != nil {
 		return fmt.Errorf("Cannot create temp folder: %v", err)
 	}

@@ -27,10 +27,10 @@ go get -u github.com/Konstantin8105/c4go
 # Usage
 
 ```bash
-c2go transpile myfile.c
+c4go transpile myfile.c
 ```
 
-The `c2go` program processes a single C file and outputs the translated code
+The `c4go` program processes a single C file and outputs the translated code
 in Go. Let's use an included example,
 [prime.c](https://github.com/Konstantin8105/c4go/blob/master/examples/prime.c):
 
@@ -63,7 +63,7 @@ int main()
 ```
 
 ```bash
-c2go transpile prime.c
+c4go transpile prime.c
 go run prime.go
 ```
 
@@ -159,7 +159,7 @@ Integration tests in the form of complete C programs that can be found in the
 Integration tests work like this:
 
 1. Clang compiles the C to a binary as normal.
-2. c2go converts the C file to Go.
+2. c4go converts the C file to Go.
 3. The Go is built to produce another binary.
 4. Both binaries are executed and the output is compared. All C files will
 contain some output so the results can be verified.

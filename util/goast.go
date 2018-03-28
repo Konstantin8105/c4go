@@ -364,7 +364,7 @@ func NewFuncType(fieldList *goast.FieldList, returnType string, addDefaultReturn
 			Type: NewTypeIdent(returnType),
 		}
 		if addDefaultReturn {
-			field.Names = []*goast.Ident{NewIdent("c2goDefaultReturn")}
+			field.Names = []*goast.Ident{NewIdent("c4goDefaultReturn")}
 		}
 		returnTypes = append(returnTypes, &field)
 	}

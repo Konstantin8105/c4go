@@ -256,8 +256,8 @@ func (p *Program) GetComments(n ast.Position) (out []*goast.Comment) {
 // operator to access to a field like this: a_struct->member .
 //
 // This method is used in collaboration with the field
-// "c2go/program".*Struct.IsUnion to simplify the code like in function
-// "c2go/transpiler".transpileMemberExpr() where the same *Struct value returned
+// "c4go/program".*Struct.IsUnion to simplify the code like in function
+// "c4go/transpiler".transpileMemberExpr() where the same *Struct value returned
 // by this method is used in the 2 cases, in the case where the value has a
 // struct type and in the case where the value has an union type.
 func (p *Program) GetStruct(name string) *Struct {
@@ -407,9 +407,9 @@ func (p *Program) String() string {
 	// Before:
 	// func compare(a interface {
 	// }, b interface {
-	// }) (c2goDefaultReturn int) {
+	// }) (c4goDefaultReturn int) {
 	// After :
-	// func compare(a interface {}, b interface {}) (c2goDefaultReturn int) {
+	// func compare(a interface {}, b interface {}) (c4goDefaultReturn int) {
 	reg := util.GetRegex("interface( )?{(\r*)\n(\t*)}")
 
 	return string(reg.ReplaceAll(buf.Bytes(), []byte("interface {}")))

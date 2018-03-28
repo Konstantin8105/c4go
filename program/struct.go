@@ -14,7 +14,7 @@ type Struct struct {
 
 	// True if the struct kind is an union.
 	// This field is used to avoid to dupplicate code for union case the type is the same.
-	// Plus, this field is used in collaboration with the method "c2go/program".*Program.GetStruct()
+	// Plus, this field is used in collaboration with the method "c4go/program".*Program.GetStruct()
 	IsUnion bool
 
 	// Each of the fields and their C type. The field may be a string or an

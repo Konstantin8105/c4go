@@ -77,7 +77,7 @@ static int strlenChar(const char *z){
 
 void test_strCh()
 {
-	char * z = "Hello, c2go\0";
+	char * z = "Hello, c4go\0";
 	is_eq(strlenChar(z),11);
 }
 

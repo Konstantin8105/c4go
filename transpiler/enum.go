@@ -17,7 +17,7 @@ import (
 
 // ctypeEnumValue generates a specific expression for values used by some
 // constants in ctype.h. This is to get around an issue that the real values
-// need to be evaulated by the compiler; which c2go does not yet do.
+// need to be evaulated by the compiler; which c4go does not yet do.
 //
 // TODO: Ability to evaluate constant expressions at compile time
 // https://github.com/Konstantin8105/c4go/issues/77

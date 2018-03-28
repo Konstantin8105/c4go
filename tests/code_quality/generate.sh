@@ -14,5 +14,5 @@ do
 
   echo "Processing $file file..."
   filename=${file%.*}".expected.c"
-  ./c2go transpile -o="$filename" -p="code_quality" $file
+  ./c4go transpile -o="$filename" -p="code_quality" $file
 done

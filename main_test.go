@@ -317,7 +317,7 @@ func TestIntegrationScripts(t *testing.T) {
 func TestStartPreprocess(t *testing.T) {
 	// create temp file with guarantee
 	// wrong file body
-	dir, err := ioutil.TempDir("", "c2go-preprocess")
+	dir, err := ioutil.TempDir("", "c4go-preprocess")
 	if err != nil {
 		t.Fatalf("Cannot create temp folder: %v", err)
 	}
@@ -384,7 +384,7 @@ func TestMultifileTranspilation(t *testing.T) {
 		t.Run(fmt.Sprintf("Test %d", pos), func(t *testing.T) {
 			var args = DefaultProgramArgs()
 			args.inputFiles = tc.source
-			dir, err := ioutil.TempDir("", "c2go_multi")
+			dir, err := ioutil.TempDir("", "c4go_multi")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -418,7 +418,7 @@ func TestMultifileTranspilation(t *testing.T) {
 func TestTrigraph(t *testing.T) {
 	var args = DefaultProgramArgs()
 	args.inputFiles = []string{"./tests/trigraph/main.c"}
-	dir, err := ioutil.TempDir("", "c2go_trigraph")
+	dir, err := ioutil.TempDir("", "c4go_trigraph")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -451,7 +451,7 @@ func TestTrigraph(t *testing.T) {
 func TestExternalInclude(t *testing.T) {
 	var args = DefaultProgramArgs()
 	args.inputFiles = []string{"./tests/externalHeader/main/main.c"}
-	dir, err := ioutil.TempDir("", "c2go_multi4")
+	dir, err := ioutil.TempDir("", "c4go_multi4")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -532,7 +532,7 @@ func TestCodeQuality(t *testing.T) {
 			continue
 		}
 		t.Run(file, func(t *testing.T) {
-			dir, err := ioutil.TempDir("", fmt.Sprintf("c2go_code_quality_%d_", i))
+			dir, err := ioutil.TempDir("", fmt.Sprintf("c4go_code_quality_%d_", i))
 			if err != nil {
 				t.Fatal(err)
 			}

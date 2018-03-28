@@ -1,5 +1,5 @@
 /*
-	Package main - transpiled by c2go version: v0.21.7 Zinc 2018-02-08
+	Package main - transpiled by c4go version: v0.21.7 Zinc 2018-02-08
 
 	If you have found any issues, please raise an issue at:
 	https://github.com/Konstantin8105/c4go/

@@ -202,7 +202,7 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 			body.List = append([]goast.Stmt{&goast.DeclStmt{&goast.GenDecl{
 				Tok: token.VAR,
 				Specs: []goast.Spec{&goast.ValueSpec{
-					Names: []*goast.Ident{util.NewIdent("c2goVaListPosition")},
+					Names: []*goast.Ident{util.NewIdent("c4goVaListPosition")},
 					Type:  goast.NewIdent("int"),
 					Values: []goast.Expr{&goast.BasicLit{
 						Kind:  token.INT,
@@ -212,7 +212,7 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 			}}, &goast.AssignStmt{
 				Lhs: []goast.Expr{goast.NewIdent("_")},
 				Tok: token.ASSIGN,
-				Rhs: []goast.Expr{util.NewIdent("c2goVaListPosition")},
+				Rhs: []goast.Expr{util.NewIdent("c4goVaListPosition")},
 			},
 			}, body.List...)
 		}
@@ -260,7 +260,7 @@ func getFieldList(f *ast.FunctionDecl, p *program.Program) (_ *goast.FieldList, 
 	// for function argument: ...
 	if strings.Contains(f.Type, "...") {
 		r = append(r, &goast.Field{
-			Names: []*goast.Ident{util.NewIdent("c2goArgs")},
+			Names: []*goast.Ident{util.NewIdent("c4goArgs")},
 			Type: &goast.Ellipsis{
 				Ellipsis: 1,
 				Elt: &goast.InterfaceType{

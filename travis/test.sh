@@ -22,7 +22,7 @@ echo "" > coverage.txt
 #
 # As in @rodrigocorsi2 comment above (using full path to grep due to 'grep -n'
 # alias).
-export PKGS=$(go list ./... | grep -v c2go/build | grep -v /vendor/)
+export PKGS=$(go list ./... | grep -v c4go/build | grep -v /vendor/)
 
 # Make comma-separated.
 export PKGS_DELIM=$(echo "$PKGS" | paste -sd "," -)
@@ -58,9 +58,9 @@ echo "Integration tests: ${INT_TESTS}"
 go build
 
 export C2GO_DIR=$GOPATH/src/github.com/Konstantin8105/c4go
-export C2GO=$C2GO_DIR/c2go
+export C2GO=$C2GO_DIR/c4go
 
-echo "Run: c2go transpile prime.c"
+echo "Run: c4go transpile prime.c"
 $C2GO transpile -o=/tmp/prime.go $C2GO_DIR/examples/prime.c
 echo "47" | go run /tmp/prime.go
 if [ $($C2GO -v | wc -l) -ne 1 ]; then exit 1; fi
@@ -89,11 +89,11 @@ rm -f $SQLITE_TEMP_FOLDER/sqlite3.go $SQLITE_TEMP_FOLDER/shell.go
 # If transpiling write to stderr, then it will be append into OUTFILE
 # shell.c
 echo "Transpiling shell.c..."
-./c2go transpile -o=$SQLITE_TEMP_FOLDER/shell.go   $SQLITE_TEMP_FOLDER/$SQLITE3_FILE/shell.c   >> $OUTFILE 2>&1
+./c4go transpile -o=$SQLITE_TEMP_FOLDER/shell.go   $SQLITE_TEMP_FOLDER/$SQLITE3_FILE/shell.c   >> $OUTFILE 2>&1
 
 # sqlite3.c
 echo "Transpiling sqlite3.c..."
-./c2go transpile -o=$SQLITE_TEMP_FOLDER/sqlite3.go $SQLITE_TEMP_FOLDER/$SQLITE3_FILE/sqlite3.c >> $OUTFILE 2>&1
+./c4go transpile -o=$SQLITE_TEMP_FOLDER/sqlite3.go $SQLITE_TEMP_FOLDER/$SQLITE3_FILE/sqlite3.c >> $OUTFILE 2>&1
 
 # Show amount "Warning" in sqlite Go codes
 SQLITE_WARNINGS=`cat $SQLITE_TEMP_FOLDER/sqlite3.go $SQLITE_TEMP_FOLDER/shell.go | grep "// Warning" | wc -l`
@@ -103,13 +103,13 @@ echo "In files (sqlite3.go and shell.go) summary : $SQLITE_WARNINGS warnings."
 # information about the number of tests run and how many warnings are generated
 # in the SQLite3 transpile.
 if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-    curl -H "Authorization: token ${GITHUB_API_TOKEN}" -H "Content-Type: application/json" https://api.github.com/repos/Konstantin8105/c4go/statuses/${TRAVIS_COMMIT} -d "{\"state\": \"success\",\"target_url\": \"https://travis-ci.org/Konstantin8105/c4go/builds/${TRAVIS_JOB_ID}\", \"description\": \"$(($UNIT_TESTS + $INT_TESTS)) tests passed (${UNIT_TESTS} unit + ${INT_TESTS} integration)\", \"context\": \"c2go/tests\"}"
+    curl -H "Authorization: token ${GITHUB_API_TOKEN}" -H "Content-Type: application/json" https://api.github.com/repos/Konstantin8105/c4go/statuses/${TRAVIS_COMMIT} -d "{\"state\": \"success\",\"target_url\": \"https://travis-ci.org/Konstantin8105/c4go/builds/${TRAVIS_JOB_ID}\", \"description\": \"$(($UNIT_TESTS + $INT_TESTS)) tests passed (${UNIT_TESTS} unit + ${INT_TESTS} integration)\", \"context\": \"c4go/tests\"}"
 
-    curl -H "Authorization: token ${GITHUB_API_TOKEN}" -H "Content-Type: application/json" https://api.github.com/repos/Konstantin8105/c4go/statuses/${TRAVIS_COMMIT} -d "{\"state\": \"success\",\"target_url\": \"https://travis-ci.org/Konstantin8105/c4go/builds/${TRAVIS_JOB_ID}\", \"description\": \"$(($SQLITE_WARNINGS)) warnings\", \"context\": \"c2go/sqlite3\"}" 
+    curl -H "Authorization: token ${GITHUB_API_TOKEN}" -H "Content-Type: application/json" https://api.github.com/repos/Konstantin8105/c4go/statuses/${TRAVIS_COMMIT} -d "{\"state\": \"success\",\"target_url\": \"https://travis-ci.org/Konstantin8105/c4go/builds/${TRAVIS_JOB_ID}\", \"description\": \"$(($SQLITE_WARNINGS)) warnings\", \"context\": \"c4go/sqlite3\"}" 
 fi
 
 # SQLITE
-c2go transpile -o="$SQLITE_TEMP_FOLDER/sqlite.go" -clang-flag="-DSQLITE_THREADSAFE=0" -clang-flag="-DSQLITE_OMIT_LOAD_EXTENSION" $SQLITE_TEMP_FOLDER/$SQLITE3_FILE/shell.c $SQLITE_TEMP_FOLDER/$SQLITE3_FILE/sqlite3.c
+c4go transpile -o="$SQLITE_TEMP_FOLDER/sqlite.go" -clang-flag="-DSQLITE_THREADSAFE=0" -clang-flag="-DSQLITE_OMIT_LOAD_EXTENSION" $SQLITE_TEMP_FOLDER/$SQLITE3_FILE/shell.c $SQLITE_TEMP_FOLDER/$SQLITE3_FILE/sqlite3.c
 
 # Show amount "Warning":
 SQLITE_WARNINGS=`cat $SQLITE_TEMP_FOLDER/sqlite.go | grep "// Warning" | wc -l`

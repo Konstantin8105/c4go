@@ -8,7 +8,7 @@
 /build
 /bin
 /coverage.txt
-/c2go
+/c4go
 /.vscode
 *.coverprofile
 tests/*.go

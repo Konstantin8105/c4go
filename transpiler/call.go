@@ -216,9 +216,9 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		src := fmt.Sprintf(`package main
 		var %s func(a,b interface{})int
 		var temp = func(i, j int) bool {
-			c2goTempVarA := ([]%s{%s[i]})
-			c2goTempVarB := ([]%s{%s[j]})
-			return %s(c2goTempVarA, c2goTempVarB) <= 0
+			c4goTempVarA := ([]%s{%s[i]})
+			c4goTempVarB := ([]%s{%s[j]})
+			return %s(c4goTempVarA, c4goTempVarB) <= 0
 		}`, compareFunc, t, varName, t, varName, compareFunc)
 
 		// Create the AST by parsing src.

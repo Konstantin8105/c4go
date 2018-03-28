@@ -27,7 +27,7 @@ void test_putchar()
 
 void test_puts()
 {
-    puts("#c2go");
+    puts("#c4go");
 
     pass("%s", "puts");
 }

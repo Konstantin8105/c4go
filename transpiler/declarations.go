@@ -471,14 +471,14 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 		// DeclStmt 0x2fd87e0 <line:442:2, col:14>
 		// `-VarDecl 0x2fd8780 <col:2, col:10> col:10 used args 'va_list':'struct __va_list_tag [1]'
 		// Result:
-		// ... - convert to - c2goArgs ...interface{}
-		// var args = c2goArgs
+		// ... - convert to - c4goArgs ...interface{}
+		// var args = c4goArgs
 		return []goast.Decl{&goast.GenDecl{
 			Tok: token.VAR,
 			Specs: []goast.Spec{
 				&goast.ValueSpec{
 					Names:  []*goast.Ident{util.NewIdent(n.Name)},
-					Values: []goast.Expr{util.NewIdent("c2goArgs")},
+					Values: []goast.Expr{util.NewIdent("c4goArgs")},
 				},
 			},
 		}}, "", nil

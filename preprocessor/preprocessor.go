@@ -212,7 +212,7 @@ func analyzeFiles(inputFiles, clangFlags []string) (items []entity, err error) {
 // clang -E <file>    Run the preprocessor stage.
 func getPreprocessSources(inputFiles, clangFlags []string) (out bytes.Buffer, err error) {
 	// get temp dir
-	dir, err := ioutil.TempDir("", "c2go-union")
+	dir, err := ioutil.TempDir("", "c4go-union")
 	if err != nil {
 		return
 	}
