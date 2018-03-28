@@ -326,7 +326,10 @@ func (i *inputDataFlags) Set(value string) error {
 var clangFlags inputDataFlags
 
 func init() {
-	transpileCommand.Var(&clangFlags, "clang-flag", "Pass arguments to clang. You may provide multiple -clang-flag items.")
+	transpileCommand.Var(&clangFlags,
+		"clang-flag", "Pass arguments to clang. You may provide multiple -clang-flag items.")
+	astCommand.Var(&clangFlags,
+		"clang-flag", "Pass arguments to clang. You may provide multiple -clang-flag items.")
 }
 
 var (
