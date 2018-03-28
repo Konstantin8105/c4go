@@ -323,13 +323,13 @@ func (p *Program) String() string {
 	var buf bytes.Buffer
 
 	buf.WriteString(fmt.Sprintf(`/*
-	Package main - transpiled by c2go version: %s
+	Package main - transpiled by c4go
 
 	If you have found any issues, please raise an issue at:
 	https://github.com/Konstantin8105/c4go/
 */
 
-`, Version))
+`))
 
 	// First write all the messages. The double newline afterwards is important
 	// so that the package statement has a newline above it so that the warnings

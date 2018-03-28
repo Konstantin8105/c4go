@@ -330,7 +330,6 @@ func init() {
 }
 
 var (
-	versionFlag       = flag.Bool("v", false, "print the version and exit")
 	transpileCommand  = flag.NewFlagSet("transpile", flag.ContinueOnError)
 	verboseFlag       = transpileCommand.Bool("V", false, "print progress as comments")
 	outputFlag        = transpileCommand.String("o", "", "output Go generated code to the specified file")
@@ -364,12 +363,6 @@ func runCommand() int {
 	astCommand.SetOutput(stderr)
 
 	flag.Parse()
-
-	if *versionFlag {
-		// Simply print out the version and exit.
-		fmt.Println(program.Version)
-		return 0
-	}
 
 	if flag.NArg() < 1 {
 		flag.Usage()
