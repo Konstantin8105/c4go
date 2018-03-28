@@ -1,18 +1,18 @@
 // This program actually still works without including stdio.h but it should be
 // here for consistency.
 
+#include "tests.h"
+#include <assert.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdarg.h>
-#include <assert.h>
-#include "tests.h"
 
 #define START_TEST(t) \
     diag(#t);         \
     test_##t();
 
 // size of that file
-int filesize = 10876;
+int filesize = 11026;
 
 void test_putchar()
 {
@@ -46,7 +46,6 @@ void test_printf()
     printf("# Width trick: %*d \n", 5, 10);
     printf("# %s \n", "A string");
 
-
     int magnitude = 4;
     char printfFormat[30] = "%0";
     char magnitudeString[10];
@@ -63,12 +62,9 @@ void test_printf()
 void test_remove()
 {
     // TODO: This does not actually test successfully deleting a file.
-    if (remove("myfile.txt") != 0)
-    {
+    if (remove("myfile.txt") != 0) {
         pass("%s", "error deleting file");
-    }
-    else
-    {
+    } else {
         fail("%s", "file successfully deleted");
     }
 }
@@ -80,22 +76,18 @@ void test_rename()
     char oldname[] = "oldname.txt";
     char newname[] = "newname.txt";
     result = rename(oldname, newname);
-    if (result == 0)
-    {
+    if (result == 0) {
         fail("%s", "File successfully renamed");
-    }
-    else
-    {
+    } else {
         pass("%s", "Error renaming file");
     }
 }
 
 void test_fopen()
 {
-    FILE *pFile;
+    FILE* pFile;
     pFile = fopen("/tmp/myfile.txt", "w");
-    if (pFile != NULL)
-    {
+    if (pFile != NULL) {
         is_not_null(pFile);
         fclose(pFile);
     }
@@ -104,7 +96,7 @@ void test_fopen()
 void test_tmpfile()
 {
     char buffer[256];
-    FILE *pFile;
+    FILE* pFile;
     pFile = tmpfile();
 
     fputs("hello world", pFile);
@@ -119,7 +111,7 @@ void test_tmpnam()
     // and Go will be different. I will keep the test here so at least it tries
     // to run the code but the test itself is not actually proving anything.
 
-    char *pointer;
+    char* pointer;
 
     // FIXME: We cannot pass variables by reference yet, which is a legitimate
     // way to use tmpnam(). I have to leave this disabled for now.
@@ -134,19 +126,19 @@ void test_tmpnam()
 
 void test_fclose()
 {
-	remove("/tmp/myfile.txt");
-    FILE *pFile;
+    remove("/tmp/myfile.txt");
+    FILE* pFile;
     pFile = fopen("/tmp/myfile.txt", "w");
     fputs("fclose example", pFile);
     fclose(pFile);
     // remove temp file
-    is_eq(remove("/tmp/myfile.txt"),0)
+    is_eq(remove("/tmp/myfile.txt"), 0)
 }
 
 void test_fflush()
 {
     char mybuffer[80];
-    FILE *pFile;
+    FILE* pFile;
     pFile = fopen("/tmp/example.txt", "w+");
     is_not_null(pFile) or_return();
 
@@ -155,38 +147,37 @@ void test_fflush()
     fgets(mybuffer, 80, pFile);
     fclose(pFile);
     // remove temp file
-    is_eq(remove("/tmp/example.txt"),0)
+    is_eq(remove("/tmp/example.txt"), 0)
 }
 
 void test_fprintf()
 {
-	remove("/tmp/myfile1.txt");
-    FILE *pFile;
+    remove("/tmp/myfile1.txt");
+    FILE* pFile;
     int n;
-    char *name = "John Smith";
+    char* name = "John Smith";
 
     pFile = fopen("/tmp/myfile1.txt", "w");
     is_not_null(pFile);
 
-    for (n = 0; n < 3; n++)
-    {
+    for (n = 0; n < 3; n++) {
         fprintf(pFile, "Name %d [%-10.10s]\n", n + 1, name);
     }
 
     fclose(pFile);
     // remove temp file
-    is_eq(remove("/tmp/myfile1.txt"),0)
+    is_eq(remove("/tmp/myfile1.txt"), 0)
 }
 
 void test_fscanf()
 {
-	remove("/tmp/myfile2.txt");
+    remove("/tmp/myfile2.txt");
 
     char str[80];
     char end[80];
     float f;
-	int i;
-    FILE *pFile;
+    int i;
+    FILE* pFile;
 
     pFile = fopen("/tmp/myfile2.txt", "w+");
     is_not_null(pFile);
@@ -198,15 +189,15 @@ void test_fscanf()
     fscanf(pFile, "%d", &i);
     fscanf(pFile, "%s", end);
     fclose(pFile);
-	pFile = NULL;
+    pFile = NULL;
 
     is_eq(f, 3.1416);
     is_streq(str, "PI");
-	is_eq(i,42);
-    is_streq(end,"end");
+    is_eq(i, 42);
+    is_streq(end, "end");
 
-	// read again
-    FILE *pFile2;
+    // read again
+    FILE* pFile2;
     pFile2 = fopen("/tmp/myfile2.txt", "r");
     is_not_null(pFile2);
 
@@ -215,27 +206,26 @@ void test_fscanf()
     fscanf(pFile2, "%d", &i);
     fscanf(pFile2, "%s", end);
     fclose(pFile2);
-	pFile2 = NULL;
+    pFile2 = NULL;
 
     is_eq(f, 3.1416);
     is_streq(str, "PI");
-	is_eq(i,42);
-    is_streq(end,"end");
-    
-	// remove temp file
-    is_eq(remove("/tmp/myfile2.txt"),0)
+    is_eq(i, 42);
+    is_streq(end, "end");
+
+    // remove temp file
+    is_eq(remove("/tmp/myfile2.txt"), 0)
 }
 
 void test_fgetc()
 {
-    FILE *pFile;
+    FILE* pFile;
     int c;
     int n = 0;
     pFile = fopen("tests/stdio.c", "r");
     is_not_null(pFile);
 
-    do
-    {
+    do {
         c = fgetc(pFile);
         if (c == '$')
             n++;
@@ -247,8 +237,8 @@ void test_fgetc()
 
 void test_fgets()
 {
-    FILE *pFile;
-    char *mystring;
+    FILE* pFile;
+    char* mystring;
     char dummy[20];
 
     pFile = fopen("tests/stdio.c", "r");
@@ -272,26 +262,25 @@ void test_fputc()
 
 void test_fputs()
 {
-    FILE *pFile;
-    char *sentence = "Hello, World";
+    FILE* pFile;
+    char* sentence = "Hello, World";
 
     pFile = fopen("/tmp/mylog.txt", "w");
     fputs(sentence, pFile);
     fclose(pFile);
-	// remove temp file
-    is_eq(remove("/tmp/mylog.txt"),0)
+    // remove temp file
+    is_eq(remove("/tmp/mylog.txt"), 0)
 }
 
 void test_getc()
 {
-    FILE *pFile;
+    FILE* pFile;
     int c;
     int n = 0;
     pFile = fopen("tests/stdio.c", "r");
     is_not_null(pFile);
 
-    do
-    {
+    do {
         c = getc(pFile);
         if (c == '$')
             n++;
@@ -303,34 +292,33 @@ void test_getc()
 
 void test_putc()
 {
-    FILE *pFile;
+    FILE* pFile;
     char c;
 
     pFile = fopen("/tmp/whatever.txt", "w");
-    for (c = 'A'; c <= 'Z'; c++)
-    {
+    for (c = 'A'; c <= 'Z'; c++) {
         putc(c, pFile);
     }
     fclose(pFile);
-	// remove temp file
-    is_eq(remove("/tmp/whatever.txt"),0)
+    // remove temp file
+    is_eq(remove("/tmp/whatever.txt"), 0)
 }
 
 void test_fseek()
 {
-    FILE *pFile;
+    FILE* pFile;
     pFile = fopen("/tmp/example.txt", "w");
     fputs("This is an apple.", pFile);
     fseek(pFile, 9, SEEK_SET);
     fputs(" sam", pFile);
     fclose(pFile);
-	// remove temp file
-    is_eq(remove("/tmp/example.txt"),0)
+    // remove temp file
+    is_eq(remove("/tmp/example.txt"), 0)
 }
 
 void test_ftell()
 {
-    FILE *pFile;
+    FILE* pFile;
     long size;
 
     pFile = fopen("tests/stdio.c", "r");
@@ -345,7 +333,7 @@ void test_ftell()
 
 void test_fread()
 {
-    FILE *pFile;
+    FILE* pFile;
     int lSize;
     char buffer[1024];
     int result;
@@ -375,17 +363,17 @@ void test_fread()
 
 void test_fwrite()
 {
-    FILE *pFile;
+    FILE* pFile;
     pFile = fopen("/tmp/myfile.bin", "w");
     fwrite("xyz", 1, 3, pFile);
     fclose(pFile);
-	// remove temp file
-    is_eq(remove("/tmp/myfile.bin"),0)
+    // remove temp file
+    is_eq(remove("/tmp/myfile.bin"), 0)
 }
 
 void test_fgetpos()
 {
-    FILE *pFile;
+    FILE* pFile;
     int c;
     int n;
     fpos_t pos;
@@ -397,8 +385,7 @@ void test_fgetpos()
     is_eq(c, '/');
 
     fgetpos(pFile, &pos);
-    for (n = 0; n < 3; n++)
-    {
+    for (n = 0; n < 3; n++) {
         fsetpos(pFile, &pos);
         c = fgetc(pFile);
         is_eq(c, '/');
@@ -409,7 +396,7 @@ void test_fgetpos()
 
 void test_fsetpos()
 {
-    FILE *pFile;
+    FILE* pFile;
     fpos_t position;
 
     pFile = fopen("/tmp/myfile.txt", "w");
@@ -418,14 +405,14 @@ void test_fsetpos()
     fsetpos(pFile, &position);
     fputs("This", pFile);
     fclose(pFile);
-	// remove temp file
-    is_eq(remove("/tmp/myfile.txt"),0)
+    // remove temp file
+    is_eq(remove("/tmp/myfile.txt"), 0)
 }
 
 void test_rewind()
 {
     int n;
-    FILE *pFile;
+    FILE* pFile;
     char buffer[27];
 
     pFile = fopen("/tmp/myfile.txt", "w+");
@@ -437,29 +424,25 @@ void test_rewind()
     buffer[26] = '\0';
 
     is_eq(strlen(buffer), 26);
-	
-	// remove temp file
-    is_eq(remove("/tmp/myfile.txt"),0)
+
+    // remove temp file
+    is_eq(remove("/tmp/myfile.txt"), 0)
 }
 
 void test_feof()
 {
-    FILE *pFile;
+    FILE* pFile;
     int n = 0;
     pFile = fopen("tests/stdio.c", "r");
     is_not_null(pFile);
 
-    while (fgetc(pFile) != EOF)
-    {
+    while (fgetc(pFile) != EOF) {
         ++n;
     }
-    if (feof(pFile))
-    {
+    if (feof(pFile)) {
         pass("%s", "End-of-File reached.");
         is_eq(n, filesize);
-    }
-    else
-    {
+    } else {
         fail("%s", "End-of-File was not reached.");
     }
 
@@ -468,74 +451,74 @@ void test_feof()
 
 void test_sprintf()
 {
-	char buffer [100];
-	int cx;
-	cx = snprintf ( buffer, 100, "The half of %d is %d", 60, 60/2 );
-	is_streq(buffer,"The half of 60 is 30");
-	is_eq(cx,20);
+    char buffer[100];
+    int cx;
+    cx = snprintf(buffer, 100, "The half of %d is %d", 60, 60 / 2);
+    is_streq(buffer, "The half of 60 is 30");
+    is_eq(cx, 20);
 }
 
 void test_snprintf()
 {
-	char buffer [50];
-	int n, a=5, b=3;
-	n = sprintf (buffer, "%d plus %d is %d", a, b, a+b);
-	is_streq(buffer, "5 plus 3 is 8")
-	is_eq(n,13)
+    char buffer[50];
+    int n, a = 5, b = 3;
+    n = sprintf(buffer, "%d plus %d is %d", a, b, a + b);
+    is_streq(buffer, "5 plus 3 is 8")
+        is_eq(n, 13)
 }
 
-int PrintFError(const char * format, ... )
+int PrintFError(const char* format, ...)
 {
-	char buffer[256];
-	va_list args;
-	va_start (args, format);
-	int s = vsprintf (buffer,format, args);
-	va_end (args);
-	return s;
+    char buffer[256];
+    va_list args;
+    va_start(args, format);
+    int s = vsprintf(buffer, format, args);
+    va_end(args);
+    return s;
 }
 
 void test_vsprintf()
 {
-	int s = PrintFError("Success function '%s' %.2f","vsprintf",3.1415926);
-	is_eq(s,19+8+5);
+    int s = PrintFError("Success function '%s' %.2f", "vsprintf", 3.1415926);
+    is_eq(s, 19 + 8 + 5);
 }
 
-int PrintFError2(const char * format, ... )
+int PrintFError2(const char* format, ...)
 {
-	char buffer[256];
-	va_list args;
-	va_start (args, format);
-	int s = vsnprintf (buffer,256,format, args);
-	va_end (args);
-	return s;
+    char buffer[256];
+    va_list args;
+    va_start(args, format);
+    int s = vsnprintf(buffer, 256, format, args);
+    va_end(args);
+    return s;
 }
 
 void test_vsnprintf()
 {
-	int s = PrintFError2("Success function '%s' %.2f","vsprintf",3.1415926);
-	is_eq(s,19+8+5);
+    int s = PrintFError2("Success function '%s' %.2f", "vsprintf", 3.1415926);
+    is_eq(s, 19 + 8 + 5);
 }
 
 void test_eof()
 {
-	if ( (int)(EOF) == -1 ) {
-		pass("ok");
-	}
-	char c = EOF;
-	if ( c == (char)(EOF) ) {
-		pass("ok");
-	}
-	char a[1];
-	a[0] = 's';
-	if ( a[0] != EOF ) {
-		pass("ok");
-	}
-	a[0] = EOF;
-	if ( a[0] != EOF ) {
-		fail("EOF == EOF - fail");
-	} else {
-		pass("ok");
-	}
+    if ((int)(EOF) == -1) {
+        pass("ok");
+    }
+    char c = EOF;
+    if (c == (char)(EOF)) {
+        pass("ok");
+    }
+    char a[1];
+    a[0] = 's';
+    if (a[0] != EOF) {
+        pass("ok");
+    }
+    a[0] = EOF;
+    if (a[0] != EOF) {
+        fail("EOF == EOF - fail");
+    } else {
+        pass("ok");
+    }
 }
 
 int main()
@@ -573,7 +556,7 @@ int main()
     START_TEST(snprintf)
     START_TEST(vsprintf)
     START_TEST(vsnprintf)
-	START_TEST(eof)
+    START_TEST(eof)
 
     done_testing();
 }
