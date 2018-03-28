@@ -1,11 +1,9 @@
-package util_test
+package util
 
 import (
 	"fmt"
 	"strings"
 	"testing"
-
-	"github.com/elliotchance/c2go/util"
 )
 
 func TestDiff(t *testing.T) {
@@ -29,7 +27,7 @@ func TestDiff(t *testing.T) {
 
 	for i, tc := range tcs {
 		t.Run(fmt.Sprintf("Test %d : %s", i, tc.a+tc.b), func(t *testing.T) {
-			act := util.ShowDiff(tc.a, tc.b)
+			act := ShowDiff(tc.a, tc.b)
 			if strings.TrimSpace(act) != strings.TrimSpace(tc.expect) {
 				t.Errorf("Not correct result.\nExpected:%s\nActual:%s\n",
 					tc.expect, act)
