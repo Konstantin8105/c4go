@@ -279,7 +279,6 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 				locPosition = i
 				n.Children()[i] = &zero
 				found = true
-				return
 			}
 
 			switch v := n.Children()[i].(type) {
