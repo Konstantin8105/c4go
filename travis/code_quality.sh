@@ -1,5 +1,11 @@
 #!/bin/bash
 
+#
+#
+# DO NOT USE THAT SCRIPT !
+#
+#
+
 set -e
 
 # clang-format version
