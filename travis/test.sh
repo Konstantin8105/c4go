@@ -57,15 +57,15 @@ echo "Integration tests: ${INT_TESTS}"
 # documented.
 go build
 
-export C2GO_DIR=$GOPATH/src/github.com/Konstantin8105/c4go
-export C2GO=$C2GO_DIR/c4go
+export C4GO_DIR=$GOPATH/src/github.com/Konstantin8105/c4go
+export C4GO=$C4GO_DIR/c4go
 
 echo "Run: c4go transpile prime.c"
-$C2GO transpile -o=/tmp/prime.go $C2GO_DIR/examples/prime.c
+$C4GO transpile -o=/tmp/prime.go $C4GO_DIR/examples/prime.c
 echo "47" | go run /tmp/prime.go
-if [ $($C2GO -v | wc -l) -ne 1 ]; then exit 1; fi
+if [ $($C4GO -v | wc -l) -ne 1 ]; then exit 1; fi
 if [ $(cat /tmp/prime.go | wc -l) -eq 0 ]; then exit 1; fi
-if [ $($C2GO ast $C2GO_DIR/examples/prime.c | wc -l) -eq 0 ]; then exit 1; fi
+if [ $($C4GO ast $C4GO_DIR/examples/prime.c | wc -l) -eq 0 ]; then exit 1; fi
 
 echo "----------------------"
 # This will have to be updated every so often to the latest version. You can
