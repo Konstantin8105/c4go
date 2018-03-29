@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/Konstantin8105/c4go/ast"
+	"github.com/Konstantin8105/c4go/preprocessor"
 	"github.com/Konstantin8105/c4go/util"
 )
 
@@ -97,29 +98,13 @@ type Program struct {
 	// Important: key and value are C types
 	TypedefType map[string]string
 
-	// Comments
-	Comments []Comment
-
 	// commentLine - a map with:
 	// key    - filename
 	// value  - last comment inserted in Go code
 	commentLine map[string]int
 
-	// IncludeHeaders - list of C header
-	IncludeHeaders []IncludeHeader
-}
-
-// Comment - position of line comment '//...'
-type Comment struct {
-	File    string
-	Line    int
-	Comment string
-}
-
-// IncludeHeader - struct for C include header
-type IncludeHeader struct {
-	HeaderName   string
-	IsUserSource bool
+	// preprocessor file
+	PreprocessorFile preprocessor.FilePP
 }
 
 // NewProgram creates a new blank program.
@@ -162,7 +147,6 @@ func NewProgram() (p *Program) {
 		EnumTypedefName:                          map[string]bool{},
 		TypedefType:                              map[string]string{},
 		commentLine:                              map[string]int{},
-		IncludeHeaders:                           []IncludeHeader{},
 		functionDefinitions:                      map[string]FunctionDefinition{},
 		builtInFunctionDefinitionsHaveBeenLoaded: false,
 	}
@@ -225,13 +209,14 @@ func (p *Program) GetMessageComments() (_ *goast.CommentGroup) {
 func (p *Program) GetComments(n ast.Position) (out []*goast.Comment) {
 	beginLine := p.commentLine[n.File]
 	lastLine := n.LineEnd
-	for i := range p.Comments {
-		if p.Comments[i].File == n.File {
-			if beginLine < p.Comments[i].Line && p.Comments[i].Line <= lastLine {
+	for i := range p.PreprocessorFile.GetComments() {
+		if p.PreprocessorFile.GetComments()[i].File == n.File {
+			if beginLine < p.PreprocessorFile.GetComments()[i].Line &&
+				p.PreprocessorFile.GetComments()[i].Line <= lastLine {
 				out = append(out, &goast.Comment{
-					Text: p.Comments[i].Comment,
+					Text: p.PreprocessorFile.GetComments()[i].Comment,
 				})
-				if p.Comments[i].Comment[0:2] == "/*" {
+				if p.PreprocessorFile.GetComments()[i].Comment[0:2] == "/*" {
 					out = append(out, &goast.Comment{
 						Text: "// ",
 					})
@@ -394,10 +379,10 @@ func (p *Program) String() string {
 
 	// Add comments at the end C file
 	for file, beginLine := range p.commentLine {
-		for i := range p.Comments {
-			if p.Comments[i].File == file {
-				if beginLine < p.Comments[i].Line {
-					buf.WriteString(fmt.Sprintln(p.Comments[i].Comment))
+		for i := range p.PreprocessorFile.GetComments() {
+			if p.PreprocessorFile.GetComments()[i].File == file {
+				if beginLine < p.PreprocessorFile.GetComments()[i].Line {
+					buf.WriteString(fmt.Sprintln(p.PreprocessorFile.GetComments()[i].Comment))
 				}
 			}
 		}
@@ -417,7 +402,7 @@ func (p *Program) String() string {
 
 // IncudeHeaderIsExists - return true if C #include header is inside list
 func (p *Program) IncludeHeaderIsExists(includeHeader string) bool {
-	for _, inc := range p.IncludeHeaders {
+	for _, inc := range p.PreprocessorFile.GetIncludeFiles() {
 		if strings.HasSuffix(inc.HeaderName, includeHeader) {
 			return true
 		}

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	goast "go/ast"
-	"io/ioutil"
 
 	"github.com/Konstantin8105/c4go/ast"
 	"github.com/Konstantin8105/c4go/program"
@@ -18,56 +17,30 @@ func transpileOffsetOfExpr(n *ast.OffsetOfExpr, p *program.Program) (
 			err = fmt.Errorf("cannot transpile OffsetOfExpr. %v", err)
 		}
 	}()
-	// read file
-	var dat []byte
-	dat, err = ioutil.ReadFile(n.Pos.File)
-	if err != nil {
-		err = fmt.Errorf("cannot read file. %v", err)
-		return
-	}
-
-	lines := bytes.Split(dat, []byte("\n"))
-	if n.Pos.Line >= len(lines) && n.Pos.LineEnd >= len(lines) {
-		err = fmt.Errorf("not correct position of line {%v,%v}. Amount lines %d",
-			n.Pos.Line, n.Pos.LineEnd, len(lines))
-		return
-	}
 
 	var buffer []byte
-	if n.Pos.Line != n.Pos.LineEnd {
-		buffer = lines[n.Pos.Line-1][n.Pos.Column:n.Pos.ColumnEnd]
-	} else {
-		// TODO
-		fmt.Println("TODO")
+	var pos ast.Position = n.Position()
+	buffer, err = p.PreprocessorFile.GetSnippet(pos.File,
+		pos.Line, pos.LineEnd,
+		pos.Column, pos.ColumnEnd)
+	if err != nil {
+		err = fmt.Errorf("cannot found snippet position is %v. %v",
+			n.Position(), err)
+		return
 	}
-
-	buffer = bytes.TrimSpace(buffer)
-	buffer = bytes.Replace(buffer, []byte("\x00"), []byte(""), -1)
 
 	if len(buffer) == 0 {
 		err = fmt.Errorf("Buffer is empty")
 		return
 	}
 
-	// find `(` and `)`
-	if buffer[0] != '(' {
-		err = fmt.Errorf("Not start from `(` in buffer : `%s`",
+	if !bytes.HasPrefix(buffer, []byte("__builtin_offsetof(")) {
+		err = fmt.Errorf("Haven`t prefix `__builtin_offsetof(` in buffer `%v`",
 			string(buffer))
 		return
 	}
-	var endPosition int
-	for i := range buffer {
-		if buffer[i] == ')' {
-			endPosition = i
-			break
-		}
-	}
-	if buffer[endPosition] != ')' {
-		err = fmt.Errorf("Not start from `)` in buffer : `%v`",
-			string(buffer))
-		return
-	}
-	buffer = buffer[1:endPosition]
+
+	buffer = buffer[len("__builtin_offsetof(") : len(buffer)-1]
 
 	// separate by `,`
 	arguments := bytes.Split(buffer, []byte(","))
@@ -103,8 +76,6 @@ func transpileOffsetOfExpr(n *ast.OffsetOfExpr, p *program.Program) (
 			},
 		},
 	}
-
-	// panic("TODO")
 
 	exprType = n.Type
 	return

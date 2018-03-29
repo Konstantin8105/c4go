@@ -12,7 +12,6 @@ import (
 	"strings"
 	"text/scanner"
 
-	"github.com/Konstantin8105/c4go/program"
 	"github.com/Konstantin8105/c4go/util"
 )
 
@@ -28,7 +27,7 @@ type entity struct {
 	lines []*string
 }
 
-func (e *entity) parseComments(comments *[]program.Comment) {
+func (e *entity) parseComments(comments *[]Comment) {
 	var source bytes.Buffer
 	for i := range e.lines {
 		if i == 0 {
@@ -44,7 +43,7 @@ func (e *entity) parseComments(comments *[]program.Comment) {
 	s.Filename = e.include
 	for tok := s.Scan(); tok != scanner.EOF; tok = s.Scan() {
 		if scanner.TokenString(tok) == "Comment" {
-			(*comments) = append(*comments, program.Comment{
+			(*comments) = append(*comments, Comment{
 				File:    e.include,
 				Line:    s.Position.Line + e.positionInSource - 1,
 				Comment: s.TokenText(),
@@ -80,9 +79,27 @@ func (e *entity) isSame(x *entity) bool {
 	return true
 }
 
-// Analyze - separation preprocessor code to part
-func Analyze(inputFiles, clangFlags []string) (pp []byte,
-	comments []program.Comment, includes []program.IncludeHeader, err error) {
+// Comment - position of line comment '//...'
+type Comment struct {
+	File    string
+	Line    int
+	Comment string
+}
+
+// IncludeHeader - struct for C include header
+type IncludeHeader struct {
+	HeaderName   string
+	IsUserSource bool
+}
+
+type FilePP struct {
+	entities []entity
+	pp       []byte
+	comments []Comment
+	includes []IncludeHeader
+}
+
+func NewFilePP(inputFiles, clangFlags []string) (f FilePP, err error) {
 
 	var allItems []entity
 
@@ -104,7 +121,7 @@ func Analyze(inputFiles, clangFlags []string) (pp []byte,
 		return
 	}
 	// Generate C header list
-	includes = generateIncludeList(us, all)
+	f.includes = generateIncludeList(us, all)
 
 	for j := range us {
 		userSource[us[j]] = true
@@ -137,7 +154,7 @@ func Analyze(inputFiles, clangFlags []string) (pp []byte,
 			isUserSource = true
 		}
 		if isUserSource {
-			allItems[i].parseComments(&comments)
+			allItems[i].parseComments(&f.comments)
 		}
 
 		// Parameter "other" is not included for avoid like:
@@ -154,9 +171,47 @@ func Analyze(inputFiles, clangFlags []string) (pp []byte,
 				lines = append(lines, *l)
 			}
 		}
+		f.entities = append(f.entities, allItems[i])
 	}
-	pp = ([]byte)(strings.Join(lines, "\n"))
+	f.pp = ([]byte)(strings.Join(lines, "\n"))
 
+	return
+}
+
+func (f FilePP) GetSource() []byte {
+	return f.pp
+}
+
+func (f FilePP) GetComments() []Comment {
+	return f.comments
+}
+
+func (f FilePP) GetIncludeFiles() []IncludeHeader {
+	return f.includes
+}
+
+func (f FilePP) GetSnippet(file string,
+	line, lineEnd int,
+	col, colEnd int) (
+	buffer []byte, err error) {
+	if lineEnd == 0 {
+		lineEnd = line
+	}
+
+	for i := range f.entities {
+		if f.entities[i].include != file {
+			continue
+		}
+		line := line
+		lineEnd := lineEnd
+		if len(f.entities[i].lines) < lineEnd {
+			continue
+		}
+
+		return []byte((*f.entities[i].lines[line+1-f.entities[i].positionInSource])[col-1 : colEnd]), nil
+	}
+
+	err = fmt.Errorf("Snippet is not found")
 	return
 }
 
@@ -271,7 +326,7 @@ func getPreprocessSources(inputFiles, clangFlags []string) (out bytes.Buffer, er
 }
 
 func generateIncludeList(userList, allList []string) (
-	includes []program.IncludeHeader) {
+	includes []IncludeHeader) {
 
 	for i := range allList {
 		var isUser bool
@@ -281,7 +336,7 @@ func generateIncludeList(userList, allList []string) (
 				break
 			}
 		}
-		includes = append(includes, program.IncludeHeader{
+		includes = append(includes, IncludeHeader{
 			HeaderName:   allList[i],
 			IsUserSource: isUser,
 		})
