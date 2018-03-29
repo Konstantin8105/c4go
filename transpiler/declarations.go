@@ -523,7 +523,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 		var fields, returns []string
 		prefix, fields, returns, err = types.SeparateFunction(p, n.Type)
 		if err != nil {
-			p.AddMessage(p.GenerateErrorMessage(
+			p.AddMessage(p.GenerateWarningMessage(
 				fmt.Errorf("Cannot resolve function : %v", err), n))
 			err = nil // Error is ignored
 			return
@@ -568,7 +568,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 
 	defaultValue, _, newPre, newPost, err := getDefaultValueForVar(p, n)
 	if err != nil {
-		p.AddMessage(p.GenerateErrorMessage(err, n))
+		p.AddMessage(p.GenerateWarningMessage(err, n))
 		err = nil // Error is ignored
 	}
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
@@ -580,7 +580,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 		var goArrayType string
 		goArrayType, err = types.ResolveType(p, arrayType)
 		if err != nil {
-			p.AddMessage(p.GenerateErrorMessage(err, n))
+			p.AddMessage(p.GenerateWarningMessage(err, n))
 			err = nil // Error is ignored
 		}
 
@@ -597,14 +597,14 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 	}
 
 	if len(preStmts) != 0 || len(postStmts) != 0 {
-		p.AddMessage(p.GenerateErrorMessage(
+		p.AddMessage(p.GenerateWarningMessage(
 			fmt.Errorf("Not acceptable length of Stmt : pre(%d), post(%d)",
 				len(preStmts), len(postStmts)), n))
 	}
 
 	theType, err = types.ResolveType(p, n.Type)
 	if err != nil {
-		p.AddMessage(p.GenerateErrorMessage(err, n))
+		p.AddMessage(p.GenerateWarningMessage(err, n))
 		err = nil // Error is ignored
 		theType = "UnknownType"
 	}

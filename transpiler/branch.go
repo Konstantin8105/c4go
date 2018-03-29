@@ -76,7 +76,7 @@ func transpileIfStmt(n *ast.IfStmt, p *program.Program) (
 
 	// The condition in Go must always be a bool.
 	boolCondition, err := types.CastExpr(p, conditional, conditionalType, "bool")
-	p.AddMessage(p.GenerateWarningOrErrorMessage(err, n, boolCondition == nil))
+	p.AddMessage(p.GenerateWarningMessage(err, n))
 
 	if boolCondition == nil {
 		boolCondition = util.NewNil()
@@ -339,7 +339,7 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
 		condition, err = types.CastExpr(p, condition, conditionType, "bool")
-		p.AddMessage(p.GenerateWarningOrErrorMessage(err, n, condition == nil))
+		p.AddMessage(p.GenerateWarningMessage(err, n))
 
 		if condition == nil {
 			condition = util.NewNil()

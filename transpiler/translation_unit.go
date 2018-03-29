@@ -38,7 +38,7 @@ func transpileTranslationUnitDecl(p *program.Program, n *ast.TranslationUnitDecl
 		var d []goast.Decl
 		d, err = transpileToNode(presentNode, p)
 		if err != nil {
-			p.AddMessage(p.GenerateErrorMessage(err, n))
+			p.AddMessage(p.GenerateWarningMessage(err, n))
 			err = nil
 		} else {
 			decls = append(decls, d...)

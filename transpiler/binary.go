@@ -235,13 +235,13 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 
 	if operator == token.LAND || operator == token.LOR {
 		left, err = types.CastExpr(p, left, leftType, "bool")
-		p.AddMessage(p.GenerateWarningOrErrorMessage(err, n, left == nil))
+		p.AddMessage(p.GenerateWarningMessage(err, n))
 		if left == nil {
 			left = util.NewNil()
 		}
 
 		right, err = types.CastExpr(p, right, rightType, "bool")
-		p.AddMessage(p.GenerateWarningOrErrorMessage(err, n, right == nil))
+		p.AddMessage(p.GenerateWarningMessage(err, n))
 		if right == nil {
 			right = util.NewNil()
 		}
@@ -262,7 +262,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	// To handle this, cast the shift count to a uint64.
 	if operator == token.SHL || operator == token.SHR {
 		right, err = types.CastExpr(p, right, rightType, "unsigned long long")
-		p.AddMessage(p.GenerateWarningOrErrorMessage(err, n, right == nil))
+		p.AddMessage(p.GenerateWarningMessage(err, n))
 		if right == nil {
 			right = util.NewNil()
 		}
@@ -307,7 +307,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 		if rightType != types.NullPointer {
 			right, err = types.CastExpr(p, right, rightType, leftType)
 			rightType = leftType
-			p.AddMessage(p.GenerateWarningOrErrorMessage(err, n, right == nil))
+			p.AddMessage(p.GenerateWarningMessage(err, n))
 		}
 	}
 
