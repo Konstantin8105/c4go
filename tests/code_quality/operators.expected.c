@@ -1,5 +1,5 @@
 /*
-	Package main - transpiled by c4go version: v0.21.0 Zinc 2018-01-11
+	Package main - transpiled by c4go
 
 	If you have found any issues, please raise an issue at:
 	https://github.com/Konstantin8105/c4go/
@@ -7,7 +7,7 @@
 
 package code_quality
 
-// operators_equals - transpiled function from  tests/code_quality/operators.c:1
+// operators_equals - transpiled function from  /home/konstantin/go/src/github.com/Konstantin8105/c4go/tests/code_quality/operators.c:1
 func operators_equals() {
 	var a int
 	var b int
