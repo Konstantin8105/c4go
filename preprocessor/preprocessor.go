@@ -92,6 +92,7 @@ type IncludeHeader struct {
 	IsUserSource bool
 }
 
+// FilePP a struct with all information about preprocessor C code
 type FilePP struct {
 	entities []entity
 	pp       []byte
