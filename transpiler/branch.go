@@ -172,6 +172,8 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 			// for(c = 0 ; a < 5 ; a++)
 			before, newPre, newPost, err := transpileToStmt(children[0], p)
 			if err != nil {
+				err = fmt.Errorf("Cannot transpile comma binaryoperator. %v",
+					err)
 				return nil, nil, nil, err
 			}
 			preStmts = append(preStmts, combineStmts(before, newPre, newPost)...)
@@ -184,6 +186,8 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 			// for(int a = 0, b = 0, c = 0; a < 5; a ++)
 			newPre, err := transpileToStmts(children[0], p)
 			if err != nil {
+				err = fmt.Errorf("cannot transpile with many initialization. %v",
+					err)
 				return nil, nil, nil, err
 			}
 			children[0] = nil
@@ -193,6 +197,7 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 
 	init, newPre, newPost, err := transpileToStmt(children[0], p)
 	if err != nil {
+		err = fmt.Errorf("cannot init. %v", err)
 		return nil, nil, nil, err
 	}
 
@@ -262,6 +267,7 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 	if !transpilate {
 		post, newPre, newPost, err = transpileToStmt(children[3], p)
 		if err != nil {
+			err = fmt.Errorf("Cannot tranpile children[3]", err)
 			return nil, nil, nil, err
 		}
 
@@ -346,8 +352,13 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 		}
 	}
 
+	if children[4] == nil {
+		// for case if operator FOR haven't body
+		children[4] = &ast.CompoundStmt{}
+	}
 	body, newPre, newPost, err := transpileToBlockStmt(children[4], p)
 	if err != nil {
+		err = fmt.Errorf("Cannot transpile body. %v", err)
 		return nil, nil, nil, err
 	}
 	if body == nil {
