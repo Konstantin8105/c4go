@@ -490,7 +490,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 					}
 					if len(prefix) != 0 {
 						p.AddMessage(p.GenerateWarningMessage(
-							fmt.Errorf("Prefix is not used", prefix), n))
+							fmt.Errorf("Prefix is not used : `%v`", prefix), n))
 					}
 					functionType := GenerateFuncType(fields, returns)
 					nameVar1 := n.Name
@@ -530,7 +530,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 		}
 		if len(prefix) != 0 {
 			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("Prefix is not used", prefix), n))
+				fmt.Errorf("Prefix is not used : `%v`", prefix), n))
 		}
 		functionType := GenerateFuncType(fields, returns)
 		nameVar1 := n.Name
