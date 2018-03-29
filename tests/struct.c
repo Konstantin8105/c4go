@@ -413,14 +413,34 @@ int struct_sizeof()
 		(void)(p);
 }
 
+
+static const struct {
+  int eType;           /* Transformation type code */
+  int nName;           /* Length of th name */
+  char *zName;        /* Name of the transformation */
+  double rLimit;      /* Maximum NNN value for this transform */
+  double rXform;      /* Constant used for this transform */
+} aXformType[] = {
+  { 0, 6, "second", 464269060800.0, 86400000.0/(24.0*60.0*60.0) },
+  { 0, 6, "minute", 7737817680.0,   86400000.0/(24.0*60.0)      },
+  { 0, 4, "hour",   128963628.0,    86400000.0/24.0             },
+  { 0, 3, "day",    5373485.0,      86400000.0                  },
+  { 1, 5, "month",  176546.0,       30.0*86400000.0             },
+  { 2, 4, "year",   14713.0,        365.0*86400000.0            },
+};
+void test_sizeofArray(){
+	is_eq((int)(sizeof(aXformType)/(sizeof(aXformType[0]))),6);
+}
+
 int main()
 {
-    plan(73);
+    plan(74);
 
     struct_array();
     struct_func_func();
     struct_after_struct();
 	struct_sizeof();
+	test_sizeofArray();
 
     struct programming variable;
     char* s = "Programming in Software Development.";
