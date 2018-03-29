@@ -401,13 +401,26 @@ void struct_array()
     is_eq(rrr.aCol[0].iFrom, 10);
 }
 
+typedef struct ss {
+        char id;
+} ss;
+int struct_sizeof()
+{
+        ss v;
+		v.id = 'e';
+        ss *p = &v;
+        is_eq (sizeof p->id, 1);
+		(void)(p);
+}
+
 int main()
 {
-    plan(72);
+    plan(73);
 
     struct_array();
     struct_func_func();
     struct_after_struct();
+	struct_sizeof();
 
     struct programming variable;
     char* s = "Programming in Software Development.";
