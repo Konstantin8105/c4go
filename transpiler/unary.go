@@ -279,7 +279,6 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 				locPosition = i
 				n.Children()[i] = &zero
 				found = true
-				return
 			}
 
 			switch v := n.Children()[i].(type) {
@@ -592,6 +591,8 @@ func transpileUnaryExprOrTypeTraitExpr(n *ast.UnaryExprOrTypeTraitExpr, p *progr
 		case *ast.ParenExpr:
 			realFirstChild = c.Children()[0]
 		case *ast.DeclRefExpr:
+			t = c.Type
+		case *ast.MemberExpr:
 			t = c.Type
 		default:
 			panic(fmt.Sprintf("cannot find first child from: %#v", n.Children()[0]))

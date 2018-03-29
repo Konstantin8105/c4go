@@ -285,6 +285,21 @@ int main()
         is_eq(toupper(34, 52), 86);
     }
 
+	diag("function argument from array to slice");
+	{
+		char input_str[20];
+        strncpy(input_str, "Hello", 20);
+		is_streq(input_str,"Hello");
+	}
+	{
+		struct s_inp{
+			char input_str[20];
+		};
+		struct s_inp s;
+        strncpy(s.input_str, "Hello", 20);
+		is_streq(s.input_str,"Hello");
+	}
+
     done_testing();
 }
 
