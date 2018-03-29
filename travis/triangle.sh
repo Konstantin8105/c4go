@@ -27,7 +27,7 @@ echo "Transpiling $TRIANGLE_FILE.c..."
 ./c4go transpile -o=$TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.go $TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.c
 
 # Show amount "Warning" in Go codes
-TRIANGLE_WARNINGS=`cat $TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.go | grep "// Warning" | wc -l`
+TRIANGLE_WARNINGS=`cat $TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.go | grep "^// Warning" | sort | uniq | wc -l`
 echo "In file $TRIANGLE_FILE summary : $TRIANGLE_WARNINGS warnings."
 
 # Show amount error from `go build`:
