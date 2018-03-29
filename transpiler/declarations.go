@@ -83,6 +83,7 @@ func transpileFieldDecl(p *program.Program, n *ast.FieldDecl) (
 
 func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 	decls []goast.Decl, err error) {
+	n.Name = types.GenerateCorrectType(n.Name)
 	name := n.Name
 
 	// ignore if haven`t definition
