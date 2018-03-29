@@ -308,9 +308,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			} else {
 				realArg, err = types.CastExpr(p, realArg, argTypes[i],
 					functionDef.ArgumentTypes[i])
-				p.AddMessage(
-					p.GenerateWarningOrErrorMessage(err, n, realArg == nil),
-				)
+				p.AddMessage(p.GenerateWarningMessage(err, n))
 
 				if realArg == nil {
 					realArg = util.NewNil()

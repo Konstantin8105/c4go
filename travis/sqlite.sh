@@ -32,14 +32,14 @@ echo "Transpiling sqlite3.c..."
 ./c4go transpile -o=$SQLITE_TEMP_FOLDER/sqlite3.go $SQLITE_TEMP_FOLDER/$SQLITE3_FILE/sqlite3.c
 
 # Show amount "Warning" in sqlite Go codes
-SQLITE_WARNINGS=`cat $SQLITE_TEMP_FOLDER/sqlite3.go $SQLITE_TEMP_FOLDER/shell.go | grep "// Warning" | wc -l`
+SQLITE_WARNINGS=`cat $SQLITE_TEMP_FOLDER/sqlite3.go $SQLITE_TEMP_FOLDER/shell.go | grep "^// Warning" | sort | uniq | wc -l`
 echo "In files (sqlite3.go and shell.go) summary : $SQLITE_WARNINGS warnings."
 
 # SQLITE
 c4go transpile -o="$SQLITE_TEMP_FOLDER/sqlite.go" -clang-flag="-DSQLITE_THREADSAFE=0" -clang-flag="-DSQLITE_OMIT_LOAD_EXTENSION" $SQLITE_TEMP_FOLDER/$SQLITE3_FILE/shell.c $SQLITE_TEMP_FOLDER/$SQLITE3_FILE/sqlite3.c
 
 # Show amount "Warning":
-SQLITE_WARNINGS=`cat $SQLITE_TEMP_FOLDER/sqlite.go | grep "// Warning" | wc -l`
+SQLITE_WARNINGS=`cat $SQLITE_TEMP_FOLDER/sqlite.go | grep "^// Warning" | sort | uniq | wc -l`
 echo "After transpiling shell.c and sqlite3.c together, have summary: $SQLITE_WARNINGS warnings."
 
 # Show amount error from `go build`:

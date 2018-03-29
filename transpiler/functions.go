@@ -118,7 +118,9 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 		var pre, post []goast.Stmt
 		body, pre, post, err = transpileToBlockStmt(functionBody, p)
 		if err != nil || len(pre) > 0 || len(post) > 0 {
-			p.AddMessage(p.GenerateErrorMessage(fmt.Errorf("Not correct result in function %s body: err = %v", n.Name, err), n))
+			p.AddMessage(p.GenerateWarningMessage(
+				fmt.Errorf("Not correct result in function %s body: err = %v",
+					n.Name, err), n))
 			err = nil // Error is ignored
 		}
 	}

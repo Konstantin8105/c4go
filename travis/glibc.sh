@@ -30,5 +30,5 @@ echo "Transpiling $GLIBC_FILE.c..."
 ./c4go transpile -o=$GLIBC_TEMP_FOLDER/$GLIBC_FILE.go $GLIBC_TEMP_FOLDER/$GLIBC_VERSION/$GLIBC_FILE_LOCATION/$GLIBC_FILE.c
 
 # Show amount "Warning" in Go codes
-GLIBC_WARNINGS=`cat $GLIBC_TEMP_FOLDER/$GLIBC_FILE.go | grep "// Warning" | wc -l`
+GLIBC_WARNINGS=`cat $GLIBC_TEMP_FOLDER/$GLIBC_FILE.go | grep "^// Warning" | sort | uniq | wc -l`
 echo "In file $GLIBC_FILE summary : $GLIBC_WARNINGS warnings."
