@@ -191,10 +191,8 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	}
 
 	// C null pointer can cast to any pointer
-	if cFromType == NullPointer && len(cToType) > 0 {
-		if cToType[len(cToType)-1] == '*' {
-			return expr, nil
-		}
+	if cFromType == NullPointer {
+		return goast.NewIdent("nil"), nil
 	}
 
 	// Replace for specific case of fromType for darwin:

@@ -154,11 +154,22 @@ void test_string()
     is_streq(readline("rt", NULL, NULL), "rt");
 }
 
+int run_function(int a, void *v, char ** c,  void (*f)(void) ){
+	(void)(v);
+	(void)(c);
+	return a;
+}
+void test_null_function(){
+	is_eq(run_function(5,NULL,NULL,NULL),5);
+	is_eq(run_function(5,   0,   0,   0),5);
+}
+
 int main()
 {
-    plan(51);
+    plan(53);
 
     test_string();
+	test_null_function();
 
     pass("%s", "Main function.");
 
