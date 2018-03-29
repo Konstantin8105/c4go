@@ -2,31 +2,34 @@ package program
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/Konstantin8105/c4go/ast"
 )
 
 // GenerateErrorMessage - generate error message
 func (p *Program) GenerateErrorMessage(e error, n ast.Node) string {
-	if e != nil {
-		structName := reflect.TypeOf(n).Elem().Name()
-		return fmt.Sprintf("// Error (%s): %s: %s", structName,
-			n.Position().GetSimpleLocation(), e.Error())
+	message := "// Error "
+	if e == nil {
+		return ""
 	}
-
-	return ""
+	if n != nil {
+		message += fmt.Sprintf("(%T): %s:", n, n.Position().GetSimpleLocation())
+	}
+	message += fmt.Sprintf("%s", e.Error())
+	return message
 }
 
 // GenerateWarningMessage - generate warning message
 func (p *Program) GenerateWarningMessage(e error, n ast.Node) string {
-	if e != nil {
-		structName := reflect.TypeOf(n).Elem().Name()
-		return fmt.Sprintf("// Warning (%s): %s: %s", structName,
-			n.Position().GetSimpleLocation(), e.Error())
+	message := "// Warning "
+	if e == nil {
+		return ""
 	}
-
-	return ""
+	if n != nil {
+		message += fmt.Sprintf("(%T): %s:", n, n.Position().GetSimpleLocation())
+	}
+	message += fmt.Sprintf("%s", e.Error())
+	return message
 }
 
 // GenerateWarningOrErrorMessage - generate error if it happen

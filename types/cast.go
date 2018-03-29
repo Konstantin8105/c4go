@@ -429,6 +429,8 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 
 	functionName := fmt.Sprintf("noarch.%sTo%s",
 		util.GetExportedName(leftName), util.GetExportedName(rightName))
+	p.AddMessage(p.GenerateWarningMessage(
+		fmt.Errorf("Function `%v` haven`t implementation", functionName), nil))
 
 	// FIXME: This is a hack to get SQLite3 to transpile.
 	if strings.Contains(functionName, "RowSetEntry") {
