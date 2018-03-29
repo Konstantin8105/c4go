@@ -194,7 +194,7 @@ func Start(args ProgramArgs) (err error) {
 		fmt.Println("Running clang preprocessor...")
 	}
 
-	pp, comments, includes, err := preprocessor.Analyze(args.inputFiles, args.clangFlags)
+	filePP, err := preprocessor.NewFilePP(args.inputFiles, args.clangFlags)
 	if err != nil {
 		return err
 	}
@@ -209,7 +209,7 @@ func Start(args ProgramArgs) (err error) {
 	defer os.RemoveAll(dir) // clean up
 
 	ppFilePath := path.Join(dir, "pp.c")
-	err = ioutil.WriteFile(ppFilePath, pp, 0644)
+	err = ioutil.WriteFile(ppFilePath, filePP.GetSource(), 0644)
 	if err != nil {
 		return fmt.Errorf("writing to %s failed: %v", ppFilePath, err)
 	}
@@ -244,8 +244,7 @@ func Start(args ProgramArgs) (err error) {
 	p := program.NewProgram()
 	p.Verbose = args.verbose
 	p.OutputAsTest = args.outputAsTest
-	p.Comments = comments
-	p.IncludeHeaders = includes
+	p.PreprocessorFile = filePP
 
 	// Converting to nodes
 	if args.verbose {

@@ -139,6 +139,13 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 	}
 	functionName = util.ConvertFunctionNameFromCtoGo(functionName)
 
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("name of call function is %v. %v",
+				functionName, err)
+		}
+	}()
+
 	if functionName == "__builtin_va_start" ||
 		functionName == "__builtin_va_end" {
 		// ignore function __builtin_va_start, __builtin_va_end
@@ -233,6 +240,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 	for _, arg := range n.Children()[1:] {
 		e, eType, newPre, newPost, err := transpileToExpr(arg, p, false)
 		if err != nil {
+			err = fmt.Errorf("argument position is %d. %v", i, err)
 			return nil, "unknown2", nil, nil, err
 		}
 		argTypes = append(argTypes, eType)
