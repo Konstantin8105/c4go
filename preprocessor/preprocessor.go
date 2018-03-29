@@ -100,6 +100,8 @@ type FilePP struct {
 	includes []IncludeHeader
 }
 
+// NewFilePP create a struct FilePP with results of analyzing
+// preprocessor C code
 func NewFilePP(inputFiles, clangFlags []string) (f FilePP, err error) {
 
 	var allItems []entity
@@ -159,10 +161,12 @@ func NewFilePP(inputFiles, clangFlags []string) (f FilePP, err error) {
 		}
 
 		// Parameter "other" is not included for avoid like:
-		// ./tests/multi/head.h:4:28: error: invalid line marker flag '2': cannot pop empty include stack
+		// ./tests/multi/head.h:4:28: error: invalid line marker flag '2': \
+		// cannot pop empty include stack
 		// # 2 "./tests/multi/main.c" 2
 		//                            ^
-		header := fmt.Sprintf("# %d \"%s\"", allItems[i].positionInSource, allItems[i].include)
+		header := fmt.Sprintf("# %d \"%s\"",
+			allItems[i].positionInSource, allItems[i].include)
 		lines = append(lines, header)
 		if len(allItems[i].lines) > 0 {
 			for ii, l := range allItems[i].lines {
@@ -179,18 +183,22 @@ func NewFilePP(inputFiles, clangFlags []string) (f FilePP, err error) {
 	return
 }
 
+// GetSource return source of preprocessor C code
 func (f FilePP) GetSource() []byte {
 	return f.pp
 }
 
+// GetComments return comments in preprocessor C code
 func (f FilePP) GetComments() []Comment {
 	return f.comments
 }
 
+// GetIncludeFiles return list of '#include' file in C sources
 func (f FilePP) GetIncludeFiles() []IncludeHeader {
 	return f.includes
 }
 
+// GetSnippet return short part of code inside preprocessor C code
 func (f FilePP) GetSnippet(file string,
 	line, lineEnd int,
 	col, colEnd int) (

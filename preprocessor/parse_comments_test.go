@@ -3,15 +3,13 @@ package preprocessor
 import (
 	"fmt"
 	"testing"
-
-	"github.com/Konstantin8105/c4go/program"
 )
 
 func TestParseComments(t *testing.T) {
 	testCases := []struct {
 		ent      entity
 		code     []string
-		comments []program.Comment
+		comments []Comment
 	}{
 		{
 			ent: entity{positionInSource: 10, include: "file.c"},
@@ -19,8 +17,8 @@ func TestParseComments(t *testing.T) {
 				"NULL",
 				"// comment1",
 			},
-			comments: []program.Comment{
-				program.Comment{
+			comments: []Comment{
+				Comment{
 					File:    "file.c",
 					Line:    10,
 					Comment: "// comment1",
@@ -33,8 +31,8 @@ func TestParseComments(t *testing.T) {
 				"NULL",
 				"/* comment1 */",
 			},
-			comments: []program.Comment{
-				program.Comment{
+			comments: []Comment{
+				Comment{
 					File:    "file.c",
 					Line:    10,
 					Comment: "/* comment1 */",
@@ -48,13 +46,13 @@ func TestParseComments(t *testing.T) {
 				"// comment1",
 				"/* comment2 */",
 			},
-			comments: []program.Comment{
-				program.Comment{
+			comments: []Comment{
+				Comment{
 					File:    "file.c",
 					Line:    10,
 					Comment: "// comment1",
 				},
-				program.Comment{
+				Comment{
 					File:    "file.c",
 					Line:    11,
 					Comment: "/* comment2 */",
@@ -68,13 +66,13 @@ func TestParseComments(t *testing.T) {
 				"/* comment2 */",
 				"// comment1",
 			},
-			comments: []program.Comment{
-				program.Comment{
+			comments: []Comment{
+				Comment{
 					File:    "file.c",
 					Line:    10,
 					Comment: "/* comment2 */",
 				},
-				program.Comment{
+				Comment{
 					File:    "file.c",
 					Line:    11,
 					Comment: "// comment1",
@@ -87,13 +85,13 @@ func TestParseComments(t *testing.T) {
 				"NULL",
 				"/* comment */ // comment1",
 			},
-			comments: []program.Comment{
-				program.Comment{
+			comments: []Comment{
+				Comment{
 					File:    "file.c",
 					Line:    10,
 					Comment: "/* comment */",
 				},
-				program.Comment{
+				Comment{
 					File:    "file.c",
 					Line:    10,
 					Comment: "// comment1",
@@ -106,8 +104,8 @@ func TestParseComments(t *testing.T) {
 				"NULL",
 				"// comment1 /* comment */",
 			},
-			comments: []program.Comment{
-				program.Comment{
+			comments: []Comment{
+				Comment{
 					File:    "file.c",
 					Line:    10,
 					Comment: "// comment1 /* comment */",
@@ -122,8 +120,8 @@ func TestParseComments(t *testing.T) {
 				"Text2",
 				"Text3 */",
 			},
-			comments: []program.Comment{
-				program.Comment{
+			comments: []Comment{
+				Comment{
 					File:    "file.c",
 					Line:    10,
 					Comment: "/* Text1\nText2\nText3 */",
@@ -140,28 +138,28 @@ func TestParseComments(t *testing.T) {
 				"Text3 */ // Text 4",
 				"// Text 5",
 			},
-			comments: []program.Comment{
-				program.Comment{
+			comments: []Comment{
+				Comment{
 					File:    "file.c",
 					Line:    10,
 					Comment: "/* Text-1 */",
 				},
-				program.Comment{
+				Comment{
 					File:    "file.c",
 					Line:    10,
 					Comment: "// Text 0",
 				},
-				program.Comment{
+				Comment{
 					File:    "file.c",
 					Line:    11,
 					Comment: "/* Text1\nText2\nText3 */",
 				},
-				program.Comment{
+				Comment{
 					File:    "file.c",
 					Line:    13,
 					Comment: "// Text 4",
 				},
-				program.Comment{
+				Comment{
 					File:    "file.c",
 					Line:    14,
 					Comment: "// Text 5",
@@ -171,9 +169,10 @@ func TestParseComments(t *testing.T) {
 	}
 	for i := range testCases {
 		t.Run(fmt.Sprintf("Test:%d", i), func(t *testing.T) {
-			var result []program.Comment
+			var result []Comment
 			for j := range testCases[i].code {
-				testCases[i].ent.lines = append(testCases[i].ent.lines, &testCases[i].code[j])
+				testCases[i].ent.lines = append(testCases[i].ent.lines,
+					&testCases[i].code[j])
 			}
 			testCases[i].ent.parseComments(&result)
 			if len(result) != len(testCases[i].comments) {
