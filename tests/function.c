@@ -166,7 +166,7 @@ void test_null_function(){
 
 int main()
 {
-    plan(51);
+    plan(53);
 
     test_string();
 	test_null_function();
