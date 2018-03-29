@@ -152,6 +152,18 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			// So, we can ignore that comment, because all comments
 			// will be added by another way.
 
+		case *ast.TransparentUnionAttr:
+			// Don't do anythink
+			// Example of AST:
+			// |-RecordDecl 0x3632d78 </usr/include/stdlib.h:67:9, line:71:3> line:67:9 union definition
+			// | |-TransparentUnionAttr 0x3633050 <line:71:35>
+			// | |-FieldDecl 0x3632ed0 <line:69:5, col:17> col:17 __uptr 'union wait *'
+			// | `-FieldDecl 0x3632f60 <line:70:5, col:10> col:10 __iptr 'int *'
+			// |-TypedefDecl 0x3633000 <line:67:1, line:71:5> col:5 __WAIT_STATUS 'union __WAIT_STATUS':'__WAIT_STATUS'
+			// | `-ElaboratedType 0x3632fb0 'union __WAIT_STATUS' sugar
+			// |   `-RecordType 0x3632e00 '__WAIT_STATUS'
+			// |     `-Record 0x3632d78 ''
+
 		default:
 			message := fmt.Sprintf("could not parse %v", field)
 			p.AddMessage(p.GenerateWarningMessage(errors.New(message), field))
