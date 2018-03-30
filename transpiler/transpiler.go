@@ -412,8 +412,11 @@ func transpileToNode(node ast.Node, p *program.Program) (
 	decls []goast.Decl, err error) {
 	defer func() {
 		if err != nil {
-			p.AddMessage(p.GenerateWarningMessage(err, node))
-			err = nil // Error is ignored
+			if _, ok := node.(*ast.RecordDecl); !ok {
+				// ignore error for all case except RecordDecl
+				p.AddMessage(p.GenerateWarningMessage(err, node))
+				err = nil // Error is ignored
+			}
 		}
 	}()
 

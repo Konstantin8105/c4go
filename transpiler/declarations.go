@@ -104,6 +104,11 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 
 	name = types.GenerateCorrectType(name)
 	p.DefineType(name)
+	defer func() {
+		if err != nil {
+			p.UndefineType(name)
+		}
+	}()
 
 	// TODO: Some platform structs are ignored.
 	// https://github.com/Konstantin8105/c4go/issues/85
@@ -155,10 +160,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			declsInRec, err = transpileRecordDecl(p, field)
 			if err != nil {
 				err = fmt.Errorf("could not parse %v . %v", field.Name, err)
-				p.AddMessage(p.GenerateWarningMessage(err, field))
-				// TODO ignore error
-				// return
-				err = nil
+				return
 			}
 			decls = append(decls, declsInRec...)
 
@@ -193,14 +195,38 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 	if s.IsUnion {
 		if strings.HasPrefix(s.Name, "union ") {
 			p.Structs[s.Name] = s
+			defer func() {
+				if err != nil {
+					delete(p.Structs, s.Name)
+					p.UndefineType(s.Name)
+				}
+			}()
 		} else {
 			p.Unions["union "+s.Name] = s
+			defer func() {
+				if err != nil {
+					delete(p.Structs, "union "+s.Name)
+					p.UndefineType("union " + s.Name)
+				}
+			}()
 		}
 	} else {
 		if strings.HasPrefix(s.Name, "struct ") {
 			p.Structs[s.Name] = s
+			defer func() {
+				if err != nil {
+					delete(p.Structs, s.Name)
+					p.UndefineType(s.Name)
+				}
+			}()
 		} else {
 			p.Structs["struct "+s.Name] = s
+			defer func() {
+				if err != nil {
+					delete(p.Structs, "struct "+s.Name)
+					p.UndefineType("struct " + s.Name)
+				}
+			}()
 		}
 	}
 
@@ -221,10 +247,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			// but if we catch one, send it as a warning
 			err = fmt.Errorf("could not determine the size of type `union %s`"+
 				" for that reason: %s", name, err)
-			p.AddMessage(p.GenerateWarningMessage(err, nil))
-			// TODO ignore error
-			// return
-			err = nil
+			return
 		} else {
 			// So, we got size, then
 			// Add imports needed

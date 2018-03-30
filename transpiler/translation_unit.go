@@ -12,9 +12,10 @@ import (
 func transpileTranslationUnitDecl(p *program.Program, n *ast.TranslationUnitDecl) (
 	decls []goast.Decl, err error) {
 
+	var tryLaterRecordDecl []*ast.RecordDecl
+
 	for i := 0; i < len(n.Children()); i++ {
 		presentNode := n.Children()[i]
-		var runAfter func()
 		if rec, ok := presentNode.(*ast.RecordDecl); ok && rec.Name == "" {
 			if i+1 < len(n.Children()) {
 				switch recNode := n.Children()[i+1].(type) {
@@ -38,15 +39,46 @@ func transpileTranslationUnitDecl(p *program.Program, n *ast.TranslationUnitDecl
 		var d []goast.Decl
 		d, err = transpileToNode(presentNode, p)
 		if err != nil {
-			p.AddMessage(p.GenerateWarningMessage(err, n))
-			err = nil
-		} else {
-			decls = append(decls, d...)
-			if runAfter != nil {
-				runAfter()
+			if rec, ok := presentNode.(*ast.RecordDecl); ok {
+				tryLaterRecordDecl = append(tryLaterRecordDecl, rec)
+			} else {
+				p.AddMessage(p.GenerateWarningMessage(err, n))
+				err = nil // ignore error
+			}
+			continue
+		}
+		decls = append(decls, d...)
+
+	again:
+		for i := range tryLaterRecordDecl {
+			// try again later
+			recDecl, err := transpileRecordDecl(p, tryLaterRecordDecl[i])
+			if err == nil {
+				decls = append(decls, recDecl...)
+				if i == len(tryLaterRecordDecl)-1 {
+					if len(tryLaterRecordDecl) == 1 {
+						tryLaterRecordDecl = make([]*ast.RecordDecl, 0)
+					} else {
+						tryLaterRecordDecl = tryLaterRecordDecl[:i]
+					}
+				} else {
+					tryLaterRecordDecl = append(tryLaterRecordDecl[:i],
+						tryLaterRecordDecl[i+1:]...)
+				}
+				goto again
+			} else {
+				err = nil // ignore error
 			}
 		}
-
+	}
+	for i := range tryLaterRecordDecl {
+		recDecl, err := transpileRecordDecl(p, tryLaterRecordDecl[i])
+		if err == nil {
+			decls = append(decls, recDecl...)
+		} else {
+			p.AddMessage(p.GenerateWarningMessage(err, n))
+			err = nil // ignore error
+		}
 	}
 	return
 }
