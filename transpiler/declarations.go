@@ -154,6 +154,8 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			} else {
 				fields = append(fields, f)
 			}
+		case *ast.IndirectFieldDecl:
+			// ignore
 
 		case *ast.FullComment:
 			// We haven't Go ast struct for easy inject a comments.
