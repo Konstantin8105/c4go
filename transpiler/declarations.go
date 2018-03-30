@@ -174,12 +174,6 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			// |     `-Record 0x3632d78 ''
 
 		default:
-			// err = fmt.Errorf("could not parse %T", field)
-			// p.AddMessage(p.GenerateWarningMessage(err, field))
-			// // TODO ignore error
-			// // return
-			// err = nil
-
 			// For case anonymous enum:
 
 			// |-EnumDecl 0x26c3970 <line:77:5, line:79:5> line:77:5
