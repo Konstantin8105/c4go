@@ -83,6 +83,7 @@ func transpileFieldDecl(p *program.Program, n *ast.FieldDecl) (
 
 func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 	decls []goast.Decl, err error) {
+	n.Name = types.GenerateCorrectType(n.Name)
 	name := n.Name
 
 	// ignore if haven`t definition
@@ -151,6 +152,18 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			// All comments are added like CommentsGroup.
 			// So, we can ignore that comment, because all comments
 			// will be added by another way.
+
+		case *ast.TransparentUnionAttr:
+			// Don't do anythink
+			// Example of AST:
+			// |-RecordDecl 0x3632d78 </usr/include/stdlib.h:67:9, line:71:3> line:67:9 union definition
+			// | |-TransparentUnionAttr 0x3633050 <line:71:35>
+			// | |-FieldDecl 0x3632ed0 <line:69:5, col:17> col:17 __uptr 'union wait *'
+			// | `-FieldDecl 0x3632f60 <line:70:5, col:10> col:10 __iptr 'int *'
+			// |-TypedefDecl 0x3633000 <line:67:1, line:71:5> col:5 __WAIT_STATUS 'union __WAIT_STATUS':'__WAIT_STATUS'
+			// | `-ElaboratedType 0x3632fb0 'union __WAIT_STATUS' sugar
+			// |   `-RecordType 0x3632e00 '__WAIT_STATUS'
+			// |     `-Record 0x3632d78 ''
 
 		default:
 			message := fmt.Sprintf("could not parse %v", field)
@@ -523,7 +536,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 		var fields, returns []string
 		prefix, fields, returns, err = types.SeparateFunction(p, n.Type)
 		if err != nil {
-			p.AddMessage(p.GenerateErrorMessage(
+			p.AddMessage(p.GenerateWarningMessage(
 				fmt.Errorf("Cannot resolve function : %v", err), n))
 			err = nil // Error is ignored
 			return
@@ -568,7 +581,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 
 	defaultValue, _, newPre, newPost, err := getDefaultValueForVar(p, n)
 	if err != nil {
-		p.AddMessage(p.GenerateErrorMessage(err, n))
+		p.AddMessage(p.GenerateWarningMessage(err, n))
 		err = nil // Error is ignored
 	}
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
@@ -580,7 +593,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 		var goArrayType string
 		goArrayType, err = types.ResolveType(p, arrayType)
 		if err != nil {
-			p.AddMessage(p.GenerateErrorMessage(err, n))
+			p.AddMessage(p.GenerateWarningMessage(err, n))
 			err = nil // Error is ignored
 		}
 
@@ -597,14 +610,14 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 	}
 
 	if len(preStmts) != 0 || len(postStmts) != 0 {
-		p.AddMessage(p.GenerateErrorMessage(
+		p.AddMessage(p.GenerateWarningMessage(
 			fmt.Errorf("Not acceptable length of Stmt : pre(%d), post(%d)",
 				len(preStmts), len(postStmts)), n))
 	}
 
 	theType, err = types.ResolveType(p, n.Type)
 	if err != nil {
-		p.AddMessage(p.GenerateErrorMessage(err, n))
+		p.AddMessage(p.GenerateWarningMessage(err, n))
 		err = nil // Error is ignored
 		theType = "UnknownType"
 	}

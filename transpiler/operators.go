@@ -331,7 +331,7 @@ func transpileCompoundAssignOperator(
 	// To handle this, cast the shift count to a uint64.
 	if operator == token.SHL_ASSIGN || operator == token.SHR_ASSIGN {
 		right, err = types.CastExpr(p, right, rightType, "unsigned long long")
-		p.AddMessage(p.GenerateWarningOrErrorMessage(err, n, right == nil))
+		p.AddMessage(p.GenerateWarningMessage(err, n))
 		if right == nil {
 			right = util.NewNil()
 		}

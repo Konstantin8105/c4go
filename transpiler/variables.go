@@ -310,7 +310,7 @@ func transpileDeclStmt(n *ast.DeclStmt, p *program.Program) (
 	var decls []goast.Decl
 	decls, err = transpileToNode(&tud, p)
 	if err != nil {
-		p.AddMessage(p.GenerateErrorMessage(err, n))
+		p.AddMessage(p.GenerateWarningMessage(err, n))
 		err = nil
 	}
 	stmts = convertDeclToStmt(decls)
