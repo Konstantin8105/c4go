@@ -6,6 +6,8 @@ set -e
 # documented.
 go build
 
+export C4GO_DIR=$GOPATH/src/github.com/Konstantin8105/c4go
+export C4GO=$C4GO_DIR/c4go
 
 # Variable for location of temp files
 export GLIBC_TEMP_FOLDER="/tmp/GLIBC"
@@ -27,7 +29,7 @@ rm -f $GLIBC_TEMP_FOLDER/$GLIBC_FILE.go
 
 # Transpile files.
 echo "Transpiling $GLIBC_FILE.c..."
-./c4go transpile -o=$GLIBC_TEMP_FOLDER/$GLIBC_FILE.go $GLIBC_TEMP_FOLDER/$GLIBC_VERSION/$GLIBC_FILE_LOCATION/$GLIBC_FILE.c
+$C4GO transpile -o=$GLIBC_TEMP_FOLDER/$GLIBC_FILE.go $GLIBC_TEMP_FOLDER/$GLIBC_VERSION/$GLIBC_FILE_LOCATION/$GLIBC_FILE.c
 
 # Show amount "Warning" in Go codes
 GLIBC_WARNINGS=`cat $GLIBC_TEMP_FOLDER/$GLIBC_FILE.go | grep "^// Warning" | sort | uniq | wc -l`
