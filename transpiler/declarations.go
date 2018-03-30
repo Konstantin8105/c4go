@@ -247,7 +247,6 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			// but if we catch one, send it as a warning
 			err = fmt.Errorf("could not determine the size of type `union %s`"+
 				" for that reason: %s", name, err)
-			p.AddMessage(p.GenerateWarningMessage(err, nil))
 			return
 		} else {
 			// So, we got size, then
