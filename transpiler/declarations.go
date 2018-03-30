@@ -15,7 +15,8 @@ import (
 	"github.com/Konstantin8105/c4go/util"
 )
 
-func newFunctionField(p *program.Program, name, cType string) (_ *goast.Field, err error) {
+func newFunctionField(p *program.Program, name, cType string) (
+	_ *goast.Field, err error) {
 	if name == "" {
 		err = fmt.Errorf("Name of function field cannot be empty")
 		return
@@ -129,7 +130,8 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 					rec.Name = types.GetBaseType(types.GenerateCorrectType(v.Type))
 				default:
 					p.AddMessage(p.GenerateWarningMessage(
-						fmt.Errorf("Cannot find name for anonymous RecordDecl: %T", v), n))
+						fmt.Errorf("Cannot find name for anon RecordDecl: %T",
+							v), n))
 					rec.Name = "UndefinedNameC2GO"
 				}
 			}
@@ -145,7 +147,10 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			f, err = transpileFieldDecl(p, field)
 			if err != nil {
 				err = fmt.Errorf("cannot transpile field. %v", err)
-				return
+				p.AddMessage(p.GenerateWarningMessage(err, field))
+				// TODO ignore error
+				// return
+				err = nil
 			} else {
 				fields = append(fields, f)
 			}
@@ -179,7 +184,10 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 
 		default:
 			err = fmt.Errorf("could not parse %T", field)
-			return
+			p.AddMessage(p.GenerateWarningMessage(err, field))
+			// TODO ignore error
+			// return
+			err = nil
 		}
 	}
 
@@ -237,7 +245,9 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		// In normal case no error is returned,
 		if err != nil {
 			// but if we catch one, send it as a warning
-			err = fmt.Errorf("could not determine the size of type `union %s` for that reason: %s", name, err)
+			err = fmt.Errorf("could not determine the size of type `union %s`"+
+				" for that reason: %s", name, err)
+			p.AddMessage(p.GenerateWarningMessage(err, nil))
 			return
 		} else {
 			// So, we got size, then
@@ -271,7 +281,9 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 	return
 }
 
-func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (decls []goast.Decl, err error) {
+func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
+	decls []goast.Decl, err error) {
+
 	// implicit code from clang at the head of each clang AST tree
 	if n.IsImplicit && n.Pos.File == ast.PositionBuiltIn {
 		return
@@ -448,7 +460,8 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 				util.NewBinaryExpr(
 					goast.NewIdent(name),
 					token.ASSIGN,
-					util.NewTypeIdent("noarch."+util.Ucfirst(name[2:len(name)-1])),
+					util.NewTypeIdent(
+						"noarch."+util.Ucfirst(name[2:len(name)-1])),
 					"*noarch.File",
 					true,
 				),
@@ -494,7 +507,8 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 		return
 	}
 
-	if strings.Contains(n.Type, "va_list") && strings.Contains(n.Type2, "va_list_tag") {
+	if strings.Contains(n.Type, "va_list") &&
+		strings.Contains(n.Type2, "va_list_tag") {
 		// variable for va_list. see "variadic function"
 		// header : <stdarg.h>
 		// Example :
