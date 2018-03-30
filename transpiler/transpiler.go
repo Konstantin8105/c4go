@@ -17,7 +17,8 @@ import (
 )
 
 // TranspileAST iterates through the Clang AST and builds a Go AST
-func TranspileAST(fileName, packageName string, p *program.Program, root ast.Node) error {
+func TranspileAST(fileName, packageName string, p *program.Program, root ast.Node) (
+	err error) {
 	// Start by parsing an empty file.
 	p.FileSet = token.NewFileSet()
 	packageSignature := fmt.Sprintf("package %v", packageName)
@@ -407,7 +408,8 @@ func transpileToStmt(node ast.Node, p *program.Program) (
 	return
 }
 
-func transpileToNode(node ast.Node, p *program.Program) (decls []goast.Decl, err error) {
+func transpileToNode(node ast.Node, p *program.Program) (
+	decls []goast.Decl, err error) {
 	defer func() {
 		if err != nil {
 			p.AddMessage(p.GenerateWarningMessage(err, node))
