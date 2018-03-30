@@ -142,7 +142,10 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			f, err = transpileFieldDecl(p, field)
 			if err != nil {
 				err = fmt.Errorf("cannot transpile field. %v", err)
-				return
+				p.AddMessage(p.GenerateWarningMessage(err, field))
+				// TODO ignore error
+				// return
+				err = nil
 			} else {
 				fields = append(fields, f)
 			}
