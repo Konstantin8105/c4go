@@ -20,6 +20,15 @@ func TestEnumDecl(t *testing.T) {
 			Name:       "week",
 			ChildNodes: []Node{},
 		},
+		`0x3a0f830 parent 0x392faf0 <line:74:5, line:76:5> line:74:10 EnumTwo`: &EnumDecl{
+			Addr:       0x3a0f830,
+			IsParent:   true,
+			Addr2:      0x392faf0,
+			Pos:        NewPositionFromString("line:74:5, line:76:5"),
+			Position2:  " line:74:10",
+			Name:       "EnumTwo",
+			ChildNodes: []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)

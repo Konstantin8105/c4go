@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"go/token"
 	"strconv"
+	"strings"
 
 	goast "go/ast"
 
@@ -106,10 +107,15 @@ func transpileEnumConstantDecl(p *program.Program, n *ast.EnumConstantDecl) (
 	}, preStmts, postStmts
 }
 
-func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (decls []goast.Decl, err error) {
+func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (
+	decls []goast.Decl, err error) {
 	preStmts := []goast.Stmt{}
 	postStmts := []goast.Stmt{}
 
+	n.Name = types.GenerateCorrectType(n.Name)
+	if strings.HasPrefix(n.Name, "enum ") {
+		n.Name = n.Name[len("enum "):]
+	}
 	// For case `enum` without name
 	if n.Name == "" {
 		// create all EnumConstant like just constants
@@ -125,12 +131,16 @@ func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (decls []goast.Decl,
 				val, newPre, newPost = transpileEnumConstantDecl(p, c)
 
 				if len(newPre) > 0 || len(newPost) > 0 {
-					p.AddMessage(p.GenerateWarningMessage(fmt.Errorf("Check - added in code : (%d)(%d)", len(newPre), len(newPost)), n))
+					p.AddMessage(p.GenerateWarningMessage(
+						fmt.Errorf("Check - added in code : (%d)(%d)",
+							len(newPre), len(newPost)), n))
 				}
 
-				preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+				preStmts, postStmts = combinePreAndPostStmts(
+					preStmts, postStmts, newPre, newPost)
 
-				parseEnumBasicLit := func(b *goast.BasicLit) (_ goast.Spec, counter int, err error) {
+				parseEnumBasicLit := func(b *goast.BasicLit) (
+					_ goast.Spec, counter int, err error) {
 					value, err := strconv.Atoi(b.Value)
 					if err != nil {
 						err = fmt.Errorf("Cannot parse '%s' in BasicLit", b.Value)
@@ -169,7 +179,9 @@ func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (decls []goast.Decl,
 
 				default:
 					e = val
-					p.AddMessage(p.GenerateWarningMessage(fmt.Errorf("Add support of continues counter for type : %T", v), n))
+					p.AddMessage(p.GenerateWarningMessage(
+						fmt.Errorf("Add support of continues counter for type : %T",
+							v), n))
 				}
 
 				decls = append(decls, &goast.GenDecl{

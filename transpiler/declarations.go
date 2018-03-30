@@ -155,15 +155,6 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 				fields = append(fields, f)
 			}
 
-		case *ast.RecordDecl:
-			var declsInRec []goast.Decl
-			declsInRec, err = transpileRecordDecl(p, field)
-			if err != nil {
-				err = fmt.Errorf("could not parse %v . %v", field.Name, err)
-				return
-			}
-			decls = append(decls, declsInRec...)
-
 		case *ast.FullComment:
 			// We haven't Go ast struct for easy inject a comments.
 			// All comments are added like CommentsGroup.
@@ -183,11 +174,35 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			// |     `-Record 0x3632d78 ''
 
 		default:
-			err = fmt.Errorf("could not parse %T", field)
-			p.AddMessage(p.GenerateWarningMessage(err, field))
-			// TODO ignore error
-			// return
-			err = nil
+			// err = fmt.Errorf("could not parse %T", field)
+			// p.AddMessage(p.GenerateWarningMessage(err, field))
+			// // TODO ignore error
+			// // return
+			// err = nil
+
+			// For case anonymous enum:
+
+			// |-EnumDecl 0x26c3970 <line:77:5, line:79:5> line:77:5
+			// | `-EnumConstantDecl 0x26c3a50 <line:78:9, col:26> col:9 referenced SWE_ENUM_THREE 'int'
+			// |   `-IntegerLiteral 0x26c3a30 <col:26> 'int' 3
+			// |-FieldDecl 0x26c3af0 <line:77:5, line:79:7> col:7 EnumThree 'enum (anonymous enum at ...
+			if eDecl, ok := field.(*ast.EnumDecl); ok && eDecl.Name == "" {
+				if pos+1 <= len(n.Children())-1 {
+					if f, ok := n.Children()[pos+1].(*ast.FieldDecl); ok {
+						n.Children()[pos].(*ast.EnumDecl).Name = f.Type
+					}
+				}
+			}
+
+			// default
+			var declsIn []goast.Decl
+			declsIn, err = transpileToNode(field, p)
+			if err != nil {
+				err = fmt.Errorf("Cannot transpile %T", field)
+				return
+			} else {
+				decls = append(decls, declsIn...)
+			}
 		}
 	}
 
