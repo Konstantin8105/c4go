@@ -286,6 +286,25 @@ func (p *Program) DefineType(typeName string) {
 	p.typesAlreadyDefined = append(p.typesAlreadyDefined, typeName)
 }
 
+// UndefineType undefine defined type
+func (p *Program) UndefineType(typeName string) {
+check_again:
+	for i := range p.typesAlreadyDefined {
+		if typeName == p.typesAlreadyDefined[i] {
+			if len(p.typesAlreadyDefined) == 1 {
+				p.typesAlreadyDefined = make([]string, 0)
+			} else if i == len(p.typesAlreadyDefined)-1 {
+				p.typesAlreadyDefined = p.typesAlreadyDefined[:len(p.typesAlreadyDefined)-1]
+			} else {
+				p.typesAlreadyDefined = append(
+					p.typesAlreadyDefined[:i],
+					p.typesAlreadyDefined[i+1:]...)
+			}
+			goto check_again
+		}
+	}
+}
+
 // GetNextIdentifier generates a new globally unique identifier name. This can
 // be used for variables and functions in generated code.
 //

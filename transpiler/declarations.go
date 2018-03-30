@@ -4,7 +4,6 @@
 package transpiler
 
 import (
-	"errors"
 	"fmt"
 	goast "go/ast"
 	"go/token"
@@ -85,6 +84,12 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 	decls []goast.Decl, err error) {
 	n.Name = types.GenerateCorrectType(n.Name)
 	name := n.Name
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("cannot transpileRecordDecl `%v`. %v",
+				n.Name, err)
+		}
+	}()
 
 	// ignore if haven`t definition
 	if !n.Definition {
@@ -98,6 +103,11 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 
 	name = types.GenerateCorrectType(name)
 	p.DefineType(name)
+	defer func() {
+		if err != nil {
+			p.UndefineType(name)
+		}
+	}()
 
 	// TODO: Some platform structs are ignored.
 	// https://github.com/Konstantin8105/c4go/issues/85
@@ -131,9 +141,11 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		case *ast.FieldDecl:
 			field.Type = types.GenerateCorrectType(field.Type)
 			field.Type2 = types.GenerateCorrectType(field.Type2)
-			f, err := transpileFieldDecl(p, field)
+			var f *goast.Field
+			f, err = transpileFieldDecl(p, field)
 			if err != nil {
-				p.AddMessage(p.GenerateWarningMessage(err, field))
+				err = fmt.Errorf("cannot transpile field. %v", err)
+				return
 			} else {
 				fields = append(fields, f)
 			}
@@ -142,8 +154,8 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			var declsInRec []goast.Decl
 			declsInRec, err = transpileRecordDecl(p, field)
 			if err != nil {
-				message := fmt.Sprintf("could not parse %v", field)
-				p.AddMessage(p.GenerateWarningMessage(errors.New(message), field))
+				err = fmt.Errorf("could not parse %v . %v", field.Name, err)
+				return
 			}
 			decls = append(decls, declsInRec...)
 
@@ -166,8 +178,8 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			// |     `-Record 0x3632d78 ''
 
 		default:
-			message := fmt.Sprintf("could not parse %v", field)
-			p.AddMessage(p.GenerateWarningMessage(errors.New(message), field))
+			err = fmt.Errorf("could not parse %T", field)
+			return
 		}
 	}
 
@@ -175,14 +187,38 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 	if s.IsUnion {
 		if strings.HasPrefix(s.Name, "union ") {
 			p.Structs[s.Name] = s
+			defer func() {
+				if err != nil {
+					delete(p.Structs, s.Name)
+					p.UndefineType(s.Name)
+				}
+			}()
 		} else {
 			p.Unions["union "+s.Name] = s
+			defer func() {
+				if err != nil {
+					delete(p.Structs, "union "+s.Name)
+					p.UndefineType("union " + s.Name)
+				}
+			}()
 		}
 	} else {
 		if strings.HasPrefix(s.Name, "struct ") {
 			p.Structs[s.Name] = s
+			defer func() {
+				if err != nil {
+					delete(p.Structs, s.Name)
+					p.UndefineType(s.Name)
+				}
+			}()
 		} else {
 			p.Structs["struct "+s.Name] = s
+			defer func() {
+				if err != nil {
+					delete(p.Structs, "struct "+s.Name)
+					p.UndefineType("struct " + s.Name)
+				}
+			}()
 		}
 	}
 
@@ -201,8 +237,8 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		// In normal case no error is returned,
 		if err != nil {
 			// but if we catch one, send it as a warning
-			message := fmt.Sprintf("could not determine the size of type `union %s` for that reason: %s", name, err)
-			p.AddMessage(p.GenerateWarningMessage(errors.New(message), n))
+			err = fmt.Errorf("could not determine the size of type `union %s` for that reason: %s", name, err)
+			return
 		} else {
 			// So, we got size, then
 			// Add imports needed
