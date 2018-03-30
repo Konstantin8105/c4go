@@ -154,7 +154,11 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			} else {
 				fields = append(fields, f)
 			}
+
 		case *ast.IndirectFieldDecl:
+			// ignore
+
+		case *ast.MaxFieldAlignmentAttr:
 			// ignore
 
 		case *ast.FullComment:
