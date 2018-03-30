@@ -6,6 +6,8 @@ set -e
 # documented.
 go build
 
+export C4GO_DIR=$GOPATH/src/github.com/Konstantin8105/c4go
+export C4GO=$C4GO_DIR/c4go
 
 # Variable for location of temp sqlite files
 export TRIANGLE_TEMP_FOLDER="/tmp/TRIANGLE"
@@ -24,7 +26,7 @@ rm -f $TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.go
 
 # Transpile files.
 echo "Transpiling $TRIANGLE_FILE.c..."
-./c4go transpile -o=$TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.go $TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.c
+$C4GO transpile -o=$TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.go $TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.c
 
 # Show amount "Warning" in Go codes
 TRIANGLE_WARNINGS=`cat $TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.go | grep "^// Warning" | sort | uniq | wc -l`
