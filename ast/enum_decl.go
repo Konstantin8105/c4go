@@ -7,8 +7,7 @@ import (
 // EnumDecl is node represents a enum declaration.
 type EnumDecl struct {
 	Addr       Address
-	IsParent   bool
-	Addr2      Address
+	Parent     Address
 	Pos        Position
 	Position2  string
 	Name       string
@@ -19,7 +18,6 @@ func parseEnumDecl(line string) *EnumDecl {
 	groups := groupsFromRegex(
 		//`<(?P<position>.*)>(?P<position2> .+:\d+)?(?P<name>.*)`,
 		`(?:parent (?P<parent>0x[0-9a-f]+) )?
-		(?P<address2>[0-9a-fx]+)?
 		<(?P<position>.*)>
 		(?P<position2> .+:\d+)?
 		(?P<name>.*)`,
@@ -28,8 +26,7 @@ func parseEnumDecl(line string) *EnumDecl {
 
 	return &EnumDecl{
 		Addr:       ParseAddress(groups["address"]),
-		IsParent:   len(groups["parent"]) > 0,
-		Addr2:      ParseAddress(groups["address2"]),
+		Parent:     ParseAddress(groups["parent"]),
 		Pos:        NewPositionFromString(groups["position"]),
 		Position2:  groups["position2"],
 		Name:       strings.TrimSpace(groups["name"]),
