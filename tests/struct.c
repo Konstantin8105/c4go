@@ -432,15 +432,34 @@ void test_sizeofArray(){
 	is_eq((int)(sizeof(aXformType)/(sizeof(aXformType[0]))),6);
 }
 
+
+struct StructBase {
+	union {
+		struct StructUsed *pStr;
+		int aaa;
+	} InsideUnion;
+};
+struct StructUsed {
+	int vars;
+};
+void test_structUsed(){
+	struct StructBase sb;
+	struct StructUsed ss;
+	sb.InsideUnion.pStr = &ss;
+	(*sb.InsideUnion.pStr).vars = 10;
+	is_eq((*sb.InsideUnion.pStr).vars, 10);
+}
+
 int main()
 {
-    plan(74);
+    plan(75);
 
     struct_array();
     struct_func_func();
     struct_after_struct();
 	struct_sizeof();
 	test_sizeofArray();
+	test_structUsed();
 
     struct programming variable;
     char* s = "Programming in Software Development.";
