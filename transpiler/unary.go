@@ -284,6 +284,7 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 			switch v := n.Children()[i].(type) {
 			case *ast.ArraySubscriptExpr,
 				*ast.UnaryOperator,
+				*ast.VAArgExpr,
 				*ast.DeclRefExpr:
 				state()
 				return
@@ -532,6 +533,20 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 			},
 			Index: e,
 		}, eType, preStmts, postStmts, err
+	case *ast.VAArgExpr:
+		arr, _, newPre, newPost, err2 := transpileToExpr(v, p, false)
+		if err2 != nil {
+			return
+		}
+		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+		return &goast.IndexExpr{
+			X: &goast.ParenExpr{
+				Lparen: 1,
+				X:      arr,
+			},
+			Index: e,
+		}, eType, preStmts, postStmts, err
+
 	}
 	return nil, "", nil, nil, fmt.Errorf("Cannot found : %#v", pointer)
 }

@@ -44,11 +44,13 @@ func transpileVAArgExpr(n *ast.VAArgExpr, p *program.Program) (
 		if decl, ok := impl.Children()[0].(*ast.DeclRefExpr); ok {
 			varName = decl.Name
 		} else {
-			err = fmt.Errorf("second node is not DeclRefExpr")
+			err = fmt.Errorf("second node is not DeclRefExpr : %T",
+				impl.Children()[0])
 			return
 		}
 	} else {
-		err = fmt.Errorf("first node is not ImplicitCastExpr")
+		err = fmt.Errorf("first node is not ImplicitCastExpr : %T",
+			n.Children()[0])
 		return
 	}
 
@@ -56,12 +58,6 @@ func transpileVAArgExpr(n *ast.VAArgExpr, p *program.Program) (
 	if err != nil {
 		return
 	}
-
-	// expr = &goast.TypeAssertExpr{
-	// 	X:      goast.NewIdent(varName),
-	// 	Lparen: 1,
-	// 	Type:   goast.NewIdent(varType),
-	// }
 
 	type code struct {
 		GoType string
