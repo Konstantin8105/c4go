@@ -12,6 +12,13 @@ func TestConditionalOperator(t *testing.T) {
 			Type:       "void",
 			ChildNodes: []Node{},
 		},
+		`0x2283ec0 <line:20693:23, col:108> 'sqlite3_destructor_type':'void (*)(void *)'`: &ConditionalOperator{
+			Addr:       0x2283ec0,
+			Pos:        NewPositionFromString("line:20693:23, col:108"),
+			Type:       "sqlite3_destructor_type",
+			Type2:      "void (*)(void *)",
+			ChildNodes: []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)
