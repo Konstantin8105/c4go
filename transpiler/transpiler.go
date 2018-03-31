@@ -225,7 +225,7 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 
 	default:
 		p.AddMessage(p.GenerateWarningMessage(
-			fmt.Errorf("cannot transpile to expr : %T"), node))
+			fmt.Errorf("cannot transpile to expr : %T", node), node))
 		expr = util.NewNil()
 	}
 
@@ -233,7 +233,9 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 	return
 }
 
-func transpileToStmts(node ast.Node, p *program.Program) (stmts []goast.Stmt, err error) {
+func transpileToStmts(node ast.Node, p *program.Program) (
+	stmts []goast.Stmt, err error) {
+
 	if node == nil {
 		return nil, nil
 	}

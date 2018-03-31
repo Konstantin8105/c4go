@@ -18,9 +18,14 @@ import (
 )
 
 func transpileIfStmt(n *ast.IfStmt, p *program.Program) (
-	*goast.IfStmt, []goast.Stmt, []goast.Stmt, error) {
-	preStmts := []goast.Stmt{}
-	postStmts := []goast.Stmt{}
+	_ *goast.IfStmt, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
+
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("Cannot transpileIfStmt. %v", err)
+		}
+	}()
+
 	children := n.Children()
 
 	// There is always 4 or 5 children in an IfStmt. For example:
@@ -64,6 +69,7 @@ func transpileIfStmt(n *ast.IfStmt, p *program.Program) (
 	// expression - assignment operators need to be wrapped in closures.
 	conditional, conditionalType, newPre, newPost, err := transpileToExpr(children[1], p, false)
 	if err != nil {
+		err = fmt.Errorf("Cannot transpile for condition. %v", err)
 		return nil, nil, nil, err
 	}
 	// null in C is false
@@ -232,7 +238,9 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 				// if body is not exist
 				compound = new(ast.CompoundStmt)
 			}
-			compound.ChildNodes = append(compound.Children(), c.Children()[0:len(c.Children())]...)
+			compound.ChildNodes = append(
+				compound.Children(),
+				c.Children()[0:len(c.Children())]...)
 			children[4] = compound
 			children[3] = nil
 		}

@@ -99,7 +99,8 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	}
 
 	// casting
-	if fromType == "void *" && toType[len(toType)-1] == '*' && !strings.Contains(toType, "FILE") && toType[len(toType)-2] != '*' {
+	if fromType == "void *" && toType[len(toType)-1] == '*' &&
+		!strings.Contains(toType, "FILE") && toType[len(toType)-2] != '*' {
 		toType = strings.Replace(toType, "*", " ", -1)
 		t, err := ResolveType(p, toType)
 		if err != nil {

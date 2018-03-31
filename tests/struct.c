@@ -450,9 +450,27 @@ void test_structUsed(){
 	is_eq((*sb.InsideUnion.pStr).vars, 10);
 }
 
+typedef struct StructUsed2 Mem;
+struct StructUsed2 {
+	int vars2;
+};
+struct StructBase2 {
+	union {
+		Mem *pStr;
+		int aaa2;
+	} InsideUnion2;
+};
+void test_structUsed2(){
+	struct StructBase2 sb;
+	Mem ss;
+	sb.InsideUnion2.pStr = &ss;
+	(*sb.InsideUnion2.pStr).vars2 = 10;
+	is_eq((*sb.InsideUnion2.pStr).vars2, 10);
+}
+
 int main()
 {
-    plan(75);
+    plan(76);
 
     struct_array();
     struct_func_func();
@@ -460,6 +478,7 @@ int main()
 	struct_sizeof();
 	test_sizeofArray();
 	test_structUsed();
+	test_structUsed2();
 
     struct programming variable;
     char* s = "Programming in Software Development.";

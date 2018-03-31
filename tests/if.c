@@ -8,7 +8,7 @@ int d(int v)
 
 int main()
 {
-    plan(7);
+    plan(12);
 
     int x = 1;
 
@@ -55,6 +55,31 @@ int main()
             pass("ok");
         }
     }
+
+	diag("null");
+	{
+		char c = 'r';
+		char * ch = &c;
+		if ( ch != NULL) {
+			pass("null test 1")
+		}
+		if ( NULL != ch) {
+			pass("null test 2")
+		}
+		if ( NULL != NULL) {
+			fail("null test 3")
+		}
+		ch = NULL;
+		if ( ch == NULL ) {
+			pass("null test 4")
+		}
+		if ( NULL == ch ) {
+			pass("null test 5")
+		}
+		if ( NULL == NULL ) {
+			pass("null test 6")
+		}
+	}
 
     done_testing();
 }
