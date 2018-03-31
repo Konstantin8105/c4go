@@ -223,6 +223,9 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 	case *ast.OffsetOfExpr:
 		expr, exprType, err = transpileOffsetOfExpr(n, p)
 
+	case *ast.VAArgExpr:
+		expr, exprType, preStmts, postStmts, err = transpileVAArgExpr(n, p)
+
 	default:
 		p.AddMessage(p.GenerateWarningMessage(
 			fmt.Errorf("cannot transpile to expr : %T", node), node))
