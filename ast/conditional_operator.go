@@ -5,12 +5,13 @@ type ConditionalOperator struct {
 	Addr       Address
 	Pos        Position
 	Type       string
+	Type2      string
 	ChildNodes []Node
 }
 
 func parseConditionalOperator(line string) *ConditionalOperator {
 	groups := groupsFromRegex(
-		`<(?P<position>.*)> '(?P<type>.*?)'`,
+		`<(?P<position>.*)> '(?P<type>.*?)'(:'(?P<type2>.*)')?`,
 		line,
 	)
 
@@ -18,6 +19,7 @@ func parseConditionalOperator(line string) *ConditionalOperator {
 		Addr:       ParseAddress(groups["address"]),
 		Pos:        NewPositionFromString(groups["position"]),
 		Type:       groups["type"],
+		Type2:      groups["type2"],
 		ChildNodes: []Node{},
 	}
 }

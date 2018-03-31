@@ -65,9 +65,19 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 
 	defer func() {
 		if err2 != nil {
-			err2 = fmt.Errorf("Cannot casting {%s -> %s}. err = %v", cFromType, cToType, err2)
+			err2 = fmt.Errorf(
+				"Cannot casting {%s -> %s}. err = %v", cFromType, cToType, err2)
 		}
 	}()
+
+	// Uncomment only for debugging
+	// if strings.Contains(cFromType, ":") {
+	// 	panic("Found mistake `cFromType` C type")
+	// }
+	// if strings.Contains(cToType, ":") {
+	// 	panic("Found mistake `cToType` C type")
+	// }
+
 	cFromType = CleanCType(cFromType)
 	cToType = CleanCType(cToType)
 
