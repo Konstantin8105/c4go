@@ -67,11 +67,40 @@ typedef enum e_strategy { RANDOM,
     IMMEDIATE = 5,
     SEARCH } strategy;
 
-// main function
+typedef struct StructWithEnum {
+    enum {
+        SWE_ENUM_ONE = 1
+    };
+    enum EnumTwo{
+        SWE_ENUM_TWO = 2
+    };
+    enum {
+        SWE_ENUM_THREE = 3
+    } EnumThree;
+    enum EnumFourBase{
+        SWE_ENUM_FOUR = 4
+    } EnumFour;
+	struct StructFourBase{
+		int y;
+	} StructFour;
+	union UnionFourBase{
+		int y;
+	} UnionFour;
+} SWE;
+void test_enum_inside_struct(){
+	is_eq(SWE_ENUM_ONE,1);
+	is_eq(SWE_ENUM_TWO,2);
+	is_eq(SWE_ENUM_THREE,3);
+	is_eq(SWE_ENUM_FOUR,4);
+}
 
+
+// main function
 int main()
 {
-    plan(29);
+    plan(33);
+
+	test_enum_inside_struct();
 
     // step 1
     enum number n;

@@ -458,7 +458,8 @@ func transpileToNode(node ast.Node, p *program.Program) (
 			// ignore if length is zero, for avoid
 			// mistake warning
 		} else {
-			p.AddMessage(p.GenerateWarningMessage(fmt.Errorf("EmptyDecl is not transpiled"), n))
+			p.AddMessage(p.GenerateWarningMessage(
+				fmt.Errorf("EmptyDecl is not transpiled"), n))
 		}
 		err = nil
 		return
