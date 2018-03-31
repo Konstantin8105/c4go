@@ -54,4 +54,5 @@ after_success:
 
 after_failure:
   # Print out the failures (removing a lot of the noise).
-  - cat /tmp/out.txt | grep -v -- "--- PASS" | grep -v -- "=== RUN"
+  # For example :
+  # - cat /tmp/out.txt | grep -v -- "--- PASS" | grep -v -- "=== RUN"
