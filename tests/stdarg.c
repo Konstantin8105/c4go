@@ -54,11 +54,31 @@ void test_va_list()
     simple("dcff", 3, 'a', 1.999, 42.5);
 }
 
+int sum(int num_args, ...) {
+   int val = 0;
+   va_list ap;
+   int i;
+
+   va_start(ap, num_args);
+   for(i = 0; i < num_args; i++) {
+      val += va_arg(ap, int);
+   }
+   va_end(ap);
+ 
+   return val;
+}
+
+void test_va_list2()
+{
+	is_eq(sum(3, 10, 20, 30), 60);
+}
+
 int main()
 {
-    plan(4);
+    plan(5);
 
     START_TEST(va_list)
+    START_TEST(va_list2)
 
     done_testing();
 }
