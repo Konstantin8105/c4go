@@ -50,8 +50,8 @@ fi
 # UNIT_TESTS=$(grep "=== RUN" $OUTFILE | wc -l | tr -d '[:space:]')
 # INT_TESTS=$(grep "# Total tests" $OUTFILE | cut -c21- | tr -d '[:space:]')
 
-echo "Unit tests: ${UNIT_TESTS}"
-echo "Integration tests: ${INT_TESTS}"
+# echo "Unit tests: ${UNIT_TESTS}"
+# echo "Integration tests: ${INT_TESTS}"
 
 # These steps are from the README to verify it can be installed and run as
 # documented.
