@@ -2,19 +2,19 @@
 
 set -e
 
-OUTFILE=/tmp/out_triangle.txt
-
-function cleanup {
-    EXIT_STATUS=$?
-
-    if [ $EXIT_STATUS != 0 ]; then
-        [ ! -f $OUTFILE ] || cat $OUTFILE
-    fi
-
-    exit $EXIT_STATUS
-}
-trap cleanup EXIT
-rm -f $OUTFILE
+# OUTFILE=/tmp/out_triangle.txt
+#
+# function cleanup {
+#     EXIT_STATUS=$?
+#
+#     if [ $EXIT_STATUS != 0 ]; then
+#         [ ! -f $OUTFILE ] || cat $OUTFILE
+#     fi
+#
+#     exit $EXIT_STATUS
+# }
+# trap cleanup EXIT
+# rm -f $OUTFILE
 
 # These steps are from the README to verify it can be installed and run as
 # documented.
@@ -40,7 +40,7 @@ rm -f $TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.go
 
 # Transpile files.
 echo "Transpiling $TRIANGLE_FILE.c..."
-$C4GO transpile -o=$TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.go $TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.c  >> $OUTFILE 2>&1
+$C4GO transpile -o=$TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.go $TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.c  
 
 # Show amount "Warning" in Go codes
 TRIANGLE_WARNINGS=`cat $TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.go | grep "^// Warning" | sort | uniq | wc -l`
