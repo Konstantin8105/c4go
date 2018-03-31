@@ -164,7 +164,7 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 
 	// Uncomment only for debugging
 	// if strings.Contains(s, ":") {
-	// 	panic(fmt.Errorf("Found mistake `cFromType` `%v` C type", s))
+	// 	panic(fmt.Errorf("Found mistake resolve `%v` C type", s))
 	// }
 
 	s = CleanCType(s)
