@@ -2,33 +2,39 @@ package ast
 
 // CompoundAssignOperator is type of compound assign operator
 type CompoundAssignOperator struct {
-	Addr                  Address
-	Pos                   Position
-	Type                  string
-	Opcode                string
-	ComputationLHSType    string
-	ComputationResultType string
-	ChildNodes            []Node
+	Addr                   Address
+	Pos                    Position
+	Type                   string
+	Type2                  string
+	Opcode                 string
+	ComputationLHSType     string
+	ComputationLHSType2    string
+	ComputationResultType  string
+	ComputationResultType2 string
+	ChildNodes             []Node
 }
 
 func parseCompoundAssignOperator(line string) *CompoundAssignOperator {
 	groups := groupsFromRegex(
 		`<(?P<position>.*)>
-		 '(?P<type>.+?)'
+		 '(?P<type>.+?)'(:'(?P<type2>.*)')?
 		 '(?P<opcode>.+?)'
-		 ComputeLHSTy='(?P<clhstype>.+?)'
-		 ComputeResultTy='(?P<crestype>.+?)'`,
+		 ComputeLHSTy='(?P<clhstype>.+?)'(:'(?P<clhstype2>.*)')?
+		 ComputeResultTy='(?P<crestype>.+?)'(:'(?P<crestype2>.*)')?`,
 		line,
 	)
 
 	return &CompoundAssignOperator{
-		Addr:                  ParseAddress(groups["address"]),
-		Pos:                   NewPositionFromString(groups["position"]),
-		Type:                  groups["type"],
-		Opcode:                groups["opcode"],
-		ComputationLHSType:    groups["clhstype"],
-		ComputationResultType: groups["crestype"],
-		ChildNodes:            []Node{},
+		Addr:                   ParseAddress(groups["address"]),
+		Pos:                    NewPositionFromString(groups["position"]),
+		Type:                   groups["type"],
+		Type2:                  groups["type2"],
+		Opcode:                 groups["opcode"],
+		ComputationLHSType:     groups["clhstype"],
+		ComputationLHSType2:    groups["clhstype2"],
+		ComputationResultType:  groups["crestype"],
+		ComputationResultType2: groups["crestype2"],
+		ChildNodes:             []Node{},
 	}
 }
 

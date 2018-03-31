@@ -72,10 +72,12 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 
 	// Uncomment only for debugging
 	// if strings.Contains(cFromType, ":") {
-	// 	panic("Found mistake `cFromType` C type")
+	// 	panic(fmt.Errorf("Found mistake `cFromType` `%v` C type : %#v",
+	// 		cFromType, expr))
 	// }
 	// if strings.Contains(cToType, ":") {
-	// 	panic("Found mistake `cToType` C type")
+	// 	panic(fmt.Errorf("Found mistake `cToType` `%v` C type: %#v",
+	// 		cToType, expr))
 	// }
 
 	cFromType = CleanCType(cFromType)
