@@ -450,27 +450,9 @@ void test_structUsed(){
 	is_eq((*sb.InsideUnion.pStr).vars, 10);
 }
 
-typedef struct StructUsed2 Mem;
-struct StructUsed2 {
-	int vars2;
-};
-struct StructBase2 {
-	union {
-		Mem *pStr;
-		int aaa2;
-	} InsideUnion2;
-};
-void test_structUsed2(){
-	struct StructBase2 sb;
-	Mem ss;
-	sb.InsideUnion2.pStr = &ss;
-	(*sb.InsideUnion2.pStr).vars2 = 10;
-	is_eq((*sb.InsideUnion2.pStr).vars2, 10);
-}
-
 int main()
 {
-    plan(76);
+    plan(75);
 
     struct_array();
     struct_func_func();

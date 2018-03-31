@@ -2,20 +2,6 @@
 
 set -e
 
-# OUTFILE=/tmp/out_triangle.txt
-#
-# function cleanup {
-#     EXIT_STATUS=$?
-#
-#     if [ $EXIT_STATUS != 0 ]; then
-#         [ ! -f $OUTFILE ] || cat $OUTFILE
-#     fi
-#
-#     exit $EXIT_STATUS
-# }
-# trap cleanup EXIT
-# rm -f $OUTFILE
-
 # These steps are from the README to verify it can be installed and run as
 # documented.
 go build

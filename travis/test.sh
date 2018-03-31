@@ -2,19 +2,6 @@
 
 set -e
 
-# OUTFILE=/tmp/out.txt
-#
-# function cleanup {
-#     EXIT_STATUS=$?
-#
-#     if [ $EXIT_STATUS != 0 ]; then
-#         [ ! -f $OUTFILE ] || cat $OUTFILE
-#     fi
-#
-#     exit $EXIT_STATUS
-# }
-# trap cleanup EXIT
-
 echo "" > coverage.txt
 
 # The code below was copied from:
@@ -31,9 +18,7 @@ export PKGS_DELIM=$(echo "$PKGS" | paste -sd "," -)
 # that all the test names are printed. It's also important that the covermode be
 # set to "count" so that the coverage profiles can be merged correctly together
 # with gocovmerge.
-#
-# Exit code 123 will be returned if any of the tests fail.
-# rm -f $OUTFILE
+
 go list -f 'go test -v -tags integration -race -covermode atomic -coverprofile {{.Name}}.coverprofile -coverpkg $PKGS_DELIM {{.ImportPath}}' $PKGS | xargs -I{} bash -c  "{}"
 
 # Merge coverage profiles.
@@ -45,13 +30,6 @@ if [ $COVERAGE_FILES != 0 ]; then
 		rm *.coverprofile
 	fi
 fi
-
-# Print stats
-# UNIT_TESTS=$(grep "=== RUN" $OUTFILE | wc -l | tr -d '[:space:]')
-# INT_TESTS=$(grep "# Total tests" $OUTFILE | cut -c21- | tr -d '[:space:]')
-
-# echo "Unit tests: ${UNIT_TESTS}"
-# echo "Integration tests: ${INT_TESTS}"
 
 # These steps are from the README to verify it can be installed and run as
 # documented.
