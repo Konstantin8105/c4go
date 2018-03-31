@@ -161,10 +161,10 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		case *ast.AlignedAttr:
 			// ignore
 
-		case *ast.MaxFieldAlignmentAttr:
+		case *ast.PackedAttr:
 			// ignore
 
-		case *ast.AlignedAttr:
+		case *ast.MaxFieldAlignmentAttr:
 			// ignore
 
 		case *ast.FullComment:
