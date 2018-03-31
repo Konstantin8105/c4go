@@ -202,7 +202,8 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 				}
 				if len(prefix) != 0 {
 					p.AddMessage(p.GenerateWarningMessage(fmt.Errorf(
-						"prefix is not used in type : %v", t), n))
+						"prefix `%v` is not used in type : %v",
+						prefix, t), n))
 				}
 				functionDef.ReturnType = returns[0]
 				functionDef.ArgumentTypes = fields

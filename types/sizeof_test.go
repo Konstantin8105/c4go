@@ -27,7 +27,9 @@ var sizeofTestCases = []sizeofTestCase{
 	{"int ***", 8, nil},
 	{"char *const", 8, nil},
 	{"char *const [3]", 24, nil},
-	{"struct c [2]", 0, fmt.Errorf("Cannot determine sizeof : |struct c [2]|. err = error in sizeof baseSize")},
+	{"struct c [2]", 0, fmt.Errorf(
+		"Cannot determine sizeof : " +
+			"|struct c [2]|. err = error in sizeof baseSize for `struct c`")},
 }
 
 func TestSizeOf(t *testing.T) {

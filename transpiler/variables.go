@@ -105,10 +105,12 @@ func getDefaultValueForVar(p *program.Program, a *ast.VarDecl) (
 			if a, ok := a.Children()[0].(*ast.DeclRefExpr); ok {
 				argsName = a.Name
 			} else {
-				return nil, "", nil, nil, fmt.Errorf("Expect DeclRefExpr for vaar, but we have %T", a)
+				return nil, "", nil, nil, fmt.Errorf(
+					"Expect DeclRefExpr for vaar, but we have %T", a)
 			}
 		} else {
-			return nil, "", nil, nil, fmt.Errorf("Expect ImplicitCastExpr for vaar, but we have %T", a)
+			return nil, "", nil, nil, fmt.Errorf(
+				"Expect ImplicitCastExpr for vaar, but we have %T", a)
 		}
 		src := fmt.Sprintf(`package main
 var temp = func() %s {

@@ -65,6 +65,8 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 			}
 
 			if err != nil {
+				err = fmt.Errorf("Cannot canculate `struct` sizeof for `%T`. %v",
+					t, err)
 				return 0, err
 			}
 			totalBytes += bytes
@@ -90,7 +92,6 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 
 		for _, t := range s.Fields {
 			var bytes int
-			var err error
 
 			switch f := t.(type) {
 			case string:
@@ -101,6 +102,8 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 			}
 
 			if err != nil {
+				err = fmt.Errorf("Cannot canculate `union` sizeof for `%T`. %v",
+					t, err)
 				return 0, err
 			}
 
@@ -158,7 +161,8 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 
 	baseSize, err := SizeOf(p, arrayType)
 	if err != nil {
-		return 0, fmt.Errorf("error in sizeof baseSize")
+		return 0, fmt.Errorf("error in sizeof baseSize for `%v`",
+			arrayType)
 	}
 
 	return baseSize * totalArraySize, nil
