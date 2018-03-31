@@ -460,7 +460,6 @@ int main()
 	struct_sizeof();
 	test_sizeofArray();
 	test_structUsed();
-	test_structUsed2();
 
     struct programming variable;
     char* s = "Programming in Software Development.";

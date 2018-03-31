@@ -26,7 +26,7 @@ rm -f $TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.go
 
 # Transpile files.
 echo "Transpiling $TRIANGLE_FILE.c..."
-$C4GO transpile -o=$TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.go $TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.c  
+$C4GO transpile -o=$TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.go $TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.c
 
 # Show amount "Warning" in Go codes
 TRIANGLE_WARNINGS=`cat $TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.go | grep "^// Warning" | sort | uniq | wc -l`
