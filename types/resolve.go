@@ -161,6 +161,12 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 			err = fmt.Errorf("Cannot resolve type '%s' : %v", s, err)
 		}
 	}()
+
+	// Uncomment only for debugging
+	// if strings.Contains(s, ":") {
+	// 	panic(fmt.Errorf("Found mistake `cFromType` `%v` C type", s))
+	// }
+
 	s = CleanCType(s)
 
 	// FIXME: This is a hack to avoid casting in some situations.
