@@ -2,6 +2,20 @@
 
 set -e
 
+OUTFILE=/tmp/out_sqlite.txt
+
+function cleanup {
+    EXIT_STATUS=$?
+
+    if [ $EXIT_STATUS != 0 ]; then
+        [ ! -f $OUTFILE ] || cat $OUTFILE
+    fi
+
+    exit $EXIT_STATUS
+}
+trap cleanup EXIT
+rm -f $OUTFILE
+
 # These steps are from the README to verify it can be installed and run as
 # documented.
 go build
@@ -23,33 +37,27 @@ if [ ! -e $SQLITE_TEMP_FOLDER/$SQLITE3_FILE.zip ]; then
     unzip $SQLITE_TEMP_FOLDER/$SQLITE3_FILE.zip -d $SQLITE_TEMP_FOLDER
 fi
 
-
-## Only for travis
-if [[ -v TRAVIS ]]; then
-
 # Clean generated files. This should not be required, but it's polite.
 rm -f $SQLITE_TEMP_FOLDER/sqlite3.go $SQLITE_TEMP_FOLDER/shell.go
 
 # Transpile the SQLite3 files.
 echo "Transpiling shell.c..."
-$C4GO transpile -o=$SQLITE_TEMP_FOLDER/shell.go   $SQLITE_TEMP_FOLDER/$SQLITE3_FILE/shell.c  
+$C4GO transpile -o=$SQLITE_TEMP_FOLDER/shell.go   $SQLITE_TEMP_FOLDER/$SQLITE3_FILE/shell.c   >> $OUTFILE 2>&1
 
 # sqlite3.c
 echo "Transpiling sqlite3.c..."
-$C4GO transpile -o=$SQLITE_TEMP_FOLDER/sqlite3.go $SQLITE_TEMP_FOLDER/$SQLITE3_FILE/sqlite3.c
+$C4GO transpile -o=$SQLITE_TEMP_FOLDER/sqlite3.go $SQLITE_TEMP_FOLDER/$SQLITE3_FILE/sqlite3.c  >> $OUTFILE 2>&1
 
 # Show amount "Warning" in sqlite Go codes
 SQLITE_WARNINGS=`cat $SQLITE_TEMP_FOLDER/sqlite3.go $SQLITE_TEMP_FOLDER/shell.go | grep "^// Warning" | sort | uniq | wc -l`
 echo "In files (sqlite3.go and shell.go) summary : $SQLITE_WARNINGS warnings."
-
-fi
 
 # Clean generated files. This should not be required, but it's polite.
 rm -f $SQLITE_TEMP_FOLDER/sqlite.go
 
 # SQLITE
 echo "Transpiling shell.c and sqlite3.c together..."
-$C4GO transpile -o="$SQLITE_TEMP_FOLDER/sqlite.go" -clang-flag="-DSQLITE_THREADSAFE=0" -clang-flag="-DSQLITE_OMIT_LOAD_EXTENSION" $SQLITE_TEMP_FOLDER/$SQLITE3_FILE/shell.c $SQLITE_TEMP_FOLDER/$SQLITE3_FILE/sqlite3.c
+$C4GO transpile -o="$SQLITE_TEMP_FOLDER/sqlite.go" -clang-flag="-DSQLITE_THREADSAFE=0" -clang-flag="-DSQLITE_OMIT_LOAD_EXTENSION" $SQLITE_TEMP_FOLDER/$SQLITE3_FILE/shell.c $SQLITE_TEMP_FOLDER/$SQLITE3_FILE/sqlite3.c  >> $OUTFILE 2>&1
 
 # Show amount "Warning":
 SQLITE_WARNINGS=`cat $SQLITE_TEMP_FOLDER/sqlite.go | grep "^// Warning" | sort | uniq | wc -l`

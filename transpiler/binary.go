@@ -386,11 +386,10 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	if !types.IsFunction(n.Type) && !types.IsTypedefFunction(p, n.Type) {
 		if leftType != types.NullPointer {
 			resolvedLeftType, err = types.ResolveType(p, leftType)
-			p.AddMessage(p.GenerateWarningMessage(err, n))
 		} else {
 			resolvedLeftType, err = types.ResolveType(p, rightType)
-			p.AddMessage(p.GenerateWarningMessage(err, n))
 		}
+		p.AddMessage(p.GenerateWarningMessage(err, n))
 	}
 
 	// Enum casting
