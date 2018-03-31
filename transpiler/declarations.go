@@ -161,6 +161,9 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		case *ast.MaxFieldAlignmentAttr:
 			// ignore
 
+		case *ast.AlignedAttr:
+			// ignore
+
 		case *ast.FullComment:
 			// We haven't Go ast struct for easy inject a comments.
 			// All comments are added like CommentsGroup.
