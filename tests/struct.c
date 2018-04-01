@@ -450,9 +450,22 @@ void test_structUsed(){
 	is_eq((*sb.InsideUnion.pStr).vars, 10);
 }
 
+struct EmptyName {
+	union {
+		long l1;
+		long l2;
+	};
+};
+void test_emptyname (){
+	struct EmptyName en;
+	en.l1 = 10;
+	is_eq(en.l1,10);
+	is_eq(en.l2,10);
+}
+
 int main()
 {
-    plan(75);
+    plan(77);
 
     struct_array();
     struct_func_func();
@@ -460,6 +473,7 @@ int main()
 	struct_sizeof();
 	test_sizeofArray();
 	test_structUsed();
+	test_emptyname();
 
     struct programming variable;
     char* s = "Programming in Software Development.";
