@@ -409,6 +409,9 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 		}
 	}
 
+	if n.Name == "" {
+		n.Name = generateNameFieldDecl(types.GenerateCorrectType(n.Type))
+	}
 	rhs := n.Name
 	rhsType := "void *"
 	if structType == nil {
@@ -428,7 +431,8 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 			rhsType = s
 		} else {
 			err = fmt.Errorf("cannot determine type for RHS '%v', will use"+
-				" 'void *' for all fields. Is lvalue = %v", rhs, n.IsLvalue)
+				" 'void *' for all fields. Is lvalue = %v. n.Name = `%v`",
+				rhs, n.IsLvalue, n.Name)
 			p.AddMessage(p.GenerateWarningMessage(err, n))
 		}
 	}

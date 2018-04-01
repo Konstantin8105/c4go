@@ -15,6 +15,21 @@ import (
 	"github.com/Konstantin8105/c4go/util"
 )
 
+/*
+Example of AST for union without name inside struct:
+-RecordDecl 0x40d41b0 <...> line:453:8 struct EmptyName definition
+ |-RecordDecl 0x40d4260 <...> line:454:2 union definition
+ | |-FieldDecl 0x40d4328 <...> col:8 referenced l1 'long'
+ | `-FieldDecl 0x40d4388 <...> col:8 referenced l2 'long'
+ |-FieldDecl 0x40d4420 <...> col:2 implicit referenced 'union EmptyName::(anonymous at struct.c:454:2)'
+ |-IndirectFieldDecl 0x40d4478 <...> col:8 implicit l1 'long'
+ | |-Field 0x40d4420 '' 'union EmptyName::(anonymous at /struct.c:454:2)'
+ | `-Field 0x40d4328 'l1' 'long'
+ `-IndirectFieldDecl 0x40d44c8 <...> col:8 implicit l2 'long'
+   |-Field 0x40d4420 '' 'union EmptyName::(anonymous at /struct.c:454:2)'
+   `-Field 0x40d4388 'l2' 'long'
+*/
+
 func newFunctionField(p *program.Program, name, cType string) (
 	_ *goast.Field, err error) {
 	if name == "" {
@@ -34,6 +49,10 @@ func newFunctionField(p *program.Program, name, cType string) (
 	}, nil
 }
 
+func generateNameFieldDecl(t string) string {
+	return "implicit_" + strings.Replace(t, " ", "S", -1)
+}
+
 func transpileFieldDecl(p *program.Program, n *ast.FieldDecl) (
 	field *goast.Field, err error) {
 	if types.IsFunction(n.Type) {
@@ -43,12 +62,12 @@ func transpileFieldDecl(p *program.Program, n *ast.FieldDecl) (
 		}
 	}
 
-	name := n.Name
-
-	// FIXME: What causes this? See __darwin_fp_control for example.
-	if name == "" {
-		return nil, fmt.Errorf("Error : name of FieldDecl is empty")
+	if n.Name == "" {
+		//&ast.FieldDecl{Addr:0x3157420, Pos:ast.Position{...}, Position2:"col:2", Name:"", Type:"union EmptyNameDD__at__home_lepricon_go_src_github_com_Konstantin8105_c4go_tests_struct_c_454_2_", Type2:"", Implicit:true, Referenced:true, ChildNodes:[]ast.Node{}}
+		n.Name = generateNameFieldDecl(n.Type)
 	}
+
+	name := n.Name
 
 	fieldType, err := types.ResolveType(p, n.Type)
 	p.AddMessage(p.GenerateWarningMessage(err, n))
@@ -169,11 +188,11 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		case *ast.TransparentUnionAttr:
 			// Don't do anythink
 			// Example of AST:
-			// |-RecordDecl 0x3632d78 </usr/include/stdlib.h:67:9, line:71:3> line:67:9 union definition
-			// | |-TransparentUnionAttr 0x3633050 <line:71:35>
-			// | |-FieldDecl 0x3632ed0 <line:69:5, col:17> col:17 __uptr 'union wait *'
-			// | `-FieldDecl 0x3632f60 <line:70:5, col:10> col:10 __iptr 'int *'
-			// |-TypedefDecl 0x3633000 <line:67:1, line:71:5> col:5 __WAIT_STATUS 'union __WAIT_STATUS':'__WAIT_STATUS'
+			// |-RecordDecl 0x3632d78 <...> line:67:9 union definition
+			// | |-TransparentUnionAttr 0x3633050 <...>
+			// | |-FieldDecl 0x3632ed0 <...> col:17 __uptr 'union wait *'
+			// | `-FieldDecl 0x3632f60 <...> col:10 __iptr 'int *'
+			// |-TypedefDecl 0x3633000 <...> col:5 __WAIT_STATUS 'union __WAIT_STATUS':'__WAIT_STATUS'
 			// | `-ElaboratedType 0x3632fb0 'union __WAIT_STATUS' sugar
 			// |   `-RecordType 0x3632e00 '__WAIT_STATUS'
 			// |     `-Record 0x3632d78 ''
@@ -181,10 +200,10 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		default:
 			// For case anonymous enum:
 
-			// |-EnumDecl 0x26c3970 <line:77:5, line:79:5> line:77:5
-			// | `-EnumConstantDecl 0x26c3a50 <line:78:9, col:26> col:9 referenced SWE_ENUM_THREE 'int'
-			// |   `-IntegerLiteral 0x26c3a30 <col:26> 'int' 3
-			// |-FieldDecl 0x26c3af0 <line:77:5, line:79:7> col:7 EnumThree 'enum (anonymous enum at ...
+			// |-EnumDecl 0x26c3970 <...> line:77:5
+			// | `-EnumConstantDecl 0x26c3a50 <...> col:9 referenced SWE_ENUM_THREE 'int'
+			// |   `-IntegerLiteral 0x26c3a30 <...> 'int' 3
+			// |-FieldDecl 0x26c3af0 <...> col:7 EnumThree 'enum (anonymous enum at ...
 			if eDecl, ok := field.(*ast.EnumDecl); ok && eDecl.Name == "" {
 				if pos+1 <= len(n.Children())-1 {
 					if f, ok := n.Children()[pos+1].(*ast.FieldDecl); ok {
