@@ -303,7 +303,8 @@ func Start(args ProgramArgs) (err error) {
 		// on filename for choosed input file
 		cleanFileName := filepath.Clean(filepath.Base(input))
 		extension := filepath.Ext(input)
-		outputFilePath = cleanFileName[0:len(cleanFileName)-len(extension)] + ".go"
+		outputFilePath = cleanFileName[0:len(cleanFileName)-len(extension)] +
+			".go"
 	}
 
 	// transpile ast tree
@@ -351,19 +352,29 @@ var clangFlags inputDataFlags
 
 func init() {
 	transpileCommand.Var(&clangFlags,
-		"clang-flag", "Pass arguments to clang. You may provide multiple -clang-flag items.")
+		"clang-flag",
+		"Pass arguments to clang. You may provide multiple -clang-flag items.")
 	astCommand.Var(&clangFlags,
-		"clang-flag", "Pass arguments to clang. You may provide multiple -clang-flag items.")
+		"clang-flag",
+		"Pass arguments to clang. You may provide multiple -clang-flag items.")
 }
 
 var (
-	transpileCommand  = flag.NewFlagSet("transpile", flag.ContinueOnError)
-	verboseFlag       = transpileCommand.Bool("V", false, "print progress as comments")
-	outputFlag        = transpileCommand.String("o", "", "output Go generated code to the specified file")
-	packageFlag       = transpileCommand.String("p", "main", "set the name of the generated package")
-	transpileHelpFlag = transpileCommand.Bool("h", false, "print help information")
-	astCommand        = flag.NewFlagSet("ast", flag.ContinueOnError)
-	astHelpFlag       = astCommand.Bool("h", false, "print help information")
+	transpileCommand = flag.NewFlagSet(
+		"transpile", flag.ContinueOnError)
+	verboseFlag = transpileCommand.Bool(
+		"V", false, "print progress as comments")
+	outputFlag = transpileCommand.String(
+		"o", "", "output Go generated code to the specified file")
+	packageFlag = transpileCommand.String(
+		"p", "main", "set the name of the generated package")
+
+	transpileHelpFlag = transpileCommand.Bool(
+		"h", false, "print help information")
+	astCommand = flag.NewFlagSet(
+		"ast", flag.ContinueOnError)
+	astHelpFlag = astCommand.Bool(
+		"h", false, "print help information")
 )
 
 func main() {
@@ -424,7 +435,9 @@ func runCommand() int {
 		}
 
 		if *transpileHelpFlag || transpileCommand.NArg() == 0 {
-			fmt.Fprintf(stderr, "Usage: %s transpile [-V] [-o file.go] [-p package] file1.c ...\n", os.Args[0])
+			fmt.Fprintf(stderr,
+				"Usage: %s transpile [-V] [-o file.go] [-p package] file1.c ...\n",
+				os.Args[0])
 			transpileCommand.PrintDefaults()
 			return 1
 		}
