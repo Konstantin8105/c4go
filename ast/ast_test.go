@@ -82,4 +82,20 @@ func TestPanicCheck(t *testing.T) {
 	if err == nil {
 		t.Errorf("Haven`t error for strange string line not acceptable")
 	}
+	// Correct node of AST:
+	// GotoStmt 0x7fb9cc1994d8 <line:18893:9, col:14>  'end_getDigits' 0x7fb9cc199490
+	// Modify for panic in ast regexp
+	//
+	n, err := Parse("GotoStmt 0x7fb9cc1994d8 <lin8893:9, col:14> ts' 99490")
+	if err == nil {
+		t.Errorf("Haven`t error for guarantee panic line not acceptable\n%v",
+			Atos(n))
+	}
+}
+
+func TestNullStmt(t *testing.T) {
+	n, err := Parse("NullStmt")
+	if n != nil || err != nil {
+		t.Errorf("Not acceptable for NullStmt")
+	}
 }

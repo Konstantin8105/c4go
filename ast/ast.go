@@ -37,8 +37,8 @@ func ParseAddress(address string) Address {
 // node for the AST.
 func Parse(fullline string) (_ Node, err error) {
 	defer func() {
-		if err := recover(); err != nil {
-			err = fmt.Errorf("Cannot parse line: `%v`", fullline)
+		if r := recover(); r != nil {
+			err = fmt.Errorf("Cannot parse line: `%v`. %v", fullline, r)
 		}
 	}()
 	line := fullline
