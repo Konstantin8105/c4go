@@ -16,19 +16,19 @@ matrix:
       os: linux
     - env: SCRIPT=test CLANG=3.5
       os: linux
-            if: branch = master
+      if: branch = master
     - env: SCRIPT=test CLANG=3.6
       os: linux
-            if: branch = master
+      if: branch = master
     - env: SCRIPT=test CLANG=3.7
       os: linux
-            if: branch = master
+      if: branch = master
     - env: SCRIPT=test CLANG=3.8
       os: linux
-            if: branch = master
+      if: branch = master
     - env: SCRIPT=lint CLANG=3.9
       os: linux
-            if: branch = master
+      if: branch = master
     - env: SCRIPT=test CLANG=5.0
       os: linux
 
