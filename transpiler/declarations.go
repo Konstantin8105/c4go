@@ -7,6 +7,7 @@ import (
 	"fmt"
 	goast "go/ast"
 	"go/token"
+	"strconv"
 	"strings"
 
 	"github.com/Konstantin8105/c4go/ast"
@@ -185,7 +186,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 					}
 				}
 				if isDublicate {
-					continue
+					f.Names[0].Name += strconv.Itoa(pos)
 				}
 				fields = append(fields, f)
 			}
