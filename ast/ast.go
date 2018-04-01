@@ -36,6 +36,11 @@ func ParseAddress(address string) Address {
 // Parse takes the coloured output of the clang AST command and returns a root
 // node for the AST.
 func Parse(fullline string) (Node, error) {
+	defer func() {
+		if err := recover(); err != nil {
+			return nil, fmt.Errorf("Cannot parse line: `%v`", fullline)
+		}
+	}()
 	line := fullline
 
 	// This is a special case. I'm not sure if it's a bug in the clang AST
