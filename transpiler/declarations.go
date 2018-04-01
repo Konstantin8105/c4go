@@ -164,6 +164,29 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 				// return
 				err = nil
 			} else {
+				// ignore fields without name
+				if len(f.Names) != 1 {
+					p.AddMessage(p.GenerateWarningMessage(
+						fmt.Errorf("Ignore FieldDecl with more then 1 names"+
+							" in RecordDecl : `%v`", n.Name), n))
+					continue
+				}
+				if f.Names[0].Name == "" {
+					p.AddMessage(p.GenerateWarningMessage(
+						fmt.Errorf("Ignore FieldDecl without name "+
+							" in RecordDecl : `%v`", n.Name), n))
+					continue
+				}
+				// remove dublicates of fields
+				var isDublicate bool
+				for i := range fields {
+					if fields[i].Names[0].Name == f.Names[0].Name {
+						isDublicate = true
+					}
+				}
+				if isDublicate {
+					continue
+				}
 				fields = append(fields, f)
 			}
 
