@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 
 	"errors"
 
@@ -73,8 +74,8 @@ type treeNode struct {
 	node   ast.Node
 }
 
-func convertLinesToNodes(lines []string) []treeNode {
-	nodes := make([]treeNode, len(lines))
+func convertLinesToNodes(lines []string) (nodes []treeNode, errs []error) {
+	nodes = make([]treeNode, len(lines))
 	var counter int
 	for _, line := range lines {
 		if strings.TrimSpace(line) == "" {
@@ -86,20 +87,29 @@ func convertLinesToNodes(lines []string) []treeNode {
 		// for-loop conditions, as in for(;;).
 		line = strings.Replace(line, "<<<NULL>>>", "NullStmt", 1)
 		trimmed := strings.TrimLeft(line, "|\\- `")
-		node := ast.Parse(trimmed)
+		node, err := ast.Parse(trimmed)
+		if err != nil {
+			// add to error slice
+			errs = append(errs, err)
+			err = nil
+			// ignore error
+			node = nil
+		}
 		indentLevel := (len(line) - len(trimmed)) / 2
 		nodes[counter] = treeNode{indentLevel, node}
 		counter++
 	}
 	nodes = nodes[0:counter]
 
-	return nodes
+	return
 }
 
-func convertLinesToNodesParallel(lines []string) []treeNode {
+func convertLinesToNodesParallel(lines []string) (_ []treeNode, errs []error) {
 	// function f separate full list on 2 parts and
 	// then each part can recursive run function f
 	var f func([]string, int) []treeNode
+
+	var m sync.Mutex
 
 	f = func(lines []string, deep int) []treeNode {
 		deep = deep - 2
@@ -110,7 +120,13 @@ func convertLinesToNodesParallel(lines []string) []treeNode {
 
 		go func(lines []string, deep int) {
 			if deep <= 0 || len(lines) < deep {
-				tr1 <- convertLinesToNodes(lines)
+				t, e := convertLinesToNodes(lines)
+				m.Lock()
+				if len(e) > 0 {
+					errs = append(errs, e...)
+				}
+				m.Unlock()
+				tr1 <- t
 				return
 			}
 			tr1 <- f(lines, deep)
@@ -118,7 +134,13 @@ func convertLinesToNodesParallel(lines []string) []treeNode {
 
 		go func(lines []string, deep int) {
 			if deep <= 0 || len(lines) < deep {
-				tr2 <- convertLinesToNodes(lines)
+				t, e := convertLinesToNodes(lines)
+				m.Lock()
+				if len(e) > 0 {
+					errs = append(errs, e...)
+				}
+				m.Unlock()
+				tr2 <- t
 				return
 			}
 			tr2 <- f(lines, deep)
@@ -132,7 +154,7 @@ func convertLinesToNodesParallel(lines []string) []treeNode {
 
 	// Parameter of deep - can be any, but effective to use
 	// same amount of CPU
-	return f(lines, runtime.NumCPU())
+	return f(lines, runtime.NumCPU()), errs
 }
 
 // buildTree converts an array of nodes, each prefixed with a depth into a tree.
@@ -250,7 +272,10 @@ func Start(args ProgramArgs) (err error) {
 	if args.verbose {
 		fmt.Println("Converting to nodes...")
 	}
-	nodes := convertLinesToNodesParallel(lines)
+	nodes, astErrors := convertLinesToNodesParallel(lines)
+	for i := range astErrors {
+		p.AddMessage(fmt.Sprintf("// AST Error : %v\n", astErrors[i]))
+	}
 
 	// build tree
 	if args.verbose {

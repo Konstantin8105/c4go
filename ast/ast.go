@@ -35,10 +35,10 @@ func ParseAddress(address string) Address {
 
 // Parse takes the coloured output of the clang AST command and returns a root
 // node for the AST.
-func Parse(fullline string) (Node, error) {
+func Parse(fullline string) (_ Node, err error) {
 	defer func() {
 		if err := recover(); err != nil {
-			return nil, fmt.Errorf("Cannot parse line: `%v`", fullline)
+			err = fmt.Errorf("Cannot parse line: `%v`", fullline)
 		}
 	}()
 	line := fullline
