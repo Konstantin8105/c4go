@@ -2,6 +2,7 @@
 package ast
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -34,13 +35,13 @@ func ParseAddress(address string) Address {
 
 // Parse takes the coloured output of the clang AST command and returns a root
 // node for the AST.
-func Parse(fullline string) Node {
+func Parse(fullline string) (Node, error) {
 	line := fullline
 
 	// This is a special case. I'm not sure if it's a bug in the clang AST
 	// dumper. It should have children.
 	if line == "array filler" {
-		return parseArrayFiller(line)
+		return parseArrayFiller(line), nil
 	}
 
 	parts := strings.SplitN(line, " ", 2)
@@ -53,210 +54,209 @@ func Parse(fullline string) Node {
 
 	switch nodeName {
 	case "AlignedAttr":
-		return parseAlignedAttr(line)
+		return parseAlignedAttr(line), nil
 	case "AllocSizeAttr":
-		return parseAllocSizeAttr(line)
+		return parseAllocSizeAttr(line), nil
 	case "AlwaysInlineAttr":
-		return parseAlwaysInlineAttr(line)
+		return parseAlwaysInlineAttr(line), nil
 	case "ArraySubscriptExpr":
-		return parseArraySubscriptExpr(line)
+		return parseArraySubscriptExpr(line), nil
 	case "AsmLabelAttr":
-		return parseAsmLabelAttr(line)
+		return parseAsmLabelAttr(line), nil
 	case "AvailabilityAttr":
-		return parseAvailabilityAttr(line)
+		return parseAvailabilityAttr(line), nil
 	case "BinaryOperator":
-		return parseBinaryOperator(line)
+		return parseBinaryOperator(line), nil
 	case "BlockCommandComment":
-		return parseBlockCommandComment(line)
+		return parseBlockCommandComment(line), nil
 	case "BreakStmt":
-		return parseBreakStmt(line)
+		return parseBreakStmt(line), nil
 	case "BuiltinType":
-		return parseBuiltinType(line)
+		return parseBuiltinType(line), nil
 	case "CallExpr":
-		return parseCallExpr(line)
+		return parseCallExpr(line), nil
 	case "CaseStmt":
-		return parseCaseStmt(line)
+		return parseCaseStmt(line), nil
 	case "CharacterLiteral":
-		return parseCharacterLiteral(line)
+		return parseCharacterLiteral(line), nil
 	case "CompoundLiteralExpr":
-		return parseCompoundLiteralExpr(line)
+		return parseCompoundLiteralExpr(line), nil
 	case "CompoundStmt":
-		return parseCompoundStmt(line)
+		return parseCompoundStmt(line), nil
 	case "ConditionalOperator":
-		return parseConditionalOperator(line)
+		return parseConditionalOperator(line), nil
 	case "ConstAttr":
-		return parseConstAttr(line)
+		return parseConstAttr(line), nil
 	case "ConstantArrayType":
-		return parseConstantArrayType(line)
+		return parseConstantArrayType(line), nil
 	case "ContinueStmt":
-		return parseContinueStmt(line)
+		return parseContinueStmt(line), nil
 	case "CompoundAssignOperator":
-		return parseCompoundAssignOperator(line)
+		return parseCompoundAssignOperator(line), nil
 	case "CStyleCastExpr":
-		return parseCStyleCastExpr(line)
+		return parseCStyleCastExpr(line), nil
 	case "DeclRefExpr":
-		return parseDeclRefExpr(line)
+		return parseDeclRefExpr(line), nil
 	case "DeclStmt":
-		return parseDeclStmt(line)
+		return parseDeclStmt(line), nil
 	case "DefaultStmt":
-		return parseDefaultStmt(line)
+		return parseDefaultStmt(line), nil
 	case "DeprecatedAttr":
-		return parseDeprecatedAttr(line)
+		return parseDeprecatedAttr(line), nil
 	case "DisableTailCallsAttr":
-		return parseDisableTailCallsAttr(line)
+		return parseDisableTailCallsAttr(line), nil
 	case "DoStmt":
-		return parseDoStmt(line)
+		return parseDoStmt(line), nil
 	case "ElaboratedType":
-		return parseElaboratedType(line)
+		return parseElaboratedType(line), nil
 	case "EmptyDecl":
-		return parseEmptyDecl(line)
+		return parseEmptyDecl(line), nil
 	case "Enum":
-		return parseEnum(line)
+		return parseEnum(line), nil
 	case "EnumConstantDecl":
-		return parseEnumConstantDecl(line)
+		return parseEnumConstantDecl(line), nil
 	case "EnumDecl":
-		return parseEnumDecl(line)
+		return parseEnumDecl(line), nil
 	case "EnumType":
-		return parseEnumType(line)
+		return parseEnumType(line), nil
 	case "Field":
-		return parseField(line)
+		return parseField(line), nil
 	case "FieldDecl":
-		return parseFieldDecl(line)
+		return parseFieldDecl(line), nil
 	case "FloatingLiteral":
-		return parseFloatingLiteral(line)
+		return parseFloatingLiteral(line), nil
 	case "FormatAttr":
-		return parseFormatAttr(line)
+		return parseFormatAttr(line), nil
 	case "FunctionDecl":
-		return parseFunctionDecl(line)
+		return parseFunctionDecl(line), nil
 	case "FullComment":
-		return parseFullComment(line)
+		return parseFullComment(line), nil
 	case "FunctionProtoType":
-		return parseFunctionProtoType(line)
+		return parseFunctionProtoType(line), nil
 	case "ForStmt":
-		return parseForStmt(line)
+		return parseForStmt(line), nil
 	case "HTMLStartTagComment":
-		return parseHTMLStartTagComment(line)
+		return parseHTMLStartTagComment(line), nil
 	case "HTMLEndTagComment":
-		return parseHTMLEndTagComment(line)
+		return parseHTMLEndTagComment(line), nil
 	case "GCCAsmStmt":
-		return parseGCCAsmStmt(line)
+		return parseGCCAsmStmt(line), nil
 	case "GotoStmt":
-		return parseGotoStmt(line)
+		return parseGotoStmt(line), nil
 	case "IfStmt":
-		return parseIfStmt(line)
+		return parseIfStmt(line), nil
 	case "ImplicitCastExpr":
-		return parseImplicitCastExpr(line)
+		return parseImplicitCastExpr(line), nil
 	case "ImplicitValueInitExpr":
-		return parseImplicitValueInitExpr(line)
+		return parseImplicitValueInitExpr(line), nil
 	case "IncompleteArrayType":
-		return parseIncompleteArrayType(line)
+		return parseIncompleteArrayType(line), nil
 	case "IndirectFieldDecl":
-		return parseIndirectFieldDecl(line)
+		return parseIndirectFieldDecl(line), nil
 	case "InitListExpr":
-		return parseInitListExpr(line)
+		return parseInitListExpr(line), nil
 	case "InlineCommandComment":
-		return parseInlineCommandComment(line)
+		return parseInlineCommandComment(line), nil
 	case "IntegerLiteral":
-		return parseIntegerLiteral(line)
+		return parseIntegerLiteral(line), nil
 	case "LabelStmt":
-		return parseLabelStmt(line)
+		return parseLabelStmt(line), nil
 	case "MallocAttr":
-		return parseMallocAttr(line)
+		return parseMallocAttr(line), nil
 	case "MaxFieldAlignmentAttr":
-		return parseMaxFieldAlignmentAttr(line)
+		return parseMaxFieldAlignmentAttr(line), nil
 	case "MemberExpr":
-		return parseMemberExpr(line)
+		return parseMemberExpr(line), nil
 	case "ModeAttr":
-		return parseModeAttr(line)
+		return parseModeAttr(line), nil
 	case "NoInlineAttr":
-		return parseNoInlineAttr(line)
+		return parseNoInlineAttr(line), nil
 	case "NoThrowAttr":
-		return parseNoThrowAttr(line)
+		return parseNoThrowAttr(line), nil
 	case "NonNullAttr":
-		return parseNonNullAttr(line)
+		return parseNonNullAttr(line), nil
 	case "OffsetOfExpr":
-		return parseOffsetOfExpr(line)
+		return parseOffsetOfExpr(line), nil
 	case "PackedAttr":
-		return parsePackedAttr(line)
+		return parsePackedAttr(line), nil
 	case "ParagraphComment":
-		return parseParagraphComment(line)
+		return parseParagraphComment(line), nil
 	case "ParamCommandComment":
-		return parseParamCommandComment(line)
+		return parseParamCommandComment(line), nil
 	case "ParenExpr":
-		return parseParenExpr(line)
+		return parseParenExpr(line), nil
 	case "ParenType":
-		return parseParenType(line)
+		return parseParenType(line), nil
 	case "ParmVarDecl":
-		return parseParmVarDecl(line)
+		return parseParmVarDecl(line), nil
 	case "PointerType":
-		return parsePointerType(line)
+		return parsePointerType(line), nil
 	case "PredefinedExpr":
-		return parsePredefinedExpr(line)
+		return parsePredefinedExpr(line), nil
 	case "PureAttr":
-		return parsePureAttr(line)
+		return parsePureAttr(line), nil
 	case "QualType":
-		return parseQualType(line)
+		return parseQualType(line), nil
 	case "Record":
-		return parseRecord(line)
+		return parseRecord(line), nil
 	case "RecordDecl":
-		return parseRecordDecl(line)
+		return parseRecordDecl(line), nil
 	case "RecordType":
-		return parseRecordType(line)
+		return parseRecordType(line), nil
 	case "RestrictAttr":
-		return parseRestrictAttr(line)
+		return parseRestrictAttr(line), nil
 	case "ReturnStmt":
-		return parseReturnStmt(line)
+		return parseReturnStmt(line), nil
 	case "ReturnsTwiceAttr":
-		return parseReturnsTwiceAttr(line)
+		return parseReturnsTwiceAttr(line), nil
 	case "SentinelAttr":
-		return parseSentinelAttr(line)
+		return parseSentinelAttr(line), nil
 	case "StmtExpr":
-		return parseStmtExpr(line)
+		return parseStmtExpr(line), nil
 	case "StringLiteral":
-		return parseStringLiteral(line)
+		return parseStringLiteral(line), nil
 	case "SwitchStmt":
-		return parseSwitchStmt(line)
+		return parseSwitchStmt(line), nil
 	case "TextComment":
-		return parseTextComment(line)
+		return parseTextComment(line), nil
 	case "TranslationUnitDecl":
-		return parseTranslationUnitDecl(line)
+		return parseTranslationUnitDecl(line), nil
 	case "TransparentUnionAttr":
-		return parseTransparentUnionAttr(line)
+		return parseTransparentUnionAttr(line), nil
 	case "Typedef":
-		return parseTypedef(line)
+		return parseTypedef(line), nil
 	case "TypedefDecl":
-		return parseTypedefDecl(line)
+		return parseTypedefDecl(line), nil
 	case "TypedefType":
-		return parseTypedefType(line)
+		return parseTypedefType(line), nil
 	case "UnaryExprOrTypeTraitExpr":
-		return parseUnaryExprOrTypeTraitExpr(line)
+		return parseUnaryExprOrTypeTraitExpr(line), nil
 	case "UnaryOperator":
-		return parseUnaryOperator(line)
+		return parseUnaryOperator(line), nil
 	case "UnusedAttr":
-		return parseUnusedAttr(line)
+		return parseUnusedAttr(line), nil
 	case "VAArgExpr":
-		return parseVAArgExpr(line)
+		return parseVAArgExpr(line), nil
 	case "VarDecl":
-		return parseVarDecl(line)
+		return parseVarDecl(line), nil
 	case "VerbatimBlockComment":
-		return parseVerbatimBlockComment(line)
+		return parseVerbatimBlockComment(line), nil
 	case "VerbatimBlockLineComment":
-		return parseVerbatimBlockLineComment(line)
+		return parseVerbatimBlockLineComment(line), nil
 	case "VerbatimLineComment":
-		return parseVerbatimLineComment(line)
+		return parseVerbatimLineComment(line), nil
 	case "VisibilityAttr":
-		return parseVisibilityAttr(line)
+		return parseVisibilityAttr(line), nil
 	case "WarnUnusedResultAttr":
-		return parseWarnUnusedResultAttr(line)
+		return parseWarnUnusedResultAttr(line), nil
 	case "WeakAttr":
-		return parseWeakAttr(line)
+		return parseWeakAttr(line), nil
 	case "WhileStmt":
-		return parseWhileStmt(line)
+		return parseWhileStmt(line), nil
 	case "NullStmt":
-		return nil
-	default:
-		panic("unknown node type: '" + fullline + "'")
+		return nil, nil
 	}
+	return nil, fmt.Errorf("unknown node type: '%v`", fullline)
 }
 
 func groupsFromRegex(rx, line string) map[string]string {

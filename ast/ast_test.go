@@ -27,11 +27,14 @@ func runNodeTests(t *testing.T, tests map[string]Node) {
 			// Append the name of the struct onto the front. This would make the
 			// complete line it would normally be parsing.
 			name := reflect.TypeOf(expected).Elem().Name()
-			actual := Parse(name + " " + line)
+			actual, err := Parse(name + " " + line)
 
 			if !reflect.DeepEqual(expected, actual) {
 				t.Errorf("%s", util.ShowDiff(formatMultiLine(expected),
 					formatMultiLine(actual)))
+			}
+			if err != nil {
+				t.Errorf("Error parsing %v", err)
 			}
 		})
 	}
@@ -66,5 +69,17 @@ func BenchmarkParse(b *testing.B) {
 		for _, line := range lines {
 			Parse(line)
 		}
+	}
+}
+
+func TestPanicCheck(t *testing.T) {
+	defer func() {
+		if err := recover(); err != nil {
+			t.Fatalf("panic for parsing string line is not acceptable")
+		}
+	}()
+	_, err := Parse("Some strange line")
+	if err == nil {
+		t.Errorf("Haven`t error for strange string line not acceptable")
 	}
 }
