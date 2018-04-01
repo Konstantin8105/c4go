@@ -42,12 +42,19 @@ func runNodeTests(t *testing.T, tests map[string]Node) {
 			if len(actual.Children()) != 0 {
 				t.Errorf("Amount of children cannot be more 0")
 			}
-			// TODO:
-			// pos := actual.Position()
-			// if pos.Line == 0 && pos.Column == 0 && pos.LineEnd == 0 &&
-			// 	pos.ColumnEnd == 0 && pos.File == "" {
-			// 	t.Errorf("Position for test cannot be nil. %#v", pos)
-			// }
+			actual.AddChild(nil)
+			if len(actual.Children()) != 1 {
+				t.Errorf("Amount of children must be 1")
+			}
+			if actual.Children()[0] != nil {
+				t.Errorf("Children must bee nil")
+			}
+			pos := actual.Position()
+			if pos.Line == 0 && pos.Column == 0 && pos.LineEnd == 0 &&
+				pos.ColumnEnd == 0 && pos.File == "" {
+				t.Log("Please try to change Position for test. " +
+					"Better to test not zero position")
+			}
 		})
 	}
 }
