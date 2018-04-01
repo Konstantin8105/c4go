@@ -23,6 +23,9 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		}
 	}()
 
+	n.Type = types.GenerateCorrectType(n.Type)
+	n.Type2 = types.GenerateCorrectType(n.Type2)
+
 	if n.Kind == ast.CStyleCastExprNullToPointer {
 		expr = goast.NewIdent("nil")
 		exprType = types.NullPointer
@@ -93,6 +96,10 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 			err = fmt.Errorf("Cannot transpileImplicitCastExpr. err = %v", err)
 		}
 	}()
+
+	n.Type = types.GenerateCorrectType(n.Type)
+	n.Type2 = types.GenerateCorrectType(n.Type2)
+
 	// Char overflow
 	// example for byte(-1)
 	// CStyleCastExpr 0x365f628 <col:12, col:23> 'char' <IntegralCast>

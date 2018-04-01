@@ -12,6 +12,21 @@ func TestVAArgExpr(t *testing.T) {
 			Type:       "int *",
 			ChildNodes: []Node{},
 		},
+
+		`0x46f93e8 <col:28, col:58> 'LOGFUNC_t':'void (*)(void *, int, const char *)'`: &VAArgExpr{
+			Addr:       0x46f93e8,
+			Pos:        NewPositionFromString("col:28, col:58"),
+			Type:       "LOGFUNC_t",
+			Type2:      "void (*)(void *, int, const char *)",
+			ChildNodes: []Node{},
+		},
+		`0x46f99b8 <col:30, col:64> 'sqlite3_int64':'long long'`: &VAArgExpr{
+			Addr:       0x46f99b8,
+			Pos:        NewPositionFromString("col:30, col:64"),
+			Type:       "sqlite3_int64",
+			Type2:      "long long",
+			ChildNodes: []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)

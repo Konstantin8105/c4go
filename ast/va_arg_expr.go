@@ -5,12 +5,12 @@ type VAArgExpr struct {
 	Addr       Address
 	Pos        Position
 	Type       string
+	Type2      string
 	ChildNodes []Node
 }
 
 func parseVAArgExpr(line string) *VAArgExpr {
-	groups := groupsFromRegex(
-		"<(?P<position>.*)> '(?P<type>.*)'",
+	groups := groupsFromRegex("<(?P<position>.*)> '(?P<type>.*?)'(:'(?P<type2>.*?)')?",
 		line,
 	)
 
@@ -18,6 +18,7 @@ func parseVAArgExpr(line string) *VAArgExpr {
 		Addr:       ParseAddress(groups["address"]),
 		Pos:        NewPositionFromString(groups["position"]),
 		Type:       groups["type"],
+		Type2:      groups["type2"],
 		ChildNodes: []Node{},
 	}
 }
