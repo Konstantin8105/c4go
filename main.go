@@ -349,6 +349,8 @@ func main() {
 }
 
 func runCommand() int {
+	// TODO : add update a c4go or check version
+	// TODO : add example for starters
 
 	flag.Usage = func() {
 		usage := "Usage: %s [<command>] [<flags>] file1.c ...\n\n"
