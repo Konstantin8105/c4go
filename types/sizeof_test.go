@@ -1,7 +1,6 @@
 package types_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/Konstantin8105/c4go/program"
@@ -9,27 +8,25 @@ import (
 )
 
 type sizeofTestCase struct {
-	cType string
-	size  int
-	err   error
+	cType   string
+	size    int
+	isError bool
 }
 
 var sizeofTestCases = []sizeofTestCase{
-	{"int", 4, nil},
-	{"int [2]", 4 * 2, nil},
-	{"int [2][3]", 4 * 2 * 3, nil},
-	{"int [2][3][4]", 4 * 2 * 3 * 4, nil},
-	{"int *[2]", 8 * 2, nil},
-	{"int *[2][3]", 8 * 2 * 3, nil},
-	{"int *[2][3][4]", 8 * 2 * 3 * 4, nil},
-	{"int *", 8, nil},
-	{"int **", 8, nil},
-	{"int ***", 8, nil},
-	{"char *const", 8, nil},
-	{"char *const [3]", 24, nil},
-	{"struct c [2]", 0, fmt.Errorf(
-		"Cannot determine sizeof : " +
-			"|struct c [2]|. err = error in sizeof baseSize for `struct c`")},
+	{"int", 4, true},
+	{"int [2]", 4 * 2, true},
+	{"int [2][3]", 4 * 2 * 3, true},
+	{"int [2][3][4]", 4 * 2 * 3 * 4, true},
+	{"int *[2]", 8 * 2, true},
+	{"int *[2][3]", 8 * 2 * 3, true},
+	{"int *[2][3][4]", 8 * 2 * 3 * 4, true},
+	{"int *", 8, true},
+	{"int **", 8, true},
+	{"int ***", 8, true},
+	{"char *const", 8, true},
+	{"char *const [3]", 24, true},
+	{"struct c [2]", 0, false},
 }
 
 func TestSizeOf(t *testing.T) {
@@ -37,7 +34,8 @@ func TestSizeOf(t *testing.T) {
 
 	for _, testCase := range sizeofTestCases {
 		size, err := types.SizeOf(p, testCase.cType)
-		if err != nil && (testCase.err == nil || (err.Error() != testCase.err.Error())) {
+		if !((err != nil && testCase.isError == false) ||
+			(err == nil && testCase.isError == true)) {
 			t.Error(err)
 			continue
 		}
