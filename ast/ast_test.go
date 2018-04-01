@@ -36,6 +36,18 @@ func runNodeTests(t *testing.T, tests map[string]Node) {
 			if err != nil {
 				t.Errorf("Error parsing %v", err)
 			}
+			if int64(actual.Address()) == 0 {
+				t.Errorf("Address for test cannot be nil")
+			}
+			if len(actual.Children()) != 0 {
+				t.Errorf("Amount of children cannot be more 0")
+			}
+			// TODO:
+			// pos := actual.Position()
+			// if pos.Line == 0 && pos.Column == 0 && pos.LineEnd == 0 &&
+			// 	pos.ColumnEnd == 0 && pos.File == "" {
+			// 	t.Errorf("Position for test cannot be nil. %#v", pos)
+			// }
 		})
 	}
 }
@@ -74,8 +86,8 @@ func BenchmarkParse(b *testing.B) {
 
 func TestPanicCheck(t *testing.T) {
 	defer func() {
-		if err := recover(); err != nil {
-			t.Fatalf("panic for parsing string line is not acceptable")
+		if r := recover(); r != nil {
+			t.Fatalf("panic for parsing string line is not acceptable. %v", r)
 		}
 	}()
 	_, err := Parse("Some strange line")
