@@ -50,13 +50,6 @@ func transpileFieldDecl(p *program.Program, n *ast.FieldDecl) (
 		return nil, fmt.Errorf("Error : name of FieldDecl is empty")
 	}
 
-	// Add for fix bug in "stdlib.h"
-	// build/tests/exit/main_test.go:90:11: undefined: wait
-	// it is "union" with some anonymous struct
-	if n.Type == "union wait *" {
-		return nil, fmt.Errorf("Avoid struct `union wait *` in FieldDecl")
-	}
-
 	fieldType, err := types.ResolveType(p, n.Type)
 	p.AddMessage(p.GenerateWarningMessage(err, n))
 
