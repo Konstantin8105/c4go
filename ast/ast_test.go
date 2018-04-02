@@ -27,11 +27,33 @@ func runNodeTests(t *testing.T, tests map[string]Node) {
 			// Append the name of the struct onto the front. This would make the
 			// complete line it would normally be parsing.
 			name := reflect.TypeOf(expected).Elem().Name()
-			actual := Parse(name + " " + line)
+			actual, err := Parse(name + " " + line)
 
 			if !reflect.DeepEqual(expected, actual) {
 				t.Errorf("%s", util.ShowDiff(formatMultiLine(expected),
 					formatMultiLine(actual)))
+			}
+			if err != nil {
+				t.Errorf("Error parsing %v", err)
+			}
+			if int64(actual.Address()) == 0 {
+				t.Errorf("Address for test cannot be nil")
+			}
+			if len(actual.Children()) != 0 {
+				t.Errorf("Amount of children cannot be more 0")
+			}
+			actual.AddChild(nil)
+			if len(actual.Children()) != 1 {
+				t.Errorf("Amount of children must be 1")
+			}
+			if actual.Children()[0] != nil {
+				t.Errorf("Children must bee nil")
+			}
+			pos := actual.Position()
+			if pos.Line == 0 && pos.Column == 0 && pos.LineEnd == 0 &&
+				pos.ColumnEnd == 0 && pos.File == "" {
+				t.Log("Please try to change Position for test. " +
+					"Better to test not zero position")
 			}
 		})
 	}
@@ -66,5 +88,33 @@ func BenchmarkParse(b *testing.B) {
 		for _, line := range lines {
 			Parse(line)
 		}
+	}
+}
+
+func TestPanicCheck(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			t.Fatalf("panic for parsing string line is not acceptable. %v", r)
+		}
+	}()
+	_, err := Parse("Some strange line")
+	if err == nil {
+		t.Errorf("Haven`t error for strange string line not acceptable")
+	}
+	// Correct node of AST:
+	// GotoStmt 0x7fb9cc1994d8 <line:18893:9, col:14>  'end_getDigits' 0x7fb9cc199490
+	// Modify for panic in ast regexp
+	//
+	n, err := Parse("GotoStmt 0x7fb9cc1994d8 <lin8893:9, col:14> ts' 99490")
+	if err == nil {
+		t.Errorf("Haven`t error for guarantee panic line not acceptable\n%v",
+			Atos(n))
+	}
+}
+
+func TestNullStmt(t *testing.T) {
+	n, err := Parse("NullStmt")
+	if n != nil || err != nil {
+		t.Errorf("Not acceptable for NullStmt")
 	}
 }

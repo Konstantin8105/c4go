@@ -11,10 +11,13 @@ func TestArrayFiller(t *testing.T) {
 	expected := &ArrayFiller{
 		ChildNodes: []Node{},
 	}
-	actual := Parse(`array filler`)
+	actual, err := Parse(`array filler`)
 
 	if !reflect.DeepEqual(expected, actual) {
 		t.Errorf("%s", util.ShowDiff(formatMultiLine(expected),
 			formatMultiLine(actual)))
+	}
+	if err != nil {
+		t.Errorf("Error parsing")
 	}
 }
