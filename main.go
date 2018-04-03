@@ -199,7 +199,7 @@ func buildTree(nodes []treeNode, depth int) []ast.Node {
 
 // Start begins transpiling an input file.
 func Start(args ProgramArgs) (err error) {
-	lines, filePP, ppFilePath, err := generateAstLines(args)
+	lines, filePP, err := generateAstLines(args)
 	if err != nil {
 		return
 	}
@@ -216,7 +216,7 @@ func Start(args ProgramArgs) (err error) {
 		return nil
 	}
 
-	err = generateGoCode(args, lines, filePP, ppFilePath)
+	err = generateGoCode(args, lines, filePP)
 	if err != nil {
 		return
 	}
@@ -224,7 +224,7 @@ func Start(args ProgramArgs) (err error) {
 	return nil
 }
 
-func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.FilePP, ppFilePath string, err error) {
+func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.FilePP, err error) {
 	if args.verbose {
 		fmt.Println("Start tanspiling ...")
 	}
@@ -263,7 +263,7 @@ func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.Fil
 	}
 	defer os.RemoveAll(dir) // clean up
 
-	ppFilePath = path.Join(dir, "pp.c")
+	ppFilePath := path.Join(dir, "pp.c")
 	err = ioutil.WriteFile(ppFilePath, filePP.GetSource(), 0644)
 	if err != nil {
 		err = fmt.Errorf("writing to %s failed: %v", ppFilePath, err)
@@ -288,8 +288,7 @@ func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.Fil
 	return
 }
 
-func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP,
-	ppFilePath string) (
+func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP) (
 	err error) {
 
 	p := program.NewProgram()
