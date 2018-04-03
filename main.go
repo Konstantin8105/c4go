@@ -185,10 +185,18 @@ func buildTree(nodes []treeNode, depth int) []ast.Node {
 		}
 
 		children := buildTree(slice, depth+1)
-		for _, child := range children {
-			section[0].node.AddChild(child)
+		switch section[0].node.(type) {
+		case *ast.C4goErrorNode:
+			continue
+		default:
+			for _, child := range children {
+				if section[0].node == nil {
+					break
+				}
+				section[0].node.AddChild(child)
+			}
+			results = append(results, section[0].node)
 		}
-		results = append(results, section[0].node)
 	}
 
 	return results
