@@ -216,7 +216,12 @@ func (f FilePP) GetSnippet(file string,
 		if len(f.entities[i].lines) < lineEnd {
 			continue
 		}
-
+		if col == 0 && colEnd == 0 {
+			return []byte((*f.entities[i].lines[line+1-f.entities[i].positionInSource])), nil
+		}
+		if colEnd == 0 {
+			return []byte((*f.entities[i].lines[line+1-f.entities[i].positionInSource])[col-1:]), nil
+		}
 		return []byte((*f.entities[i].lines[line+1-f.entities[i].positionInSource])[col-1 : colEnd]), nil
 	}
 
