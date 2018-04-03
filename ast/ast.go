@@ -35,10 +35,11 @@ func ParseAddress(address string) Address {
 
 // Parse takes the coloured output of the clang AST command and returns a root
 // node for the AST.
-func Parse(fullline string) (_ Node, err error) {
+func Parse(fullline string) (returnNode Node, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("Cannot parse line: `%v`. %v", fullline, r)
+			returnNode = C4goErrorNode{}
 		}
 	}()
 	line := fullline
@@ -261,7 +262,7 @@ func Parse(fullline string) (_ Node, err error) {
 	case "NullStmt":
 		return nil, nil
 	}
-	return nil, fmt.Errorf("unknown node type: '%v`", fullline)
+	return C4goErrorNode{}, fmt.Errorf("unknown node type: '%v`", fullline)
 }
 
 func groupsFromRegex(rx, line string) map[string]string {
