@@ -185,6 +185,9 @@ func buildTree(nodes []treeNode, depth int) []ast.Node {
 		}
 
 		children := buildTree(slice, depth+1)
+		if section[0].node == nil {
+			continue
+		}
 		for _, child := range children {
 			section[0].node.AddChild(child)
 		}

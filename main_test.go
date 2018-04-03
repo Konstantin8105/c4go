@@ -608,7 +608,7 @@ func cleaningGoCode(fileName string) (dat []byte, err error) {
 	return
 }
 
-func TestConvertLinesToNodes(t *testing.T) {
+func generateASTtree() (lines []string, err error) {
 	args := DefaultProgramArgs()
 	src := `
 int main() {
@@ -624,14 +624,16 @@ int main() {
 `
 	dir, err := ioutil.TempDir("", "c4go")
 	if err != nil {
-		t.Errorf("Cannot create temp folder: %v", err)
+		err = fmt.Errorf("Cannot create temp folder: %v", err)
+		return
 	}
 	defer os.RemoveAll(dir) // clean up
 
 	code := path.Join(dir, "code")
 	err = ioutil.WriteFile(code, []byte(src), 0644)
 	if err != nil {
-		t.Errorf("writing to %s failed: %v", code, err)
+		err = fmt.Errorf("writing to %s failed: %v", code, err)
+		return
 	}
 
 	args.inputFiles = append(args.inputFiles, code)
@@ -641,14 +643,13 @@ int main() {
 	old := astout
 	r, w, err := os.Pipe()
 	if err != nil {
-		t.Error(err)
+		return
 	}
 
 	astout = w
 	defer func() {
 		astout = old
 	}()
-	var lines []string
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
@@ -661,10 +662,14 @@ int main() {
 	}()
 
 	err = Start(args)
+	// Reset the output again
 	w.Close()
 	wg.Wait()
-	// Reset the output again
-	// r.Close()
+	return
+}
+
+func TestConvertLinesToNodes(t *testing.T) {
+	lines, err := generateASTtree()
 	if err != nil {
 		t.Error(err)
 	}
@@ -709,5 +714,29 @@ int main() {
 	_, errs = convertLinesToNodesParallel(lines)
 	if len(errs) != len(lines) {
 		t.Errorf("Slice of errors is not correct in convertLinesToNodesParallel")
+	}
+}
+
+func TestBuildTree(t *testing.T) {
+	var i int
+	defer func() {
+		if r := recover(); r != nil {
+			t.Errorf("Panic is not acceptable for position: %v\n%v", i, r)
+		}
+	}()
+	lines, err := generateASTtree()
+	if err != nil {
+		t.Error(err)
+	}
+	t.Logf("Amount %v lines of AST tree", len(lines))
+	for i = range lines {
+		c := make([]string, len(lines))
+		copy(c, lines)
+		c[i] += "Wrong wrong AST line"
+		nodes, errs := convertLinesToNodesParallel(c)
+		if len(errs) == 0 {
+			t.Errorf("Haven`t ast error for %v", i)
+		}
+		_ = buildTree(nodes, 0)
 	}
 }
