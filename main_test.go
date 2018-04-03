@@ -682,6 +682,21 @@ int main() {
 		t.Errorf("Slice of errors must be 0 in convertLinesToNodesParallel")
 	}
 
+	// check with small amount of lines
+	if len(lines) < 10 {
+		t.Errorf("Ast tree is too small")
+	}
+	for amount := 0; amount < 10; amount++ {
+		_, errs = convertLinesToNodes(lines[:amount])
+		if len(errs) > 0 {
+			t.Errorf("convertLinesToNodes. amount = %v", amount)
+		}
+		_, errs = convertLinesToNodesParallel(lines[:amount])
+		if len(errs) > 0 {
+			t.Errorf("convertLinesToNodesParallel. amount = %v", amount)
+		}
+	}
+
 	// add wrong lines into ast lines
 	for i := range lines {
 		lines[i] += "some wrong ast line"

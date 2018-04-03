@@ -319,6 +319,9 @@ func Start(args ProgramArgs) (err error) {
 	err = transpiler.TranspileAST(args.outputFile, args.packageName,
 		p, tree[0].(ast.Node))
 	if err != nil {
+		for i := range astErrors {
+			fmt.Fprintf(os.Stderr, "AST error #%d:\n%v\n", astErrors[i].Error())
+		}
 		return fmt.Errorf("cannot transpile AST : %v", err)
 	}
 
@@ -398,8 +401,6 @@ func runCommand() int {
 		usage += "  transpile\ttranspile an input C source file or files to Go\n"
 		usage += "  ast\t\tprint AST before translated Go code\n\n"
 
-		// usage += "Flags:\n"
-		// fmt.Fprintf(stderr, usage, os.Args[0])
 		flag.PrintDefaults()
 	}
 
