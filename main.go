@@ -32,6 +32,7 @@ import (
 )
 
 var stderr io.Writer = os.Stderr
+var astout io.Writer = os.Stdout
 
 // ProgramArgs defines the options available when processing the program. There
 // is no constructor since the zeroed out values are the appropriate defaults -
@@ -256,9 +257,9 @@ func Start(args ProgramArgs) (err error) {
 	lines := readAST(astPP)
 	if args.ast {
 		for _, l := range lines {
-			fmt.Println(l)
+			fmt.Fprintln(astout, l)
 		}
-		fmt.Println()
+		fmt.Fprintln(astout)
 
 		return nil
 	}
@@ -274,7 +275,10 @@ func Start(args ProgramArgs) (err error) {
 	}
 	nodes, astErrors := convertLinesToNodesParallel(lines)
 	for i := range astErrors {
-		p.AddMessage(fmt.Sprintf("// AST Error : %v\n", astErrors[i]))
+		ls := strings.Split(astErrors[i].Error(), "\n")
+		for _, l := range ls {
+			p.AddMessage(fmt.Sprintf("// AST Error : %v\n", l))
+		}
 	}
 
 	// build tree
@@ -315,6 +319,9 @@ func Start(args ProgramArgs) (err error) {
 	err = transpiler.TranspileAST(args.outputFile, args.packageName,
 		p, tree[0].(ast.Node))
 	if err != nil {
+		for i := range astErrors {
+			fmt.Fprintf(os.Stderr, "AST error #%d:\n%v\n", astErrors[i].Error())
+		}
 		return fmt.Errorf("cannot transpile AST : %v", err)
 	}
 
@@ -394,8 +401,6 @@ func runCommand() int {
 		usage += "  transpile\ttranspile an input C source file or files to Go\n"
 		usage += "  ast\t\tprint AST before translated Go code\n\n"
 
-		usage += "Flags:\n"
-		fmt.Fprintf(stderr, usage, os.Args[0])
 		flag.PrintDefaults()
 	}
 
