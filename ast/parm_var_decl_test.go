@@ -94,6 +94,18 @@ func TestParmVarDecl(t *testing.T) {
 			IsReferenced: true,
 			ChildNodes:   []Node{},
 		},
+		`0x7f95f30ed9d0 <col:23, col:51> col:51 used eptr 'const char *' register`: &ParmVarDecl{
+			Addr:         0x7f95f30ed9d0,
+			Pos:          NewPositionFromString("col:23, col:51"),
+			Position2:    "col:51",
+			Type:         "const char *",
+			Name:         "eptr",
+			Type2:        "",
+			IsUsed:       true,
+			IsReferenced: false,
+			IsRegister:   true,
+			ChildNodes:   []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)

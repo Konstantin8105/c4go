@@ -55,6 +55,10 @@ func runNodeTests(t *testing.T, tests map[string]Node) {
 				t.Log("Please try to change Position for test. " +
 					"Better to test not zero position")
 			}
+			if pos.Line < 0 || pos.Column < 0 || pos.LineEnd < 0 ||
+				pos.ColumnEnd < 0 {
+				t.Errorf("Not acceptable negative position")
+			}
 		})
 	}
 }

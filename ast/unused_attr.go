@@ -5,18 +5,20 @@ package ast
 type UnusedAttr struct {
 	Addr       Address
 	Pos        Position
+	IsUnused   bool
 	ChildNodes []Node
 }
 
 func parseUnusedAttr(line string) *UnusedAttr {
 	groups := groupsFromRegex(
-		"<(?P<position>.*)> unused",
+		"<(?P<position>.*)>(?P<unused> unused)?",
 		line,
 	)
 
 	return &UnusedAttr{
 		Addr:       ParseAddress(groups["address"]),
 		Pos:        NewPositionFromString(groups["position"]),
+		IsUnused:   len(groups["unused"]) > 0,
 		ChildNodes: []Node{},
 	}
 }
