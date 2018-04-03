@@ -427,6 +427,7 @@ func runCommand() int {
 
 		args.ast = true
 		args.inputFiles = astCommand.Args()
+		args.clangFlags = clangFlags
 	case "transpile":
 		err := transpileCommand.Parse(os.Args[2:])
 		if err != nil {
