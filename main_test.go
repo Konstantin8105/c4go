@@ -3,6 +3,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"flag"
 	"fmt"
@@ -16,6 +17,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"testing"
 
@@ -604,4 +606,93 @@ func cleaningGoCode(fileName string) (dat []byte, err error) {
 	dat = bytes.Replace(dat, []byte{'\r'}, []byte{}, -1)
 
 	return
+}
+
+func TestConvertLinesToNodes(t *testing.T) {
+	args := DefaultProgramArgs()
+	src := `
+int main() {
+	int i = 0;
+	int j = 1;
+	if (i > j)
+		return 1;
+	if (i == j){
+		return 2;
+	}
+	return 0;
+}
+`
+	dir, err := ioutil.TempDir("", "c4go")
+	if err != nil {
+		t.Errorf("Cannot create temp folder: %v", err)
+	}
+	defer os.RemoveAll(dir) // clean up
+
+	code := path.Join(dir, "code")
+	err = ioutil.WriteFile(code, []byte(src), 0644)
+	if err != nil {
+		t.Errorf("writing to %s failed: %v", code, err)
+	}
+
+	args.inputFiles = append(args.inputFiles, code)
+	args.ast = true
+
+	// replace writer for ast
+	old := astout
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Error(err)
+	}
+
+	astout = w
+	defer func() {
+		astout = old
+	}()
+	var lines []string
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		scanner := bufio.NewScanner(r)
+		for scanner.Scan() {
+			line := scanner.Text()
+			lines = append(lines, line)
+		}
+		wg.Done()
+	}()
+
+	err = Start(args)
+	w.Close()
+	wg.Wait()
+	// Reset the output again
+	// r.Close()
+	if err != nil {
+		t.Error(err)
+	}
+	if len(lines) == 0 {
+		t.Errorf("Ast tree is empty")
+	}
+
+	// check functions
+	_, errs := convertLinesToNodes(lines)
+	if len(errs) > 0 {
+		t.Errorf("Slice of errors must be 0 in convertLinesToNodes")
+	}
+	_, errs = convertLinesToNodesParallel(lines)
+	if len(errs) > 0 {
+		t.Errorf("Slice of errors must be 0 in convertLinesToNodesParallel")
+	}
+
+	// add wrong lines into ast lines
+	for i := range lines {
+		lines[i] += "some wrong ast line"
+	}
+
+	_, errs = convertLinesToNodes(lines)
+	if len(errs) != len(lines) {
+		t.Errorf("Slice of errors is not correct in convertLinesToNodes")
+	}
+	_, errs = convertLinesToNodesParallel(lines)
+	if len(errs) != len(lines) {
+		t.Errorf("Slice of errors is not correct in convertLinesToNodesParallel")
+	}
 }
