@@ -213,11 +213,17 @@ func (f FilePP) GetSnippet(file string,
 		}
 		line := line
 		lineEnd := lineEnd
-		if len(f.entities[i].lines) < lineEnd {
+		if len(f.entities[i].lines)+f.entities[i].positionInSource < lineEnd {
 			continue
 		}
-
-		return []byte((*f.entities[i].lines[line+1-f.entities[i].positionInSource])[col-1 : colEnd]), nil
+		l := f.entities[i].lines[line+1-f.entities[i].positionInSource]
+		if col == 0 && colEnd == 0 {
+			return []byte(*l), nil
+		}
+		if colEnd == 0 {
+			return []byte((*l)[col-1:]), nil
+		}
+		return []byte((*l)[col-1 : colEnd]), nil
 	}
 
 	err = fmt.Errorf("Snippet is not found")

@@ -11,6 +11,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -22,8 +23,6 @@ import (
 	"runtime"
 	"strings"
 	"sync"
-
-	"errors"
 
 	"github.com/Konstantin8105/c4go/ast"
 	"github.com/Konstantin8105/c4go/preprocessor"
@@ -64,10 +63,6 @@ func DefaultProgramArgs() ProgramArgs {
 		clangFlags:   []string{},
 		outputAsTest: false,
 	}
-}
-
-func readAST(data []byte) []string {
-	return strings.Split(string(data), "\n")
 }
 
 type treeNode struct {
@@ -204,19 +199,47 @@ func buildTree(nodes []treeNode, depth int) []ast.Node {
 
 // Start begins transpiling an input file.
 func Start(args ProgramArgs) (err error) {
+	lines, filePP, err := generateAstLines(args)
+	if err != nil {
+		return
+	}
+
+	if args.verbose {
+		fmt.Println("Reading clang AST tree...")
+	}
+	if args.ast {
+		for _, l := range lines {
+			fmt.Fprintln(astout, l)
+		}
+		fmt.Fprintln(astout)
+
+		return nil
+	}
+
+	err = generateGoCode(args, lines, filePP)
+	if err != nil {
+		return
+	}
+
+	return nil
+}
+
+func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.FilePP, err error) {
 	if args.verbose {
 		fmt.Println("Start tanspiling ...")
 	}
 
 	if os.Getenv("GOPATH") == "" {
-		return fmt.Errorf("The $GOPATH must be set")
+		err = fmt.Errorf("The $GOPATH must be set")
+		return
 	}
 
 	// 1. Compile it first (checking for errors)
 	for _, in := range args.inputFiles {
-		_, err := os.Stat(in)
+		_, err = os.Stat(in)
 		if err != nil {
-			return fmt.Errorf("Input file %s is not found", in)
+			err = fmt.Errorf("Input file %s is not found", in)
+			return
 		}
 	}
 
@@ -225,9 +248,9 @@ func Start(args ProgramArgs) (err error) {
 		fmt.Println("Running clang preprocessor...")
 	}
 
-	filePP, err := preprocessor.NewFilePP(args.inputFiles, args.clangFlags)
+	filePP, err = preprocessor.NewFilePP(args.inputFiles, args.clangFlags)
 	if err != nil {
-		return err
+		return
 	}
 
 	if args.verbose {
@@ -235,14 +258,16 @@ func Start(args ProgramArgs) (err error) {
 	}
 	dir, err := ioutil.TempDir("", "c4go")
 	if err != nil {
-		return fmt.Errorf("Cannot create temp folder: %v", err)
+		err = fmt.Errorf("Cannot create temp folder: %v", err)
+		return
 	}
 	defer os.RemoveAll(dir) // clean up
 
 	ppFilePath := path.Join(dir, "pp.c")
 	err = ioutil.WriteFile(ppFilePath, filePP.GetSource(), 0644)
 	if err != nil {
-		return fmt.Errorf("writing to %s failed: %v", ppFilePath, err)
+		err = fmt.Errorf("writing to %s failed: %v", ppFilePath, err)
+		return
 	}
 
 	// 3. Generate JSON from AST
@@ -258,19 +283,13 @@ func Start(args ProgramArgs) (err error) {
 
 		panic("clang failed: " + err.Error() + ":\n\n" + string(errBody))
 	}
+	lines = strings.Split(string(astPP), "\n")
 
-	if args.verbose {
-		fmt.Println("Reading clang AST tree...")
-	}
-	lines := readAST(astPP)
-	if args.ast {
-		for _, l := range lines {
-			fmt.Fprintln(astout, l)
-		}
-		fmt.Fprintln(astout)
+	return
+}
 
-		return nil
-	}
+func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP) (
+	err error) {
 
 	p := program.NewProgram()
 	p.Verbose = args.verbose
@@ -298,7 +317,7 @@ func Start(args ProgramArgs) (err error) {
 
 	// Repair the floating literals. See RepairFloatingLiteralsFromSource for
 	// more information.
-	floatingErrors := ast.RepairFloatingLiteralsFromSource(tree[0], ppFilePath)
+	floatingErrors := ast.RepairFloatingLiteralsFromSource(tree[0], filePP)
 
 	for _, fErr := range floatingErrors {
 		message := fmt.Sprintf("could not read exact floating literal: %s",

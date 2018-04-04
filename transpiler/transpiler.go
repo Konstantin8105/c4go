@@ -137,7 +137,8 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 		}
 	}()
 	if node == nil {
-		panic(node)
+		err = fmt.Errorf("Not acceptable nil node")
+		return
 	}
 	defer func() {
 		preStmts = nilFilterStmts(preStmts)
@@ -470,7 +471,7 @@ func transpileToNode(node ast.Node, p *program.Program) (
 		return
 
 	default:
-		panic(fmt.Sprintf("cannot transpile to node: %#v", node))
+		err = fmt.Errorf("cannot transpile to node: %#v", node)
 	}
 
 	return

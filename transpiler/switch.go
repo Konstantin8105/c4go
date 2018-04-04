@@ -20,6 +20,12 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 		}
 	}()
 
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("error - panic")
+		}
+	}()
+
 	// The first two children are nil. I don't know what they are supposed to be
 	// for. It looks like the number of children is also not reliable, but we
 	// know that we need the last two which represent the condition and body

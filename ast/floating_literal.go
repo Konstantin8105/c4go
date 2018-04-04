@@ -1,11 +1,10 @@
 package ast
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 
-	"github.com/Konstantin8105/c4go/cc"
+	"github.com/Konstantin8105/c4go/preprocessor"
 )
 
 // FloatingLiteral is type of float literal
@@ -75,7 +74,8 @@ type FloatingLiteralError struct {
 //
 // If the floating literal cannot be resolved for any reason the original value
 // will remain. This function will return all errors encountered.
-func RepairFloatingLiteralsFromSource(rootNode Node, preprocessedFile string) []FloatingLiteralError {
+func RepairFloatingLiteralsFromSource(rootNode Node, filePP preprocessor.FilePP) (
+	_ []FloatingLiteralError) {
 	errs := []FloatingLiteralError{}
 	floatingLiteralNodes :=
 		GetAllNodesOfType(rootNode, reflect.TypeOf((*FloatingLiteral)(nil)))
@@ -86,8 +86,12 @@ func RepairFloatingLiteralsFromSource(rootNode Node, preprocessedFile string) []
 		// Use the node position to retrieve the original line from the
 		// preprocessed source.
 		pos := node.Position()
-		line, err :=
-			cc.GetLineFromPreprocessedFile(preprocessedFile, pos.File, pos.Line)
+
+		b, err := filePP.GetSnippet(pos.File,
+			pos.Line, pos.LineEnd,
+			pos.Column, pos.ColumnEnd)
+
+		line := string(b)
 
 		// If there was a problem reading the line we should raise a warning and
 		// use the value we have. Hopefully that will be an accurate enough
@@ -99,15 +103,7 @@ func RepairFloatingLiteralsFromSource(rootNode Node, preprocessedFile string) []
 			})
 		}
 
-		// Extract the exact value from the line.
-		if pos.Column-1 >= len(line) {
-			errs = append(errs, FloatingLiteralError{
-				Node: fNode,
-				Err:  errors.New("cannot get exact value exact value"),
-			})
-		} else {
-			fmt.Sscan(line[pos.Column-1:], &fNode.Value)
-		}
+		fmt.Sscan(line, &fNode.Value)
 	}
 
 	return errs
