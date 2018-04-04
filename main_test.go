@@ -3,7 +3,6 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"flag"
 	"fmt"
@@ -17,11 +16,11 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"sync"
 	"syscall"
 	"testing"
 
 	"github.com/Konstantin8105/c4go/cc"
+	"github.com/Konstantin8105/c4go/preprocessor"
 	"github.com/Konstantin8105/c4go/util"
 )
 
@@ -608,68 +607,22 @@ func cleaningGoCode(fileName string) (dat []byte, err error) {
 	return
 }
 
-func generateASTtree() (lines []string, err error) {
-	args := DefaultProgramArgs()
-	src := `
-int main() {
-	int i = 0;
-	int j = 1;
-	if (i > j)
-		return 1;
-	if (i == j){
-		return 2;
-	}
-	return 0;
-}
-`
-	dir, err := ioutil.TempDir("", "c4go")
-	if err != nil {
-		err = fmt.Errorf("Cannot create temp folder: %v", err)
-		return
-	}
-	defer os.RemoveAll(dir) // clean up
+func generateASTtree() (
+	lines []string, filePP preprocessor.FilePP, args ProgramArgs, err error) {
+	args = DefaultProgramArgs()
+	args.inputFiles = []string{"./tests/ast/ast.c"}
+	dir := "./build/ast"
+	_ = os.Mkdir(dir, os.ModePerm)
+	args.outputFile = path.Join(dir, "ast.go")
+	args.packageName = "main"
+	args.outputAsTest = true
 
-	code := path.Join(dir, "code")
-	err = ioutil.WriteFile(code, []byte(src), 0644)
-	if err != nil {
-		err = fmt.Errorf("writing to %s failed: %v", code, err)
-		return
-	}
-
-	args.inputFiles = append(args.inputFiles, code)
-	args.ast = true
-
-	// replace writer for ast
-	old := astout
-	r, w, err := os.Pipe()
-	if err != nil {
-		return
-	}
-
-	astout = w
-	defer func() {
-		astout = old
-	}()
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		scanner := bufio.NewScanner(r)
-		for scanner.Scan() {
-			line := scanner.Text()
-			lines = append(lines, line)
-		}
-		wg.Done()
-	}()
-
-	err = Start(args)
-	// Reset the output again
-	w.Close()
-	wg.Wait()
+	lines, filePP, _ = generateAstLines(args)
 	return
 }
 
 func TestConvertLinesToNodes(t *testing.T) {
-	lines, err := generateASTtree()
+	lines, _, _, err := generateASTtree()
 	if err != nil {
 		t.Error(err)
 	}
@@ -724,7 +677,7 @@ func TestBuildTree(t *testing.T) {
 			t.Errorf("Panic is not acceptable for position: %v\n%v", i, r)
 		}
 	}()
-	lines, err := generateASTtree()
+	lines, _, _, err := generateASTtree()
 	if err != nil {
 		t.Error(err)
 	}
@@ -738,5 +691,31 @@ func TestBuildTree(t *testing.T) {
 			t.Errorf("Haven`t ast error for %v", i)
 		}
 		_ = buildTree(nodes, 0)
+	}
+}
+
+func TestWrongAST(t *testing.T) {
+	var i int
+	defer func() {
+		if r := recover(); r != nil {
+			t.Errorf("Panic is not acceptable for position: %v\n%v", i, r)
+		}
+	}()
+
+	lines, filePP, args, err := generateASTtree()
+	if err != nil {
+		t.Error(err)
+	}
+
+	basename := args.outputFile[:len(args.outputFile)-len(".go")]
+	for i = range lines {
+		if i == 0 {
+			continue
+		}
+		c := make([]string, len(lines))
+		copy(c, lines)
+		c[i] += "Wrong wrong AST line"
+		args.outputFile = basename + strconv.Itoa(i) + ".go"
+		err = generateGoCode(args, c, filePP)
 	}
 }
