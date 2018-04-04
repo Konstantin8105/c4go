@@ -19,7 +19,6 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/Konstantin8105/c4go/cc"
 	"github.com/Konstantin8105/c4go/preprocessor"
 	"github.com/Konstantin8105/c4go/util"
 )
@@ -73,7 +72,6 @@ func TestIntegrationScripts(t *testing.T) {
 
 	for _, file := range files {
 		t.Run(file, func(t *testing.T) {
-			cc.ResetCache()
 
 			cProgram := programOut{}
 			goProgram := programOut{}
