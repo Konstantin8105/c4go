@@ -279,16 +279,28 @@ void test_switch()
 {
 	int val = 1;
 	switch (0){
+		default:
+			// ignored
+			val += 3;
 		case -1:
 			val += 1;
 		case 2:
+		{
 			val *= 2;
-		default:
-			val += 3;
-		case 3:
+		}
+		case 3: 
+		{
 			val *= 4;
+		}
+		case 4:
+		case 5:
+			val += 5;
+		case 6:
+		case 7:
+			val *= 6;
+			break;
 	}
-	is_eq(val, 28);
+	is_eq(val, 270);
 }
 
 int main()
