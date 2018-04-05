@@ -275,15 +275,48 @@ void switch_without_input()
     is_eq(pos, 1);
 }
 
+void test_switch()
+{
+	int val = 1;
+	switch (0){
+		case -1000:
+		default:
+			// ignored
+			val += 3;
+		case -1:
+			val += 1;
+		case 2:
+		{
+			val *= 2;
+		}
+		case 3: 
+		{
+			val *= 4;
+		}
+		case 4:
+		case 5:
+			val += 5;
+		case 6:
+		case 7:
+			val *= 6;
+			break;
+		case 8:;
+		case 9:;
+		case 10:;
+	}
+	is_eq(val, 270);
+}
+
 int main()
 {
-    plan(25);
+    plan(26);
 
     match_a_single_case();
     fallthrough_to_next_case();
     match_no_cases();
     match_default();
     fallthrough_several_cases_including_default();
+	test_switch();
 
     // For each of the tests above there will be identical cases that use scopes
     // for the case statements.

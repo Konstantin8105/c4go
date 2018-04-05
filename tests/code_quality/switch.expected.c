@@ -13,6 +13,10 @@ func switch_function() {
 	switch i {
 	case (0):
 		fallthrough
+	case (1):
+		{
+			return
+		}
 	case (2):
 		{
 			_ = (i)
@@ -28,10 +32,9 @@ func switch_function() {
 	case 6:
 		fallthrough
 	case 7:
-		var d int
-	case (1):
 		{
-			return
+			var d int
+			break
 		}
 	}
 }
