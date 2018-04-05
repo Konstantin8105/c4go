@@ -279,6 +279,7 @@ void test_switch()
 {
 	int val = 1;
 	switch (0){
+		case -1000:
 		default:
 			// ignored
 			val += 3;
