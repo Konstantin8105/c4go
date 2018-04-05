@@ -55,14 +55,22 @@ checkAgain:
 	for i := range body.Children() {
 		if v, ok := body.Children()[i].(*ast.CaseStmt); ok {
 			if vv, ok := v.Children()[len(v.Children())-1].(*ast.CaseStmt); ok {
-				// TODO : add "vv" before next case, but not at the end
-				body.AddChild(vv)
+				if len(body.Children()) > i+1 {
+					body.ChildNodes = append(body.ChildNodes[:i+1], append([]ast.Node{vv}, body.ChildNodes[i+1:]...)...)
+				} else {
+					up := body.ChildNodes
+					body.ChildNodes = append(up, vv)
+				}
 				v.Children()[len(v.Children())-1] = &ast.CompoundStmt{}
 				goto checkAgain
 			}
 			if vv, ok := v.Children()[len(v.Children())-1].(*ast.DefaultStmt); ok {
-				// TODO : add "vv" before next case, but not at the end
-				body.AddChild(vv)
+				if len(body.Children()) > i+1 {
+					body.ChildNodes = append(body.ChildNodes[:i+1], append([]ast.Node{vv}, body.ChildNodes[i+1:]...)...)
+				} else {
+					up := body.ChildNodes
+					body.ChildNodes = append(up, vv)
+				}
 				v.Children()[len(v.Children())-1] = &ast.CompoundStmt{}
 				goto checkAgain
 			}

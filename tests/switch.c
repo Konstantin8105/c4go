@@ -299,6 +299,9 @@ void test_switch()
 		case 7:
 			val *= 6;
 			break;
+		case 8:;
+		case 9:;
+		case 10:;
 	}
 	is_eq(val, 270);
 }
