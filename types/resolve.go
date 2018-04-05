@@ -338,6 +338,16 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 			fmt.Errorf("function pointers are not supported [2] : '%s'", s)
 	}
 
+	// for case : "int []"
+	if strings.HasSuffix(s, " []") {
+		var r string
+		r, err = ResolveType(p, s[:len(s)-len(" []")])
+		if err != nil {
+			return
+		}
+		return "[]" + r, nil
+	}
+
 	errMsg := fmt.Sprintf(
 		"I couldn't find an appropriate Go type for the C type '%s'.", s)
 	return "interface{}", errors.New(errMsg)

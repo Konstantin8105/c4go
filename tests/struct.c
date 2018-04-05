@@ -463,10 +463,26 @@ void test_emptyname (){
 	is_eq(en.l2,10);
 }
 
+// Link: http://en.cppreference.com/w/c/language/typedef
+typedef int A[]; // A is int[]
+A a = {1, 2}, b = {3,4,5}; // type of a is int[2], type of b is int[3]
+void test_typedef1(){
+	is_eq(a[1],2);
+	is_eq(b[1],4);
+}
+void test_typedef2(){
+	typedef float A[];
+	A a = {1., 2.}, b = {3.,4.,5.};
+	is_eq(a[1],2.);
+	is_eq(b[1],4.);
+}
+
 int main()
 {
-    plan(77);
+    plan(81);
 
+	test_typedef1();
+	test_typedef2();
     struct_array();
     struct_func_func();
     struct_after_struct();
