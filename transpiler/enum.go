@@ -170,7 +170,8 @@ func transpileEnumDeclWithType(p *program.Program, n *ast.EnumDecl, enumType str
 
 	// create all EnumConstant like just constants
 	var counter int
-	for i, child := range n.Children() {
+	var i int
+	for _, child := range n.Children() {
 		switch child.(type) {
 		case *ast.FullComment, *ast.BlockCommandComment,
 			*ast.HTMLStartTagComment, *ast.HTMLEndTagComment,
@@ -290,6 +291,12 @@ func transpileEnumDeclWithType(p *program.Program, n *ast.EnumDecl, enumType str
 		}
 
 		d.Specs = append(d.Specs, valSpec)
+		i++
+
+		if enumType != "int" {
+			// registration of enum constants
+			p.EnumConstantToEnum[child.Name] = "enum " + enumType
+		}
 	}
 	d.Lparen = 1
 	decls = append(decls, d)
