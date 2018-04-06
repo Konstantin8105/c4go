@@ -114,24 +114,18 @@ func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (
 			err = fmt.Errorf("Cannot transpileEnumDecl. %v", err)
 		}
 	}()
-	preStmts := []goast.Stmt{}
-	postStmts := []goast.Stmt{}
 
 	n.Name = types.GenerateCorrectType(n.Name)
 	if strings.HasPrefix(n.Name, "enum ") {
 		n.Name = n.Name[len("enum "):]
 	}
+
 	// For case `enum` without name
 	if n.Name == "" {
-		return transpileEnumDeclWithoutName(p, n)
+		return transpileEnumDeclWithType(p, n, "int")
 	}
 
 	// For case `enum` with name
-	theType, err := types.ResolveType(p, "int")
-	if err != nil {
-		// by defaults enum in C is INT
-		p.AddMessage(p.GenerateWarningMessage(err, n))
-	}
 
 	// Create alias of enum for int
 	decls = append(decls, &goast.GenDecl{
@@ -142,7 +136,8 @@ func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (
 					Name: n.Name,
 					Obj:  goast.NewObj(goast.Typ, n.Name),
 				},
-				Type: util.NewTypeIdent(theType),
+				// by defaults enum in C is INT
+				Type: util.NewTypeIdent("int"),
 			},
 		},
 	})
@@ -152,92 +147,13 @@ func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (
 		p.DefineType(n.Name)
 	}
 
-	baseType := util.NewTypeIdent(n.Name)
-
-	decl := &goast.GenDecl{
-		Tok: token.CONST,
-	}
-
-	// counter for replace iota
-	var counter int
-	var i int
-	for _, c := range n.Children() {
-		if _, ok := c.(*ast.EnumConstantDecl); !ok {
-			// add for avoid comments elements
-			continue
-		}
-		e, newPre, newPost := transpileEnumConstantDecl(p, c.(*ast.EnumConstantDecl))
-		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
-
-		e.Names[0].Obj = goast.NewObj(goast.Con, e.Names[0].Name)
-
-		if i > 0 {
-			e.Type = nil
-			e.Values = nil
-		}
-
-		if i == 0 {
-			e.Type = baseType
-			if t, ok := e.Type.(*goast.Ident); ok {
-				t.Obj = &goast.Object{
-					Name: n.Name,
-					Kind: goast.Typ,
-					Decl: &goast.TypeSpec{
-						Name: &goast.Ident{
-							Name: n.Name,
-						},
-						Type: &goast.Ident{
-							Name: "int", // enum in C is "INT" by default
-						},
-					},
-				}
-			}
-		}
-
-		if len(c.(*ast.EnumConstantDecl).ChildNodes) > 0 {
-			if integr, ok := c.(*ast.EnumConstantDecl).ChildNodes[0].(*ast.IntegerLiteral); ok {
-				is, err := strconv.ParseInt(integr.Value, 10, 64)
-				if err != nil {
-					p.AddMessage(p.GenerateWarningMessage(err, n))
-				}
-				counter = int(is)
-			}
-		}
-
-		// Insert value of constants
-		e.Values = []goast.Expr{
-			&goast.BasicLit{
-				Kind:  token.INT,
-				Value: strconv.Itoa(counter),
-			},
-		}
-
-		// Position inside (....), it is
-		// not value of constants
-		e.Names[0].Obj.Data = i
-		counter++
-
-		decl.Specs = append(decl.Specs, e)
-
-		// registration of enum constants
-		p.EnumConstantToEnum[e.Names[0].Name] = "enum " + n.Name
-
-		// calculate next position without comments
-		i++
-	}
-
-	// important value for creating (.....)
-	// with constants inside
-	decl.Lparen = 1
-	decl.Rparen = 2
-
-	decls = append(decls, decl)
-
-	err = nil
+	var d []goast.Decl
+	d, err = transpileEnumDeclWithType(p, n, n.Name)
+	decls = append(decls, d...)
 	return
 }
 
-func transpileEnumDeclWithoutName(p *program.Program, n *ast.EnumDecl) (
+func transpileEnumDeclWithType(p *program.Program, n *ast.EnumDecl, enumType string) (
 	decls []goast.Decl, err error) {
 	defer func() {
 		if err != nil {
@@ -246,9 +162,15 @@ func transpileEnumDeclWithoutName(p *program.Program, n *ast.EnumDecl) (
 	}()
 	preStmts := []goast.Stmt{}
 	postStmts := []goast.Stmt{}
+
+	// initialization decls
+	d := &goast.GenDecl{
+		Tok: token.CONST,
+	}
+
 	// create all EnumConstant like just constants
 	var counter int
-	for _, child := range n.Children() {
+	for i, child := range n.Children() {
 		switch child.(type) {
 		case *ast.FullComment, *ast.BlockCommandComment,
 			*ast.HTMLStartTagComment, *ast.HTMLEndTagComment,
@@ -267,7 +189,7 @@ func transpileEnumDeclWithoutName(p *program.Program, n *ast.EnumDecl) (
 		}
 		child := child.(*ast.EnumConstantDecl)
 		var (
-			e       goast.Spec
+			e       *goast.ValueSpec
 			newPre  []goast.Stmt
 			newPost []goast.Stmt
 			val     *goast.ValueSpec
@@ -358,13 +280,19 @@ func transpileEnumDeclWithoutName(p *program.Program, n *ast.EnumDecl) (
 					v), n))
 		}
 
-		decls = append(decls, &goast.GenDecl{
-			Tok: token.CONST,
-			Specs: []goast.Spec{
-				e,
-			},
-		})
+		valSpec := &goast.ValueSpec{
+			Names:  e.Names,
+			Values: e.Values,
+		}
+
+		if i == 0 {
+			valSpec.Type = goast.NewIdent(enumType)
+		}
+
+		d.Specs = append(d.Specs, valSpec)
 	}
+	d.Lparen = 1
+	decls = append(decls, d)
 	err = nil
 	return
 }

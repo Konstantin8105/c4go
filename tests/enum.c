@@ -99,10 +99,24 @@ enum
 	parent = (9),
 	usually = 10
 };
+enum nameParent {
+	parent2 = (9),
+	usually2 = 10,
+	unar = (-1)
+};
 void test_parent()
 {
 	is_eq(parent,9);
 	is_eq(usually,10);
+	enum nameParent p = parent2;
+	is_eq(p,parent2);
+	is_eq(p,9);
+	p = usually2;
+	is_eq(p,usually2);
+	is_eq(p,10);
+	p = unar;
+	is_eq(p,unar);
+	is_eq(p,-1);
 }
 
 typedef enum
@@ -121,7 +135,7 @@ void test_unary(){
 // main function
 int main()
 {
-    plan(37);
+    plan(43);
 
 	test_unary();
 	test_parent();
