@@ -604,6 +604,10 @@ func createIfWithNotConditionAndBreak(condition ast.Node) (ifStmt ast.IfStmt) {
 		par.Type = con.Type
 		unitary.Type = con.Type
 
+	case *ast.CallExpr:
+		par.Type = con.Type
+		unitary.Type = con.Type
+
 	default:
 		panic(
 			fmt.Errorf("Type %T is not implemented in createIfWithNotConditionAndBreak", condition))
