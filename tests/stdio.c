@@ -12,7 +12,7 @@
     test_##t();
 
 // size of that file
-int filesize = 11026;
+int filesize = 11124;
 
 void test_putchar()
 {
@@ -22,7 +22,7 @@ void test_putchar()
         putchar(c);
     putchar('\n');
 
-    pass("%s", "putchar");
+    pass("%s", "putchar"); 
 }
 
 void test_puts()
@@ -45,6 +45,9 @@ void test_printf()
     printf("# floats: %4.2f %+.0e %E \n", 3.1416, 3.1416, 3.1416);
     printf("# Width trick: %*d \n", 5, 10);
     printf("# %s \n", "A string");
+
+	// Literal error
+    printf("Символьный литерал \'A\':\t%lu\n", sizeof('A'));
 
     int magnitude = 4;
     char printfFormat[30] = "%0";
