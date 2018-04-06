@@ -3,6 +3,8 @@
 #include "tests.h"
 #include <stdio.h>
 
+typedef void function_t (int args);
+
 struct programming {
     float constant;
     char* pointer;

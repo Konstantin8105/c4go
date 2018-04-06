@@ -37,7 +37,7 @@ func runNodeTests(t *testing.T, tests map[string]Node) {
 				t.Errorf("Error parsing %v", err)
 			}
 			if int64(actual.Address()) == 0 {
-				t.Errorf("Address for test cannot be nil")
+				t.Errorf("Address for test cannot be nil. %v", actual.Address())
 			}
 			if len(actual.Children()) != 0 {
 				t.Errorf("Amount of children cannot be more 0")

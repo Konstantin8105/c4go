@@ -402,7 +402,8 @@ func setPosition(node Node, position Position) {
 	case *TypedefType, *Typedef, *TranslationUnitDecl, *RecordType, *Record,
 		*QualType, *PointerType, *ParenType, *IncompleteArrayType,
 		*FunctionProtoType, *EnumType, *Enum, *ElaboratedType,
-		*ConstantArrayType, *BuiltinType, *ArrayFiller, *Field:
+		*ConstantArrayType, *BuiltinType, *ArrayFiller, *Field,
+		*DecayedType:
 		// These do not have positions so they can be ignored.
 	default:
 		panic(fmt.Sprintf("unknown node type: %+#v", node))

@@ -101,6 +101,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseCompoundAssignOperator(line), nil
 	case "CStyleCastExpr":
 		return parseCStyleCastExpr(line), nil
+	case "DecayedType":
+		return parseDecayedType(line), nil
 	case "DeclRefExpr":
 		return parseDeclRefExpr(line), nil
 	case "DeclStmt":
@@ -262,7 +264,7 @@ func Parse(fullline string) (returnNode Node, err error) {
 	case "NullStmt":
 		return nil, nil
 	}
-	return C4goErrorNode{}, fmt.Errorf("unknown node type: '%v`", fullline)
+	return C4goErrorNode{}, fmt.Errorf("unknown node type: `%v`", fullline)
 }
 
 func groupsFromRegex(rx, line string) map[string]string {
