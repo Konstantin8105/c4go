@@ -109,6 +109,11 @@ func transpileEnumConstantDecl(p *program.Program, n *ast.EnumConstantDecl) (
 
 func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (
 	decls []goast.Decl, err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("Cannot transpileEnumDecl. %v", err)
+		}
+	}()
 	preStmts := []goast.Stmt{}
 	postStmts := []goast.Stmt{}
 
@@ -118,82 +123,7 @@ func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (
 	}
 	// For case `enum` without name
 	if n.Name == "" {
-		// create all EnumConstant like just constants
-		var counter int
-		for _, child := range n.Children() {
-			if c, ok := child.(*ast.EnumConstantDecl); ok {
-				var (
-					e       goast.Spec
-					newPre  []goast.Stmt
-					newPost []goast.Stmt
-					val     *goast.ValueSpec
-				)
-				val, newPre, newPost = transpileEnumConstantDecl(p, c)
-
-				if len(newPre) > 0 || len(newPost) > 0 {
-					p.AddMessage(p.GenerateWarningMessage(
-						fmt.Errorf("Check - added in code : (%d)(%d)",
-							len(newPre), len(newPost)), n))
-				}
-
-				preStmts, postStmts = combinePreAndPostStmts(
-					preStmts, postStmts, newPre, newPost)
-
-				parseEnumBasicLit := func(b *goast.BasicLit) (
-					_ goast.Spec, counter int, err error) {
-					value, err := strconv.Atoi(b.Value)
-					if err != nil {
-						err = fmt.Errorf("Cannot parse '%s' in BasicLit", b.Value)
-						return
-					}
-					return &goast.ValueSpec{
-						Names:  []*goast.Ident{{Name: c.Name}},
-						Values: []goast.Expr{&goast.BasicLit{Kind: token.INT, Value: b.Value}},
-						Type:   val.Type,
-						Doc:    p.GetMessageComments(),
-					}, value, nil
-				}
-
-				switch v := val.Values[0].(type) {
-				case *goast.Ident:
-					e = &goast.ValueSpec{
-						Names:  []*goast.Ident{{Name: c.Name}},
-						Values: []goast.Expr{&goast.BasicLit{Kind: token.INT, Value: strconv.Itoa(counter)}},
-						Type:   val.Type,
-						Doc:    p.GetMessageComments(),
-					}
-					counter++
-
-				case *goast.BasicLit:
-					var value int
-					e, value, err = parseEnumBasicLit(v)
-					if err != nil {
-						e = val
-						counter++
-						p.AddMessage(p.GenerateWarningMessage(
-							fmt.Errorf("Cannot parse '%s' in BasicLit", v.Value), n))
-						break
-					}
-					counter = value
-					counter++
-
-				default:
-					e = val
-					p.AddMessage(p.GenerateWarningMessage(
-						fmt.Errorf("Add support of continues counter for type : %T",
-							v), n))
-				}
-
-				decls = append(decls, &goast.GenDecl{
-					Tok: token.CONST,
-					Specs: []goast.Spec{
-						e,
-					},
-				})
-			}
-		}
-		err = nil
-		return
+		return transpileEnumDeclWithoutName(p, n)
 	}
 
 	// For case `enum` with name
@@ -303,6 +233,138 @@ func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (
 
 	decls = append(decls, decl)
 
+	err = nil
+	return
+}
+
+func transpileEnumDeclWithoutName(p *program.Program, n *ast.EnumDecl) (
+	decls []goast.Decl, err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("Cannot transpileEnumDeclWithoutName. %v", err)
+		}
+	}()
+	preStmts := []goast.Stmt{}
+	postStmts := []goast.Stmt{}
+	// create all EnumConstant like just constants
+	var counter int
+	for _, child := range n.Children() {
+		switch child.(type) {
+		case *ast.FullComment, *ast.BlockCommandComment,
+			*ast.HTMLStartTagComment, *ast.HTMLEndTagComment,
+			*ast.InlineCommandComment, *ast.ParagraphComment,
+			*ast.ParamCommandComment, *ast.TextComment,
+			*ast.VerbatimLineComment, *ast.VerbatimBlockComment,
+			*ast.VerbatimBlockLineComment:
+			// comments are ignored
+			continue
+		case *ast.EnumConstantDecl:
+			// go to next
+		default:
+			p.AddMessage(p.GenerateWarningMessage(
+				fmt.Errorf("Unsupported type `%T` in enum.", child), child))
+			return
+		}
+		child := child.(*ast.EnumConstantDecl)
+		var (
+			e       goast.Spec
+			newPre  []goast.Stmt
+			newPost []goast.Stmt
+			val     *goast.ValueSpec
+		)
+		val, newPre, newPost = transpileEnumConstantDecl(p, child)
+
+		if len(newPre) > 0 || len(newPost) > 0 {
+			p.AddMessage(p.GenerateWarningMessage(
+				fmt.Errorf("Check - added in code : (%d)(%d)",
+					len(newPre), len(newPost)), n))
+		}
+
+		preStmts, postStmts = combinePreAndPostStmts(
+			preStmts, postStmts, newPre, newPost)
+
+	remove_parent_expr:
+		if v, ok := val.Values[0].(*goast.ParenExpr); ok {
+			val.Values[0] = v.X
+			goto remove_parent_expr
+		}
+
+		var sign int = 1
+		if unary, ok := val.Values[0].(*goast.UnaryExpr); ok {
+			if unary.Op == token.SUB {
+				sign = -1
+			}
+			val.Values[0] = unary.X
+		}
+
+		switch v := val.Values[0].(type) {
+		case *goast.Ident:
+			e = &goast.ValueSpec{
+				Names: []*goast.Ident{{Name: child.Name}},
+				Values: []goast.Expr{&goast.BasicLit{
+					Kind:  token.INT,
+					Value: strconv.Itoa(counter),
+				}},
+				Type: val.Type,
+				Doc:  p.GetMessageComments(),
+			}
+			counter++
+
+		case *goast.BasicLit:
+			var value int
+			value, err = strconv.Atoi(v.Value)
+			if err != nil {
+				err = fmt.Errorf("Cannot parse '%s' in BasicLit", v.Value)
+				return
+			}
+			if err != nil {
+				e = val
+				counter++
+				p.AddMessage(p.GenerateWarningMessage(
+					fmt.Errorf("Cannot parse '%s' in BasicLit", v.Value), n))
+				break
+			}
+			if sign == -1 {
+				e = &goast.ValueSpec{
+					Names: []*goast.Ident{{Name: child.Name}},
+					Values: []goast.Expr{&goast.UnaryExpr{
+						X: &goast.BasicLit{
+							Kind:  token.INT,
+							Value: v.Value,
+						},
+						Op: token.SUB,
+					}},
+					Type: val.Type,
+					Doc:  p.GetMessageComments(),
+				}
+			} else {
+				e = &goast.ValueSpec{
+					Names: []*goast.Ident{{Name: child.Name}},
+					Values: []goast.Expr{&goast.BasicLit{
+						Kind:  token.INT,
+						Value: v.Value,
+					}},
+					Type: val.Type,
+					Doc:  p.GetMessageComments(),
+				}
+			}
+			counter = value * sign
+			counter++
+
+		default:
+			e = val
+			p.AddMessage(p.GenerateWarningMessage(
+				fmt.Errorf("Add support of continues counter for type : %T",
+					v), n))
+		}
+
+		decls = append(decls, &goast.GenDecl{
+			Tok: token.CONST,
+			Specs: []goast.Spec{
+				e,
+			},
+		})
+	}
 	err = nil
 	return
 }

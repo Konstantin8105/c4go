@@ -94,12 +94,37 @@ void test_enum_inside_struct(){
 	is_eq(SWE_ENUM_FOUR,4);
 }
 
+enum
+{
+	parent = (9),
+	usually = 10
+};
+void test_parent()
+{
+	is_eq(parent,9);
+	is_eq(usually,10);
+}
+
+typedef enum
+{
+  IEEE_ = -1,	/* According to IEEE 754/IEEE 854.  */
+  SVID_,	/* According to System V, release 4.  */
+  XOPEN_,	/* Nowadays also Unix98.  */
+  POSIX_,
+  ISOC_	/* Actually this is ISO C99.  */
+} LIB_VERSION_TYPE;
+void test_unary(){
+	is_eq(IEEE_,-1);
+	is_eq(XOPEN_,1);
+}
 
 // main function
 int main()
 {
-    plan(33);
+    plan(37);
 
+	test_unary();
+	test_parent();
 	test_enum_inside_struct();
 
     // step 1
