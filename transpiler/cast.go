@@ -3,6 +3,7 @@ package transpiler
 import (
 	"fmt"
 	goast "go/ast"
+	"go/token"
 	"strings"
 
 	"github.com/Konstantin8105/c4go/ast"
@@ -37,7 +38,8 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 			return
 		}
 	}
-	expr, exprType, preStmts, postStmts, err = transpileToExpr(n.Children()[0], p, exprIsStmt)
+	expr, exprType, preStmts, postStmts, err = transpileToExpr(
+		n.Children()[0], p, exprIsStmt)
 	if err != nil {
 		return nil, "", nil, nil, err
 	}
@@ -53,6 +55,18 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 			Fun:    goast.NewIdent(tt),
 			Lparen: 1,
 			Args:   []goast.Expr{expr},
+		}
+		exprType = n.Type
+		return
+	}
+	if n.Kind == "PointerToIntegral" {
+		expr = &goast.IndexExpr{
+			X:      expr,
+			Lbrack: 1,
+			Index: &goast.BasicLit{
+				Kind:  token.INT,
+				Value: "0",
+			},
 		}
 		exprType = n.Type
 		return
@@ -159,6 +173,18 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 
 	if n.Kind == ast.CStyleCastExprToVoid {
 		exprType = types.ToVoid
+		return
+	}
+	if n.Kind == "PointerToIntegral" {
+		expr = &goast.IndexExpr{
+			X:      expr,
+			Lbrack: 1,
+			Index: &goast.BasicLit{
+				Kind:  token.INT,
+				Value: "0",
+			},
+		}
+		exprType = n.Type
 		return
 	}
 

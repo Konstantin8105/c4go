@@ -35,6 +35,14 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 		case token.DEC:
 			operator = token.SUB
 		}
+		// remove paren - ()
+	remove_paren:
+		if p, ok := n.Children()[0].(*ast.ParenExpr); ok {
+			n.Children()[0] = p.Children()[0]
+			goto remove_paren
+			return
+		}
+
 		if _, ok := n.Children()[0].(*ast.DeclRefExpr); !ok {
 			err = fmt.Errorf("Unsupported type %T", n.Children()[0])
 			return
@@ -43,12 +51,14 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 		var left goast.Expr
 		var leftType string
 		var newPre, newPost []goast.Stmt
-		left, leftType, newPre, newPost, err = transpileToExpr(n.Children()[0], p, false)
+		left, leftType, newPre, newPost, err = transpileToExpr(
+			n.Children()[0], p, false)
 		if err != nil {
 			return
 		}
 
-		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+		preStmts, postStmts = combinePreAndPostStmts(
+			preStmts, postStmts, newPre, newPost)
 
 		rightType := "int"
 		right := &goast.BasicLit{
@@ -56,7 +66,8 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 			Value: "1",
 		}
 
-		expr, eType, newPre, newPost, err = pointerArithmetic(p, left, leftType, right, rightType, operator)
+		expr, eType, newPre, newPost, err = pointerArithmetic(
+			p, left, leftType, right, rightType, operator)
 		if err != nil {
 			return
 		}
@@ -64,7 +75,8 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 			return nil, "", nil, nil, fmt.Errorf("Expr is nil")
 		}
 
-		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+		preStmts, postStmts = combinePreAndPostStmts(
+			preStmts, postStmts, newPre, newPost)
 
 		var name string
 		name, err = getName(p, n.Children()[0])
