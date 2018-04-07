@@ -42,7 +42,7 @@ double* return_null()
 
 int main()
 {
-    plan(96);
+    plan(98);
 
     int i = 10;
     signed char j = 1;
@@ -400,6 +400,15 @@ int main()
         is_eq(y, 18);
         is_eq(z, 6);
     }
+	diag("char + bool");
+	{
+		char prefix = 'W';
+		char *buf   = "text";
+		char *v;
+		v = buf + (prefix != 0);
+		is_not_null(v);
+		is_streq(v,"ext");
+	}
 
     done_testing();
 }
