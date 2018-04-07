@@ -104,9 +104,10 @@ func TestIntegrationScripts(t *testing.T) {
 			if exitError, ok := err.(*exec.ExitError); ok {
 				exitStatus := exitError.Sys().(syscall.WaitStatus).ExitStatus()
 				switch exitStatus {
-				case 101, 102, -1:
-					t.Error(err)
+				case 101, 102:
 					t.Fatal(cProgram.stdout.String())
+				case -1:
+					t.Log(err)
 				}
 			}
 
