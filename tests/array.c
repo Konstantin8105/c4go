@@ -233,21 +233,25 @@ void test_paren_pointer()
 	c = (*pz);
 	is_eq(c , 5.0);
 	///////////////
-	/* aqq[0][0] = 42; */
-	/* pz = aqq; */
-	/* c = -1; */
-	/* c = ((*pz)++); */
-	/* is_eq(c , 42.0); */
-	/* /////////////// */
-	/* aqq[1][0] = 45; */
-	/* c = -1; */
-	/* c = ((*pz)++); */
-	/* is_eq(c , 46.0); */
+	pz = aqq;
+	int c2 = (*pz);
+	is_eq(c2 , 5.0);
+	///////////////
+	aqq[0][0] = 42;
+	pz = aqq;
+	c = -1;
+	c = ((*pz)++);
+	is_eq(c , 42.0);
+	///////////////
+	aqq[1][0] = 45;
+	c = -1;
+	c = ((*((pz)))++);
+	is_eq(c , 46.0);
 }
 
 int main()
 {
-    plan(137);
+    plan(140);
 
 	test_paren_pointer();
     START_TEST(intarr);
