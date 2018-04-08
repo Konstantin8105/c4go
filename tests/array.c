@@ -224,7 +224,7 @@ void test_pointer_minus_pointer()
 void test_paren_pointer()
 {
 	diag("paren pointer");
-	int aqq[3][3] = { { 5, 6, 7 }, { 50, 60, 70 } , { 500, 600, 700 } };
+	int aqq[1][1] = { { 5 } };
 	int **pz;
 	int c;
 	///////////////
@@ -237,21 +237,47 @@ void test_paren_pointer()
 	int c2 = (*pz);
 	is_eq(c2 , 5.0);
 	///////////////
-	aqq[0][0] = 42;
+	diag("|== next step ===============");
 	pz = aqq;
-	c = -1;
+	c = -100;
+	for(int i=0;i < 1;i++)
+		for(int j=0;j<1;j++)
+			printf("[%d,%d]=%d\n",i,j,aqq[i][j]);
 	c = ((*pz)++);
-	is_eq(c , 42.0);
+	is_eq(c , 5.0);
+	for(int i=0;i < 1;i++)
+		for(int j=0;j<1;j++)
+			printf("[%d,%d]=%d\n",i,j,aqq[i][j]);
 	///////////////
-	aqq[1][0] = 45;
-	c = -1;
+	diag("|== next step ===============");
+	c = -100;
+	for(int i=0;i < 1;i++)
+		for(int j=0;j<1;j++)
+			printf("[%d,%d]=%d\n",i,j,aqq[i][j]);
 	c = ((*((pz)))++);
-	is_eq(c , 46.0);
+	is_eq(c , 9.0);
+	for(int i=0;i < 1;i++)
+		for(int j=0;j<1;j++)
+			printf("[%d,%d]=%d\n",i,j,aqq[i][j]);
+
+	///////////////
+	diag("|== next step ===============");
+	pz = aqq;
+	c = -100;
+	for(int i=0;i < 1;i++)
+		for(int j=0;j<1;j++)
+			printf("[%d,%d]=%d\n",i,j,aqq[i][j]);
+	(*pz)++;
+	c = *pz;
+	is_eq(c , 17.0);
+	for(int i=0;i < 1;i++)
+		for(int j=0;j<1;j++)
+			printf("[%d,%d]=%d\n",i,j,aqq[i][j]);
 }
 
 int main()
 {
-    plan(140);
+    plan(141);
 
 	test_paren_pointer();
     START_TEST(intarr);
