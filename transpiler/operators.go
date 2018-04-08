@@ -252,7 +252,9 @@ func pointerArithmetic(p *program.Program,
 
 	src := `package main
 func main(){
-	a := (*(*[1000000000]{{ .Type }})(unsafe.Pointer(uintptr(unsafe.Pointer(&{{ .Name }}[0])) {{ .Operator }} (uintptr)({{ .Condition }})*unsafe.Sizeof({{ .Name }}[0]))))[:]
+	a := (*(*[1000000000]{{ .Type }})(unsafe.Pointer(uintptr(
+			unsafe.Pointer(&{{ .Name }}[0])) {{ .Operator }}
+			(uintptr)({{ .Condition }})*unsafe.Sizeof({{ .Name }}[0]))))[:]
 }`
 	tmpl := template.Must(template.New("").Parse(src))
 	var source bytes.Buffer
@@ -772,6 +774,19 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			return nil, "", nil, nil, err
 		}
 		if exprType == types.NullPointer {
+			return
+		}
+
+		if v.Kind == "PointerToIntegral" {
+			expr = &goast.IndexExpr{
+				X:      expr,
+				Lbrack: 1,
+				Index: &goast.BasicLit{
+					Kind:  token.INT,
+					Value: "0",
+				},
+			}
+			exprType = v.Type
 			return
 		}
 		if !types.IsFunction(exprType) && v.Kind != ast.ImplicitCastExprArrayToPointerDecay {

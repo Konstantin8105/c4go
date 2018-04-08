@@ -103,8 +103,11 @@ func TestIntegrationScripts(t *testing.T) {
 			// Check for special exit codes that signal that tests have failed.
 			if exitError, ok := err.(*exec.ExitError); ok {
 				exitStatus := exitError.Sys().(syscall.WaitStatus).ExitStatus()
-				if exitStatus == 101 || exitStatus == 102 {
+				switch exitStatus {
+				case 101, 102:
 					t.Fatal(cProgram.stdout.String())
+				case -1:
+					t.Log(err)
 				}
 			}
 
@@ -290,10 +293,15 @@ func TestIntegrationScripts(t *testing.T) {
 
 			// Check if both exit codes are zero (or non-zero)
 			if cProgram.isZero != goProgram.isZero {
-				t.Fatalf("Exit statuses did not match.\n%s", util.ShowDiff(cOut, goOut))
+				t.Fatalf("Exit statuses did not match.\n%s",
+					util.ShowDiff(cOut, goOut))
 			}
 
 			if cOut != goOut {
+				if cProgramStderr != goProgramStderr {
+					t.Errorf("Expected %s\nGot: %s\n",
+						cProgramStderr, goProgramStderr)
+				}
 				t.Fatalf(util.ShowDiff(cOut, goOut))
 			}
 
