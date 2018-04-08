@@ -769,24 +769,18 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			}
 		}
 
+		if v.Kind == "PointerToIntegral" {
+			expr = goast.NewIdent("0")
+			expr, _ = types.CastExpr(p, expr, "int", v.Type)
+			exprType = v.Type
+			return
+		}
+
 		expr, exprType, preStmts, postStmts, err = atomicOperation(v.Children()[0], p)
 		if err != nil {
 			return nil, "", nil, nil, err
 		}
 		if exprType == types.NullPointer {
-			return
-		}
-
-		if v.Kind == "PointerToIntegral" {
-			expr = &goast.IndexExpr{
-				X:      expr,
-				Lbrack: 1,
-				Index: &goast.BasicLit{
-					Kind:  token.INT,
-					Value: "0",
-				},
-			}
-			exprType = v.Type
 			return
 		}
 		if !types.IsFunction(exprType) && v.Kind != ast.ImplicitCastExprArrayToPointerDecay {
