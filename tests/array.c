@@ -221,35 +221,11 @@ void test_pointer_minus_pointer()
     is_eq(right_ptr - left_ptr, 20);
 }
 
-void test_paren_pointer()
-{
-	diag("paren pointer");
-	int aqq[3][3] = { { 5, 6, 7 }, { 50, 60, 70 } , { 500, 600, 700 } };
-	int **pz;
-	int c;
-	///////////////
-	pz = aqq;
-	c = -1;
-	c = (*pz);
-	is_eq(c , 5.0);
-	///////////////
-	/* aqq[0][0] = 42; */
-	/* pz = aqq; */
-	/* c = -1; */
-	/* c = ((*pz)++); */
-	/* is_eq(c , 42.0); */
-	/* /////////////// */
-	/* aqq[1][0] = 45; */
-	/* c = -1; */
-	/* c = ((*pz)++); */
-	/* is_eq(c , 46.0); */
-}
 
 int main()
 {
-    plan(137);
+    plan(136);
 
-	test_paren_pointer();
     START_TEST(intarr);
     START_TEST(doublearr);
     START_TEST(intarr_init);
