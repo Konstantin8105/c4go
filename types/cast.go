@@ -449,6 +449,11 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return expr, nil
 	}
 
+	if IsCInteger(p, cFromType) && IsPointer(cToType) {
+		expr = goast.NewIdent("nil")
+		return expr, nil
+	}
+
 	functionName := fmt.Sprintf("noarch.%sTo%s",
 		util.GetExportedName(leftName), util.GetExportedName(rightName))
 	p.AddMessage(p.GenerateWarningMessage(
