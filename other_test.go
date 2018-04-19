@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -9,52 +10,121 @@ import (
 	"testing"
 )
 
-func TestSourceVasilevBook(t *testing.T) {
-	// repair arguments
-	arguments := os.Args
-	defer func() {
-		os.Args = arguments
-	}()
-
-	defer func() {
-		if r := recover(); r != nil {
-			t.Errorf("Panic is not acceptable for position: %v", r)
-		}
-	}()
-
-	prefix := "VasielBook"
-	git_source := "https://github.com/olegbukatchuk/book-c-the-examples-and-tasks.git"
-
+func getFileList(prefix, gitSource string) (fileList []string, err error) {
 	// create folder if not exist
-	temp_folder, err := ioutil.TempDir("", prefix)
+	var temp_folder string
+	temp_folder, err = ioutil.TempDir("", prefix)
 	if err != nil {
-		t.Fatalf("Cannot create a folder : %v", err)
+		err = fmt.Errorf("Cannot create a folder : %v", err)
+		return
 	}
 
 	// clone git repository
-	args := []string{"clone", git_source, temp_folder}
-	if err := exec.Command("git", args...).Run(); err != nil {
-		t.Fatalf("Cannot clone git repository with args `%v`: %v", args, err)
+	args := []string{"clone", gitSource, temp_folder}
+	err = exec.Command("git", args...).Run()
+	if err != nil {
+		err = fmt.Errorf("Cannot clone git repository with args `%v`: %v",
+			args, err)
+		return
 	}
 
 	// find all C source files
-	fileList := []string{}
-	if err := filepath.Walk(temp_folder, func(path string, f os.FileInfo, err error) error {
+	err = filepath.Walk(temp_folder, func(path string, f os.FileInfo, err error) error {
 		if strings.HasSuffix(strings.ToLower(f.Name()), ".c") {
 			fileList = append(fileList, path)
 		}
 		return nil
-	}); err != nil {
-		t.Fatalf("Cannot walk: %v", err)
+	})
+	if err != nil {
+		err = fmt.Errorf("Cannot walk: %v", err)
+		return
+	}
+
+	return
+}
+
+func TestSourceVasilevBook(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			t.Errorf("Panic is not acceptable: %v", r)
+		}
+	}()
+
+	prefix := "VasielBook"
+	gitSource := "https://github.com/olegbukatchuk/book-c-the-examples-and-tasks.git"
+
+	fileList, err := getFileList(prefix, gitSource)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ignoreFileList := []string{
+		"1.13/main.c",
+		"1.6/main.c",
+		"5.9/main.c",
+		"3.19/main.c",
+		"3.17/main.c",
 	}
 
 	for _, file := range fileList {
-		// black list of sources
-		if strings.Contains(file, "1.13/main.c") ||
-			strings.Contains(file, "1.6/main.c") ||
-			strings.Contains(file, "5.9/main.c") ||
-			strings.Contains(file, "3.19/main.c") ||
-			strings.Contains(file, "3.17/main.c") {
+		// ignore list of sources
+		var ignored bool
+		for _, ignore := range ignoreFileList {
+			if strings.Contains(file, ignore) {
+				ignored = true
+			}
+		}
+		if ignored {
+			continue
+		}
+
+		// run test
+		t.Run(file, func(t *testing.T) {
+			file = strings.TrimSpace(file)
+			os.Args = []string{"c4go", "transpile", "-o=" + file + ".go", file}
+			code := runCommand()
+			if code != 0 {
+				t.Fatalf("Cannot transpile `%v`", os.Args)
+			}
+		})
+	}
+}
+
+func TestKRSourceBook(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			t.Errorf("Panic is not acceptable: %v", r)
+		}
+	}()
+
+	prefix := "KR"
+	gitSource := "https://github.com/KushalP/k-and-r.git"
+
+	fileList, err := getFileList(prefix, gitSource)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ignoreFileList := []string{
+		"4.1-1.c",
+		"4-11.c",
+		"1.9-1.c",
+		"1.10-1.c",
+		"1-24.c",
+		"1-17.c",
+		"1-16.c",
+		"4-10.c",
+	}
+
+	for _, file := range fileList {
+		// ignore list of sources
+		var ignored bool
+		for _, ignore := range ignoreFileList {
+			if strings.Contains(file, ignore) {
+				ignored = true
+			}
+		}
+		if ignored {
 			continue
 		}
 
