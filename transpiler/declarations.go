@@ -327,6 +327,11 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		return
 	}
 
+	// no need add struct for registrated C standart library
+	if _, ok := types.CStdStructType[name]; ok {
+		return
+	}
+
 	decls = append(decls, &goast.GenDecl{
 		Tok: token.TYPE,
 		Specs: []goast.Spec{
