@@ -621,6 +621,8 @@ func transpileUnaryExprOrTypeTraitExpr(n *ast.UnaryExprOrTypeTraitExpr, p *progr
 			t = c.Type
 		case *ast.MemberExpr:
 			t = c.Type
+		case *ast.ArraySubscriptExpr:
+			t = c.Type
 		default:
 			panic(fmt.Sprintf("cannot find first child from: %#v", n.Children()[0]))
 		}
