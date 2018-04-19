@@ -94,8 +94,31 @@ func transpileFieldDecl(p *program.Program, n *ast.FieldDecl) (
 	}, nil
 }
 
+var ignoreRecordDecl map[string]string = map[string]string{
+	"struct __fsid_t":                             "/usr/include/x86_64-linux-gnu/bits/types.h",
+	"union __union_at__usr_include_wchar_h_85_3_": "/usr/include/wchar.h",
+	"struct __mbstate_t":                          "/usr/include/wchar.h",
+	"struct _G_fpos_t":                            "/usr/include/_G_config.h",
+	"struct _G_fpos64_t":                          "/usr/include/_G_config.h",
+	"_IO_jump_t":                                  "/usr/include/libio.h",
+	"_IO_marker":                                  "/usr/include/libio.h",
+	"_IO_FILE":                                    "/usr/include/libio.h",
+	"_IO_FILE_plus":                               "/usr/include/libio.h",
+	"struct _IO_cookie_io_functions_t":            "/usr/include/libio.h",
+	"_IO_cookie_file":                             "/usr/include/libio.h",
+	"obstack":                                     "/usr/include/stdio.h",
+	"timeval":                                     "/usr/include/x86_64-linux-gnu/bits/time.h",
+	"timespec":                                    "/usr/include/time.h",
+	"itimerspec":                                  "/usr/include/time.h",
+	"sigevent":                                    "/usr/include/time.h",
+	"__locale_struct":                             "/usr/include/xlocale.h",
+	"exception":                                   "/usr/include/math.h",
+}
+
 func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 	decls []goast.Decl, err error) {
+
+	var addPackageUnsafe bool
 
 	n.Name = types.GenerateCorrectType(n.Name)
 	name := n.Name
@@ -103,6 +126,26 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		if err != nil {
 			err = fmt.Errorf("cannot transpileRecordDecl `%v`. %v",
 				n.Name, err)
+		} else {
+			if _, ok := types.CStdStructType[name]; ok {
+				// no need add struct for registrated C standart library
+				decls = nil
+				return
+			}
+			if !p.IncludeHeaderIsExists(n.Pos.File) {
+				// no need add struct from C STD
+				decls = nil
+				return
+			}
+			if h, ok := ignoreRecordDecl[n.Name]; ok && p.IncludeHeaderIsExists(h) {
+				decls = nil
+				return
+			}
+			if addPackageUnsafe {
+				p.AddImports("unsafe")
+			}
+			// Only for adding to ignore list
+			// fmt.Printf("%20s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
 		}
 	}()
 
@@ -301,6 +344,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		name = name[len("union "):]
 	}
 
+	var d []goast.Decl
 	if s.IsUnion {
 		// Union size
 		var size int
@@ -315,38 +359,115 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		} else {
 			// So, we got size, then
 			// Add imports needed
-			p.AddImports("unsafe")
+			addPackageUnsafe = true
 
 			// Declaration for implementing union type
-			d, err2 := transpileUnion(name, size, fields)
-			if err2 != nil {
-				return nil, err2
+			d, err = transpileUnion(name, size, fields)
+			if err != nil {
+				return nil, err
 			}
-			decls = append(decls, d...)
 		}
-		return
-	}
-
-	// no need add struct for registrated C standart library
-	if _, ok := types.CStdStructType[name]; ok {
-		return
-	}
-
-	decls = append(decls, &goast.GenDecl{
-		Tok: token.TYPE,
-		Specs: []goast.Spec{
-			&goast.TypeSpec{
-				Name: util.NewIdent(name),
-				Type: &goast.StructType{
-					Fields: &goast.FieldList{
-						List: fields,
+	} else {
+		d = append(d, &goast.GenDecl{
+			Tok: token.TYPE,
+			Specs: []goast.Spec{
+				&goast.TypeSpec{
+					Name: util.NewIdent(name),
+					Type: &goast.StructType{
+						Fields: &goast.FieldList{
+							List: fields,
+						},
 					},
 				},
 			},
-		},
-	})
+		})
+	}
+
+	decls = append(decls, d...)
 
 	return
+}
+
+var ignoreTypedef map[string]string = map[string]string{
+	"__u_char":   "bits/types.h",
+	"__u_short":  "bits/types.h",
+	"__u_int":    "bits/types.h",
+	"__u_long":   "bits/types.h",
+	"__int8_t":   "bits/types.h",
+	"__uint8_t":  "bits/types.h",
+	"__int16_t":  "bits/types.h",
+	"__uint16_t": "bits/types.h",
+	"__int32_t":  "bits/types.h",
+	"__uint32_t": "bits/types.h",
+	"__int64_t":  "bits/types.h",
+	"__uint64_t": "bits/types.h",
+	"__quad_t":   "bits/types.h",
+	"__u_quad_t": "bits/types.h",
+	"__dev_t":    "bits/types.h",
+	"__uid_t":    "bits/types.h",
+	"__gid_t":    "bits/types.h",
+	"__ino_t":    "bits/types.h",
+	"__ino64_t":  "bits/types.h",
+	"__mode_t":   "bits/types.h",
+	"__nlink_t":  "bits/types.h",
+	"__off_t":    "bits/types.h",
+	"__off64_t":  "bits/types.h",
+	"__pid_t":    "bits/types.h",
+	"__fsid_t":   "bits/types.h",
+	"__clock_t":  "bits/types.h",
+	"__rlim_t":   "bits/types.h",
+	"__rlim64_t": "bits/types.h",
+	"__id_t":     "bits/types.h",
+	// "__time_t":          "bits/types.h", // need for test time.c
+	"__useconds_t":      "bits/types.h",
+	"__suseconds_t":     "bits/types.h",
+	"__daddr_t":         "bits/types.h",
+	"__key_t":           "bits/types.h",
+	"__clockid_t":       "bits/types.h",
+	"__timer_t":         "bits/types.h",
+	"__blksize_t":       "bits/types.h",
+	"__blkcnt_t":        "bits/types.h",
+	"__blkcnt64_t":      "bits/types.h",
+	"__fsblkcnt_t":      "bits/types.h",
+	"__fsblkcnt64_t":    "bits/types.h",
+	"__fsfilcnt_t":      "bits/types.h",
+	"__fsfilcnt64_t":    "bits/types.h",
+	"__fsword_t":        "bits/types.h",
+	"__ssize_t":         "bits/types.h",
+	"__syscall_slong_t": "bits/types.h",
+	"__syscall_ulong_t": "bits/types.h",
+	"__loff_t":          "bits/types.h",
+	"__qaddr_t":         "bits/types.h",
+	"__caddr_t":         "bits/types.h",
+	"__intptr_t":        "bits/types.h",
+	"__socklen_t":       "bits/types.h",
+
+	"clock_t":   "include/time.h",
+	"time_t":    "include/time.h",
+	"clockid_t": "include/time.h",
+	"timer_t":   "include/time.h",
+	"pid_t":     "include/time.h",
+
+	"FILE":     "/usr/include/stdio.h",
+	"__FILE":   "/usr/include/stdio.h",
+	"off_t":    "/usr/include/stdio.h",
+	"off64_t":  "/usr/include/stdio.h",
+	"ssize_t":  "/usr/include/stdio.h",
+	"fpos_t":   "/usr/include/stdio.h",
+	"fpos64_t": "/usr/include/stdio.h",
+
+	"_IO_lock_t":                "/usr/include/libio.h",
+	"_IO_FILE":                  "/usr/include/libio.h",
+	"__io_read_fn":              "/usr/include/libio.h",
+	"__io_write_fn":             "/usr/include/libio.h",
+	"__io_seek_fn":              "/usr/include/libio.h",
+	"__io_close_fn":             "/usr/include/libio.h",
+	"cookie_read_function_t":    "/usr/include/libio.h",
+	"cookie_write_function_t":   "/usr/include/libio.h",
+	"cookie_seek_function_t":    "/usr/include/libio.h",
+	"cookie_close_function_t":   "/usr/include/libio.h",
+	"_IO_cookie_io_functions_t": "/usr/include/libio.h",
+	"cookie_io_functions_t":     "/usr/include/libio.h",
 }
 
 func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
@@ -359,6 +480,18 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("Cannot transpile Typedef Decl : err = %v", err)
+		} else {
+			if !p.IncludeHeaderIsExists(n.Pos.File) {
+				// no need add struct from C STD
+				decls = nil
+				return
+			}
+			if h, ok := ignoreTypedef[n.Name]; ok && p.IncludeHeaderIsExists(h) {
+				decls = nil
+				return
+			}
+			// Only for adding to ignore list
+			// fmt.Printf("%20s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
 		}
 	}()
 	n.Name = types.CleanCType(types.GenerateCorrectType(n.Name))
@@ -480,15 +613,6 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 	if resolvedType == "" {
 		resolvedType = "interface{}"
 	}
-	decls = append(decls, &goast.GenDecl{
-		Tok: token.TYPE,
-		Specs: []goast.Spec{
-			&goast.TypeSpec{
-				Name: util.NewIdent(name),
-				Type: util.NewTypeIdent(resolvedType),
-			},
-		},
-	})
 
 	if v, ok := p.Structs["struct "+resolvedType]; ok {
 		// Registration "typedef struct" with non-empty name of struct
@@ -500,6 +624,16 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 		// Registration "typedef type type2"
 		p.TypedefType[n.Name] = n.Type
 	}
+
+	decls = append(decls, &goast.GenDecl{
+		Tok: token.TYPE,
+		Specs: []goast.Spec{
+			&goast.TypeSpec{
+				Name: util.NewIdent(name),
+				Type: util.NewTypeIdent(resolvedType),
+			},
+		},
+	})
 
 	return
 }
