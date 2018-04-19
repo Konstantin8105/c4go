@@ -139,3 +139,47 @@ func TestKRSourceBook(t *testing.T) {
 		})
 	}
 }
+
+func TestSourceKochanBook(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			t.Errorf("Panic is not acceptable: %v", r)
+		}
+	}()
+
+	prefix := "KochanBook"
+	gitSource := "https://github.com/eugenetriguba/programming-in-c.git"
+
+	fileList, err := getFileList(prefix, gitSource)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ignoreFileList := []string{
+		"5.9d.c",
+		"5.9c.c",
+	}
+
+	for _, file := range fileList {
+		// ignore list of sources
+		var ignored bool
+		for _, ignore := range ignoreFileList {
+			if strings.Contains(file, ignore) {
+				ignored = true
+			}
+		}
+		if ignored {
+			continue
+		}
+
+		// run test
+		t.Run(file, func(t *testing.T) {
+			file = strings.TrimSpace(file)
+			os.Args = []string{"c4go", "transpile", "-o=" + file + ".go", file}
+			code := runCommand()
+			if code != 0 {
+				t.Fatalf("Cannot transpile `%v`", os.Args)
+			}
+		})
+	}
+}
