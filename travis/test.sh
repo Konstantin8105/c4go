@@ -52,6 +52,3 @@ source ./travis/sqlite.sh
 
 # Run script triangle
 source ./travis/triangle.sh
-
-# Run script Deitel
-source ./travis/deitel.sh

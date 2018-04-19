@@ -70,7 +70,7 @@ func TestSourceVasilevBook(t *testing.T) {
 		// ignore list of sources
 		var ignored bool
 		for _, ignore := range ignoreFileList {
-			if strings.Contains(file, ignore) {
+			if strings.Contains(strings.ToLower(file), strings.ToLower(ignore)) {
 				ignored = true
 			}
 		}
@@ -120,7 +120,7 @@ func TestKRSourceBook(t *testing.T) {
 		// ignore list of sources
 		var ignored bool
 		for _, ignore := range ignoreFileList {
-			if strings.Contains(file, ignore) {
+			if strings.Contains(strings.ToLower(file), strings.ToLower(ignore)) {
 				ignored = true
 			}
 		}
@@ -164,7 +164,52 @@ func TestSourceKochanBook(t *testing.T) {
 		// ignore list of sources
 		var ignored bool
 		for _, ignore := range ignoreFileList {
-			if strings.Contains(file, ignore) {
+			if strings.Contains(strings.ToLower(file), strings.ToLower(ignore)) {
+				ignored = true
+			}
+		}
+		if ignored {
+			continue
+		}
+
+		// run test
+		t.Run(file, func(t *testing.T) {
+			file = strings.TrimSpace(file)
+			os.Args = []string{"c4go", "transpile", "-o=" + file + ".go", file}
+			code := runCommand()
+			if code != 0 {
+				t.Fatalf("Cannot transpile `%v`", os.Args)
+			}
+		})
+	}
+}
+
+func TestSourceDeitelBook(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			t.Errorf("Panic is not acceptable: %v", r)
+		}
+	}()
+
+	prefix := "DeitelBook"
+	gitSource := "https://github.com/Emmetttt/C-Deitel-Book.git"
+
+	fileList, err := getFileList(prefix, gitSource)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ignoreFileList := []string{
+		"E5.45.C",
+		"06.14_const_type_qualifier.C",
+		"E7.17.C",
+	}
+
+	for _, file := range fileList {
+		// ignore list of sources
+		var ignored bool
+		for _, ignore := range ignoreFileList {
+			if strings.Contains(strings.ToLower(file), strings.ToLower(ignore)) {
 				ignored = true
 			}
 		}
