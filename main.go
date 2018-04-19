@@ -382,35 +382,6 @@ func (i *inputDataFlags) Set(value string) error {
 	return nil
 }
 
-var clangFlags inputDataFlags
-
-func init() {
-	transpileCommand.Var(&clangFlags,
-		"clang-flag",
-		"Pass arguments to clang. You may provide multiple -clang-flag items.")
-	astCommand.Var(&clangFlags,
-		"clang-flag",
-		"Pass arguments to clang. You may provide multiple -clang-flag items.")
-}
-
-var (
-	transpileCommand = flag.NewFlagSet(
-		"transpile", flag.ContinueOnError)
-	verboseFlag = transpileCommand.Bool(
-		"V", false, "print progress as comments")
-	outputFlag = transpileCommand.String(
-		"o", "", "output Go generated code to the specified file")
-	packageFlag = transpileCommand.String(
-		"p", "main", "set the name of the generated package")
-
-	transpileHelpFlag = transpileCommand.Bool(
-		"h", false, "print help information")
-	astCommand = flag.NewFlagSet(
-		"ast", flag.ContinueOnError)
-	astHelpFlag = astCommand.Bool(
-		"h", false, "print help information")
-)
-
 func main() {
 	code := runCommand()
 	if code != 0 {
@@ -419,6 +390,32 @@ func main() {
 }
 
 func runCommand() int {
+	// set default flag value
+	var (
+		transpileCommand = flag.NewFlagSet(
+			"transpile", flag.ContinueOnError)
+		verboseFlag = transpileCommand.Bool(
+			"V", false, "print progress as comments")
+		outputFlag = transpileCommand.String(
+			"o", "", "output Go generated code to the specified file")
+		packageFlag = transpileCommand.String(
+			"p", "main", "set the name of the generated package")
+		transpileHelpFlag = transpileCommand.Bool(
+			"h", false, "print help information")
+
+		astCommand = flag.NewFlagSet(
+			"ast", flag.ContinueOnError)
+		astHelpFlag = astCommand.Bool(
+			"h", false, "print help information")
+	)
+	var clangFlags inputDataFlags
+	transpileCommand.Var(&clangFlags,
+		"clang-flag",
+		"Pass arguments to clang. You may provide multiple -clang-flag items.")
+	astCommand.Var(&clangFlags,
+		"clang-flag",
+		"Pass arguments to clang. You may provide multiple -clang-flag items.")
+
 	// TODO : add update a c4go or check version
 	// TODO : add example for starters
 
@@ -448,13 +445,13 @@ func runCommand() int {
 		err := astCommand.Parse(os.Args[2:])
 		if err != nil {
 			fmt.Printf("ast command cannot parse: %v", err)
-			return 1
+			return 2
 		}
 
 		if *astHelpFlag || astCommand.NArg() == 0 {
 			fmt.Fprintf(stderr, "Usage: %s ast file.c\n", os.Args[0])
 			astCommand.PrintDefaults()
-			return 1
+			return 3
 		}
 
 		args.ast = true
@@ -464,7 +461,7 @@ func runCommand() int {
 		err := transpileCommand.Parse(os.Args[2:])
 		if err != nil {
 			fmt.Printf("transpile command cannot parse: %v", err)
-			return 1
+			return 4
 		}
 
 		if *transpileHelpFlag || transpileCommand.NArg() == 0 {
@@ -472,7 +469,7 @@ func runCommand() int {
 				"Usage: %s transpile [-V] [-o file.go] [-p package] file1.c ...\n",
 				os.Args[0])
 			transpileCommand.PrintDefaults()
-			return 1
+			return 5
 		}
 
 		args.inputFiles = transpileCommand.Args()
@@ -482,12 +479,12 @@ func runCommand() int {
 		args.clangFlags = clangFlags
 	default:
 		flag.Usage()
-		return 1
+		return 6
 	}
 
 	if err := Start(args); err != nil {
 		fmt.Printf("Error: %v\n", err)
-		return 1
+		return 7
 	}
 
 	return 0

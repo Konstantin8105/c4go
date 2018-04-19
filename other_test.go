@@ -60,8 +60,12 @@ func TestSourceVasilevBook(t *testing.T) {
 
 		// run test
 		t.Run(file, func(t *testing.T) {
-			os.Args = []string{"c4go", "transpile", "-o=" + file + ".go", "" + file + ""}
-			main()
+			file = strings.TrimSpace(file)
+			os.Args = []string{"c4go", "transpile", "-o=" + file + ".go", file}
+			code := runCommand()
+			if code != 0 {
+				t.Fatalf("Cannot transpile `%v`", os.Args)
+			}
 		})
 	}
 }
