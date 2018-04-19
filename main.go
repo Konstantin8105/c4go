@@ -238,7 +238,7 @@ func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.Fil
 	for _, in := range args.inputFiles {
 		_, err = os.Stat(in)
 		if err != nil {
-			err = fmt.Errorf("Input file %s is not found", in)
+			err = fmt.Errorf("Input file `%s` is not found", in)
 			return
 		}
 	}
