@@ -10,6 +10,12 @@ import (
 )
 
 func TestSourceVasilevBook(t *testing.T) {
+	// repair arguments
+	arguments := os.Args
+	defer func() {
+		os.Args = arguments
+	}()
+
 	defer func() {
 		if r := recover(); r != nil {
 			t.Errorf("Panic is not acceptable for position: %v", r)
