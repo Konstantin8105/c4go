@@ -8,7 +8,7 @@ int d(int v)
 
 int main()
 {
-    plan(12);
+    plan(14);
 
     int x = 1;
 
@@ -78,6 +78,24 @@ int main()
 		}
 		if ( NULL == NULL ) {
 			pass("null test 6")
+		}
+	}
+
+	diag("pointer in if");
+	{
+		typedef struct row{
+			unsigned int * p;
+		} row;
+		row vv;
+		row *r = &vv;
+		if (r->p == NULL){
+			pass("pointer test 1");
+		}
+		if (!r->p){
+			pass("pointer test 2");
+		}
+		if (r->p){
+			fail("pointer 3")
 		}
 	}
 
