@@ -55,3 +55,9 @@ source ./travis/triangle.sh
 
 # Run script kr
 source ./travis/kr.sh
+
+# Run script kochan
+source ./travis/kochan.sh
+
+# Run script Vasilev
+source ./travis/vasilev.sh
