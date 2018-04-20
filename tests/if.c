@@ -83,11 +83,11 @@ int main()
 
 	diag("pointer in if");
 	{
-		typedef struct row{
+		typedef struct rowA{
 			unsigned int * p;
-		} row;
-		row vv;
-		row *r = &vv;
+		} rowB;
+		rowB vv;
+		rowB *r = &vv;
 		if (r->p == NULL){
 			pass("pointer test 1");
 		}
