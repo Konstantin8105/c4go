@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -43,188 +44,132 @@ func getFileList(prefix, gitSource string) (fileList []string, err error) {
 	return
 }
 
-func TestSourceVasilevBook(t *testing.T) {
+func TestBookSources(t *testing.T) {
 	defer func() {
 		if r := recover(); r != nil {
 			t.Errorf("Panic is not acceptable: %v", r)
 		}
 	}()
 
-	prefix := "VasielBook"
-	gitSource := "https://github.com/olegbukatchuk/book-c-the-examples-and-tasks.git"
-
-	fileList, err := getFileList(prefix, gitSource)
-	if err != nil {
-		t.Fatal(err)
+	tcs := []struct {
+		prefix         string
+		gitSource      string
+		ignoreFileList []string
+	}{
+		{
+			prefix:    "VasielBook",
+			gitSource: "https://github.com/olegbukatchuk/book-c-the-examples-and-tasks.git",
+			ignoreFileList: []string{
+				"1.13/main.c",
+				"1.6/main.c",
+				"5.9/main.c",
+				"3.19/main.c",
+				"3.17/main.c",
+			},
+		},
+		{
+			prefix:    "KR",
+			gitSource: "https://github.com/KushalP/k-and-r.git",
+			ignoreFileList: []string{
+				"4.1-1.c",
+				"4-11.c",
+				"1.9-1.c",
+				"1.10-1.c",
+				"1-24.c",
+				"1-17.c",
+				"1-16.c",
+				"4-10.c",
+			},
+		},
+		{
+			prefix:    "KochanBook",
+			gitSource: "https://github.com/eugenetriguba/programming-in-c.git",
+			ignoreFileList: []string{
+				"5.9d.c",
+				"5.9c.c",
+			},
+		},
+		{
+			prefix:    "DeitelBook",
+			gitSource: "https://github.com/Emmetttt/C-Deitel-Book.git",
+			ignoreFileList: []string{
+				"E5.45.C",
+				"06.14_const_type_qualifier.C",
+				"E7.17.C",
+			},
+		},
 	}
 
-	ignoreFileList := []string{
-		"1.13/main.c",
-		"1.6/main.c",
-		"5.9/main.c",
-		"3.19/main.c",
-		"3.17/main.c",
-	}
-
-	for _, file := range fileList {
-		// ignore list of sources
-		var ignored bool
-		for _, ignore := range ignoreFileList {
-			if strings.Contains(strings.ToLower(file), strings.ToLower(ignore)) {
-				ignored = true
-			}
+	var amountWarnings int
+	for _, tc := range tcs {
+		fileList, err := getFileList(tc.prefix, tc.gitSource)
+		if err != nil {
+			t.Fatal(err)
 		}
-		if ignored {
-			continue
-		}
-
-		// run test
-		t.Run(file, func(t *testing.T) {
-			file = strings.TrimSpace(file)
-			os.Args = []string{"c4go", "transpile", "-o=" + file + ".go", file}
-			code := runCommand()
-			if code != 0 {
-				t.Fatalf("Cannot transpile `%v`", os.Args)
+		for _, file := range fileList {
+			// ignore list of sources
+			var ignored bool
+			for _, ignore := range tc.ignoreFileList {
+				if strings.Contains(strings.ToLower(file), strings.ToLower(ignore)) {
+					ignored = true
+				}
 			}
-		})
+			if ignored {
+				continue
+			}
+
+			// run test
+			t.Run(file, func(t *testing.T) {
+				file = strings.TrimSpace(file)
+				goFile := file + ".go"
+				os.Args = []string{"c4go", "transpile", "-o=" + goFile, file}
+				code := runCommand()
+				if code != 0 {
+					t.Fatalf("Cannot transpile `%v`", os.Args)
+				}
+				// logging warnings
+				// TODO
+				var logs []string
+				logs, err = getLogs(goFile)
+				if err != nil {
+					t.Errorf("Error in `%v`: %v", goFile, err)
+				}
+				for _, log := range logs {
+					t.Log(log)
+					fmt.Println(log)
+				}
+				amountWarnings += len(logs)
+			})
+		}
 	}
+	fmt.Println("Amount warnings summary : ", amountWarnings)
 }
 
-func TestKRSourceBook(t *testing.T) {
-	defer func() {
-		if r := recover(); r != nil {
-			t.Errorf("Panic is not acceptable: %v", r)
-		}
-	}()
-
-	prefix := "KR"
-	gitSource := "https://github.com/KushalP/k-and-r.git"
-
-	fileList, err := getFileList(prefix, gitSource)
+func getLogs(goFile string) (logs []string, err error) {
+	file, err := os.Open(goFile)
 	if err != nil {
-		t.Fatal(err)
+		return
 	}
+	defer file.Close()
 
-	ignoreFileList := []string{
-		"4.1-1.c",
-		"4-11.c",
-		"1.9-1.c",
-		"1.10-1.c",
-		"1-24.c",
-		"1-17.c",
-		"1-16.c",
-		"4-10.c",
-	}
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
 
-	for _, file := range fileList {
-		// ignore list of sources
-		var ignored bool
-		for _, ignore := range ignoreFileList {
-			if strings.Contains(strings.ToLower(file), strings.ToLower(ignore)) {
-				ignored = true
-			}
-		}
-		if ignored {
+		// ignore
+		// Warning (*ast.TranslationUnitDecl):  :0 :cannot transpileRecordDecl `__WAIT_STATUS`. could not determine the size of type `union __WAIT_STATUS` for that reason: Cannot determine sizeof : |union __WAIT_STATUS|. err = Cannot canculate `union` sizeof for `string`. Cannot determine sizeof : |union wait *|. err = error in union
+		if strings.Contains(line, "union __WAIT_STATUS") {
 			continue
 		}
 
-		// run test
-		t.Run(file, func(t *testing.T) {
-			file = strings.TrimSpace(file)
-			os.Args = []string{"c4go", "transpile", "-o=" + file + ".go", file}
-			code := runCommand()
-			if code != 0 {
-				t.Fatalf("Cannot transpile `%v`", os.Args)
-			}
-		})
-	}
-}
-
-func TestSourceKochanBook(t *testing.T) {
-	defer func() {
-		if r := recover(); r != nil {
-			t.Errorf("Panic is not acceptable: %v", r)
+		if strings.Contains(line, "//") && strings.Contains(line, "AST") {
+			logs = append(logs, line)
 		}
-	}()
-
-	prefix := "KochanBook"
-	gitSource := "https://github.com/eugenetriguba/programming-in-c.git"
-
-	fileList, err := getFileList(prefix, gitSource)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	ignoreFileList := []string{
-		"5.9d.c",
-		"5.9c.c",
-	}
-
-	for _, file := range fileList {
-		// ignore list of sources
-		var ignored bool
-		for _, ignore := range ignoreFileList {
-			if strings.Contains(strings.ToLower(file), strings.ToLower(ignore)) {
-				ignored = true
-			}
+		if strings.HasPrefix(line, "// Warning") {
+			logs = append(logs, line)
 		}
-		if ignored {
-			continue
-		}
-
-		// run test
-		t.Run(file, func(t *testing.T) {
-			file = strings.TrimSpace(file)
-			os.Args = []string{"c4go", "transpile", "-o=" + file + ".go", file}
-			code := runCommand()
-			if code != 0 {
-				t.Fatalf("Cannot transpile `%v`", os.Args)
-			}
-		})
-	}
-}
-
-func TestSourceDeitelBook(t *testing.T) {
-	defer func() {
-		if r := recover(); r != nil {
-			t.Errorf("Panic is not acceptable: %v", r)
-		}
-	}()
-
-	prefix := "DeitelBook"
-	gitSource := "https://github.com/Emmetttt/C-Deitel-Book.git"
-
-	fileList, err := getFileList(prefix, gitSource)
-	if err != nil {
-		t.Fatal(err)
 	}
 
-	ignoreFileList := []string{
-		"E5.45.C",
-		"06.14_const_type_qualifier.C",
-		"E7.17.C",
-	}
-
-	for _, file := range fileList {
-		// ignore list of sources
-		var ignored bool
-		for _, ignore := range ignoreFileList {
-			if strings.Contains(strings.ToLower(file), strings.ToLower(ignore)) {
-				ignored = true
-			}
-		}
-		if ignored {
-			continue
-		}
-
-		// run test
-		t.Run(file, func(t *testing.T) {
-			file = strings.TrimSpace(file)
-			os.Args = []string{"c4go", "transpile", "-o=" + file + ".go", file}
-			code := runCommand()
-			if code != 0 {
-				t.Fatalf("Cannot transpile `%v`", os.Args)
-			}
-		})
-	}
+	err = scanner.Err()
+	return
 }
