@@ -28,12 +28,40 @@ void test_int_pointer()
 	(void)(c);
 }
 
+void test_uint_to_pointer()
+{
+	double value = 42;
+	double *p;
+	p = &value;
+	unsigned int loc = p;
+	is_true(loc >= 0);
+
+	double * y;
+	y = (double *)(loc);
+	/* is_true(*y == 42); */
+	(void)(y);
+
+	p = NULL;
+	loc = p;
+	is_true(loc == 0);
+	(void)(p);
+
+	typedef struct row{
+		double * t;
+	} row;
+	row r;
+	unsigned poi = r.t;
+	is_true(poi >= 0);
+	(void)(r);
+}
+
 int main()
 {
-    plan(2);
+    plan(5);
 
 	test_paren_pointer();
 	test_int_pointer();
+	test_uint_to_pointer();
 
     done_testing();
 }
