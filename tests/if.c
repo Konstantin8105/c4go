@@ -88,13 +88,13 @@ int main()
 		} rowB;
 		rowB vv;
 		rowB *r = &vv;
-		if (r->p == NULL){
+		if (r->p != NULL){
 			pass("pointer test 1");
 		}
-		if (!r->p){
+		if (r->p){
 			pass("pointer test 2");
 		}
-		if (r->p){
+		if (!r->p){
 			fail("pointer 3")
 		}
 	}
