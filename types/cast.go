@@ -17,6 +17,8 @@ import (
 // is not an array with a fixed size then the the size will be -1 and the
 // returned type should be ignored.
 func GetArrayTypeAndSize(s string) (string, int) {
+	s = strings.Replace(s, "(", "", -1)
+	s = strings.Replace(s, ")", "", -1)
 	match := util.GetRegex(`([\w\* ]*)\[(\d+)\]((\[\d+\])*)`).FindStringSubmatch(s)
 	if len(match) > 0 {
 		var t = fmt.Sprintf("%s%s", match[1], match[3])
