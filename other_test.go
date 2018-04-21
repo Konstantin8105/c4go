@@ -128,7 +128,6 @@ func TestBookSources(t *testing.T) {
 					t.Fatalf("Cannot transpile `%v`", os.Args)
 				}
 				// logging warnings
-				// TODO
 				var logs []string
 				logs, err = getLogs(goFile)
 				if err != nil {
