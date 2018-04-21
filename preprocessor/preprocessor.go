@@ -11,6 +11,8 @@ import (
 	"runtime"
 	"strings"
 	"text/scanner"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/Konstantin8105/c4go/util"
 )
@@ -203,8 +205,62 @@ func (f FilePP) GetSnippet(file string,
 	line, lineEnd int,
 	col, colEnd int) (
 	buffer []byte, err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("GetSnippet error for `%v` {%v,%v}{%v,%v}. %v",
+				file,
+				line, lineEnd,
+				col, colEnd,
+				err)
+		}
+	}()
+
 	if lineEnd == 0 {
 		lineEnd = line
+	}
+
+	// replace 2,3,4... byte of rune to one byte symbol
+	var t string
+	for _, r := range file {
+		if utf8.RuneLen(r) > 1 {
+			t += "_"
+			continue
+		}
+		t += string(r)
+	}
+	file = t
+
+again:
+	for i := range f.entities {
+		for j := range f.entities[i].include {
+			if f.entities[i].include[j] != '\\' {
+				continue
+			}
+			if j+3 > len(f.entities[i].include)-1 {
+				continue
+			}
+			wrongSymbol := false
+			var isSymbol2 bool
+			runes := f.entities[i].include[j+1 : j+4]
+			for y, r := range runes {
+				if !unicode.IsDigit(r) {
+					wrongSymbol = true
+				}
+				if y == 0 && r == '2' {
+					isSymbol2 = true
+				}
+			}
+			if !wrongSymbol {
+				if isSymbol2 {
+					f.entities[i].include = f.entities[i].include[:j] + "_" +
+						f.entities[i].include[j+4:]
+				} else {
+					f.entities[i].include = f.entities[i].include[:j] +
+						f.entities[i].include[j+4:]
+				}
+				goto again
+			}
+		}
 	}
 
 	for i := range f.entities {
