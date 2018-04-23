@@ -43,11 +43,6 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 			return
 		}
 
-		if _, ok := n.Children()[0].(*ast.DeclRefExpr); !ok {
-			err = fmt.Errorf("Unsupported type %T", n.Children()[0])
-			return
-		}
-
 		var left goast.Expr
 		var leftType string
 		var newPre, newPost []goast.Stmt

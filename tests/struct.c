@@ -479,10 +479,28 @@ void test_typedef2(){
 	is_eq(b[1],4.);
 }
 
+void test_pointer_member()
+{
+	struct tttt{
+		int r[10];
+		int *p;
+	};
+	struct tttt t;
+	t.p = t.r;
+	for(int i=0;i<10;i++)
+		t.r[i]= i;
+	is_eq(*t.p,0);
+	t.p++;
+	is_eq(*t.p,1);
+	t.p+=2;
+	is_eq(*t.p,3);
+}
+
 int main()
 {
-    plan(81);
+    plan(84);
 
+	test_pointer_member();
 	test_typedef1();
 	test_typedef2();
     struct_array();
