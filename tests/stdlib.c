@@ -213,8 +213,7 @@ void q_sort()
     is_eq(values[5], 100);
 }
 
-void test_pointer_malloc()
-{
+void test_pointer_malloc1() {
     int m = 3, n = 5;
     int *p;
     p = malloc(m * n * sizeof(int));
@@ -230,11 +229,45 @@ void test_pointer_malloc()
     free(p);
 }
 
+void test_pointer_malloc2() {
+    int m = 3, n = 5;
+    int (*p)[n];
+    p = malloc(m * n * sizeof(int));
+    int i, j, count = 0;
+    for (i = 0; i < m; i++) {
+        for (j = 0; j < n; j++) {
+            count++;
+            p[i][j] = count;
+        }
+    }
+	is_eq(p[0][0], 1);
+	is_eq(p[2][2], 13);
+    free(p);
+}
+
+void test_pointer_malloc3() {
+    int m = 3;
+    int (*p)[5];
+    p = malloc(m * 5 * sizeof(int));
+    int i, j, count = 0;
+    for (i = 0; i < m; i++) {
+        for (j = 0; j < 5; j++) {
+            count++;
+            p[i][j] = count;
+        }
+    }
+	is_eq(p[0][0], 1);
+	is_eq(p[2][2], 13);
+    free(p);
+}
+
 int main()
 {
-    plan(754);
+    plan(758);
 
-	test_pointer_malloc();
+	test_pointer_malloc1();
+	test_pointer_malloc2();
+	test_pointer_malloc3();
 
     char* endptr;
 

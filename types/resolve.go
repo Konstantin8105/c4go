@@ -271,6 +271,11 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 		return p.ImportType(s), nil
 	}
 
+	// example : `int (*) [5]`
+	if strings.Contains(s, "(*)") {
+		return ResolveType(p, strings.Replace(s, "(*)", "[]", -1))
+	}
+
 	// It may be a pointer of a simple type. For example, float *, int *,
 	// etc.
 	if strings.HasSuffix(s, "*") {
@@ -289,23 +294,56 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 	// slices.
 	// int [2][3] -> [][]int
 	// int [2][3][4] -> [][][]int
-	st := strings.Replace(s, "(", "", -1)
-	st = strings.Replace(st, ")", "", -1)
-	search2 := util.GetRegex(`([\w\* ]+)((\[\d+\])+)`).FindStringSubmatch(st)
-	if len(search2) > 2 {
-		t, err := ResolveType(p, search2[1])
-
-		var re = util.GetRegex(`[0-9]+`)
-		arraysNoSize := re.ReplaceAllString(search2[2], "")
-
-		return fmt.Sprintf("%s%s", arraysNoSize, t), err
+	var counter int
+	var j int
+	for j = 0; j < len(s); j++ {
+		if s[j] == ' ' || util.IsAlphaNum(s[j]) {
+			continue
+		}
+		break
 	}
-	// example: `int * [n]`
-	search2 = util.GetRegex(`([\w\* ]+)((\[\w+\])+)`).FindStringSubmatch(st)
-	if len(search2) > 2 {
-		t, err := ResolveType(p, search2[1])
-		return fmt.Sprintf("[]%s", t), err
+	if j < len(s) && s[j] == '[' {
+		// example : int [2][3]
+		start := j
+		for ; j < len(s); j++ {
+			switch s[j] {
+			case ' ':
+			case ']':
+				counter--
+			case '[':
+				counter++
+			}
+			if counter == 0 {
+				// int  [2]   [3]
+				// -----|-|
+				// start+ |
+				//      j +
+				fmt.Println("---")
+				if j == len(s)-1 {
+					var r string
+					r, err = ResolveType(p, s[:start])
+					return fmt.Sprintf("%s%s", s[start:], r), err
+				}
+				before := s[:start] + s[j+1:] // int [3]
+				after := s[start : j+1]       // [2]
+				fmt.Println("===", before, after)
+				before, err = ResolveType(p, before)
+				return fmt.Sprintf("%s%s", after, before), err
+			}
+		}
 	}
+	//
+	// st := strings.Replace(s, "(", "", -1)
+	// st = strings.Replace(st, ")", "", -1)
+	// search2 := util.GetRegex(`([\w\* ]+)((\[\d+\])+)`).FindStringSubmatch(st)
+	// if len(search2) > 2 {
+	// 	t, err := ResolveType(p, search2[1])
+	//
+	// 	var re = util.GetRegex(`[0-9]+`)
+	// 	arraysNoSize := re.ReplaceAllString(search2[2], "")
+	//
+	// 	return fmt.Sprintf("%s%s", arraysNoSize, t), err
+	// }
 
 	// Structures are by name.
 	if strings.HasPrefix(s, "struct ") || strings.HasPrefix(s, "union ") {
