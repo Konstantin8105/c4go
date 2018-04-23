@@ -59,6 +59,18 @@ func TestBookSources(t *testing.T) {
 		ignoreFileList []string
 	}{
 		{
+			prefix:    "kilo editor",
+			gitSource: "https://github.com/antirez/kilo.git",
+		},
+		{
+			prefix:    "brainfuck",
+			gitSource: "https://github.com/kgabis/brainfuck-c.git",
+		},
+		{
+			prefix:    "tiny-web-server",
+			gitSource: "https://github.com/shenfeng/tiny-web-server.git",
+		},
+		{
 			prefix:    "VasielBook",
 			gitSource: "https://github.com/olegbukatchuk/book-c-the-examples-and-tasks.git",
 			ignoreFileList: []string{
