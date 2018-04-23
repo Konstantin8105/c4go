@@ -60,6 +60,19 @@ func TestBookSources(t *testing.T) {
 		ignoreFileList []string
 	}{
 		{
+			prefix:    "kilo editor",
+			gitSource: "https://github.com/antirez/kilo.git",
+		},
+		{
+			prefix:    "brainfuck",
+			gitSource: "https://github.com/kgabis/brainfuck-c.git",
+		},
+		// TODO : some travis haven`t enought C libraries
+		// {
+		// 	prefix:    "tiny-web-server",
+		// 	gitSource: "https://github.com/shenfeng/tiny-web-server.git",
+		// },
+		{
 			prefix:    "VasielBook",
 			gitSource: "https://github.com/olegbukatchuk/book-c-the-examples-and-tasks.git",
 			ignoreFileList: []string{
@@ -124,7 +137,7 @@ func TestBookSources(t *testing.T) {
 					args.verbose = false
 
 					if err := Start(args); err != nil {
-						t.Fatalf("Cannot transpile `%v`", os.Args)
+						t.Fatalf("Cannot transpile `%v`: %v", args, err)
 					}
 
 					// logging warnings
