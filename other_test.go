@@ -119,6 +119,9 @@ func TestBookSources(t *testing.T) {
 					args := DefaultProgramArgs()
 					args.inputFiles = []string{file}
 					args.outputFile = goFile
+					args.ast = false
+					args.verbose = false
+
 					if err := Start(args); err != nil {
 						t.Fatalf("Cannot transpile `%v`", os.Args)
 					}
