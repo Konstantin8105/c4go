@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -137,6 +138,7 @@ func TestBookSources(t *testing.T) {
 					if err := Start(args); err != nil {
 						t.Fatalf("Cannot transpile `%v`", os.Args)
 					}
+
 					// logging warnings
 					var err error
 					var logs []string
@@ -148,6 +150,23 @@ func TestBookSources(t *testing.T) {
 						t.Log(log)
 						fmt.Println(log)
 					}
+
+					// go build testing
+					if len(logs) == 0 {
+						cmd := exec.Command("go", "build",
+							"-o", goFile+".out", goFile)
+						cmdOutput := &bytes.Buffer{}
+						cmdErr := &bytes.Buffer{}
+						cmd.Stdout = cmdOutput
+						cmd.Stderr = cmdErr
+						err = cmd.Run()
+						if err != nil {
+							fmt.Println("Go build test : ", err, cmdErr.String())
+							atomic.AddInt32(&amountWarnings, 1)
+						}
+					}
+
+					// warning counter
 					atomic.AddInt32(&amountWarnings, int32(len(logs)))
 				})
 			}
