@@ -8,6 +8,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
 )
 
@@ -100,7 +102,44 @@ func TestBookSources(t *testing.T) {
 		},
 	}
 
-	var amountWarnings int
+	chFile := make(chan string, 10)
+	var wg sync.WaitGroup
+	var amountWarnings int32
+	withoutLock = true
+
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for f := range chFile {
+				file := f
+				// run test
+				t.Run(file, func(t *testing.T) {
+					file = strings.TrimSpace(file)
+					goFile := file + ".go"
+					m.Lock()
+					os.Args = []string{"c4go", "transpile", "-o=" + goFile, file}
+					code := runCommand()
+					if code != 0 {
+						t.Fatalf("Cannot transpile `%v`", os.Args)
+					}
+					// logging warnings
+					var err error
+					var logs []string
+					logs, err = getLogs(goFile)
+					if err != nil {
+						t.Errorf("Error in `%v`: %v", goFile, err)
+					}
+					for _, log := range logs {
+						t.Log(log)
+						fmt.Println(log)
+					}
+					atomic.AddInt32(&amountWarnings, int32(len(logs)))
+				})
+			}
+		}()
+	}
+
 	for _, tc := range tcs {
 		fileList, err := getFileList(tc.prefix, tc.gitSource)
 		if err != nil {
@@ -118,29 +157,13 @@ func TestBookSources(t *testing.T) {
 				continue
 			}
 
-			// run test
-			t.Run(file, func(t *testing.T) {
-				file = strings.TrimSpace(file)
-				goFile := file + ".go"
-				os.Args = []string{"c4go", "transpile", "-o=" + goFile, file}
-				code := runCommand()
-				if code != 0 {
-					t.Fatalf("Cannot transpile `%v`", os.Args)
-				}
-				// logging warnings
-				var logs []string
-				logs, err = getLogs(goFile)
-				if err != nil {
-					t.Errorf("Error in `%v`: %v", goFile, err)
-				}
-				for _, log := range logs {
-					t.Log(log)
-					fmt.Println(log)
-				}
-				amountWarnings += len(logs)
-			})
+			chFile <- file
 		}
 	}
+
+	close(chFile)
+	wg.Wait()
+
 	fmt.Println("Amount warnings summary : ", amountWarnings)
 }
 

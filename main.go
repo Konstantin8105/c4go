@@ -389,7 +389,13 @@ func main() {
 	}
 }
 
+var m sync.Mutex
+var withoutLock bool
+
 func runCommand() int {
+	if !withoutLock {
+		m.Lock()
+	}
 	// set default flag value
 	var (
 		transpileCommand = flag.NewFlagSet(
@@ -481,6 +487,8 @@ func runCommand() int {
 		flag.Usage()
 		return 6
 	}
+
+	m.Unlock()
 
 	if err := Start(args); err != nil {
 		fmt.Printf("Error: %v\n", err)
