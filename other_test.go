@@ -105,7 +105,6 @@ func TestBookSources(t *testing.T) {
 	chFile := make(chan string, 10)
 	var wg sync.WaitGroup
 	var amountWarnings int32
-	withoutLock = true
 
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
@@ -117,10 +116,10 @@ func TestBookSources(t *testing.T) {
 				t.Run(file, func(t *testing.T) {
 					file = strings.TrimSpace(file)
 					goFile := file + ".go"
-					m.Lock()
-					os.Args = []string{"c4go", "transpile", "-o=" + goFile, file}
-					code := runCommand()
-					if code != 0 {
+					args := DefaultProgramArgs()
+					args.inputFiles = []string{file}
+					args.outputFile = goFile
+					if err := Start(args); err != nil {
 						t.Fatalf("Cannot transpile `%v`", os.Args)
 					}
 					// logging warnings
