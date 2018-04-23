@@ -47,5 +47,10 @@ func GetDereferenceType(cType string) (_ string, err error) {
 		return strings.TrimSpace(search[1] + search[2][0:len(search[2])-1]), nil
 	}
 
+	// example : int (*)[n]
+	if strings.Contains(cType, "(*)") {
+		return GetDereferenceType(strings.Replace(cType, "(*)", "*", -1))
+	}
+
 	return "", errors.New(cType)
 }

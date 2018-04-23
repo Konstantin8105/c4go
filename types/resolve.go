@@ -300,6 +300,12 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 
 		return fmt.Sprintf("%s%s", arraysNoSize, t), err
 	}
+	// example: `int * [n]`
+	search2 = util.GetRegex(`([\w\* ]+)((\[\w+\])+)`).FindStringSubmatch(st)
+	if len(search2) > 2 {
+		t, err := ResolveType(p, search2[1])
+		return fmt.Sprintf("[]%s", t), err
+	}
 
 	// Structures are by name.
 	if strings.HasPrefix(s, "struct ") || strings.HasPrefix(s, "union ") {

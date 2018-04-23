@@ -213,9 +213,28 @@ void q_sort()
     is_eq(values[5], 100);
 }
 
+void test_pointer_malloc()
+{
+    int m = 3, n = 5;
+    int *p;
+    p = malloc(m * n * sizeof(int));
+    int i, j, count = 0;
+    for (i = 0; i < m; i++) {
+        for (j = 0; j < n; j++) {
+            count++;
+            p[i+j*m] = count;
+        }
+    }
+	is_eq(p[0], 1);
+	is_eq(p[2+2*m], 13);
+    free(p);
+}
+
 int main()
 {
-    plan(752);
+    plan(754);
+
+	test_pointer_malloc();
 
     char* endptr;
 
