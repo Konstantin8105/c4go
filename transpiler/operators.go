@@ -188,9 +188,9 @@ func transpileParenExpr(n *ast.ParenExpr, p *program.Program) (
 // pointerArithmetic - operations between 'int' and pointer
 // Example C code : ptr += i
 // ptr = (*(*[1]int)(unsafe.Pointer(uintptr(unsafe.Pointer(&ptr[0])) + (i)*unsafe.Sizeof(ptr[0]))))[:]
-// , where i  - left
+// , where i  - right
 //        '+' - operator
-//      'ptr' - right
+//      'ptr' - left
 //      'int' - leftType transpiled in Go type
 // Note:
 // 1) rigthType MUST be 'int'
@@ -206,6 +206,21 @@ func pointerArithmetic(p *program.Program,
 			err = fmt.Errorf("Cannot transpile pointerArithmetic. err = %v", err)
 		}
 	}()
+
+	if bl, ok := right.(*goast.BasicLit); ok && operator == token.ADD {
+		if bl.Value == "1" && bl.Kind == token.INT {
+			return &goast.SliceExpr{
+				X:      left,
+				Lbrack: 1,
+				Low: &goast.BasicLit{
+					Kind:  token.INT,
+					Value: "1",
+				},
+				Slice3: false,
+			}, leftType, preStmts, postStmts, nil
+		}
+	}
+
 	if !(types.IsCInteger(p, rightType) || rightType == "bool") {
 		err = fmt.Errorf("right type is not C integer type : '%s'", rightType)
 		return
