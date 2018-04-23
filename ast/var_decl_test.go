@@ -166,6 +166,23 @@ func TestVarDecl(t *testing.T) {
 			Parent:       0x7f985e0246d0,
 			ChildNodes:   []Node{},
 		},
+		`0x3ec9368 parent 0x3dcaaf0 prev 0x3ec4088 <col:4, col:15> col:15 used CBLAS_CallFromC 'int' extern`: &VarDecl{
+			Addr:         0x3ec9368,
+			Parent:       0x3dcaaf0,
+			Prev:         0x3ec4088,
+			Pos:          NewPositionFromString("col:4, col:15"),
+			Position2:    "col:15",
+			Name:         "CBLAS_CallFromC",
+			Type:         "int",
+			Type2:        "",
+			IsExtern:     true,
+			IsUsed:       true,
+			IsCInit:      false,
+			IsReferenced: false,
+			IsStatic:     false,
+			IsRegister:   false,
+			ChildNodes:   []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)
