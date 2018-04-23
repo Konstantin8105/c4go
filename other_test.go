@@ -136,7 +136,7 @@ func TestBookSources(t *testing.T) {
 					args.verbose = false
 
 					if err := Start(args); err != nil {
-						t.Fatalf("Cannot transpile `%v`", os.Args)
+						t.Fatalf("Cannot transpile `%v`: %v", args, err)
 					}
 
 					// logging warnings
