@@ -276,29 +276,17 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 				},
 			}, cTypeString, nil
 		}
+	}
 
-		t = &goast.ArrayType{
-			Elt: &goast.Ident{
-				Name: goArrayType,
-			},
-		}
-	} else {
-		goType, err := types.ResolveType(p, e.Type1)
-		if err != nil {
-			return nil, "", err
-		}
-
-		t = &goast.Ident{
-			Name: goType,
-		}
-
-		cTypeString = e.Type1
+	goType, err := types.ResolveType(p, e.Type1)
+	if err != nil {
+		return nil, "", err
 	}
 
 	return &goast.CompositeLit{
-		Type: t,
+		Type: goast.NewIdent(goType),
 		Elts: resp,
-	}, cTypeString, nil
+	}, e.Type1, nil
 }
 
 func transpileDeclStmt(n *ast.DeclStmt, p *program.Program) (
