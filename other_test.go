@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -15,25 +14,33 @@ import (
 )
 
 func getFileList(prefix, gitSource string) (fileList []string, err error) {
-	// create folder if not exist
-	var temp_folder string
-	temp_folder, err = ioutil.TempDir("", prefix)
-	if err != nil {
-		err = fmt.Errorf("Cannot create a folder : %v", err)
-		return
-	}
+	var (
+		buildFolder = "build"
+		gitFolder   = "git-source"
+		separator   = string(os.PathSeparator)
+	)
 
-	// clone git repository
-	args := []string{"clone", gitSource, temp_folder}
-	err = exec.Command("git", args...).Run()
-	if err != nil {
-		err = fmt.Errorf("Cannot clone git repository with args `%v`: %v",
-			args, err)
-		return
+	// Create build folder
+	folder := buildFolder + separator + gitFolder + separator + prefix + separator
+	if _, err = os.Stat(folder); os.IsNotExist(err) {
+		err = os.MkdirAll(folder, os.ModePerm)
+		if err != nil {
+			err = fmt.Errorf("Cannot create folder %v . %v", folder, err)
+			return
+		}
+
+		// clone git repository
+		args := []string{"clone", gitSource, folder}
+		err = exec.Command("git", args...).Run()
+		if err != nil {
+			err = fmt.Errorf("Cannot clone git repository with args `%v`: %v",
+				args, err)
+			return
+		}
 	}
 
 	// find all C source files
-	err = filepath.Walk(temp_folder, func(path string, f os.FileInfo, err error) error {
+	err = filepath.Walk(folder, func(path string, f os.FileInfo, err error) error {
 		if strings.HasSuffix(strings.ToLower(f.Name()), ".c") {
 			fileList = append(fileList, path)
 		}
@@ -59,6 +66,10 @@ func TestBookSources(t *testing.T) {
 		gitSource      string
 		ignoreFileList []string
 	}{
+		{
+			prefix:    "Tinn",
+			gitSource: "https://github.com/glouw/tinn.git",
+		},
 		{
 			prefix:    "kilo editor",
 			gitSource: "https://github.com/antirez/kilo.git",
