@@ -276,25 +276,9 @@ void test_pointer_malloc3() {
     free(p);
 }
 
-void test_pointer_malloc4() {
-    int m = 3;
-    int (*p)[1][5];
-    p = malloc(m * 5 * sizeof(int));
-    int i, j, count = 0;
-    for (i = 0; i < m; i++) {
-        for (j = 0; j < 5; j++) {
-            count++;
-            p[0][i][j] = count;
-        }
-    }
-	is_eq(p[0][0][0], 1);
-	is_eq(p[0][2][2], 13);
-    free(p);
-}
-
 int main()
 {
-    plan(762);
+    plan(760);
 
     char* endptr;
 
@@ -568,7 +552,6 @@ int main()
 	test_pointer_malloc2();
 	test_pointer_malloc2const();
 	test_pointer_malloc3();
-	test_pointer_malloc4();
 
     done_testing();
 }

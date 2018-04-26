@@ -18,11 +18,10 @@ func (p *Program) GenerateWarningMessage(e error, n ast.Node) string {
 	message += fmt.Sprintf("%s", e.Error())
 
 	// example for debugging search ploblem ast node
-	//
-	// warningMsg:= "// Warning (*ast.BinaryOperator):  /tmp/SQLITE/sqlite-amalgamation-3220000/shell.c:14132 :Cannot casting {char * -> NullPointerType *}. ..."
-	// if strings.HasPrefix(message,warningMsg) {
+	// warningMsg := "noarch.InterfaceTo[5]intSlice"
+	// if strings.Contains(message, warningMsg) {
 	// 	fmt.Println(ast.Atos(n))
-	// panic("found")
+	// 	panic("found")
 	// }
 
 	return message

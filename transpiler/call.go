@@ -445,17 +445,17 @@ func transpileCallExprQsort(n *ast.CallExpr, p *program.Program) (
 		}
 	}()
 	/*
-		CallExpr 0x2c6b1b0 <line:182:2, col:40> 'void'
-		|-ImplicitCastExpr 0x2c6b198 <col:2> 'void (*)(void *, size_t, size_t, __compar_fn_t)' <FunctionToPointerDecay>
-		| `-DeclRefExpr 0x2c6b070 <col:2> 'void (void *, size_t, size_t, __compar_fn_t)' Function 0x2bec110 'qsort' 'void (void *, size_t, size_t, __compar_fn_t)'
-		|-ImplicitCastExpr 0x2c6b210 <col:9> 'void *' <BitCast>
-		| `-ImplicitCastExpr 0x2c6b1f8 <col:9> 'int *' <ArrayToPointerDecay>
-		|   `-DeclRefExpr 0x2c6b098 <col:9> 'int [6]' lvalue Var 0x2c6a6c0 'values' 'int [6]'
-		|-ImplicitCastExpr 0x2c6b228 <col:17> 'size_t':'unsigned long' <IntegralCast>
-		| `-IntegerLiteral 0x2c6b0c0 <col:17> 'int' 6
-		|-UnaryExprOrTypeTraitExpr 0x2c6b0f8 <col:20, col:30> 'unsigned long' sizeof 'int'
-		`-ImplicitCastExpr 0x2c6b240 <col:33> 'int (*)(const void *, const void *)' <FunctionToPointerDecay>
-		  `-DeclRefExpr 0x2c6b118 <col:33> 'int (const void *, const void *)' Function 0x2c6aa70 'compare' 'int (const void *, const void *)'
+		CallExpr <> 'void'
+		|-ImplicitCastExpr <> 'void (*)(void *, size_t, size_t, __compar_fn_t)' <FunctionToPointerDecay>
+		| `-DeclRefExpr <> 'void (void *, size_t, size_t, __compar_fn_t)' Function 0x2bec110 'qsort' 'void (void *, size_t, size_t, __compar_fn_t)'
+		|-ImplicitCastExpr <> 'void *' <BitCast>
+		| `-ImplicitCastExpr <> 'int *' <ArrayToPointerDecay>
+		|   `-DeclRefExpr <> 'int [6]' lvalue Var 0x2c6a6c0 'values' 'int [6]'
+		|-ImplicitCastExpr <> 'size_t':'unsigned long' <IntegralCast>
+		| `-IntegerLiteral <> 'int' 6
+		|-UnaryExprOrTypeTraitExpr <> 'unsigned long' sizeof 'int'
+		`-ImplicitCastExpr <> 'int (*)(const void *, const void *)' <FunctionToPointerDecay>
+		  `-DeclRefExpr <> 'int (const void *, const void *)' Function 0x2c6aa70 'compare' 'int (const void *, const void *)'
 	*/
 	var element [4]goast.Expr
 	for i := 1; i < 5; i++ {
