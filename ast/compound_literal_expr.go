@@ -6,12 +6,15 @@ type CompoundLiteralExpr struct {
 	Pos        Position
 	Type1      string
 	Type2      string
+	Lvalue     bool
 	ChildNodes []Node
 }
 
 func parseCompoundLiteralExpr(line string) *CompoundLiteralExpr {
 	groups := groupsFromRegex(
-		`<(?P<position>.*)> '(?P<type1>.*?)'(:'(?P<type2>.*?)')? lvalue`,
+		`<(?P<position>.*)> '(?P<type1>.*?)'(:'(?P<type2>.*?)')?
+		(?P<lvalue> lvalue)?
+		`,
 		line,
 	)
 
@@ -20,6 +23,7 @@ func parseCompoundLiteralExpr(line string) *CompoundLiteralExpr {
 		Pos:        NewPositionFromString(groups["position"]),
 		Type1:      groups["type1"],
 		Type2:      groups["type2"],
+		Lvalue:     len(groups["lvalue"]) > 0,
 		ChildNodes: []Node{},
 	}
 }

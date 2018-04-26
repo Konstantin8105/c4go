@@ -347,7 +347,8 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 		p, tree[0].(ast.Node))
 	if err != nil {
 		for i := range astErrors {
-			fmt.Fprintf(os.Stderr, "AST error #%d:\n%v\n", astErrors[i].Error())
+			fmt.Fprintf(os.Stderr, "AST error #%d:\n%v\n",
+				i, astErrors[i].Error())
 		}
 		return fmt.Errorf("cannot transpile AST : %v", err)
 	}

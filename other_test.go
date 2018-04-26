@@ -2,8 +2,8 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -14,25 +14,33 @@ import (
 )
 
 func getFileList(prefix, gitSource string) (fileList []string, err error) {
-	// create folder if not exist
-	var temp_folder string
-	temp_folder, err = ioutil.TempDir("", prefix)
-	if err != nil {
-		err = fmt.Errorf("Cannot create a folder : %v", err)
-		return
-	}
+	var (
+		buildFolder = "build"
+		gitFolder   = "git-source"
+		separator   = string(os.PathSeparator)
+	)
 
-	// clone git repository
-	args := []string{"clone", gitSource, temp_folder}
-	err = exec.Command("git", args...).Run()
-	if err != nil {
-		err = fmt.Errorf("Cannot clone git repository with args `%v`: %v",
-			args, err)
-		return
+	// Create build folder
+	folder := buildFolder + separator + gitFolder + separator + prefix + separator
+	if _, err = os.Stat(folder); os.IsNotExist(err) {
+		err = os.MkdirAll(folder, os.ModePerm)
+		if err != nil {
+			err = fmt.Errorf("Cannot create folder %v . %v", folder, err)
+			return
+		}
+
+		// clone git repository
+		args := []string{"clone", gitSource, folder}
+		err = exec.Command("git", args...).Run()
+		if err != nil {
+			err = fmt.Errorf("Cannot clone git repository with args `%v`: %v",
+				args, err)
+			return
+		}
 	}
 
 	// find all C source files
-	err = filepath.Walk(temp_folder, func(path string, f os.FileInfo, err error) error {
+	err = filepath.Walk(folder, func(path string, f os.FileInfo, err error) error {
 		if strings.HasSuffix(strings.ToLower(f.Name()), ".c") {
 			fileList = append(fileList, path)
 		}
@@ -58,6 +66,23 @@ func TestBookSources(t *testing.T) {
 		gitSource      string
 		ignoreFileList []string
 	}{
+		{
+			prefix:    "Tinn",
+			gitSource: "https://github.com/glouw/tinn.git",
+		},
+		{
+			prefix:    "kilo editor",
+			gitSource: "https://github.com/antirez/kilo.git",
+		},
+		{
+			prefix:    "brainfuck",
+			gitSource: "https://github.com/kgabis/brainfuck-c.git",
+		},
+		// TODO : some travis haven`t enought C libraries
+		// {
+		// 	prefix:    "tiny-web-server",
+		// 	gitSource: "https://github.com/shenfeng/tiny-web-server.git",
+		// },
 		{
 			prefix:    "VasielBook",
 			gitSource: "https://github.com/olegbukatchuk/book-c-the-examples-and-tasks.git",
@@ -123,8 +148,9 @@ func TestBookSources(t *testing.T) {
 					args.verbose = false
 
 					if err := Start(args); err != nil {
-						t.Fatalf("Cannot transpile `%v`", os.Args)
+						t.Fatalf("Cannot transpile `%v`: %v", args, err)
 					}
+
 					// logging warnings
 					var err error
 					var logs []string
@@ -136,6 +162,23 @@ func TestBookSources(t *testing.T) {
 						t.Log(log)
 						fmt.Println(log)
 					}
+
+					// go build testing
+					if len(logs) == 0 {
+						cmd := exec.Command("go", "build",
+							"-o", goFile+".out", goFile)
+						cmdOutput := &bytes.Buffer{}
+						cmdErr := &bytes.Buffer{}
+						cmd.Stdout = cmdOutput
+						cmd.Stderr = cmdErr
+						err = cmd.Run()
+						if err != nil {
+							fmt.Println("Go build test : ", err, cmdErr.String())
+							atomic.AddInt32(&amountWarnings, 1)
+						}
+					}
+
+					// warning counter
 					atomic.AddInt32(&amountWarnings, int32(len(logs)))
 				})
 			}

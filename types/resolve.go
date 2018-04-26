@@ -318,7 +318,6 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 				// -----|-|
 				// start+ |
 				//      j +
-				fmt.Println("---")
 				if j == len(s)-1 {
 					var r string
 					r, err = ResolveType(p, s[:start])
@@ -326,7 +325,6 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 				}
 				before := s[:start] + s[j+1:] // int [3]
 				after := s[start : j+1]       // [2]
-				fmt.Println("===", before, after)
 				before, err = ResolveType(p, before)
 				return fmt.Sprintf("%s%s", after, before), err
 			}

@@ -283,16 +283,12 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 		return nil, "", err
 	}
 
-	t = &goast.Ident{
-		Name: goType,
-	}
-
 	cTypeString = e.Type1
 
 	return &goast.CompositeLit{
-		Type: t,
+		Type: goast.NewIdent(goType),
 		Elts: resp,
-	}, cTypeString, nil
+	}, e.Type1, nil
 }
 
 func transpileDeclStmt(n *ast.DeclStmt, p *program.Program) (
