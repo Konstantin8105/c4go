@@ -895,7 +895,6 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 					"make",
 					goast.NewIdent(t),
 					util.NewIntLit(arraySize),
-					util.NewIntLit(arraySize),
 				),
 			}
 		}
