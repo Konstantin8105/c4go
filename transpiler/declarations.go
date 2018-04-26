@@ -881,25 +881,23 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
 	// Allocate slice so that it operates like a fixed size array.
-	arrayType, arraySize := types.GetArrayTypeAndSize(n.Type)
+	_, arraySize := types.GetArrayTypeAndSize(n.Type)
 
 	if arraySize != -1 && defaultValue == nil {
-		var goArrayType string
-		goArrayType, err = types.ResolveType(p, arrayType)
+		var t string
+		t, err = types.ResolveType(p, n.Type)
 		if err != nil {
 			p.AddMessage(p.GenerateWarningMessage(err, n))
 			err = nil // Error is ignored
-		}
-
-		defaultValue = []goast.Expr{
-			util.NewCallExpr(
-				"make",
-				&goast.ArrayType{
-					Elt: util.NewTypeIdent(goArrayType),
-				},
-				util.NewIntLit(arraySize),
-				util.NewIntLit(arraySize),
-			),
+		} else {
+			defaultValue = []goast.Expr{
+				util.NewCallExpr(
+					"make",
+					goast.NewIdent(t),
+					util.NewIntLit(arraySize),
+					util.NewIntLit(arraySize),
+				),
+			}
 		}
 	}
 
