@@ -224,7 +224,9 @@ func Start(args ProgramArgs) (err error) {
 	return nil
 }
 
-func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.FilePP, err error) {
+func generateAstLines(args ProgramArgs) (
+	lines []string, filePP preprocessor.FilePP, err error) {
+
 	if args.verbose {
 		fmt.Println("Start tanspiling ...")
 	}

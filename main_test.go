@@ -270,8 +270,10 @@ func TestIntegrationScripts(t *testing.T) {
 				t.Fatalf("The header of the output cannot be understood:\n%s",
 					strings.Join(goOutLines, "\n"))
 			}
-			if !strings.HasPrefix(goOutLines[len(goOutLines)-2], "ok  \tcommand-line-arguments") &&
-				!strings.HasPrefix(goOutLines[len(goOutLines)-2], "FAIL\tcommand-line-arguments") {
+			if !strings.HasPrefix(goOutLines[len(goOutLines)-2],
+				"ok  \tcommand-line-arguments") &&
+				!strings.HasPrefix(goOutLines[len(goOutLines)-2],
+					"FAIL\tcommand-line-arguments") {
 				t.Fatalf("The footer of the output cannot be understood:\n%v",
 					strings.Join(goOutLines, "\n"))
 			}
