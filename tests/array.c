@@ -224,6 +224,19 @@ void test_pointer_minus_pointer()
 #define SIZE 3
 void test_size_pointer()
 {
+	diag("paren pointer");
+	unsigned aqq[1][1] = { { 5 } };
+	unsigned **pz;
+	unsigned c;
+	///////////////
+	pz = aqq;
+	c = 99999;
+	c = *pz;
+	is_eq(c , 5.0);
+	///////////////
+	(void) pz;
+	(void) c;
+	///////////////
     int A[2][SIZE] = {{10, 20, 30}, {40, 50, 60}};
     int B[4][SIZE] = {{0, 1, 2}, {3, 0, 4}, {5, 6, 0}, {7, 8, 9}};
     int (*pnt)[SIZE];
@@ -237,7 +250,7 @@ void test_size_pointer()
 
 int main()
 {
-    plan(140);
+    plan(141);
 
 	START_TEST(size_pointer);
     START_TEST(intarr);
