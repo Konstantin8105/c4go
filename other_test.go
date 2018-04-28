@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -379,5 +380,38 @@ func TestGSL(t *testing.T) {
 			return
 		}
 		fmt.Println(stdout.String())
+	}
+
+	// read file
+	file, err := os.Open("/tmp/gcc.log")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if !strings.HasPrefix(line, "ARG") {
+			continue
+		}
+		index := strings.Index(line, "-c")
+		if index < 0 {
+			continue
+		}
+		line = line[index+len("-c"):]
+		index = strings.Index(line, " ")
+		if index < 0 {
+			continue
+		}
+		line = line[:index]
+		if !strings.HasSuffix(strings.ToLower(line), ".c") {
+			continue
+		}
+		fmt.Println("line = ", line)
+	}
+
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
 	}
 }
