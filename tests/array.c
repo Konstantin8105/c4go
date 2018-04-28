@@ -221,7 +221,8 @@ void test_pointer_minus_pointer()
     is_eq(right_ptr - left_ptr, 20);
 }
 
-void test_paren_pointer()
+#define SIZE 3
+void test_size_pointer()
 {
 	diag("paren pointer");
 	int aqq[1][1] = { { 5 } };
@@ -230,12 +231,13 @@ void test_paren_pointer()
 	///////////////
 	pz = aqq;
 	c = -1;
-	c = (*pz);
+	c = *pz;
 	is_eq(c , 5.0);
 	///////////////
 	pz = aqq;
 	int c2 = (*pz);
 	is_eq(c2 , 5.0);
+	/*
 	///////////////
 	diag("|== next step ===============");
 	pz = aqq;
@@ -273,13 +275,25 @@ void test_paren_pointer()
 	for(int i=0;i < 1;i++)
 		for(int j=0;j<1;j++)
 			printf("[%d,%d]=%d\n",i,j,aqq[i][j]);
+	*/
+	//////////////
+	//
+    int A[2][SIZE] = {{10, 20, 30}, {40, 50, 60}};
+    int B[4][SIZE] = {{0, 1, 2}, {3, 0, 4}, {5, 6, 0}, {7, 8, 9}};
+    int (*pnt)[SIZE];
+    pnt = A;
+	is_eq(pnt[1][2],A[1][2]);
+	is_eq(pnt[0][2],A[0][2]);
+    pnt = B;
+	is_eq(pnt[1][2],B[1][2]);
+	is_eq(pnt[0][2],B[0][2]);
 }
 
 int main()
 {
-    plan(141);
+    plan(143);
 
-	test_paren_pointer();
+	START_TEST(size_pointer);
     START_TEST(intarr);
     START_TEST(doublearr);
     START_TEST(intarr_init);

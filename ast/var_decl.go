@@ -7,6 +7,7 @@ import (
 // VarDecl is node represents a variable declaration.
 type VarDecl struct {
 	Addr         Address
+	Prev         Address
 	Parent       Address
 	Pos          Position
 	Position2    string
@@ -24,8 +25,8 @@ type VarDecl struct {
 
 func parseVarDecl(line string) *VarDecl {
 	groups := groupsFromRegex(
-		`(?:prev (?P<prev>0x[0-9a-f]+) )?
-		(?:parent (?P<parent>0x[0-9a-f]+) )?
+		`(?:parent (?P<parent>0x[0-9a-f]+) )?
+		(?:prev (?P<prev>0x[0-9a-f]+) )?
 		<(?P<position>.*)>(?P<position2> .+:\d+)?
 		(?P<used> used)?
 		(?P<referenced> referenced)?
@@ -47,6 +48,7 @@ func parseVarDecl(line string) *VarDecl {
 
 	return &VarDecl{
 		Addr:         ParseAddress(groups["address"]),
+		Prev:         ParseAddress(groups["prev"]),
 		Parent:       ParseAddress(groups["parent"]),
 		Pos:          NewPositionFromString(groups["position"]),
 		Position2:    strings.TrimSpace(groups["position2"]),

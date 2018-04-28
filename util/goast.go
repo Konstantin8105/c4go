@@ -31,7 +31,7 @@ func NewExprStmt(expr goast.Expr) *goast.ExprStmt {
 // IsAValidFunctionName performs a check to see if a string would make a
 // valid function name in Go. Go allows unicode characters, but C doesn't.
 func IsAValidFunctionName(s string) bool {
-	return GetRegex(`^[a-zA-Z_][a-zA-Z0-9_]*$`).
+	return GetRegex(`^[a-zA-Z_]`).
 		Match([]byte(s))
 }
 
@@ -346,7 +346,7 @@ func CreateSliceFromReference(goType string, expr goast.Expr) *goast.SliceExpr {
 	//
 	return &goast.SliceExpr{
 		X: NewCallExpr(
-			fmt.Sprintf("(*[1]%s)", goType),
+			fmt.Sprintf("(*[100000000]%s)", goType),
 			NewCallExpr("unsafe.Pointer", &goast.UnaryExpr{
 				X:  expr,
 				Op: token.AND,

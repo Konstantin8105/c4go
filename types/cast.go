@@ -17,6 +17,8 @@ import (
 // is not an array with a fixed size then the the size will be -1 and the
 // returned type should be ignored.
 func GetArrayTypeAndSize(s string) (string, int) {
+	s = strings.Replace(s, "(", "", -1)
+	s = strings.Replace(s, ")", "", -1)
 	match := util.GetRegex(`([\w\* ]*)\[(\d+)\]((\[\d+\])*)`).FindStringSubmatch(s)
 	if len(match) > 0 {
 		var t = fmt.Sprintf("%s%s", match[1], match[3])
@@ -437,6 +439,20 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	}
 
 	if cFromType == "void *" && cToType == "char *" {
+		return expr, nil
+	}
+
+	if IsPointer(cFromType) && cToType == "bool" {
+		expr = &goast.BinaryExpr{
+			Op: token.NEQ,
+			X:  expr,
+			Y:  goast.NewIdent("nil"),
+		}
+		return expr, nil
+	}
+
+	if IsCInteger(p, cFromType) && IsPointer(cToType) {
+		expr = goast.NewIdent("nil")
 		return expr, nil
 	}
 

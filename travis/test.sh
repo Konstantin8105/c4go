@@ -20,7 +20,7 @@ export PKGS_DELIM=$(echo "$PKGS" | paste -sd "," -)
 # with gocovmerge.
 #
 # Exit code 123 will be returned if any of the tests fail.
-go list -f 'go test -v -tags integration -race -covermode atomic -coverprofile {{.Name}}.coverprofile -coverpkg $PKGS_DELIM {{.ImportPath}}' $PKGS | xargs -I{} bash -c "{}"
+go list -f 'go test -v -tags integration -covermode atomic -coverprofile {{.Name}}.coverprofile -coverpkg $PKGS_DELIM {{.ImportPath}}' $PKGS | xargs -I{} bash -c "{}"
 
 # Merge coverage profiles.
 COVERAGE_FILES=`ls -1 *.coverprofile 2>/dev/null | wc -l`
@@ -31,6 +31,9 @@ if [ $COVERAGE_FILES != 0 ]; then
 		rm *.coverprofile
 	fi
 fi
+
+# check race
+go test -tags=integration -run=TestIntegrationScripts/tests/ctype.c -race -v
 
 # These steps are from the README to verify it can be installed and run as
 # documented.

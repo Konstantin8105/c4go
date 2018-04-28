@@ -209,22 +209,20 @@ func mergePositions(p1, p2 Position) Position {
 	return p1
 }
 
-var pos Position
-
 // PositionBuiltIn - default value for fix position
 var PositionBuiltIn = "<built-in>"
 
 func FixPositions(nodes []Node) {
-	pos = Position{File: PositionBuiltIn}
-	fixPositions(nodes)
+	pos := Position{File: PositionBuiltIn}
+	fixPositions(nodes, pos)
 }
 
-func fixPositions(nodes []Node) {
+func fixPositions(nodes []Node, pos Position) {
 	for _, node := range nodes {
 		if node != nil {
 			pos = mergePositions(pos, node.Position())
 			setPosition(node, pos)
-			fixPositions(node.Children())
+			fixPositions(node.Children(), pos)
 		}
 	}
 }

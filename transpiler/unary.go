@@ -43,11 +43,6 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 			return
 		}
 
-		if _, ok := n.Children()[0].(*ast.DeclRefExpr); !ok {
-			err = fmt.Errorf("Unsupported type %T", n.Children()[0])
-			return
-		}
-
 		var left goast.Expr
 		var leftType string
 		var newPre, newPost []goast.Stmt
@@ -621,6 +616,8 @@ func transpileUnaryExprOrTypeTraitExpr(n *ast.UnaryExprOrTypeTraitExpr, p *progr
 			t = c.Type
 		case *ast.MemberExpr:
 			t = c.Type
+		case *ast.ArraySubscriptExpr:
+			t = c.Type
 		default:
 			panic(fmt.Sprintf("cannot find first child from: %#v", n.Children()[0]))
 		}
@@ -646,6 +643,9 @@ func transpileUnaryExprOrTypeTraitExpr(n *ast.UnaryExprOrTypeTraitExpr, p *progr
 				t = ty.Type
 
 			case *ast.CharacterLiteral:
+				t = ty.Type
+
+			case *ast.StringLiteral:
 				t = ty.Type
 
 			default:
