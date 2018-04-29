@@ -486,7 +486,7 @@ func runCommand() int {
 	}
 
 	if err := Start(args); err != nil {
-		fmt.Printf("Error: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return 7
 	}
 
