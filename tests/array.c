@@ -221,10 +221,24 @@ void test_pointer_minus_pointer()
     is_eq(right_ptr - left_ptr, 20);
 }
 
-#define SIZE 3
-void test_size_pointer()
+void test_array_to_value_int()
 {
-	diag("paren pointer");
+	int aqq[1][1] = { { 5 } };
+	int **pz;
+	int c;
+	///////////////
+	pz = aqq;
+	c = 99999;
+	c = *pz;
+	is_eq(c , 5.0);
+	///////////////
+	(void) pz;
+	(void) c;
+	///////////////
+}
+
+void test_array_to_value_unsigned()
+{
 	unsigned aqq[1][1] = { { 5 } };
 	unsigned **pz;
 	unsigned c;
@@ -237,6 +251,59 @@ void test_size_pointer()
 	(void) pz;
 	(void) c;
 	///////////////
+}
+
+void test_array_to_value_long()
+{
+	long aqq[1][1] = { { 5 } };
+	long **pz;
+	long c;
+	///////////////
+	pz = aqq;
+	c = 99999;
+	c = *pz;
+	is_eq(c , 5.0);
+	///////////////
+	(void) pz;
+	(void) c;
+	///////////////
+}
+
+void test_array_to_value_char()
+{
+	long aqq[1][1] = { { 5 } };
+	long **pz;
+	long c;
+	///////////////
+	pz = aqq;
+	c = 99;
+	c = *pz;
+	is_eq(c , 5.0);
+	///////////////
+	(void) pz;
+	(void) c;
+	///////////////
+}
+
+void test_array_to_value_double()
+{
+	long aqq[1][1] = { { 5 } };
+	long **pz;
+	long c;
+	///////////////
+	pz = aqq;
+	c = 99999;
+	c = *pz;
+	is_eq(c , 5.0);
+	///////////////
+	(void) pz;
+	(void) c;
+	///////////////
+}
+
+#define SIZE 3
+void test_size_pointer()
+{
     int A[2][SIZE] = {{10, 20, 30}, {40, 50, 60}};
     int B[4][SIZE] = {{0, 1, 2}, {3, 0, 4}, {5, 6, 0}, {7, 8, 9}};
     int (*pnt)[SIZE];
@@ -250,8 +317,13 @@ void test_size_pointer()
 
 int main()
 {
-    plan(141);
+    plan(145);
 
+	START_TEST(array_to_value_int);
+	START_TEST(array_to_value_unsigned);
+	START_TEST(array_to_value_long);
+	START_TEST(array_to_value_char);
+	START_TEST(array_to_value_double);
 	START_TEST(size_pointer);
     START_TEST(intarr);
     START_TEST(doublearr);
