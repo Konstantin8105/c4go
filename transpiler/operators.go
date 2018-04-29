@@ -784,11 +784,31 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			}
 		}
 
+		var isSameBaseType bool
+		if impl, ok := v.Children()[0].(*ast.ImplicitCastExpr); ok {
+			if types.GetBaseType(v.Type) == types.GetBaseType(impl.Type) {
+				isSameBaseType = true
+			}
+		}
+
 		if v.Kind == "PointerToIntegral" {
-			expr = goast.NewIdent("0")
-			expr, _ = types.CastExpr(p, expr, "int", v.Type)
-			exprType = v.Type
-			return
+			if isSameBaseType {
+				expr = &goast.IndexExpr{
+					X:      expr,
+					Lbrack: 1,
+					Index: &goast.BasicLit{
+						Kind:  token.INT,
+						Value: "0",
+					},
+				}
+				exprType = v.Type
+				return
+			} else {
+				expr = goast.NewIdent("0")
+				expr, _ = types.CastExpr(p, expr, "int", v.Type)
+				exprType = v.Type
+				return
+			}
 		}
 
 		expr, exprType, preStmts, postStmts, err = atomicOperation(v.Children()[0], p)
