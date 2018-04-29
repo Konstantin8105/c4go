@@ -806,5 +806,9 @@ func GetBaseType(s string) string {
 	if s[len(s)-1] == '*' {
 		return GetBaseType(s[:len(s)-1])
 	}
+	if strings.Contains(s, "(*)") {
+		return GetBaseType(strings.TrimSpace(
+			strings.Replace(s, "(*)", "*", -1)))
+	}
 	return s
 }
