@@ -50,6 +50,9 @@ func transpileCompoundStmt(n *ast.CompoundStmt, p *program.Program) (
 			}
 		} else {
 			// Other cases
+			if parent, ok := x.(*ast.ParenExpr); ok {
+				x = parent.Children()[0]
+			}
 			result, err = transpileToStmts(x, p)
 			if err != nil {
 				return nil, nil, nil, err
