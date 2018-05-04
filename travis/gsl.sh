@@ -28,4 +28,4 @@ chmod u+x configure
 echo "" > /tmp/gcc.log
 ./configure CC=gccecho
 make
-go run ./travis/gcc.log.go
+go run ./gcc.log.go

@@ -2,111 +2,115 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
+	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
 func main() {
-	/*
-		file, err := os.Open("/tmp/gcc.log")
-		if err != nil {
-			log.Fatal(err)
+	file, err := os.Open("/tmp/gcc.log")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	var cList map[string]bool = map[string]bool{}
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if !strings.HasPrefix(line, "ARG") {
+			continue
 		}
-		defer file.Close()
+		index := strings.Index(line, "-c")
+		if index < 0 {
+			continue
+		}
+		line = line[index+len("-c "):]
+		index = strings.Index(line, " ")
+		if index < 0 {
+			continue
+		}
+		line = line[:index]
+		if !strings.HasSuffix(strings.ToLower(line), ".c") {
+			continue
+		}
 
-		var cList map[string]bool = map[string]bool{}
-		scanner := bufio.NewScanner(file)
-		for scanner.Scan() {
-			line := scanner.Text()
-			if !strings.HasPrefix(line, "ARG") {
-				continue
-			}
-			index := strings.Index(line, "-c")
-			if index < 0 {
-				continue
-			}
-			line = line[index+len("-c "):]
-			index = strings.Index(line, " ")
-			if index < 0 {
-				continue
-			}
-			line = line[:index]
-			if !strings.HasSuffix(strings.ToLower(line), ".c") {
-				continue
-			}
-
-			folder := "/tmp/GSL/gsl-2.4/"
-			var fileList []string
-			// find all C source files
-			err = filepath.Walk(folder, func(path string, f os.FileInfo, err error) error {
-				if strings.HasSuffix(strings.ToLower(f.Name()), ".c") {
-					if strings.HasSuffix(path, "/"+line) {
-						fileList = append(fileList, path)
-					}
+		folder := "/tmp/GSL/gsl-2.4/"
+		var fileList []string
+		// find all C source files
+		err = filepath.Walk(folder, func(path string, f os.FileInfo, err error) error {
+			if strings.HasSuffix(strings.ToLower(f.Name()), ".c") {
+				if strings.HasSuffix(path, "/"+line) {
+					fileList = append(fileList, path)
 				}
-				return nil
-			})
-			if err != nil {
-				err = fmt.Errorf("Cannot walk: %v", err)
-				return
 			}
-
-			for _, f := range fileList {
-				cList[f] = true
-			}
-
-			fmt.Println("line = ", line, fileList)
-		}
-
-		if err := scanner.Err(); err != nil {
-			log.Fatal(err)
-		}
-
-		f, err := os.Create("./travis/gsl.list")
+			return nil
+		})
 		if err != nil {
-			log.Fatal(err)
+			err = fmt.Errorf("Cannot walk: %v", err)
+			return
 		}
-		for k := range cList {
-			fmt.Printf("%s ", k)
-			f.WriteString(fmt.Sprintf("%s\n", k))
+
+		for _, f := range fileList {
+			cList[f] = true
 		}
-		f.Close()
-	*/
 
-	// TODO : sorting list
+		fmt.Println("line = ", line, fileList)
+	}
 
-	/*
-		fg, err := os.Open("./travis/gsl.list")
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	// sorting list
+	var sortList []string
+	for k := range cList {
+		sortList = append(sortList, k)
+	}
+	sort.Strings(sortList)
+
+	f, err := os.Create("./travis/gsl.list")
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, k := range sortList {
+		fmt.Printf("%s ", k)
+		f.WriteString(fmt.Sprintf("%s\n", k))
+	}
+	f.Close()
+
+	fg, err := os.Open("./travis/gsl.list")
+	if err != nil {
+		log.Fatal(err)
+	}
+	var list []string
+	scannerG := bufio.NewScanner(fg)
+	for scannerG.Scan() {
+		line := scannerG.Text()
+		cmd := exec.Command("c4go", "transpile",
+			"-clang-flag=-DHAVE_CONFIG_H",
+			"-clang-flag=-I/tmp/GSL/gsl-2.4/",
+			"-o="+line[:len(line)-2]+".go",
+			line)
+		var stdout, stderr bytes.Buffer
+		cmd.Stdout = &stdout
+		cmd.Stderr = &stderr
+		err := cmd.Run()
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println("Fail: ", line, err)
+		} else {
+			list = append(list, line)
+			fmt.Println("Ok: ", line)
 		}
-		var list []string
-		scannerG := bufio.NewScanner(fg)
-		for scannerG.Scan() {
-			line := scannerG.Text()
-			cmd := exec.Command("c4go", "transpile",
-				"-clang-flag=-DHAVE_CONFIG_H",
-				"-clang-flag=-I/tmp/GSL/gsl-2.4/",
-				"-o="+line[:len(line)-2]+".go",
-				line)
-			var stdout, stderr bytes.Buffer
-			cmd.Stdout = &stdout
-			cmd.Stderr = &stderr
-			err := cmd.Run()
-			if err != nil {
-				fmt.Println("Fail: ", line, err)
-			} else {
-				list = append(list, line)
-				fmt.Println("Ok: ", line)
-			}
-		}
-		fmt.Println(list)
-		fg.Close()
-	*/
+	}
+	fmt.Println(list)
+	fg.Close()
 
-	var err error
 	folder := "/tmp/GSL/gsl-2.4/"
 	// find all C source files
 	err = filepath.Walk(folder, func(path string, f os.FileInfo, err error) error {
