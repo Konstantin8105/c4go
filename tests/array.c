@@ -315,10 +315,30 @@ void test_size_pointer()
 	is_eq(pnt[0][2],B[0][2]);
 }
 
+#define STACK_SIZE      512
+#define STACK_PUSH(A)   (STACK[SP++] = A)
+static unsigned short STACK[STACK_SIZE];
+static unsigned int SP = 0;
+void test_array_increment()
+{
+	double a[10];
+	for (int i = 0;i < 10;i++)
+		a[i] = i;
+	is_eq(a[4],4);
+	int pc = 4;
+	is_eq(pc,4);
+	is_eq(a[pc++],4);
+	is_eq(pc,5);
+    unsigned short pc2 = 0;
+    STACK_PUSH(pc2);
+	is_eq(SP,1);
+}
+
 int main()
 {
-    plan(145);
+    plan(150);
 
+	START_TEST(array_increment);
 	START_TEST(array_to_value_int);
 	START_TEST(array_to_value_unsigned);
 	START_TEST(array_to_value_long);
