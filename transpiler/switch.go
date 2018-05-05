@@ -10,6 +10,7 @@ import (
 
 	"github.com/Konstantin8105/c4go/ast"
 	"github.com/Konstantin8105/c4go/program"
+	"github.com/Konstantin8105/c4go/types"
 )
 
 func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
@@ -38,9 +39,13 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 
 	// The condition is the expression to be evaulated against each of the
 	// cases.
-	condition, _, newPre, newPost, err := transpileToExpr(n.Children()[len(n.Children())-2], p, false)
+	condition, conditionType, newPre, newPost, err := transpileToExpr(n.Children()[len(n.Children())-2], p, false)
 	if err != nil {
 		return nil, nil, nil, err
+	}
+	if conditionType == "bool" {
+		condition, err = types.CastExpr(p, condition, conditionType, "int")
+		p.AddMessage(p.GenerateWarningMessage(err, n))
 	}
 
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
@@ -328,9 +333,13 @@ func transpileCaseStmt(n *ast.CaseStmt, p *program.Program) (
 	preStmts := []goast.Stmt{}
 	postStmts := []goast.Stmt{}
 
-	c, _, newPre, newPost, err := transpileToExpr(n.Children()[0], p, false)
+	c, cType, newPre, newPost, err := transpileToExpr(n.Children()[0], p, false)
 	if err != nil {
 		return nil, nil, nil, err
+	}
+	if cType == "bool" {
+		c, err = types.CastExpr(p, c, cType, "int")
+		p.AddMessage(p.GenerateWarningMessage(err, n))
 	}
 
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
