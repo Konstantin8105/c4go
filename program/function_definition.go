@@ -1,6 +1,7 @@
 package program
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/Konstantin8105/c4go/util"
@@ -248,6 +249,54 @@ var builtInFunctionDefinitions = map[string][]string{
 		"uint32 __builtin_bswap32(uint32) -> darwin.BSwap32",
 		"uint64 __builtin_bswap64(uint64) -> darwin.BSwap64",
 	},
+}
+
+func (p *Program) GetIncludeFileNameByFunctionSignature(
+	functionName, cType string) (includeFileName string, err error) {
+
+	for k, functionList := range builtInFunctionDefinitions {
+		for i := range functionList {
+			if !strings.Contains(functionList[i], functionName) {
+				continue
+			}
+			// find function name
+			baseFunction := strings.Split(functionList[i], " -> ")[0]
+
+			// separate baseFunction to function name and type
+			counter := 1
+			var pos int
+			// var err error
+			for i := len(baseFunction) - 2; i >= 0; i-- {
+				if baseFunction[i] == ')' {
+					counter++
+				}
+				if baseFunction[i] == '(' {
+					counter--
+				}
+				if counter == 0 {
+					pos = i
+					break
+				}
+			}
+			leftPart := strings.TrimSpace(baseFunction[:pos])
+			rightPart := strings.TrimSpace(baseFunction[pos:])
+			index := strings.LastIndex(leftPart, " ")
+			if index < 0 {
+				err = fmt.Errorf("Cannot found space ` ` in %v", leftPart)
+				return
+			}
+			if strings.Replace(functionName, " ", "", -1) !=
+				strings.Replace(leftPart[index+1:], " ", "", -1) {
+				continue
+			}
+			if strings.Replace(cType, " ", "", -1) !=
+				strings.Replace(leftPart[:index]+rightPart, " ", "", -1) {
+				continue
+			}
+			return k, nil
+		}
+	}
+	return
 }
 
 // GetFunctionDefinition will return nil if the function does not exist (is not
