@@ -248,7 +248,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 
 	returnType := types.ResolveTypeForBinaryOperator(p, n.Operator, leftType, rightType)
 
-	if operator == token.LAND || operator == token.LOR {
+	if operator == token.LAND || operator == token.LOR { // && ||
 		left, err = types.CastExpr(p, left, leftType, "bool")
 		if err != nil {
 			p.AddMessage(p.GenerateWarningMessage(err, n))
@@ -318,9 +318,11 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 		operator == token.LSS || // <
 		operator == token.GTR || // >
 		operator == token.AND || // &
-		operator == token.ADD ||
-		operator == token.SUB || operator == token.MUL ||
-		operator == token.QUO || operator == token.REM {
+		operator == token.ADD || // +
+		operator == token.SUB || // -
+		operator == token.MUL || // *
+		operator == token.QUO || // /
+		operator == token.REM { // %
 
 		if rightType == types.NullPointer && leftType == types.NullPointer {
 			// example C code :
@@ -335,6 +337,23 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			// side. This is a bit crude because we should make a better
 			// decision of which type to cast to instead of only using the type
 			// of the left side.
+			if operator == token.ADD || // +
+				operator == token.SUB || // -
+				operator == token.MUL || // *
+				operator == token.QUO || // /
+				operator == token.REM { // %
+
+				if rightType == "bool" {
+					right, err = types.CastExpr(p, right, rightType, "int")
+					rightType = "int"
+					p.AddMessage(p.GenerateWarningMessage(err, n))
+				}
+				if leftType == "bool" {
+					left, err = types.CastExpr(p, left, leftType, "int")
+					leftType = "int"
+					p.AddMessage(p.GenerateWarningMessage(err, n))
+				}
+			}
 			right, err = types.CastExpr(p, right, rightType, leftType)
 			rightType = leftType
 			p.AddMessage(p.GenerateWarningMessage(err, n))

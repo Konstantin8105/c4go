@@ -35,8 +35,8 @@ func parseVarDecl(line string) *VarDecl {
 		(?P<type2>:'.*?')?
 		(?P<extern> extern)?
 		(?P<static> static)?
-		(?P<cinit> cinit)?
 		(?P<register> register)?
+		(?P<cinit> cinit)?
 		`,
 		line,
 	)

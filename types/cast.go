@@ -96,6 +96,14 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return nil, fmt.Errorf("Expr is nil")
 	}
 
+	if IsFunction(cFromType) && toType == "bool" {
+		return &goast.BinaryExpr{
+			X:  expr,
+			Op: token.NEQ,
+			Y:  goast.NewIdent("nil"),
+		}, nil
+	}
+
 	// Function casting
 	// Example :
 	// cFromType  : double (int, float, double)

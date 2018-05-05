@@ -5,19 +5,16 @@
 [![GoDoc](https://godoc.org/github.com/Konstantin8105/c4go?status.svg)](https://godoc.org/github.com/Konstantin8105/c4go)
 [![Maintainability](https://api.codeclimate.com/v1/badges/b8d0bb5533207cce5ed3/maintainability)](https://codeclimate.com/github/Konstantin8105/c4go/maintainability)
 
-A tool for converting C to Go.
+A tool for [transpiling](https://en.wikipedia.org/wiki/Source-to-source_compiler) C code to Go code.
 
-The goals of this project are:
+Milestone of project:
 
-1. To create a generic tool that can convert C to Go.
-2. To be cross platform (linux and mac) and work against as many clang versions
-as possible (the clang AST API is not stable).
-3. To be a repeatable and predictable tool (rather than doing most of the work
-and you have to clean up the output to get it working.)
-4. To deliver quick and small version increments.
-5. The ultimate milestone is to be able to compile the
-[SQLite3 source code](https://sqlite.org/download.html) and have it working
-without modification. This will be the 1.0.0 release.
+1. Tranpiling project [GNU GSL](https://www.gnu.org/software/gsl/).
+2. Tranpiling project [GTK+](https://www.gtk.org/).
+
+Notes:
+* Transpiler work on linux and mac machines
+* Need installed `clang`. See [llvm download page](http://releases.llvm.org/download.html)
 
 # Installation
 
@@ -25,83 +22,98 @@ without modification. This will be the 1.0.0 release.
 go get -u github.com/Konstantin8105/c4go
 ```
 
-# Usage
+# Example of using
 
 ```bash
-c4go transpile myfile.c
+# Change your location to folder with examples:
+cd $GOPATH/src/github.com/Konstantin8105/c4go/examples/
+
+# Transpile one file from C example folder:
+c4go transpile prime.c
+
+# Look on result
+nano prime.go
+
+# Check the result:
+go run prime.go
+# Enter a number
+# 13
+# The number is: 13
+# Prime number.
 ```
 
-The `c4go` program processes a single C file and outputs the translated code
-in Go. Let's use an included example,
-[prime.c](https://github.com/Konstantin8105/c4go/blob/master/examples/prime.c):
-
+C code of file `prime.c`:
 ```c
 #include <stdio.h>
- 
+
 int main()
 {
-   int n, c;
- 
-   printf("Enter a number\n");
-   scanf("%d", &n);
- 
-   if ( n == 2 )
-      printf("Prime number.\n");
-   else
-   {
-       for ( c = 2 ; c <= n - 1 ; c++ )
-       {
-           if ( n % c == 0 )
-              break;
-       }
-       if ( c != n )
-          printf("Not prime.\n");
-       else
-          printf("Prime number.\n");
-   }
-   return 0;
+    int n, c;
+
+    printf("Enter a number\n");
+    scanf("%d", &n);
+    printf("The number is: %d\n", n);
+
+    if (n == 2)
+        printf("Prime number.\n");
+    else {
+        for (c = 2; c <= n - 1; c++) {
+            if (n % c == 0)
+                break;
+        }
+        if (c != n)
+            printf("Not prime.\n");
+        else
+            printf("Prime number.\n");
+    }
+    return 0;
 }
 ```
 
-```bash
-c4go transpile prime.c
-go run prime.go
-```
+Go code of file `prome.go`:
+```golang
+/*
+	Package main - transpiled by c4go
 
-```
-Enter a number
-23
-Prime number.
-```
+	If you have found any issues, please raise an issue at:
+	https://github.com/Konstantin8105/c4go/
+*/
 
-`prime.go` looks like:
-
-```go
 package main
 
 import "unsafe"
-
 import "github.com/Konstantin8105/c4go/noarch"
 
-// ... lots of system types in Go removed for brevity.
+type size_t uint32
+type __time_t int32
+type va_list int64
+type __gnuc_va_list int64
+type __codecvt_result int
+
+const (
+	__codecvt_ok      __codecvt_result = 0
+	__codecvt_partial                  = 1
+	__codecvt_error                    = 2
+	__codecvt_noconv                   = 3
+)
 
 var stdin *noarch.File
+
 var stdout *noarch.File
+
 var stderr *noarch.File
 
+// main - transpiled function from  /examples/prime.c:3
 func main() {
-	__init()
 	var n int
 	var c int
 	noarch.Printf([]byte("Enter a number\n\x00"))
-	noarch.Scanf([]byte("%d\x00"), (*[1]int)(unsafe.Pointer(&n))[:])
+	noarch.Scanf([]byte("%d\x00"), (*[100000000]int)(unsafe.Pointer(&n))[:])
+	noarch.Printf([]byte("The number is: %d\n\x00"), n)
 	if n == 2 {
 		noarch.Printf([]byte("Prime number.\n\x00"))
 	} else {
-		for c = 2; c <= n-1; func() int {
-			c += 1
-			return c
-		}() {
+		for c = 2; c <= n-1; c++ {
 			if n%c == 0 {
 				break
 			}
@@ -114,38 +126,18 @@ func main() {
 	}
 	return
 }
-
-func __init() {
+func init() {
 	stdin = noarch.Stdin
 	stdout = noarch.Stdout
 	stderr = noarch.Stderr
 }
 ```
 
-# What Is Supported?
+# Contributing
 
-See the
-[Project Progress](https://github.com/Konstantin8105/c4go/wiki/Project-Progress).
+Feel free to add PR, issues.
 
-# How It Works
-
-This is the process:
-
-1. The C code is preprocessed with clang. This generates a larger file (`pp.c`),
-but removes all the platform specific directives and macros.
-
-2. `pp.c` is parsed with the clang AST and dumps it in a colourful text format
-that
-[looks like this](http://ehsanakhgari.org/wp-content/uploads/2015/12/Screen-Shot-2015-12-03-at-5.02.38-PM.png).
-Apart from just parsing the C and dumping an AST, the AST contains all of the
-resolved information that a compiler would need (such as data types). This means
-that the code must compile successfully under clang for the AST to also be
-usable.
-
-3. Since we have all the types in the AST it's just a matter of traversing the
-tree is a semi-intelligent way and producing Go. Easy, right!?
-
-# Testing
+## Testing
 
 By default only unit tests are run with `go test`. You can also include the
 integration tests:
@@ -164,14 +156,3 @@ Integration tests work like this:
 3. The Go is built to produce another binary.
 4. Both binaries are executed and the output is compared. All C files will
 contain some output so the results can be verified.
-
-# Contributing
-
-Contributing is done with pull requests. There is no help that is too small! :)
-
-If you're looking for where to start I can suggest
-[finding a simple C program](http://www.programmingsimplified.com/c-program-examples)
-(like the other examples) that do not successfully translate into Go.
-
-Or, if you don't want to do that you can submit it as an issue so that it can be
-picked up by someone else.

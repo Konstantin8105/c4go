@@ -9,9 +9,17 @@
 
 unsigned long long ullmax = 18446744073709551615ull;
 
+
 int main()
 {
-    plan(359);
+    plan(361);
+
+	diag("Sqrt function");
+	double (*f)(double) = sqrt;
+	f = sqrt;
+	is_eq(f(4),sqrt(4));
+	double (*f2)(double) = sqrt;
+	is_eq(f2(4),sqrt(4));
 
     // Note: There are some tests that must be disabled because they return
     // different values under different compilers. See the comment surrounding the

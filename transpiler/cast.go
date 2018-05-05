@@ -38,13 +38,6 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		}
 	}
 
-	// if n.Kind == "PointerToIntegral" {
-	// 	expr = goast.NewIdent("0")
-	// 	expr, _ = types.CastExpr(p, expr, "int", n.Type)
-	// 	exprType = n.Type
-	// 	return
-	// }
-
 	expr, exprType, preStmts, postStmts, err = transpileToExpr(
 		n.Children()[0], p, exprIsStmt)
 	if err != nil {
@@ -67,7 +60,8 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		return
 	}
 
-	if !types.IsFunction(exprType) && n.Kind != ast.ImplicitCastExprArrayToPointerDecay &&
+	if !types.IsFunction(exprType) &&
+		n.Kind != ast.ImplicitCastExprArrayToPointerDecay &&
 		n.Kind != "PointerToIntegral" {
 		expr, err = types.CastExpr(p, expr, exprType, n.Type)
 		if err != nil {
@@ -146,14 +140,8 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 		return
 	}
 
-	// if n.Kind == "PointerToIntegral" {
-	// 	expr = goast.NewIdent("0")
-	// 	expr, _ = types.CastExpr(p, expr, "int", n.Type)
-	// 	exprType = n.Type
-	// 	return
-	// }
-
-	expr, exprType, preStmts, postStmts, err = transpileToExpr(n.Children()[0], p, exprIsStmt)
+	expr, exprType, preStmts, postStmts, err = transpileToExpr(
+		n.Children()[0], p, exprIsStmt)
 	if err != nil {
 		return nil, "", nil, nil, err
 	}
@@ -180,7 +168,9 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 		return
 	}
 
-	if !types.IsFunction(exprType) && n.Kind != ast.ImplicitCastExprArrayToPointerDecay {
+	if !types.IsFunction(exprType) &&
+		n.Kind != ast.ImplicitCastExprArrayToPointerDecay &&
+		n.Kind != "PointerToIntegral" {
 		expr, err = types.CastExpr(p, expr, exprType, n.Type)
 		if err != nil {
 			return nil, "", nil, nil, err

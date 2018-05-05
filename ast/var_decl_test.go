@@ -183,6 +183,23 @@ func TestVarDecl(t *testing.T) {
 			IsRegister:   false,
 			ChildNodes:   []Node{},
 		},
+		`0x28f8490 <col:3, col:43> col:19 used a 'char *' register cinit`: &VarDecl{
+			Addr: 0x28f8490,
+			// Parent:       0x3dcaaf0,
+			// Prev:         0x3ec4088,
+			Pos:          NewPositionFromString("col:3, col:43"),
+			Position2:    "col:19",
+			Name:         "a",
+			Type:         "char *",
+			Type2:        "",
+			IsExtern:     false,
+			IsUsed:       true,
+			IsCInit:      true,
+			IsReferenced: false,
+			IsStatic:     false,
+			IsRegister:   true,
+			ChildNodes:   []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)
