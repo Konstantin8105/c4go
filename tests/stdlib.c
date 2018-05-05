@@ -276,9 +276,22 @@ void test_pointer_malloc3() {
     free(p);
 }
 
+#define COMPLEX struct MyComplex
+struct MyComplex {
+    double re;
+    double im;
+};
+void struct_with_define()
+{
+	COMPLEX a = {45,12};
+	is_eq(a.im,12);
+}
+
 int main()
 {
-    plan(760);
+    plan(761);
+
+	struct_with_define();
 
     char* endptr;
 

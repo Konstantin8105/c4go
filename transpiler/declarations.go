@@ -825,34 +825,6 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 		}
 	}
 
-	if types.IsFunction(n.Type) {
-		var prefix string
-		var fields, returns []string
-		prefix, fields, returns, err = types.SeparateFunction(p, n.Type)
-		if err != nil {
-			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("Cannot resolve function : %v", err), n))
-			err = nil // Error is ignored
-			return
-		}
-		if len(prefix) != 0 {
-			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("Prefix is not used : `%v`", prefix), n))
-		}
-		functionType := GenerateFuncType(fields, returns)
-		nameVar1 := n.Name
-		decls = append(decls, &goast.GenDecl{
-			Tok: token.VAR,
-			Specs: []goast.Spec{&goast.ValueSpec{
-				Names: []*goast.Ident{{Name: nameVar1}},
-				Type:  functionType,
-				Doc:   p.GetMessageComments(),
-			},
-			}})
-		err = nil
-		return
-	}
-
 	theType = n.Type
 
 	p.GlobalVariables[n.Name] = theType

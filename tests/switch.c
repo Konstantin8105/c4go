@@ -307,10 +307,39 @@ void test_switch()
 	is_eq(val, 270);
 }
 
+void switch_bool()
+{
+	double x = 3.0;
+	switch ( x < 0.0 ){
+		case 0:
+			pass("ok");
+			break;
+		case 1:
+			fail("switch_bool 1");
+			break;
+		default:
+			fail("switch_bool 3");
+	}
+	int y = 7;
+	const int t = 0;
+	switch (y){
+		case 0 == t:
+			fail("switch_bool 4");
+			break;
+		case 1 == t:
+			fail("switch_bool 5");
+			break;
+		default:
+			pass("ok");
+			break;
+	}
+}
+
 int main()
 {
-    plan(26);
+    plan(28);
 
+	switch_bool();
     match_a_single_case();
     fallthrough_to_next_case();
     match_no_cases();

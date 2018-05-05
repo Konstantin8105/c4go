@@ -238,6 +238,12 @@ func TestResolveFunction(t *testing.T) {
 			fields:  []string{""},
 			returns: []string{"void"},
 		},
+		{
+			input:   "int (*)()",
+			prefix:  "",
+			fields:  []string{""},
+			returns: []string{"int"},
+		},
 	}
 
 	for i, tc := range tcs {

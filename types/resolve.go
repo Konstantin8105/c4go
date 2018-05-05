@@ -398,6 +398,11 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 
 // resolveType determines the Go type from a C type.
 func resolveFunction(p *program.Program, s string) (goType string, err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("resolveFunction error for `%s` : %v", s, err)
+		}
+	}()
 	var prefix string
 	var f, r []string
 	prefix, f, r, err = SeparateFunction(p, s)
@@ -436,6 +441,9 @@ func SeparateFunction(p *program.Program, s string) (
 		return
 	}
 	for i := range f {
+		if f[i] == "" {
+			continue
+		}
 		var t string
 		t, err = ResolveType(p, f[i])
 		if err != nil {
@@ -847,6 +855,10 @@ func GetBaseType(s string) string {
 	}
 	if s[len(s)-1] == '*' {
 		return GetBaseType(s[:len(s)-1])
+	}
+	if strings.Contains(s, "(*)") {
+		return GetBaseType(strings.TrimSpace(
+			strings.Replace(s, "(*)", "*", -1)))
 	}
 	return s
 }

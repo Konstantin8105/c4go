@@ -22,20 +22,45 @@ func transpileFloatingLiteral(n *ast.FloatingLiteral) *goast.BasicLit {
 	return util.NewFloatLit(n.Value)
 }
 
-func transpileStringLiteral(n *ast.StringLiteral) goast.Expr {
+func transpileStringLiteral(p *program.Program, n *ast.StringLiteral, arrayToArray bool) (
+	expr goast.Expr, exprType string, err error) {
 	// Example:
 	// StringLiteral 0x280b918 <col:29> 'char [30]' lvalue "%0"
-	s, err := types.GetAmountArraySize(n.Type)
-	if err != nil {
-		return util.NewCallExpr("[]byte",
-			util.NewStringLit(strconv.Quote(n.Value+"\x00")))
+	baseType := types.GetBaseType(n.Type)
+	if baseType != "char" {
+		err = fmt.Errorf("Type is not `char` : %v", n.Type)
+		p.AddMessage(p.GenerateWarningMessage(err, n))
+		return
 	}
-	buf := bytes.NewBufferString(n.Value + "\x00")
-	if buf.Len() < s {
-		buf.Write(make([]byte, s-buf.Len()))
+	var s int
+	s, err = types.GetAmountArraySize(n.Type)
+	if !arrayToArray {
+		if err != nil {
+			expr = util.NewCallExpr("[]byte",
+				util.NewStringLit(strconv.Quote(n.Value+"\x00")))
+			exprType = "const char *"
+			return
+		}
+		buf := bytes.NewBufferString(n.Value + "\x00")
+		if buf.Len() < s {
+			buf.Write(make([]byte, s-buf.Len()))
+		}
+		expr = util.NewCallExpr("[]byte",
+			util.NewStringLit(strconv.Quote(buf.String())))
+		exprType = "const char *"
+		return
 	}
-	return util.NewCallExpr("[]byte",
-		util.NewStringLit(strconv.Quote(buf.String())))
+	// Example:
+	//
+	// var sba SBA = SBA{10, func() (b [100]byte) {
+	// 	copy(b[:], "qwe")
+	// 	return b
+	// }()}
+	expr = goast.NewIdent(fmt.Sprintf(
+		"func() (b [%v]byte) { copy(b[:],\"%s\" );return }()",
+		s, n.Value))
+	exprType = n.Type
+	return
 }
 
 func transpileIntegerLiteral(n *ast.IntegerLiteral) *goast.BasicLit {
