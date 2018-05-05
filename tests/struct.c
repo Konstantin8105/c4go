@@ -496,10 +496,23 @@ void test_pointer_member()
 	is_eq(*t.p,3);
 }
 
+struct SBA{
+	int t;
+	char name[100];
+};
+
+void struct_byte_array()
+{
+	struct SBA sba = {10,"qwe"};
+	is_eq(sba.t,10);
+	is_streq(sba.name,"qwe");
+}
+
 int main()
 {
-    plan(84);
+    plan(86);
 
+	struct_byte_array();
 	test_pointer_member();
 	test_typedef1();
 	test_typedef2();
