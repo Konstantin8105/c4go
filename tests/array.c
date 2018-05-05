@@ -403,7 +403,7 @@ void test_struct_init()
 
 int main()
 {
-    plan(153);
+    plan(155);
 
 	START_TEST(struct_init);
 	START_TEST(array_increment);
