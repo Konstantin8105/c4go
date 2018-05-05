@@ -53,6 +53,19 @@ func transpileDeclRefExpr(n *ast.DeclRefExpr, p *program.Program) (
 		}
 	}
 
+	if n.For == "Function" {
+		var includeFile string
+		includeFile, err = p.GetIncludeFileNameByFunctionSignature(n.Name, n.Type)
+		p.AddMessage(p.GenerateWarningMessage(err, n))
+		if includeFile != "" && p.IncludeHeaderIsExists(includeFile) {
+			name := p.GetFunctionDefinition(n.Name).Substitution
+			if strings.Contains(name, ".") {
+				p.AddImport(strings.Split(name, ".")[0])
+			}
+			return goast.NewIdent(name), n.Type, nil
+		}
+	}
+
 	theType := n.Type
 
 	// FIXME: This is for linux to make sure the globals have the right type.
