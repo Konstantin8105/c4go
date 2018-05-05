@@ -334,10 +334,24 @@ void test_array_increment()
 	is_eq(SP,1);
 }
 
+struct MyStruct {
+    int number;
+    char symbol;
+};
+void test_struct_init()
+{
+    struct MyStruct objA = {.symbol = 'A', .number = 100};
+    struct MyStruct objB = {.number = 200};
+	is_eq(objA.symbol, 'A');
+	is_eq(objA.number,100);
+	is_eq(objB.number,200);
+}
+
 int main()
 {
-    plan(150);
+    plan(153);
 
+	START_TEST(struct_init);
 	START_TEST(array_increment);
 	START_TEST(array_to_value_int);
 	START_TEST(array_to_value_unsigned);

@@ -8,7 +8,6 @@ import (
 	goast "go/ast"
 	"go/parser"
 	"go/token"
-	"strings"
 
 	"github.com/Konstantin8105/c4go/ast"
 	"github.com/Konstantin8105/c4go/program"
@@ -212,12 +211,29 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 	case *ast.ImplicitValueInitExpr:
 		var t string
 		t = n.Type1
-		if strings.HasPrefix(t, "struct ") {
-			t = t[len("struct "):]
+		t, err = types.ResolveType(p, t)
+		p.AddMessage(p.GenerateWarningMessage(err, n))
+		var isStruct bool
+		if _, ok := p.Structs[t]; ok {
+			isStruct = true
 		}
-		expr = &goast.CompositeLit{
-			Type:   util.NewIdent(t),
-			Lbrace: 1,
+		if _, ok := p.Structs["struct "+t]; ok {
+			isStruct = true
+		}
+		if isStruct {
+			expr = &goast.CompositeLit{
+				Type:   util.NewIdent(t),
+				Lbrace: 1,
+			}
+			return
+		}
+		expr = &goast.CallExpr{
+			Fun:    goast.NewIdent(t),
+			Lparen: 1,
+			Args: []goast.Expr{&goast.BasicLit{
+				Kind:  token.INT,
+				Value: "0",
+			}},
 		}
 		return
 
