@@ -146,8 +146,8 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 
 	switch n := node.(type) {
 	case *ast.StringLiteral:
-		expr = transpileStringLiteral(n)
-		exprType = "const char *"
+		expr, exprType, err = transpileStringLiteral(p, n, false)
+		return
 
 	case *ast.FloatingLiteral:
 		expr = transpileFloatingLiteral(n)

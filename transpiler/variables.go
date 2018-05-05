@@ -235,8 +235,13 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 
 		var expr goast.Expr
 		var err error
-		expr, _, _, _, err = transpileToExpr(node, p, true)
+		if sl, ok := node.(*ast.StringLiteral); ok {
+			expr, _, err = transpileStringLiteral(p, sl, true)
+		} else {
+			expr, _, _, _, err = transpileToExpr(node, p, true)
+		}
 		if err != nil {
+			p.AddMessage(p.GenerateWarningMessage(err, node))
 			return nil, "", err
 		}
 
