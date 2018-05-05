@@ -52,6 +52,13 @@ func TestParseIncludePreproccessorLine(t *testing.T) {
 				positionInSource: 30,
 			},
 		},
+		{
+			inputLine: `# 3 "/home/lepricon/go/src/github.com/Konstantin8105/c4go/build/git-source/VasielBook/\320\223\320\273\320\260\320\262\320\260 6/6.2/main.c" 2`,
+			out: entity{
+				include:          `/home/lepricon/go/src/github.com/Konstantin8105/c4go/build/git-source/VasielBook/\320\223\320\273\320\260\320\262\320\260 6/6.2/main.c`,
+				positionInSource: 3,
+			},
+		},
 	}
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("Test:%d", i), func(t *testing.T) {
@@ -63,10 +70,10 @@ func TestParseIncludePreproccessorLine(t *testing.T) {
 				t.Fatal("Cannot parse, because result is empty")
 			}
 			if actual.include != tc.out.include {
-				t.Fatalf("Cannot parse line: \"%s\". Result: \"%s\". Expected: \"%s\"", tc.inputLine, actual.include, tc.out.include)
+				t.Fatalf("Cannot parse line: \"%s\".\nResult: \"%s\".\nExpected: \"%s\"", tc.inputLine, actual.include, tc.out.include)
 			}
 			if actual.positionInSource != tc.out.positionInSource {
-				t.Fatalf("Cannot parse source position in line: \"%s\". Result: \"%d\". Expected: \"%d\"", tc.inputLine, actual.positionInSource, tc.out.positionInSource)
+				t.Fatalf("Cannot parse source position in line: \"%s\".\nResult: \"%d\".\nExpected: \"%d\"", tc.inputLine, actual.positionInSource, tc.out.positionInSource)
 			}
 		})
 	}

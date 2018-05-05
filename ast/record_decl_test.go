@@ -56,6 +56,16 @@ func TestRecordDecl(t *testing.T) {
 			Definition: true,
 			ChildNodes: []Node{},
 		},
+		`0x3c854a0 </home/lepricon/go/src/github.com/Konstantin8105/c4go/build/git-source/VasielBook/Глава 6/6.2/main.c:12:1, line:15:1> line:12:8 struct MyComplex definition`: &RecordDecl{
+			Addr:       0x3c854a0,
+			Pos:        NewPositionFromString("/home/lepricon/go/src/github.com/Konstantin8105/c4go/build/git-source/VasielBook/Глава 6/6.2/main.c:12:1, line:15:1"),
+			Prev:       "",
+			Position2:  "line:12:8",
+			Kind:       "struct",
+			Name:       "MyComplex",
+			Definition: true,
+			ChildNodes: []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)
