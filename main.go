@@ -87,7 +87,6 @@ func convertLinesToNodes(lines []string) (nodes []treeNode, errs []error) {
 		if err != nil {
 			// add to error slice
 			errs = append(errs, err)
-			err = nil
 			// ignore error
 			node = nil
 		}

@@ -199,12 +199,10 @@ func TestIntegrationScripts(t *testing.T) {
 					}
 					linePosition, err := strconv.Atoi(line[:index])
 					if err != nil {
-						err = nil
 						continue
 					}
 					content, err := ioutil.ReadFile(filename)
 					if err != nil {
-						err = nil
 						continue
 					}
 					fileLines := strings.Split(string(content), "\n")
@@ -341,6 +339,9 @@ func TestStartPreprocess(t *testing.T) {
 	filename := path.Join(dir, name)
 	body := ([]byte)("#include <AbsoluteWrongInclude.h>\nint main(void){\nwrong();\n}")
 	err = ioutil.WriteFile(filename, body, 0644)
+	if err == nil {
+		t.Fatalf("Cannot write file : %v", err)
+	}
 
 	args := DefaultProgramArgs()
 	args.inputFiles = []string{dir + name}
@@ -729,6 +730,6 @@ func TestWrongAST(t *testing.T) {
 		copy(c, lines)
 		c[i] += "Wrong wrong AST line"
 		args.outputFile = basename + strconv.Itoa(i) + ".go"
-		err = generateGoCode(args, c, filePP)
+		_ = generateGoCode(args, c, filePP)
 	}
 }
