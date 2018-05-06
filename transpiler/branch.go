@@ -275,7 +275,7 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 	if !transpilate {
 		post, newPre, newPost, err = transpileToStmt(children[3], p)
 		if err != nil {
-			err = fmt.Errorf("Cannot tranpile children[3]", err)
+			err = fmt.Errorf("Cannot tranpile children[3] : %v", err)
 			return nil, nil, nil, err
 		}
 

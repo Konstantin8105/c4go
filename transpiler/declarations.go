@@ -94,7 +94,7 @@ func transpileFieldDecl(p *program.Program, n *ast.FieldDecl) (
 	}, nil
 }
 
-var ignoreRecordDecl map[string]string = map[string]string{
+var ignoreRecordDecl = map[string]string{
 	"struct __fsid_t":                             "/usr/include/x86_64-linux-gnu/bits/types.h",
 	"union __union_at__usr_include_wchar_h_85_3_": "/usr/include/wchar.h",
 	"struct __mbstate_t":                          "/usr/include/wchar.h",
@@ -309,9 +309,8 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			if err != nil {
 				err = fmt.Errorf("Cannot transpile %T", field)
 				return
-			} else {
-				decls = append(decls, declsIn...)
 			}
+			decls = append(decls, declsIn...)
 		}
 	}
 
@@ -354,12 +353,8 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		}
 	}
 
-	if strings.HasPrefix(name, "struct ") {
-		name = name[len("struct "):]
-	}
-	if strings.HasPrefix(name, "union ") {
-		name = name[len("union "):]
-	}
+	name = strings.TrimPrefix(name, "struct ")
+	name = strings.TrimPrefix(name, "union ")
 
 	var d []goast.Decl
 	if s.IsUnion {
@@ -373,16 +368,15 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			err = fmt.Errorf("could not determine the size of type `union %s`"+
 				" for that reason: %s", name, err)
 			return
-		} else {
-			// So, we got size, then
-			// Add imports needed
-			addPackageUnsafe = true
+		}
+		// So, we got size, then
+		// Add imports needed
+		addPackageUnsafe = true
 
-			// Declaration for implementing union type
-			d, err = transpileUnion(name, size, fields)
-			if err != nil {
-				return nil, err
-			}
+		// Declaration for implementing union type
+		d, err = transpileUnion(name, size, fields)
+		if err != nil {
+			return nil, err
 		}
 	} else {
 		d = append(d, &goast.GenDecl{
@@ -405,7 +399,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 	return
 }
 
-var ignoreTypedef map[string]string = map[string]string{
+var ignoreTypedef = map[string]string{
 	"__u_char":   "bits/types.h",
 	"__u_short":  "bits/types.h",
 	"__u_int":    "bits/types.h",

@@ -418,7 +418,7 @@ func NewAnonymousFunction(body, deferBody []goast.Stmt,
 	return &goast.CallExpr{Fun: &goast.FuncLit{
 		Type: &goast.FuncType{
 			Results: &goast.FieldList{List: []*goast.Field{
-				&goast.Field{Type: goast.NewIdent(returnType)},
+				{Type: goast.NewIdent(returnType)},
 			}},
 		},
 		Body: &goast.BlockStmt{
