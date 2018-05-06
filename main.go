@@ -420,6 +420,13 @@ func runCommand() int {
 	// TODO : add example for starters
 
 	flag.Usage = func() {
+		usage := "Usage: %s [<command>] [<flags>] file1.c ...\n\n"
+		usage += "Commands:\n"
+		usage += "  transpile\ttranspile an input C source file or files to Go\n"
+		usage += "  ast\t\tprint AST before translated Go code\n"
+		usage += "\n"
+		fmt.Fprintf(stderr, usage, os.Args[0])
+
 		flag.PrintDefaults()
 	}
 
