@@ -134,6 +134,28 @@ func init() {
 	stderr = noarch.Stderr
 }
 ```
+# C standart library implementation
+
+```
+             ctype.h	13	    92.9%
+            locale.h	0	       0%
+            stdarg.h	4	     100%
+             wchar.h	0	       0%
+            setjmp.h	0	       0%
+            signal.h	0	       0%
+            stddef.h	1	    16.7%
+            limits.h	0	undefined
+             float.h	0	undefined
+              time.h	8	    53.3%
+            stdlib.h	31	      66%
+            iso646.h	0	undefined
+            assert.h	1	     100%
+            wctype.h	0	       0%
+            string.h	7	    29.2%
+             stdio.h	33	    71.7%
+             errno.h	0	       0%
+              math.h	23	    39.7%
+```
 
 # Contributing
 

@@ -85,15 +85,11 @@ int main()
     plan(19);
 
     // sorting in according to :
-    // http://www.cplusplus.com/reference/ctime/clock/
+    // http://www.cplusplus.com/reference/ctime/
     START_TEST(asctime);
-    // TODO : START_TEST(clock     );
     START_TEST(ctime);
-    // TODO : START_TEST(difftime  );
     START_TEST(gmtime);
-    // TODO : START_TEST(localtime );
     START_TEST(mktime);
-    // TODO : START_TEST(strftime  );
     START_TEST(time);
 
     done_testing();
