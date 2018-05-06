@@ -360,7 +360,6 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			if strings.Contains(realType, "...") {
 				p.AddMessage(p.GenerateWarningMessage(
 					fmt.Errorf("not acceptable type '...'"), n))
-				realType = "unknownType2"
 			}
 
 			if a == nil {

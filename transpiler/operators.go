@@ -868,8 +868,6 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			}
 
 			inBody := combineStmts(&goast.ExprStmt{X: expr}, preStmts, postStmts)
-			preStmts = nil
-			postStmts = nil
 
 			expr, exprType, preStmts, postStmts, err = atomicOperation(v.Children()[1], p)
 			if err != nil {
@@ -943,8 +941,6 @@ func atomicOperation(n ast.Node, p *program.Program) (
 
 			e, _, newPre, newPost, _ := transpileToExpr(v, p, false)
 			body := combineStmts(&goast.ExprStmt{X: e}, newPre, newPost)
-
-			expr, exprType, _, _, _ = atomicOperation(v.Children()[0], p)
 
 			preStmts = nil
 			postStmts = nil
