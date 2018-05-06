@@ -405,9 +405,12 @@ func TestCSTD(t *testing.T) {
 		}
 		if len(amount[include]) > 0 {
 			length := float64(uniq) / float64(len(amount[include]))
-			fmt.Printf("%20s\t%v\t%8.3g%s\n", include, uniq, length*100, "%")
+			fmt.Printf("%20s\t%v/%v\t%12.3g%s\n",
+				include,
+				uniq, len(amount[include]),
+				length*100, "%")
 		} else {
-			fmt.Printf("%20s\t%v\t%v\n", include, a, "undefined")
+			fmt.Printf("%20s\t\t\t%v\n", include, "undefined")
 		}
 		// Detail information
 		// for function := range amount[include] {

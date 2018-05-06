@@ -137,24 +137,24 @@ func init() {
 # C standart library implementation
 
 ```
-             ctype.h	13	    92.9%
-            locale.h	0	       0%
-            stdarg.h	4	     100%
-             wchar.h	0	       0%
-            setjmp.h	0	       0%
-            signal.h	0	       0%
-            stddef.h	1	    16.7%
-            limits.h	0	undefined
-             float.h	0	undefined
-              time.h	8	    53.3%
-            stdlib.h	31	      66%
-            iso646.h	0	undefined
-            assert.h	1	     100%
-            wctype.h	0	       0%
-            string.h	7	    29.2%
-             stdio.h	33	    71.7%
-             errno.h	0	       0%
-              math.h	23	    39.7%
+             wchar.h	0/68	           0%
+              time.h	8/15	        53.3%
+             ctype.h	13/14	        92.9%
+              math.h	23/58	        39.7%
+            stddef.h	1/6	        16.7%
+            setjmp.h	0/3	           0%
+            signal.h	0/3	           0%
+            stdlib.h	31/47	          66%
+            string.h	7/24	        29.2%
+            locale.h	0/3	           0%
+             stdio.h	33/46	        71.7%
+            wctype.h	0/22	           0%
+            assert.h	1/1	         100%
+             float.h			undefined
+            limits.h			undefined
+             errno.h	0/1	           0%
+            iso646.h			undefined
+            stdarg.h	4/4	         100%
 ```
 
 # Contributing
