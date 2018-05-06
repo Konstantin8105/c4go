@@ -133,6 +133,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseFieldDecl(line), nil
 	case "FloatingLiteral":
 		return parseFloatingLiteral(line), nil
+	case "FormatArgAttr":
+		return parseFormatArgAttr(line), nil
 	case "FormatAttr":
 		return parseFormatAttr(line), nil
 	case "FunctionDecl":

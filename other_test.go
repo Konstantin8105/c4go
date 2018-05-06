@@ -159,8 +159,7 @@ func TestBookSources(t *testing.T) {
 						t.Errorf("Error in `%v`: %v", goFile, err)
 					}
 					for _, log := range logs {
-						t.Log(log)
-						fmt.Println(log)
+						fmt.Printf("`%v`:%v\n", file, log)
 					}
 
 					// go build testing
@@ -173,7 +172,9 @@ func TestBookSources(t *testing.T) {
 						cmd.Stderr = cmdErr
 						err = cmd.Run()
 						if err != nil {
-							fmt.Println("Go build test : ", err, cmdErr.String())
+							fmt.Printf(
+								"Go build test `%v` : err = %v\n%v",
+								file, err, cmdErr.String())
 							atomic.AddInt32(&amountWarnings, 1)
 						}
 					}
