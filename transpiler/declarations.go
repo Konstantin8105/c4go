@@ -42,12 +42,13 @@ func newFunctionField(p *program.Program, name, cType string) (
 		return
 	}
 
-	fieldType, err := types.ResolveType(p, cType)
+	// TODO : add err handling
+	fieldType, _ := types.ResolveType(p, cType)
 
 	return &goast.Field{
 		Names: []*goast.Ident{util.NewIdent(name)},
 		Type:  goast.NewIdent(fieldType),
-	}, err
+	}, nil
 }
 
 func generateNameFieldDecl(t string) string {
