@@ -18,6 +18,8 @@ Notes:
 
 # Installation
 
+`c4go` requires Go 1.9 or newer.
+
 ```bash
 go get -u github.com/Konstantin8105/c4go
 ```
