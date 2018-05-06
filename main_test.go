@@ -339,7 +339,7 @@ func TestStartPreprocess(t *testing.T) {
 	filename := path.Join(dir, name)
 	body := ([]byte)("#include <AbsoluteWrongInclude.h>\nint main(void){\nwrong();\n}")
 	err = ioutil.WriteFile(filename, body, 0644)
-	if err == nil {
+	if err != nil {
 		t.Fatalf("Cannot write file : %v", err)
 	}
 
