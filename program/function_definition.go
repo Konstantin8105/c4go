@@ -58,7 +58,7 @@ type FunctionDefinition struct {
 //     size_t fread(void*, size_t, size_t, FILE*) -> $0 = noarch.Fread(&1, $2, $3, $4)
 //
 var builtInFunctionDefinitions = map[string][]string{
-	"assert.h": []string{
+	"assert.h": {
 		// darwin/assert.h
 		"int __builtin_expect(int, int) -> darwin.BuiltinExpect",
 		"bool __assert_rtn(const char*, const char*, int, const char*) -> darwin.AssertRtn",
@@ -66,7 +66,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		// linux/assert.h
 		"bool __assert_fail(const char*, const char*, unsigned int, const char*) -> linux.AssertFail",
 	},
-	"ctype.h": []string{
+	"ctype.h": {
 		// darwin/ctype.h
 		"uint32 __istype(__darwin_ct_rune_t, uint32) -> darwin.IsType",
 		"__darwin_ct_rune_t __isctype(__darwin_ct_rune_t, uint32) -> darwin.IsCType",
@@ -79,7 +79,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int tolower(int) -> linux.ToLower",
 		"int toupper(int) -> linux.ToUpper",
 	},
-	"math.h": []string{
+	"math.h": {
 		// linux/math.h
 		"int __signbitf(float) -> noarch.Signbitf",
 		"int __signbit(double) -> noarch.Signbitd",
@@ -133,7 +133,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double tan(double) -> math.Tan",
 		"double tanh(double) -> math.Tanh",
 	},
-	"stdio.h": []string{
+	"stdio.h": {
 
 		// linux/stdio.h
 		"int _IO_getc(FILE*) -> noarch.Fgetc",
@@ -179,7 +179,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int __builtin___vsprintf_chk(char*, int, int, char*) -> darwin.BuiltinVsprintfChk",
 		"int __builtin___vsnprintf_chk(char*, int, int, int, char*) -> darwin.BuiltinVsnprintfChk",
 	},
-	"string.h": []string{
+	"string.h": {
 		// string.h
 		"char* strcat(char *, const char *) -> noarch.Strcat",
 		"int strcmp(const char *, const char *) -> noarch.Strcmp",
@@ -206,7 +206,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"char* __builtin___strcat_chk(char *, const char *, int) -> darwin.BuiltinStrcat",
 		"char* __inline_strcat_chk(char *, const char *) -> noarch.Strcat",
 	},
-	"stdlib.h": []string{
+	"stdlib.h": {
 		// stdlib.h
 		"int abs(int) -> noarch.Abs",
 		"double atof(const char *) -> noarch.Atof",
@@ -235,7 +235,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"long long unsigned int strtoull(const char *, char **, int) -> noarch.Strtoull",
 		"void free(void*) -> _",
 	},
-	"time.h": []string{
+	"time.h": {
 		// time.h
 		"time_t time(time_t *) -> noarch.Time",
 		"char* ctime(const time_t *) -> noarch.Ctime",
@@ -244,13 +244,15 @@ var builtInFunctionDefinitions = map[string][]string{
 		"time_t mktime(struct tm *) -> noarch.Mktime",
 		"char * asctime(struct tm *) -> noarch.Asctime",
 	},
-	"endian.h": []string{
+	"endian.h": {
 		// I'm not sure which header file these comes from?
 		"uint32 __builtin_bswap32(uint32) -> darwin.BSwap32",
 		"uint64 __builtin_bswap64(uint64) -> darwin.BSwap64",
 	},
 }
 
+// GetIncludeFileNameByFunctionSignature - return name of C include header
+// in according to function name and type signature
 func (p *Program) GetIncludeFileNameByFunctionSignature(
 	functionName, cType string) (includeFileName string, err error) {
 

@@ -455,7 +455,7 @@ func transpileToNode(node ast.Node, p *program.Program) (
 					append(decls[0].(*goast.FuncDecl).Doc.List,
 						p.GetComments(node.Position())...)
 				decls[0].(*goast.FuncDecl).Doc.List =
-					append([]*goast.Comment{&goast.Comment{
+					append([]*goast.Comment{{
 						Text: fmt.Sprintf("// %s - transpiled function from %s",
 							decls[0].(*goast.FuncDecl).Name.Name,
 							node.Position().GetSimpleLocation()),

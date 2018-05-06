@@ -117,7 +117,11 @@ func transpileConditionalOperator(n *ast.ConditionalOperator, p *program.Program
 				},
 			}
 		} else {
-			bod.List = []goast.Stmt{&goast.ExprStmt{b}}
+			bod.List = []goast.Stmt{
+				&goast.ExprStmt{
+					X: b,
+				},
+			}
 		}
 	}
 
@@ -130,7 +134,11 @@ func transpileConditionalOperator(n *ast.ConditionalOperator, p *program.Program
 				},
 			}
 		} else {
-			els.List = []goast.Stmt{&goast.ExprStmt{c}}
+			els.List = []goast.Stmt{
+				&goast.ExprStmt{
+					X: c,
+				},
+			}
 		}
 	}
 
@@ -536,7 +544,8 @@ func atomicOperation(n ast.Node, p *program.Program) (
 				// Example:
 				// UnaryOperator 0x3001768 <col:204, col:206> 'int' prefix '++'
 				// `-DeclRefExpr 0x3001740 <col:206> 'int' lvalue Var 0x303e888 'current_test' 'int'
-				expr = util.NewAnonymousFunction(append(preStmts, &goast.ExprStmt{expr}),
+				expr = util.NewAnonymousFunction(
+					append(preStmts, &goast.ExprStmt{X: expr}),
 					nil,
 					util.NewIdent(varName),
 					exprResolveType)
@@ -547,7 +556,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			// UnaryOperator 0x3001768 <col:204, col:206> 'int' postfix '++'
 			// `-DeclRefExpr 0x3001740 <col:206> 'int' lvalue Var 0x303e888 'current_test' 'int'
 			expr = util.NewAnonymousFunction(preStmts,
-				[]goast.Stmt{&goast.ExprStmt{expr}},
+				[]goast.Stmt{&goast.ExprStmt{X: expr}},
 				util.NewIdent(varName),
 				exprResolveType)
 			preStmts = nil
@@ -610,7 +619,9 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			// Example:
 			// UnaryOperator 0x3001768 <col:204, col:206> 'int' prefix '++'
 			// `-DeclRefExpr 0x3001740 <col:206> 'int' lvalue Var 0x303e888 'current_test' 'int'
-			expr = util.NewAnonymousFunction(append(body, &goast.ExprStmt{expr}), deferBody,
+			expr = util.NewAnonymousFunction(
+				append(body, &goast.ExprStmt{X: expr}),
+				deferBody,
 				&goast.StarExpr{
 					X: util.NewIdent(varName),
 				},
@@ -622,7 +633,8 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		// Example:
 		// UnaryOperator 0x3001768 <col:204, col:206> 'int' postfix '++'
 		// `-DeclRefExpr 0x3001740 <col:206> 'int' lvalue Var 0x303e888 'current_test' 'int'
-		expr = util.NewAnonymousFunction(body, append(deferBody, &goast.ExprStmt{expr}),
+		expr = util.NewAnonymousFunction(body,
+			append(deferBody, &goast.ExprStmt{X: expr}),
 			&goast.StarExpr{
 				X: util.NewIdent(varName),
 			},
@@ -635,8 +647,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		// |-DeclRefExpr 0x3291178 <col:18> 'int' lvalue Var 0x328df60 'iterator' 'int'
 		// `-IntegerLiteral 0x32911a0 <col:28> 'int' 2
 		if vv, ok := v.Children()[0].(*ast.DeclRefExpr); ok {
-			var varName string
-			varName = vv.Name
+			varName := vv.Name
 
 			var exprResolveType string
 			exprResolveType, err = types.ResolveType(p, v.Type)
@@ -644,7 +655,8 @@ func atomicOperation(n ast.Node, p *program.Program) (
 				return
 			}
 
-			expr = util.NewAnonymousFunction(append(preStmts, &goast.ExprStmt{expr}),
+			expr = util.NewAnonymousFunction(
+				append(preStmts, &goast.ExprStmt{X: expr}),
 				postStmts,
 				util.NewIdent(varName),
 				exprResolveType)
@@ -661,8 +673,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			if vvv, ok := vv.Children()[0].(*ast.ImplicitCastExpr); ok {
 				if vvvv, ok := vvv.Children()[0].(*ast.DeclRefExpr); ok {
 					if types.IsPointer(vvvv.Type) {
-						var varName string
-						varName = vvvv.Name
+						varName := vvvv.Name
 
 						var exprResolveType string
 						exprResolveType, err = types.ResolveType(p, v.Type)
@@ -670,7 +681,8 @@ func atomicOperation(n ast.Node, p *program.Program) (
 							return
 						}
 
-						expr = util.NewAnonymousFunction(append(preStmts, &goast.ExprStmt{expr}),
+						expr = util.NewAnonymousFunction(
+							append(preStmts, &goast.ExprStmt{X: expr}),
 							postStmts,
 							&goast.UnaryExpr{
 								Op: token.AND,
@@ -803,12 +815,11 @@ func atomicOperation(n ast.Node, p *program.Program) (
 				}
 				exprType = v.Type
 				return
-			} else {
-				expr = goast.NewIdent("0")
-				expr, _ = types.CastExpr(p, expr, "int", v.Type)
-				exprType = v.Type
-				return
 			}
+			expr = goast.NewIdent("0")
+			expr, _ = types.CastExpr(p, expr, "int", v.Type)
+			exprType = v.Type
+			return
 		}
 
 		expr, exprType, preStmts, postStmts, err = atomicOperation(v.Children()[0], p)
@@ -818,7 +829,9 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		if exprType == types.NullPointer {
 			return
 		}
-		if !types.IsFunction(exprType) && v.Kind != ast.ImplicitCastExprArrayToPointerDecay {
+		if !types.IsFunction(exprType) &&
+			v.Kind != ast.ImplicitCastExprArrayToPointerDecay {
+
 			expr, err = types.CastExpr(p, expr, exprType, v.Type)
 			if err != nil {
 				return nil, "", nil, nil, err
@@ -854,7 +867,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 				return
 			}
 
-			inBody := combineStmts(&goast.ExprStmt{expr}, preStmts, postStmts)
+			inBody := combineStmts(&goast.ExprStmt{X: expr}, preStmts, postStmts)
 			preStmts = nil
 			postStmts = nil
 
@@ -929,7 +942,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			}
 
 			e, _, newPre, newPost, _ := transpileToExpr(v, p, false)
-			body := combineStmts(&goast.ExprStmt{e}, newPre, newPost)
+			body := combineStmts(&goast.ExprStmt{X: e}, newPre, newPost)
 
 			expr, exprType, _, _, _ = atomicOperation(v.Children()[0], p)
 

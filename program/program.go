@@ -401,7 +401,9 @@ func (p *Program) String() string {
 		for i := range p.PreprocessorFile.GetComments() {
 			if p.PreprocessorFile.GetComments()[i].File == file {
 				if beginLine < p.PreprocessorFile.GetComments()[i].Line {
-					buf.WriteString(fmt.Sprintln(p.PreprocessorFile.GetComments()[i].Comment))
+					buf.WriteString(
+						fmt.Sprintln(
+							p.PreprocessorFile.GetComments()[i].Comment))
 				}
 			}
 		}
@@ -419,7 +421,7 @@ func (p *Program) String() string {
 	return string(reg.ReplaceAll(buf.Bytes(), []byte("interface {}")))
 }
 
-// IncudeHeaderIsExists - return true if C #include header is inside list
+// IncludeHeaderIsExists return true if C #include header is inside list
 func (p *Program) IncludeHeaderIsExists(includeHeader string) bool {
 	for _, inc := range p.PreprocessorFile.GetIncludeFiles() {
 		if strings.HasSuffix(inc.HeaderName, includeHeader) {
