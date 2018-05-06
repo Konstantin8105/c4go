@@ -257,21 +257,18 @@ func normalizeSwitchCases(body *ast.CompoundStmt, p *program.Program) (
 	// During this translation we also remove 'break' or append a 'fallthrough'.
 
 	cases := []*goast.CaseClause{}
-	caseEndedWithBreak := false
 
 	for _, x := range body.Children() {
 		switch c := x.(type) {
 		case *ast.CaseStmt, *ast.DefaultStmt:
 			var newPre, newPost []goast.Stmt
-			cases, newPre, newPost, err = appendCaseOrDefaultToNormalizedCases(cases, c, caseEndedWithBreak, p)
+			cases, newPre, newPost, err = appendCaseOrDefaultToNormalizedCases(cases, c, p)
 			if err != nil {
 				return []*goast.CaseClause{}, nil, nil, err
 			}
-			caseEndedWithBreak = false
 
 			preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 		case *ast.BreakStmt:
-			caseEndedWithBreak = true
 
 		default:
 			var stmt goast.Stmt
@@ -290,17 +287,16 @@ func normalizeSwitchCases(body *ast.CompoundStmt, p *program.Program) (
 }
 
 func appendCaseOrDefaultToNormalizedCases(cases []*goast.CaseClause,
-	stmt ast.Node, caseEndedWithBreak bool, p *program.Program) (
+	stmt ast.Node, p *program.Program) (
 	[]*goast.CaseClause, []goast.Stmt, []goast.Stmt, error) {
 	preStmts := []goast.Stmt{}
 	postStmts := []goast.Stmt{}
 
-	if len(cases) > 0 && !caseEndedWithBreak {
+	if len(cases) > 0 {
 		cases[len(cases)-1].Body = append(cases[len(cases)-1].Body, &goast.BranchStmt{
 			Tok: token.FALLTHROUGH,
 		})
 	}
-	caseEndedWithBreak = false
 
 	var singleCase *goast.CaseClause
 	var err error
@@ -355,7 +351,9 @@ func transpileCaseStmt(n *ast.CaseStmt, p *program.Program) (
 	}, preStmts, postStmts, nil
 }
 
-func transpileDefaultStmt(n *ast.DefaultStmt, p *program.Program) (*goast.CaseClause, error) {
+func transpileDefaultStmt(n *ast.DefaultStmt, p *program.Program) (
+	*goast.CaseClause, error) {
+
 	stmts, err := transpileStmts(n.Children()[0:], p)
 	if err != nil {
 		return nil, err

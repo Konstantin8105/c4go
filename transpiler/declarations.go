@@ -42,7 +42,8 @@ func newFunctionField(p *program.Program, name, cType string) (
 		return
 	}
 
-	fieldType, err := types.ResolveType(p, cType)
+	// TODO : add err handling
+	fieldType, _ := types.ResolveType(p, cType)
 
 	return &goast.Field{
 		Names: []*goast.Ident{util.NewIdent(name)},
@@ -85,7 +86,6 @@ func transpileFieldDecl(p *program.Program, n *ast.FieldDecl) (
 		fieldType, err = types.ResolveType(p, arrayType)
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 		fieldType = fmt.Sprintf("[%d]%s", arraySize, fieldType)
-		err = nil
 	}
 
 	return &goast.Field{

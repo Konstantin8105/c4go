@@ -330,7 +330,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			right = goast.NewIdent("1")
 			rightType = "int"
 			left = goast.NewIdent("1")
-			rightType = "int"
+			leftType = "int"
 
 		} else if rightType != types.NullPointer && leftType != types.NullPointer {
 			// We may have to cast the right side to the same type as the left

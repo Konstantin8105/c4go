@@ -100,7 +100,7 @@ var simpleResolveTypes = map[string]string{
 	"FILE":                         "github.com/Konstantin8105/c4go/noarch.File",
 }
 
-// CStdStructType - convertion map from C standart library structures to
+// CStdStructType - conversion map from C standart library structures to
 // c4go structures
 var CStdStructType = map[string]string{
 	"div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
