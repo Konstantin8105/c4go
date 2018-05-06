@@ -355,7 +355,9 @@ func transpileCaseStmt(n *ast.CaseStmt, p *program.Program) (
 	}, preStmts, postStmts, nil
 }
 
-func transpileDefaultStmt(n *ast.DefaultStmt, p *program.Program) (*goast.CaseClause, error) {
+func transpileDefaultStmt(n *ast.DefaultStmt, p *program.Program) (
+	*goast.CaseClause, error) {
+
 	stmts, err := transpileStmts(n.Children()[0:], p)
 	if err != nil {
 		return nil, err
