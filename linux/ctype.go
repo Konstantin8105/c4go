@@ -51,10 +51,12 @@ func generateCharacterTable() {
 			c |= ((1 << (7)) << 8)
 		}
 
-		// FIXME: Blank is not implemented.
-		// if unicode.IsBlank(rune(i)) {
-		// 	c |= ((1 << (8)) >> 8)
-		// }
+		// http://www.cplusplus.com/reference/cctype/isblank/
+		// The standard "C" locale considers blank characters the tab
+		// character ('\t') and the space character (' ').
+		if i == int('\t') || i == int(' ') {
+			c |= ((1 << (8)) >> 8)
+		}
 
 		if unicode.IsControl(rune(i)) {
 			c |= ((1 << (9)) >> 8)
