@@ -304,6 +304,58 @@ void test_array_to_value_double()
 #define SIZE 3
 void test_size_pointer()
 {
+	diag("paren pointer");
+	int aqq[1][1] = { { 5 } };
+	int **pz;
+	int c;
+	///////////////
+	pz = aqq;
+	c = -1;
+	c = *pz;
+	is_eq(c , 5.0);
+	///////////////
+	pz = aqq;
+	int c2 = (*pz);
+	is_eq(c2 , 5.0);
+	///////////////
+	diag("|== next step 1 ===============");
+	pz = aqq;
+	c = -100;
+	for(int i=0;i < 1;i++)
+		for(int j=0;j<1;j++)
+			printf("[%d,%d]=%d\n",i,j,aqq[i][j]);
+	c = ((*pz)++);
+	is_eq(c , 5.0);
+	for(int i=0;i < 1;i++)
+		for(int j=0;j<1;j++)
+			printf("[%d,%d]=%d\n",i,j,aqq[i][j]);
+	///////////////
+	diag("|== next step 2 ===============");
+	c = -100;
+	for(int i=0;i < 1;i++)
+		for(int j=0;j<1;j++)
+			printf("[%d,%d]=%d\n",i,j,aqq[i][j]);
+	c = ((*((pz)))++);
+	is_eq(c , 9.0);
+	for(int i=0;i < 1;i++)
+		for(int j=0;j<1;j++)
+			printf("[%d,%d]=%d\n",i,j,aqq[i][j]);
+
+	///////////////
+	diag("|== next step 3 ===============");
+	pz = aqq;
+	c = -100;
+	for(int i=0;i < 1;i++)
+		for(int j=0;j<1;j++)
+			printf("[%d,%d]=%d\n",i,j,aqq[i][j]);
+	(*pz)++;
+	c = *pz;
+	is_eq(c , 17.0);
+	for(int i=0;i < 1;i++)
+		for(int j=0;j<1;j++)
+			printf("[%d,%d]=%d\n",i,j,aqq[i][j]);
+	//////////////
+	//
     int A[2][SIZE] = {{10, 20, 30}, {40, 50, 60}};
     int B[4][SIZE] = {{0, 1, 2}, {3, 0, 4}, {5, 6, 0}, {7, 8, 9}};
     int (*pnt)[SIZE];
@@ -349,7 +401,7 @@ void test_struct_init()
 
 int main()
 {
-    plan(153);
+    plan(158);
 
 	START_TEST(struct_init);
 	START_TEST(array_increment);
