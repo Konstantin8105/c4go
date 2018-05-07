@@ -87,11 +87,14 @@ func IsType(_c CtRuneT, _f uint32) uint32 {
 		return 1
 	}
 
-	// These are not supported, yet.
-	if _f&CtypeB != 0 {
-		panic("CtypeB is not supported")
+	// http://www.cplusplus.com/reference/cctype/isblank/
+	// The standard "C" locale considers blank characters the tab
+	// character ('\t') and the space character (' ').
+	if _f&CtypeB != 0 && (int(_c) == int('\t') || int(_c) == int(' ')) {
+		return 1
 	}
 
+	// These are not supported, yet.
 	if _f&CtypeI != 0 {
 		panic("CtypeI is not supported")
 	}
