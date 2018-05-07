@@ -402,10 +402,8 @@ func TestCSTD(t *testing.T) {
 	}
 	var ps []pair
 	for include := range amount {
-		var a uint
 		var uniq uint
 		for function := range amount[include] {
-			a += amount[include][function]
 			if amount[include][function] > 0 {
 				uniq++
 			}
@@ -422,10 +420,6 @@ func TestCSTD(t *testing.T) {
 			p.line = fmt.Sprintf("%20s\t%10s\t%13s", include, "", "undefined")
 		}
 		ps = append(ps, p)
-		// Detail information
-		// for function := range amount[include] {
-		// 	fmt.Printf("\t%20s\t%v\n", function, amount[include][function])
-		// }
 	}
 
 	sort.Slice(ps, func(i, j int) bool {
@@ -436,5 +430,14 @@ func TestCSTD(t *testing.T) {
 
 	for _, l := range ps {
 		fmt.Printf("%s\n", l.line)
+	}
+
+	// Detail information
+	fmt.Println("\nDetail information:")
+	for _, l := range ps {
+		fmt.Printf("%s\n", l.line)
+		for function := range amount[l.inc] {
+			fmt.Printf("\t%20s\t%v\n", function, amount[l.inc][function])
+		}
 	}
 }

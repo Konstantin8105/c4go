@@ -23,3 +23,13 @@ func Signbitl(x float64) int {
 func IsNaN(x float64) int {
 	return BoolToInt(math.IsNaN(x))
 }
+
+// Fma returns x*y+z.
+func Fma(x, y, z float64) float64 {
+	return x*y + z
+}
+
+// Fmaf returns x*y+z.
+func Fmaf(x, y, z float32) float32 {
+	return x*y + z
+}

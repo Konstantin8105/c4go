@@ -132,6 +132,10 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double sqrt(double) -> math.Sqrt",
 		"double tan(double) -> math.Tan",
 		"double tanh(double) -> math.Tanh",
+
+		"double fma(double, double, double) -> noarch.Fma",
+		"float fmaf(float, float, float) -> noarch.Fmaf",
+		"long double fmal(long double, long double, long double) -> noarch.Fma",
 	},
 	"stdio.h": {
 

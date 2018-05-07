@@ -12,7 +12,7 @@ unsigned long long ullmax = 18446744073709551615ull;
 
 int main()
 {
-    plan(361);
+    plan(364);
 
 	diag("Sqrt function");
 	double (*f)(double) = sqrt;
@@ -475,6 +475,23 @@ int main()
     is_eq(tanh(INFINITY), 1);
     is_eq(tanh(-INFINITY), -1);
     is_nan(tanh(NAN));
+
+	diag("fma");
+	{
+		double x,y,z;
+		x = 10, y = 20, z = 30;
+		is_eq(fma(x,y,z),x*y+z);
+	}
+	{
+		float x,y,z;
+		x = 10, y = 20, z = 30;
+		is_eq(fmaf(x,y,z),x*y+z);
+	}
+	{
+		long double x,y,z;
+		x = 10, y = 20, z = 30;
+		is_eq(fmal(x,y,z),x*y+z);
+	}
 
     done_testing();
 }
