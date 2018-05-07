@@ -100,6 +100,8 @@ var simpleResolveTypes = map[string]string{
 	"FILE":                         "github.com/Konstantin8105/c4go/noarch.File",
 }
 
+// CStdStructType - conversion map from C standart library structures to
+// c4go structures
 var CStdStructType = map[string]string{
 	"div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
 	"ldiv_t":  "github.com/Konstantin8105/c4go/noarch.LdivT",
@@ -230,9 +232,8 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 			// "div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
 			ii := p.ImportType(tt)
 			return ii, nil
-		} else {
-			return s, nil
 		}
+		return s, nil
 	}
 
 	if tt, ok := CStdStructType[s]; ok {
@@ -555,7 +556,7 @@ func ParseFunction(s string) (prefix string, f []string, r []string, err error) 
 	}
 	// separate fields of arguments
 	{
-		var pos int = 1
+		pos := 1
 		counter := 0
 		for i := 1; i < len(arguments)-1; i++ {
 			if arguments[i] == '(' {

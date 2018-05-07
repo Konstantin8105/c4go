@@ -279,10 +279,9 @@ again:
 		if colEnd == 0 {
 			if col-1 < len([]byte(*l)) {
 				return []byte((*l)[col-1:]), nil
-			} else {
-				err = fmt.Errorf("Empty snippet")
-				return
 			}
+			err = fmt.Errorf("Empty snippet")
+			return
 		}
 		return []byte((*l)[col-1 : colEnd]), nil
 	}

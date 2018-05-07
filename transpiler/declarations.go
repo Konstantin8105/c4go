@@ -42,7 +42,8 @@ func newFunctionField(p *program.Program, name, cType string) (
 		return
 	}
 
-	fieldType, err := types.ResolveType(p, cType)
+	// TODO : add err handling
+	fieldType, _ := types.ResolveType(p, cType)
 
 	return &goast.Field{
 		Names: []*goast.Ident{util.NewIdent(name)},
@@ -85,7 +86,6 @@ func transpileFieldDecl(p *program.Program, n *ast.FieldDecl) (
 		fieldType, err = types.ResolveType(p, arrayType)
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 		fieldType = fmt.Sprintf("[%d]%s", arraySize, fieldType)
-		err = nil
 	}
 
 	return &goast.Field{
@@ -94,7 +94,7 @@ func transpileFieldDecl(p *program.Program, n *ast.FieldDecl) (
 	}, nil
 }
 
-var ignoreRecordDecl map[string]string = map[string]string{
+var ignoreRecordDecl = map[string]string{
 	"struct __fsid_t":                             "/usr/include/x86_64-linux-gnu/bits/types.h",
 	"union __union_at__usr_include_wchar_h_85_3_": "/usr/include/wchar.h",
 	"struct __mbstate_t":                          "/usr/include/wchar.h",
@@ -113,6 +113,23 @@ var ignoreRecordDecl map[string]string = map[string]string{
 	"sigevent":                                    "/usr/include/time.h",
 	"__locale_struct":                             "/usr/include/xlocale.h",
 	"exception":                                   "/usr/include/math.h",
+
+	"wait":                    "/usr/include/x86_64-linux-gnu/bits/waitstatus.h",
+	"struct __sigset_t":       "/usr/include/x86_64-linux-gnu/bits/sigset.h",
+	"struct fd_set":           "/usr/include/x86_64-linux-gnu/sys/select.h",
+	"pthread_attr_t":          "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"__pthread_internal_list": "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"__pthread_mutex_s":       "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_mutex_t":         "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_mutexattr_t":     "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_cond_t":          "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_condattr_t":      "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_rwlock_t":        "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_rwlockattr_t":    "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_barrier_t":       "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_barrierattr_t":   "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"random_data":             "/usr/include/stdlib.h",
+	"drand48_data":            "/usr/include/stdlib.h",
 }
 
 func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
@@ -292,9 +309,8 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			if err != nil {
 				err = fmt.Errorf("Cannot transpile %T", field)
 				return
-			} else {
-				decls = append(decls, declsIn...)
 			}
+			decls = append(decls, declsIn...)
 		}
 	}
 
@@ -337,12 +353,8 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		}
 	}
 
-	if strings.HasPrefix(name, "struct ") {
-		name = name[len("struct "):]
-	}
-	if strings.HasPrefix(name, "union ") {
-		name = name[len("union "):]
-	}
+	name = strings.TrimPrefix(name, "struct ")
+	name = strings.TrimPrefix(name, "union ")
 
 	var d []goast.Decl
 	if s.IsUnion {
@@ -356,16 +368,15 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			err = fmt.Errorf("could not determine the size of type `union %s`"+
 				" for that reason: %s", name, err)
 			return
-		} else {
-			// So, we got size, then
-			// Add imports needed
-			addPackageUnsafe = true
+		}
+		// So, we got size, then
+		// Add imports needed
+		addPackageUnsafe = true
 
-			// Declaration for implementing union type
-			d, err = transpileUnion(name, size, fields)
-			if err != nil {
-				return nil, err
-			}
+		// Declaration for implementing union type
+		d, err = transpileUnion(name, size, fields)
+		if err != nil {
+			return nil, err
 		}
 	} else {
 		d = append(d, &goast.GenDecl{
@@ -388,7 +399,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 	return
 }
 
-var ignoreTypedef map[string]string = map[string]string{
+var ignoreTypedef = map[string]string{
 	"__u_char":   "bits/types.h",
 	"__u_short":  "bits/types.h",
 	"__u_int":    "bits/types.h",
@@ -510,6 +521,42 @@ var ignoreTypedef map[string]string = map[string]string{
 	"cookie_close_function_t":   "/usr/include/libio.h",
 	"_IO_cookie_io_functions_t": "/usr/include/libio.h",
 	"cookie_io_functions_t":     "/usr/include/libio.h",
+
+	"__mbstate_t":           "/usr/include/wchar.h",
+	"_G_fpos_t":             "/usr/include/_G_config.h",
+	"_G_fpos64_t":           "/usr/include/_G_config.h",
+	"va_list":               "/usr/lib/llvm-4.0/bin/../lib/clang/4.0.0/include/stdarg.h",
+	"__gnuc_va_list":        "/usr/lib/llvm-4.0/bin/../lib/clang/4.0.0/include/stdarg.h",
+	"wchar_t":               "/usr/lib/llvm-4.0/bin/../lib/clang/4.0.0/include/stddef.h",
+	"idtype_t":              "/usr/include/x86_64-linux-gnu/bits/waitflags.h",
+	"__WAIT_STATUS":         "/usr/include/stdlib.h",
+	"int32_t":               "/usr/include/x86_64-linux-gnu/sys/types.h",
+	"__sig_atomic_t":        "/usr/include/x86_64-linux-gnu/bits/sigset.h",
+	"__sigset_t":            "/usr/include/x86_64-linux-gnu/bits/sigset.h",
+	"sigset_t":              "/usr/include/x86_64-linux-gnu/sys/select.h",
+	"__fd_mask":             "/usr/include/x86_64-linux-gnu/sys/select.h",
+	"fd_set":                "/usr/include/x86_64-linux-gnu/sys/select.h",
+	"fd_mask":               "/usr/include/x86_64-linux-gnu/sys/select.h",
+	"pthread_t":             "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_attr_t":        "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"__pthread_list_t":      "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_mutex_t":       "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_mutexattr_t":   "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_cond_t":        "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_condattr_t":    "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_key_t":         "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_once_t":        "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_rwlock_t":      "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_rwlockattr_t":  "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_spinlock_t":    "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_barrier_t":     "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_barrierattr_t": "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"__compar_fn_t":         "/usr/include/stdlib.h",
+	"comparison_fn_t":       "/usr/include/stdlib.h",
+	"__compar_d_fn_t":       "/usr/include/stdlib.h",
+	"float_t":               "/usr/include/x86_64-linux-gnu/bits/mathdef.h",
+	"double_t":              "/usr/include/x86_64-linux-gnu/bits/mathdef.h",
+	"_LIB_VERSION_TYPE":     "/usr/include/math.h",
 }
 
 func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (

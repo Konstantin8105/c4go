@@ -19,7 +19,7 @@ func transpileOffsetOfExpr(n *ast.OffsetOfExpr, p *program.Program) (
 	}()
 
 	var buffer []byte
-	var pos ast.Position = n.Position()
+	pos := n.Position()
 	buffer, err = p.PreprocessorFile.GetSnippet(pos.File,
 		pos.Line, pos.LineEnd,
 		pos.Column, pos.ColumnEnd)

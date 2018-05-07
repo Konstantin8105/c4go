@@ -32,6 +32,7 @@ func (p Position) GetSimpleLocation() (loc string) {
 	return fmt.Sprintf(" %s:%d ", file, p.Line)
 }
 
+// NewPositionFromString create a Position from string line
 func NewPositionFromString(s string) Position {
 	if s == "<invalid sloc>" || s == "" {
 		return Position{}
@@ -212,6 +213,7 @@ func mergePositions(p1, p2 Position) Position {
 // PositionBuiltIn - default value for fix position
 var PositionBuiltIn = "<built-in>"
 
+// FixPositions is fix positions of Nodes
 func FixPositions(nodes []Node) {
 	pos := Position{File: PositionBuiltIn}
 	fixPositions(nodes, pos)
@@ -290,6 +292,8 @@ func setPosition(node Node, position Position) {
 	case *FloatingLiteral:
 		n.Pos = position
 	case *FormatAttr:
+		n.Pos = position
+	case *FormatArgAttr:
 		n.Pos = position
 	case *FullComment:
 		n.Pos = position

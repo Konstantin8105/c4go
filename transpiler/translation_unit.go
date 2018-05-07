@@ -66,8 +66,6 @@ func transpileTranslationUnitDecl(p *program.Program, n *ast.TranslationUnitDecl
 						tryLaterRecordDecl[i+1:]...)
 				}
 				goto again
-			} else {
-				err = nil // ignore error
 			}
 		}
 	}
@@ -77,7 +75,6 @@ func transpileTranslationUnitDecl(p *program.Program, n *ast.TranslationUnitDecl
 			decls = append(decls, recDecl...)
 		} else {
 			p.AddMessage(p.GenerateWarningMessage(err, n))
-			err = nil // ignore error
 		}
 	}
 	return

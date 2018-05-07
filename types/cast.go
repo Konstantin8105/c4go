@@ -384,7 +384,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	match1 = util.GetRegex(`\[(\d+)\]byte`).FindStringSubmatch(fromType)
 	match2 = util.GetRegex(`char \*\[(\d+)\]`).FindStringSubmatch(fromType)
 	if (len(match1) > 0 || len(match2) > 0) && toType == "string" {
-		size := 0
+		var size int
 		if len(match1) > 0 {
 			size = util.Atoi(match1[1])
 		} else {
