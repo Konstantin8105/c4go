@@ -317,9 +317,8 @@ void test_size_pointer()
 	pz = aqq;
 	int c2 = (*pz);
 	is_eq(c2 , 5.0);
-	/*
 	///////////////
-	diag("|== next step ===============");
+	diag("|== next step 1 ===============");
 	pz = aqq;
 	c = -100;
 	for(int i=0;i < 1;i++)
@@ -331,7 +330,7 @@ void test_size_pointer()
 		for(int j=0;j<1;j++)
 			printf("[%d,%d]=%d\n",i,j,aqq[i][j]);
 	///////////////
-	diag("|== next step ===============");
+	diag("|== next step 2 ===============");
 	c = -100;
 	for(int i=0;i < 1;i++)
 		for(int j=0;j<1;j++)
@@ -343,7 +342,7 @@ void test_size_pointer()
 			printf("[%d,%d]=%d\n",i,j,aqq[i][j]);
 
 	///////////////
-	diag("|== next step ===============");
+	diag("|== next step 3 ===============");
 	pz = aqq;
 	c = -100;
 	for(int i=0;i < 1;i++)
@@ -355,7 +354,6 @@ void test_size_pointer()
 	for(int i=0;i < 1;i++)
 		for(int j=0;j<1;j++)
 			printf("[%d,%d]=%d\n",i,j,aqq[i][j]);
-	*/
 	//////////////
 	//
     int A[2][SIZE] = {{10, 20, 30}, {40, 50, 60}};
@@ -403,7 +401,7 @@ void test_struct_init()
 
 int main()
 {
-    plan(155);
+    plan(158);
 
 	START_TEST(struct_init);
 	START_TEST(array_increment);
