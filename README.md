@@ -138,23 +138,23 @@ func init() {
 
 ```
             assert.h	       1/1	         100%
-            stdlib.h	     31/47	          66%
-            stdarg.h	       4/4	         100%
-              time.h	      8/15	        53.3%
-            iso646.h	          	    undefined
-            stddef.h	       1/6	        16.7%
-             float.h	          	    undefined
-            signal.h	       0/3	           0%
-            string.h	      7/24	        29.2%
+             ctype.h	     14/14	         100%
              errno.h	       0/1	           0%
-             stdio.h	     33/46	        71.7%
+             float.h	          	    undefined
+            iso646.h	          	    undefined
             limits.h	          	    undefined
+            locale.h	       0/3	           0%
               math.h	     23/58	        39.7%
             setjmp.h	       0/3	           0%
+            signal.h	       0/3	           0%
+            stdarg.h	       4/4	         100%
+            stddef.h	       1/6	        16.7%
+             stdio.h	     33/46	        71.7%
+            stdlib.h	     31/47	          66%
+            string.h	      7/24	        29.2%
+              time.h	      8/15	        53.3%
              wchar.h	      0/68	           0%
-            locale.h	       0/3	           0%
             wctype.h	      0/22	           0%
-             ctype.h	     13/14	        92.9%
 ```
 
 # Contributing

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"sort"
+	"strings"
 	"testing"
 )
 
@@ -394,6 +396,11 @@ func TestCSTD(t *testing.T) {
 	}
 
 	// view
+	type pair struct {
+		inc  string
+		line string
+	}
+	var ps []pair
 	for include := range amount {
 		var a uint
 		var uniq uint
@@ -403,19 +410,31 @@ func TestCSTD(t *testing.T) {
 				uniq++
 			}
 		}
+		var p pair
+		p.inc = include
 		if len(amount[include]) > 0 {
 			length := float64(uniq) / float64(len(amount[include]))
-			fmt.Printf("%20s\t%10s\t%12.3g%s\n",
+			p.line = fmt.Sprintf("%20s\t%10s\t%12.3g%s",
 				include,
 				fmt.Sprintf("%v/%v", uniq, len(amount[include])),
 				length*100, "%")
 		} else {
-			fmt.Printf("%20s\t%10s\t%13s\n", include, "", "undefined")
+			p.line = fmt.Sprintf("%20s\t%10s\t%13s", include, "", "undefined")
 		}
+		ps = append(ps, p)
 		// Detail information
 		// for function := range amount[include] {
 		// 	fmt.Printf("\t%20s\t%v\n", function, amount[include][function])
 		// }
 	}
 
+	sort.Slice(ps, func(i, j int) bool {
+		return strings.Compare(
+			strings.TrimSpace(ps[i].inc),
+			strings.TrimSpace(ps[j].inc)) == -1
+	})
+
+	for _, l := range ps {
+		fmt.Printf("%s\n", l.line)
+	}
 }
