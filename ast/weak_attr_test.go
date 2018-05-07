@@ -11,6 +11,12 @@ func TestWeakAttr(t *testing.T) {
 			Pos:        NewPositionFromString("line:736:22"),
 			ChildNodes: []Node{},
 		},
+		`0x20c6ad0 </glibc-2.27/support/temp_file-internal.h:27:62> Inherited`: &WeakAttr{
+			Addr:       0x20c6ad0,
+			Pos:        NewPositionFromString("/glibc-2.27/support/temp_file-internal.h:27:62"),
+			Inherited:  true,
+			ChildNodes: []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)
