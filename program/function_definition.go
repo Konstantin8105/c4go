@@ -136,6 +136,9 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double fma(double, double, double) -> noarch.Fma",
 		"float fmaf(float, float, float) -> noarch.Fmaf",
 		"long double fmal(long double, long double, long double) -> noarch.Fma",
+		"double fmin(double , double ) -> noarch.Fmin",
+		"float fminf(float , float ) -> noarch.Fminf",
+		"long double fminl(long double , long double ) -> noarch.Fmin",
 	},
 	"stdio.h": {
 
