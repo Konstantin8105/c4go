@@ -160,6 +160,7 @@ func init() {
 # Contributing
 
 Feel free to add PR, issues.
+Main information from: [http://en.cppreference.com/w/c](http://en.cppreference.com/w/c)
 
 ## Testing
 
