@@ -49,3 +49,19 @@ func Fminf(x, y float32) float32 {
 	}
 	return y
 }
+
+// Fmax returns the larger of its arguments: either x or y.
+func Fmax(x, y float64) float64 {
+	if x < y {
+		return y
+	}
+	return x
+}
+
+// Fmaxf returns the larger of its arguments: either x or y.
+func Fmaxf(x, y float32) float32 {
+	if x < y {
+		return y
+	}
+	return x
+}
