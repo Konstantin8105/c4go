@@ -33,3 +33,35 @@ func Fma(x, y, z float64) float64 {
 func Fmaf(x, y, z float32) float32 {
 	return x*y + z
 }
+
+// Fmin returns the smaller of its arguments: either x or y.
+func Fmin(x, y float64) float64 {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+// Fminf returns the smaller of its arguments: either x or y.
+func Fminf(x, y float32) float32 {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+// Fmax returns the larger of its arguments: either x or y.
+func Fmax(x, y float64) float64 {
+	if x < y {
+		return y
+	}
+	return x
+}
+
+// Fmaxf returns the larger of its arguments: either x or y.
+func Fmaxf(x, y float32) float32 {
+	if x < y {
+		return y
+	}
+	return x
+}
