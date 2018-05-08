@@ -3,16 +3,34 @@
 #include "tests.h"
 #include <math.h>
 #include <stdio.h>
+#include <float.h>
 
 #define PI 3.14159265
 #define IS_NAN -2147483648
 
 unsigned long long ullmax = 18446744073709551615ull;
 
+const char *show_classification(double x) {
+    switch(fpclassify(x)) {
+        case FP_INFINITE:  return "Inf";
+        case FP_NAN:       return "NaN";
+        case FP_NORMAL:    return "normal";
+        case FP_SUBNORMAL: return "subnormal";
+        case FP_ZERO:      return "zero";
+        default:           return "unknown";
+    }
+}
 
 int main()
 {
-    plan(364);
+    plan(367);
+
+	diag("Macros");
+    /* is_streq(show_classification(1/0.0),"Inf"); */
+    /* is_streq(show_classification(0.0/0.0),"NaN"); */
+    is_streq(show_classification(DBL_MIN/2),"subnormal");
+    is_streq(show_classification(-0.0),"zero");
+    is_streq(show_classification(1.0),"normal");
 
 	diag("Sqrt function");
 	double (*f)(double) = sqrt;
