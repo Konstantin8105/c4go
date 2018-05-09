@@ -83,18 +83,6 @@ func TestPrint(t *testing.T) {
 	}
 }
 
-var lines = []string{
-// c4go ast sqlite3.c | head -5000 | sed 's/^[ |`-]*//' | sed 's/<<<NULL>>>/NullStmt/g' | gawk 'length > 0 {print "`" $0 "`,"}'
-}
-
-func BenchmarkParse(b *testing.B) {
-	for n := 0; n < b.N; n++ {
-		for _, line := range lines {
-			Parse(line)
-		}
-	}
-}
-
 func TestPanicCheck(t *testing.T) {
 	defer func() {
 		if r := recover(); r != nil {
