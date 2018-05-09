@@ -144,6 +144,46 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double fmax(double , double ) -> noarch.Fmax",
 		"float fmaxf(float , float ) -> noarch.Fmaxf",
 		"long double fmaxl(long double , long double ) -> noarch.Fmax",
+
+		"double expm1(double) -> math.Expm1",
+		"float expm1f(float) -> noarch.Expm1f",
+		"long double expm1l(long double) -> math.Expm1",
+
+		"double exp2(double) -> math.Exp2",
+		"float exp2f(float) -> noarch.Exp2f",
+		"long double exp2l(long double) -> math.Exp2",
+
+		"double log2(double) -> math.Log2",
+		"float log2f(float) -> noarch.Log2f",
+		"long double log2l(long double) -> math.Log2",
+
+		"double fdim(double, double) -> noarch.Fdim",
+		"float fdimf(float, float) -> noarch.Fdimf",
+		"long double fdiml(long double, long double) -> noarch.Fdim",
+
+		"double asinh(double) -> math.Asinh",
+		"float asinhf(float) -> noarch.Asinhf",
+		"long double asinhl(long double) -> math.Asinh",
+
+		"double acosh(double) -> math.Acosh",
+		"float acoshf(float) -> noarch.Acoshf",
+		"long double acoshl(long double) -> math.Acosh",
+
+		"double atanh(double) -> math.Atanh",
+		"float atanhf(float) -> noarch.Atanhf",
+		"long double atanhl(long double) -> math.Atanh",
+
+		"double sinh(double) -> math.Sinh",
+		"float sinhf(float) -> noarch.Sinhf",
+		"long double sinhl(long double) -> math.Sinh",
+
+		"double cosh(double) -> math.Cosh",
+		"float coshf(float) -> noarch.Coshf",
+		"long double coshl(long double) -> math.Cosh",
+
+		"double tanh(double) -> math.Tanh",
+		"float tanhf(float) -> noarch.Tanhf",
+		"long double tanhl(long double) -> math.Tanh",
 	},
 	"stdio.h": {
 

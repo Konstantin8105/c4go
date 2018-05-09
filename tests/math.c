@@ -12,7 +12,7 @@ unsigned long long ullmax = 18446744073709551615ull;
 
 int main()
 {
-    plan(376);
+    plan(397);
 
 	diag("Sqrt function");
 	double (*f)(double) = sqrt;
@@ -533,5 +533,100 @@ int main()
 		is_eq(fmaxl( x, y),  x);
 		is_eq(fmaxl(-x,-y), -y);
 	}
+
+	diag("expm1");
+	{
+		double x   = 2.7;
+		double res = exp(x)-1.0;
+		is_eq(expm1(x),res);
+	}
+	{
+		float x   = 2.7;
+		float res = exp(x)-1.0;
+		is_eq(expm1f(x),res);
+	}
+	{
+		long double x   = 2.7;
+		long double res = exp(x)-1.0;
+		is_eq(expm1l(x),res);
+	}
+
+	diag("exp2");
+	{
+		double x   = 2.7;
+		double res = pow(2.0,x);
+		is_eq(exp2(x),res);
+	}
+	{
+		float x   = 2.7;
+		float res = pow(2.0,x);
+		is_eq(exp2f(x),res);
+	}
+	{
+		long double x   = 2.7;
+		long double res = pow(2.0,x);
+		is_eq(exp2l(x),res);
+	}
+
+	diag("fdim");
+	{
+		double x   = 2.7 , y = 0.2;
+		is_eq(fdim( x,y),x-y);
+		is_eq(fdim(-x,y),0);
+	}
+	{
+		float x   = 2.7 , y = 0.2;
+		is_eq(fdimf( x,y),x-y);
+		is_eq(fdimf(-x,y),0);
+	}
+	{
+		long double x   = 2.7 , y = 0.2;
+		is_eq(fdiml( x,y),x-y);
+		is_eq(fdiml(-x,y),0);
+	}
+	
+	diag("log2");
+	{
+		double x = 1024;
+		double res = log2(x);
+		is_eq(exp2(res),x);
+	}
+	{
+		float x = 1024;
+		float res = log2f(x);
+		is_eq(exp2f(res),x);
+	}
+	{
+		long double x = 1024;
+		long double res = log2l(x);
+		is_eq(exp2l(res),x);
+	}
+
+	diag("sinh, cosh, tanh");
+	{
+		double angle = 2.0;
+		is_eq(sinh(angle)/cosh(angle),tanh(angle));
+	}
+	{
+		float angle = 2.0;
+		is_eq(sinhf(angle)/coshf(angle),tanh(angle));
+	}
+	{
+		long double angle = 2.0;
+		is_eq(sinhl(angle)/coshl(angle),tanhl(angle));
+	}
+	{
+		double angle = 2.0;
+		is_eq(asinh(sinh(angle)),angle);
+	}
+	{
+		double angle = 2.0;
+		is_eq(acosh(cosh(angle)),angle);
+	}
+	{
+		double angle = 2.0;
+		is_eq(atanh(tanh(angle)),angle);
+	}
+
     done_testing();
 }
