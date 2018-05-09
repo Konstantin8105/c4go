@@ -259,6 +259,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"char* __inline_strcat_chk(char *, const char *) -> noarch.Strcat",
 
 		"char * memset(char *, char, unsigned int) -> noarch.Memset",
+		"char * memmove(char *, char *, unsigned int) -> noarch.Memmove",
 	},
 	"stdlib.h": {
 		// stdlib.h
