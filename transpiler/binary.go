@@ -240,6 +240,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 		return nil, "unknown53", nil, nil, err
 	}
 	if types.IsPointer(leftType) && types.IsPointer(rightType) && operator == token.SUB {
+		p.AddImport("unsafe")
 		left, leftType = util.GetUintptrForSlice(left)
 		right, rightType = util.GetUintptrForSlice(right)
 	}

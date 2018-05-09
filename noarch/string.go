@@ -95,3 +95,10 @@ func Strchr(str []byte, ch int) []byte {
 	}
 	return nil
 }
+
+func Memset(ptr []byte, value byte, num uint32) []byte {
+	for i := 0; uint32(i) < num; i++ {
+		ptr[i] = value
+	}
+	return ptr
+}
