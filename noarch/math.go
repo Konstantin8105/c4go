@@ -97,3 +97,18 @@ func Fdimf(x, y float32) float32 {
 func Log2f(x float32) float32 {
 	return float32(math.Log2(float64(x)))
 }
+
+// Sinhf compute hyperbolic sine
+func Sinhf(a float32) float32 {
+	return float32(math.Sinh(float64(a)))
+}
+
+// Coshf compute hyperbolic cose
+func Coshf(a float32) float32 {
+	return float32(math.Cosh(float64(a)))
+}
+
+// Tanhf compute hyperbolic tan
+func Tanhf(a float32) float32 {
+	return float32(math.Tanh(float64(a)))
+}

@@ -12,7 +12,7 @@ unsigned long long ullmax = 18446744073709551615ull;
 
 int main()
 {
-    plan(391);
+    plan(397);
 
 	diag("Sqrt function");
 	double (*f)(double) = sqrt;
@@ -600,6 +600,32 @@ int main()
 		long double x = 1024;
 		long double res = log2l(x);
 		is_eq(exp2l(res),x);
+	}
+
+	diag("sinh, cosh, tanh");
+	{
+		double angle = 2.0;
+		is_eq(sinh(angle)/cosh(angle),tanh(angle));
+	}
+	{
+		float angle = 2.0;
+		is_eq(sinhf(angle)/coshf(angle),tanh(angle));
+	}
+	{
+		long double angle = 2.0;
+		is_eq(sinhl(angle)/coshl(angle),tanhl(angle));
+	}
+	{
+		double angle = 2.0;
+		is_eq(asinh(sinh(angle)),angle);
+	}
+	{
+		double angle = 2.0;
+		is_eq(acosh(cosh(angle)),angle);
+	}
+	{
+		double angle = 2.0;
+		is_eq(atanh(tanh(angle)),angle);
 	}
 
     done_testing();

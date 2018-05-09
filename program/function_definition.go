@@ -160,6 +160,30 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double fdim(double, double) -> noarch.Fdim",
 		"float fdimf(float, float) -> noarch.Fdimf",
 		"long double fdiml(long double, long double) -> noarch.Fdim",
+
+		"double asinh(double) -> math.Asinh",
+		"float asinhf(float) -> noarch.Asinhf",
+		"long double asinhl(long double) -> math.Asinh",
+
+		"double acosh(double) -> math.Acosh",
+		"float acoshf(float) -> noarch.Acoshf",
+		"long double acoshl(long double) -> math.Acosh",
+
+		"double atanh(double) -> math.Atanh",
+		"float atanhf(float) -> noarch.Atanhf",
+		"long double atanhl(long double) -> math.Atanh",
+
+		"double sinh(double) -> math.Sinh",
+		"float sinhf(float) -> noarch.Sinhf",
+		"long double sinhl(long double) -> math.Sinh",
+
+		"double cosh(double) -> math.Cosh",
+		"float coshf(float) -> noarch.Coshf",
+		"long double coshl(long double) -> math.Cosh",
+
+		"double tanh(double) -> math.Tanh",
+		"float tanhf(float) -> noarch.Tanhf",
+		"long double tanhl(long double) -> math.Tanh",
 	},
 	"stdio.h": {
 
