@@ -148,7 +148,7 @@ func init() {
             setjmp.h	       0/3	           0%
             signal.h	       0/3	           0%
             stdarg.h	       4/4	         100%
-            stddef.h	       1/6	        16.7%
+            stddef.h	       2/6	        33.3%
              stdio.h	     33/46	        71.7%
             stdlib.h	     31/47	          66%
             string.h	      7/24	        29.2%
