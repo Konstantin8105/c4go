@@ -152,6 +152,10 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double exp2(double) -> math.Exp2",
 		"float exp2f(float) -> noarch.Exp2f",
 		"long double exp2l(long double) -> math.Exp2",
+
+		"double fdim(double, double) -> noarch.Fdim",
+		"float fdimf(float, float) -> noarch.Fdimf",
+		"long double fdiml(long double, long double) -> noarch.Fdim",
 	},
 	"stdio.h": {
 

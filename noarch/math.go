@@ -76,3 +76,19 @@ func Expm1f(x float32) float32 {
 func Exp2f(x float32) float32 {
 	return float32(math.Exp2(float64(x)))
 }
+
+// Fdim returns the positive difference between x and y.
+func Fdim(x, y float64) float64 {
+	if x > y {
+		return x - y
+	}
+	return 0
+}
+
+// Fdimf returns the positive difference between x and y.
+func Fdimf(x, y float32) float32 {
+	if x > y {
+		return x - y
+	}
+	return 0
+}
