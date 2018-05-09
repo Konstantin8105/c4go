@@ -92,3 +92,8 @@ func Fdimf(x, y float32) float32 {
 	}
 	return 0
 }
+
+// Log2f returns the binary (base-2) logarithm of x.
+func Log2f(x float32) float32 {
+	return float32(math.Log2(float64(x)))
+}
