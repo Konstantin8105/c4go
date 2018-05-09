@@ -12,7 +12,7 @@ unsigned long long ullmax = 18446744073709551615ull;
 
 int main()
 {
-    plan(379);
+    plan(382);
 
 	diag("Sqrt function");
 	double (*f)(double) = sqrt;
@@ -549,6 +549,23 @@ int main()
 		long double x   = 2.7;
 		long double res = exp(x)-1.0;
 		is_eq(expm1l(x),res);
+	}
+
+	diag("exp2");
+	{
+		double x   = 2.7;
+		double res = pow(2.0,x);
+		is_eq(exp2(x),res);
+	}
+	{
+		float x   = 2.7;
+		float res = pow(2.0,x);
+		is_eq(exp2f(x),res);
+	}
+	{
+		long double x   = 2.7;
+		long double res = pow(2.0,x);
+		is_eq(exp2l(x),res);
 	}
 
     done_testing();

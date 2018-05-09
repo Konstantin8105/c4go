@@ -66,12 +66,13 @@ func Fmaxf(x, y float32) float32 {
 	return x
 }
 
-// Expm1 returns e raised to the power x minus one: e^x-1
-func Expm1(x float64) float64 {
-	return math.Exp(x) - 1
-}
-
 // Expm1f returns e raised to the power x minus one: e^x-1
 func Expm1f(x float32) float32 {
-	return float32(math.Exp(float64(x))) - 1
+	return float32(math.Expm1(float64(x)))
+}
+
+// Exp2f Returns the base-2 exponential function of x, which is 2 raised
+// to the power x: 2^x
+func Exp2f(x float32) float32 {
+	return float32(math.Exp2(float64(x)))
 }
