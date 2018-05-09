@@ -73,18 +73,38 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	}()
 
 	// Uncomment only for debugging
-	// if strings.Contains(cFromType, ":") {
-	// 	panic(fmt.Errorf("Found mistake `cFromType` `%v` C type : %#v",
-	// 		cFromType, expr))
-	// }
-	// if strings.Contains(cToType, ":") {
-	// 	panic(fmt.Errorf("Found mistake `cToType` `%v` C type: %#v",
-	// 		cToType, expr))
-	// }
+	if strings.Contains(cFromType, ":") {
+		err2 = fmt.Errorf("Found mistake `cFromType` `%v` C type : %#v",
+			cFromType, expr)
+		return
+	}
+	if strings.Contains(cToType, ":") {
+		err2 = fmt.Errorf("Found mistake `cToType` `%v` C type: %#v",
+			cToType, expr)
+		return
+	}
 
 	cFromType = CleanCType(cFromType)
 	cToType = CleanCType(cToType)
 
+	// Only for "stddef.h"
+	if p.IncludeHeaderIsExists("stddef.h") {
+		if cFromType == "long" && cToType == "ptrdiff_t" {
+			size, err := SizeOf(p, cToType)
+			if err != nil {
+				err2 = fmt.Errorf("%v,%v", err, err2)
+				return
+			}
+			expr = &goast.BinaryExpr{
+				X:  expr,
+				Op: token.QUO,
+				Y: &goast.BasicLit{
+					Kind:  token.INT,
+					Value: fmt.Sprintf("%v", size),
+				},
+			}
+		}
+	}
 	fromType := cFromType
 	toType := cToType
 
