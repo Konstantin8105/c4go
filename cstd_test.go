@@ -436,8 +436,21 @@ func TestCSTD(t *testing.T) {
 	fmt.Println("\nDetail information:")
 	for _, l := range ps {
 		fmt.Printf("%s\n", l.line)
+		var ps []pair
 		for function := range amount[l.inc] {
-			fmt.Printf("\t%20s\t%v\n", function, amount[l.inc][function])
+			ps = append(ps, pair{
+				inc:  function,
+				line: fmt.Sprintf("\t%20s\t%v", function, amount[l.inc][function]),
+			})
+		}
+		sort.Slice(ps, func(i, j int) bool {
+			return strings.Compare(
+				strings.TrimSpace(ps[i].inc),
+				strings.TrimSpace(ps[j].inc)) == -1
+		})
+
+		for _, l := range ps {
+			fmt.Printf("%s\n", l.line)
 		}
 	}
 }

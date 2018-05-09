@@ -144,6 +144,10 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double fmax(double , double ) -> noarch.Fmax",
 		"float fmaxf(float , float ) -> noarch.Fmaxf",
 		"long double fmaxl(long double , long double ) -> noarch.Fmax",
+
+		"double expm1(double) -> noarch.Expm1",
+		"float expm1f(float) -> noarch.Expm1f",
+		"long double expm1l(long double) -> noarch.Expm1",
 	},
 	"stdio.h": {
 
