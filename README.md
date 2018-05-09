@@ -151,7 +151,7 @@ func init() {
             stddef.h	       1/6	        16.7%
              stdio.h	     33/46	        71.7%
             stdlib.h	     31/47	          66%
-            string.h	      7/24	        29.2%
+            string.h	      9/24	        37.5%
               time.h	      8/15	        53.3%
              wchar.h	      0/68	           0%
             wctype.h	      0/22	           0%
