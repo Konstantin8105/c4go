@@ -260,6 +260,9 @@ var builtInFunctionDefinitions = map[string][]string{
 
 		"char * memset(char *, char, unsigned int) -> noarch.Memset",
 		"char * memmove(char *, char *, unsigned int) -> noarch.Memmove",
+
+		"char * __builtin___memset_chk(char *, char, unsigned int, int) -> darwein.BuiltinMemset",
+		"char * __builtin___memmove_chk(char *, char *, unsigned int, int) -> darwin.BuiltinMemmove",
 	},
 	"stdlib.h": {
 		// stdlib.h
