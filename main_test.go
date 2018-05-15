@@ -408,6 +408,9 @@ func TestMultifileTranspilation(t *testing.T) {
 			args.packageName = "main"
 			args.outputAsTest = true
 
+			// Added for checking verbose mode
+			args.verbose = true
+
 			// testing
 			err = Start(args)
 			if err != nil {
@@ -443,6 +446,9 @@ func TestTrigraph(t *testing.T) {
 	args.packageName = "main"
 	args.outputAsTest = true
 
+	// Added for checking verbose mode
+	args.verbose = true
+
 	// testing
 	err = Start(args)
 	if err != nil {
@@ -475,6 +481,9 @@ func TestExternalInclude(t *testing.T) {
 	args.clangFlags = []string{"-I./tests/externalHeader/include/"}
 	args.packageName = "main"
 	args.outputAsTest = true
+
+	// Added for checking verbose mode
+	args.verbose = true
 
 	// testing
 	err = Start(args)
