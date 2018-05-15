@@ -19,7 +19,7 @@ func removeQuotes(s string) string {
 	}
 
 	if len(s) >= 2 && s[0] == '"' && s[len(s)-1] == '"' {
-		return s[1 : len(s)-2]
+		return s[1 : len(s)-1]
 	}
 	if len(s) >= 2 && s[0] == '\'' && s[len(s)-1] == '\'' {
 		return s[1 : len(s)-1]
