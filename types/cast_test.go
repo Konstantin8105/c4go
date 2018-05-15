@@ -92,3 +92,49 @@ func TestGetArrayTypeAndSize(t *testing.T) {
 		}
 	}
 }
+
+func TestError(t *testing.T) {
+	p := program.NewProgram()
+
+	tcs := []struct {
+		cFromType, cToType string
+	}{
+		{
+			cFromType: "int:",
+			cToType:   "int",
+		},
+		{
+			cFromType: "int",
+			cToType:   "int:",
+		},
+		{
+			cFromType: "int:",
+			cToType:   "int:",
+		},
+		{
+			cFromType: "int",
+			cToType:   "anonymous struct qwe",
+		},
+		{
+			cFromType: "anonymous struct qwe",
+			cToType:   "int",
+		},
+		{
+			cFromType: "int",
+			cToType:   "anonymous union qwe",
+		},
+		{
+			cFromType: "anonymous union qwe",
+			cToType:   "int",
+		},
+	}
+
+	for index, tc := range tcs {
+		t.Run(fmt.Sprintf("%v", index), func(t *testing.T) {
+			_, err := CastExpr(p, goast.NewIdent("nil"), tc.cFromType, tc.cToType)
+			if err == nil {
+				t.Errorf("Not correct wrong")
+			}
+		})
+	}
+}
