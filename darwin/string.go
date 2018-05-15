@@ -25,3 +25,13 @@ func BuiltinStrncpy(dest, src []byte, len, size int) []byte {
 func BuiltinStrcat(dest, src []byte, _ int) []byte {
 	return noarch.Strcat(dest, src)
 }
+
+// BuiltinMemset is for __builtin___memset_chk
+func BuiltinMemset(ptr []byte, value byte, num uint32, _ int) []byte {
+	return noarch.Memset(ptr, value, num)
+}
+
+// BuiltinMemmove is for __builtin___memmove_chk
+func BuiltinMemmove(ptr []byte, source []byte, num uint32, _ int) []byte {
+	return noarch.Memmove(ptr, source, num)
+}

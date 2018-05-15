@@ -3,7 +3,7 @@
 
 int main()
 {
-    plan(29);
+    plan(32);
 
     diag("TODO: __builtin_object_size");
     // https://github.com/Konstantin8105/c4go/issues/359
@@ -120,6 +120,19 @@ int main()
         }
         is_eq(amount, 4);
     }
+	{
+		diag("memset");
+		char str[] = "almost every programmer should know memset!";
+		char * ptr = memset (str,'-',6);
+		is_streq(str,"------ every programmer should know memset!");
+		is_eq(ptr-str,0);
+	}
+	{
+		diag("memmove");
+		char str[] = "memmove can be very useful......";
+		memmove (str+20,str+15,11);
+		is_streq(str,"memmove can be very very useful.");
+	}
 
     done_testing();
 }

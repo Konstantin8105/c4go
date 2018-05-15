@@ -257,6 +257,12 @@ var builtInFunctionDefinitions = map[string][]string{
 		// see https://opensource.apple.com/source/Libc/Libc-763.12/include/secure/_string.h.auto.html
 		"char* __builtin___strcat_chk(char *, const char *, int) -> darwin.BuiltinStrcat",
 		"char* __inline_strcat_chk(char *, const char *) -> noarch.Strcat",
+
+		"char * memset(char *, char, unsigned int) -> noarch.Memset",
+		"char * memmove(char *, char *, unsigned int) -> noarch.Memmove",
+
+		"char * __builtin___memset_chk(char *, char, unsigned int, int) -> darwin.BuiltinMemset",
+		"char * __builtin___memmove_chk(char *, char *, unsigned int, int) -> darwin.BuiltinMemmove",
 	},
 	"stdlib.h": {
 		// stdlib.h
