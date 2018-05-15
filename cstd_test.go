@@ -14,7 +14,7 @@ import (
 
 // http://www.cplusplus.com/reference/
 var cstd = map[string][]string{
-	"stdio.h": []string{
+	"stdio.h": {
 		"remove",
 		"rename",
 		"tmpfile",
@@ -62,8 +62,8 @@ var cstd = map[string][]string{
 		"ferror",
 		"perror",
 	},
-	"assert.h": []string{"assert"},
-	"ctype.h": []string{
+	"assert.h": {"assert"},
+	"ctype.h": {
 		"isalnum",
 		"isalpha",
 		"isblank",
@@ -79,16 +79,16 @@ var cstd = map[string][]string{
 		"tolower",
 		"toupper",
 	},
-	"errno.h":  []string{"errno"},
-	"float.h":  []string{},
-	"iso646.h": []string{},
-	"limits.h": []string{},
-	"locale.h": []string{
+	"errno.h":  {"errno"},
+	"float.h":  {},
+	"iso646.h": {},
+	"limits.h": {},
+	"locale.h": {
 		"struct lconv",
 		"setlocale",
 		"localeconv",
 	},
-	"math.h": []string{
+	"math.h": {
 		"cos",
 		"sin",
 		"tan",
@@ -148,23 +148,23 @@ var cstd = map[string][]string{
 		"abs",
 		"fma",
 	},
-	"setjmp.h": []string{
+	"setjmp.h": {
 		"longjmp",
 		"setjmp",
 		"jmp_buf",
 	},
-	"signal.h": []string{
+	"signal.h": {
 		"signal",
 		"raise",
 		"sig_atomic_t",
 	},
-	"stdarg.h": []string{
+	"stdarg.h": {
 		"va_list",
 		"va_start",
 		"va_arg",
 		"va_end",
 	},
-	"stddef.h": []string{
+	"stddef.h": {
 		"ptrdiff_t",
 		"size_t",
 		"max_align_t",
@@ -172,7 +172,7 @@ var cstd = map[string][]string{
 		"offsetof",
 		"NULL",
 	},
-	"stdlib.h": []string{
+	"stdlib.h": {
 		"atof",
 		"atoi",
 		"atol",
@@ -221,7 +221,7 @@ var cstd = map[string][]string{
 		"lldiv_t",
 		"size_t",
 	},
-	"string.h": []string{
+	"string.h": {
 		"memcpy",
 		"memmove",
 		"strcpy",
@@ -247,7 +247,7 @@ var cstd = map[string][]string{
 		"NULL",
 		"size_t",
 	},
-	"time.h": []string{
+	"time.h": {
 		"clock",
 		"difftime",
 		"mktime",
@@ -264,7 +264,7 @@ var cstd = map[string][]string{
 		"time_t",
 		"struct tm",
 	},
-	"wchar.h": []string{
+	"wchar.h": {
 
 		"fgetwc",
 		"fgetws",
@@ -335,7 +335,7 @@ var cstd = map[string][]string{
 		"WCHAR_MIN",
 		"WEOF",
 	},
-	"wctype.h": []string{
+	"wctype.h": {
 
 		"iswalnum",
 		"iswalpha",
