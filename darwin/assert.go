@@ -12,6 +12,8 @@ func BuiltinExpect(a, b int) int {
 	return noarch.BoolToInt(a != b)
 }
 
+var isTest bool = false
+
 // AssertRtn handles __assert_rtn().
 func AssertRtn(
 	functionName, filePath []byte,
@@ -26,7 +28,9 @@ func AssertRtn(
 		noarch.CStringToString(filePath),
 		lineNumber,
 	)
-	os.Exit(134)
+	if !isTest {
+		os.Exit(134)
+	}
 
 	return true
 }
