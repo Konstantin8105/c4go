@@ -141,9 +141,13 @@ func TestIntegrationScripts(t *testing.T) {
 					// integration test
 					// "-race",
 					"-covermode=atomic",
-					"-coverprofile="+testName+".coverprofile",
-					"-coverpkg=./noarch,./linux,./darwin",
 				)
+				if os.Getenv("TRAVIS") == "true" {
+					args = append(args,
+						"-coverprofile="+testName+".coverprofile",
+						"-coverpkg=./noarch,./linux,./darwin",
+					)
+				}
 			}
 			args = append(args, "--", "some", "args")
 
