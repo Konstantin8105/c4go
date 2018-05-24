@@ -413,6 +413,7 @@ int struct_sizeof()
         ss *p = &v;
         is_eq (sizeof p->id, 1);
 		(void)(p);
+		return -1;
 }
 
 
@@ -508,10 +509,25 @@ void struct_byte_array()
 	is_streq(sba.name,"qwe");
 }
 
+struct AaA;
+typedef struct AaA tAaA;
+struct AaA{
+	int i;
+};
+void struct_typ2()
+{
+	tAaA a;
+	a.i = 10;
+	is_eq(a.i,10);
+	struct AaA b = a;
+	is_eq(b.i,10);
+}
+
 int main()
 {
-    plan(86);
+    plan(88);
 
+	struct_typ2();
 	struct_byte_array();
 	test_pointer_member();
 	test_typedef1();
