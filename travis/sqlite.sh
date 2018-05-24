@@ -53,3 +53,6 @@ echo "In file sqlite.go summary : $SQLITE_WARNINGS_GO warnings in go build."
 echo "Calculation warnings by gometalinter"
 GOMETALINTER_WARNINGS=`$GOPATH/bin/gometalinter $SQLITE_TEMP_FOLDER/sqlite.go 2>&1 | wc -l`
 echo "Amount found warnings by gometalinter at 30 second : $GOMETALINTER_WARNINGS warnings."
+
+SQLITE_UNSAFE=`cat $SQLITE_TEMP_FOLDER/sqlite.go | grep unsafe | wc -l`
+echo "Amount unsafe package using: $SQLITE_UNSAFE"
