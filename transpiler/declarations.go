@@ -130,6 +130,21 @@ var ignoreRecordDecl = map[string]string{
 	"pthread_barrierattr_t":   "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
 	"random_data":             "/usr/include/stdlib.h",
 	"drand48_data":            "/usr/include/stdlib.h",
+
+	"timezone":  "/usr/include/x86_64-linux-gnu/sys/time.h",
+	"itimerval": "/usr/include/x86_64-linux-gnu/sys/time.h",
+
+	"sigcontext":        "/usr/include/x86_64-linux-gnu/bits/sigcontext.h",
+	"_xsave_hdr":        "/usr/include/x86_64-linux-gnu/bits/sigcontext.h",
+	"_ymmh_state":       "/usr/include/x86_64-linux-gnu/bits/sigcontext.h",
+	"_xstate":           "/usr/include/x86_64-linux-gnu/bits/sigcontext.h",
+	"sigstack":          "/usr/include/x86_64-linux-gnu/bits/sigstack.h",
+	"sigaltstack":       "/usr/include/x86_64-linux-gnu/bits/sigstack.h",
+	"_libc_fpxreg":      "/usr/include/x86_64-linux-gnu/sys/ucontext.h",
+	"_libc_xmmreg":      "/usr/include/x86_64-linux-gnu/sys/ucontext.h",
+	"_libc_fpstate":     "/usr/include/x86_64-linux-gnu/sys/ucontext.h",
+	"struct mcontext_t": "/usr/include/x86_64-linux-gnu/sys/ucontext.h",
+	"ucontext":          "/usr/include/x86_64-linux-gnu/sys/ucontext.h",
 }
 
 func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
@@ -144,20 +159,20 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			err = fmt.Errorf("cannot transpileRecordDecl `%v`. %v",
 				n.Name, err)
 		} else {
-			if _, ok := types.CStdStructType[name]; ok {
-				// no need add struct for registrated C standart library
-				decls = nil
-				return
-			}
-			if !p.IncludeHeaderIsExists(n.Pos.File) {
-				// no need add struct from C STD
-				decls = nil
-				return
-			}
-			if h, ok := ignoreRecordDecl[n.Name]; ok && p.IncludeHeaderIsExists(h) {
-				decls = nil
-				return
-			}
+			// if _, ok := types.CStdStructType[name]; ok {
+			// 	// no need add struct for registrated C standart library
+			// 	decls = nil
+			// 	return
+			// }
+			// if !p.IncludeHeaderIsExists(n.Pos.File) {
+			// 	// no need add struct from C STD
+			// 	decls = nil
+			// 	return
+			// }
+			// if h, ok := ignoreRecordDecl[n.Name]; ok && p.IncludeHeaderIsExists(h) {
+			// 	decls = nil
+			// 	return
+			// }
 			if addPackageUnsafe {
 				p.AddImports("unsafe")
 			}
@@ -453,21 +468,21 @@ var ignoreTypedef = map[string]string{
 	"__intptr_t":        "bits/types.h",
 	"__socklen_t":       "bits/types.h",
 
-	"u_char":      "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"u_short":     "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"u_int":       "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"u_long":      "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"quad_t":      "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"u_quad_t":    "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"fsid_t":      "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"loff_t":      "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"ino_t":       "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"ino64_t":     "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"dev_t":       "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"gid_t":       "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"mode_t":      "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"nlink_t":     "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"uid_t":       "/usr/include/x86_64-linux-gnu/sys/types.h",
+	"u_char":   "/usr/include/x86_64-linux-gnu/sys/types.h",
+	"u_short":  "/usr/include/x86_64-linux-gnu/sys/types.h",
+	"u_int":    "/usr/include/x86_64-linux-gnu/sys/types.h",
+	"u_long":   "/usr/include/x86_64-linux-gnu/sys/types.h",
+	"quad_t":   "/usr/include/x86_64-linux-gnu/sys/types.h",
+	"u_quad_t": "/usr/include/x86_64-linux-gnu/sys/types.h",
+	"fsid_t":   "/usr/include/x86_64-linux-gnu/sys/types.h",
+	"loff_t":   "/usr/include/x86_64-linux-gnu/sys/types.h",
+	"ino_t":    "/usr/include/x86_64-linux-gnu/sys/types.h",
+	"ino64_t":  "/usr/include/x86_64-linux-gnu/sys/types.h",
+	"dev_t":    "/usr/include/x86_64-linux-gnu/sys/types.h",
+	"gid_t":    "/usr/include/x86_64-linux-gnu/sys/types.h",
+	"mode_t":   "/usr/include/x86_64-linux-gnu/sys/types.h",
+	"nlink_t":  "/usr/include/x86_64-linux-gnu/sys/types.h",
+	// "uid_t":       "/usr/include/x86_64-linux-gnu/sys/types.h",
 	"id_t":        "/usr/include/x86_64-linux-gnu/sys/types.h",
 	"daddr_t":     "/usr/include/x86_64-linux-gnu/sys/types.h",
 	"caddr_t":     "/usr/include/x86_64-linux-gnu/sys/types.h",
@@ -557,6 +572,16 @@ var ignoreTypedef = map[string]string{
 	"float_t":               "/usr/include/x86_64-linux-gnu/bits/mathdef.h",
 	"double_t":              "/usr/include/x86_64-linux-gnu/bits/mathdef.h",
 	"_LIB_VERSION_TYPE":     "/usr/include/math.h",
+
+	"sig_atomic_t":   "/usr/include/signal.h",
+	"uid_t":          "/usr/include/signal.h",
+	"__sighandler_t": "/usr/include/signal.h",
+	"sighandler_t":   "/usr/include/signal.h",
+
+	"sigval_t":          "/usr/include/x86_64-linux-gnu/bits/siginfo.h",
+	"__sigchld_clock_t": "/usr/include/x86_64-linux-gnu/bits/siginfo.h",
+	"siginfo_t":         "/usr/include/x86_64-linux-gnu/bits/siginfo.h",
+	"sigevent_t":        "/usr/include/x86_64-linux-gnu/bits/siginfo.h",
 }
 
 func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
@@ -570,15 +595,15 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 		if err != nil {
 			err = fmt.Errorf("Cannot transpile Typedef Decl : err = %v", err)
 		} else {
-			if !p.IncludeHeaderIsExists(n.Pos.File) {
-				// no need add struct from C STD
-				decls = nil
-				return
-			}
-			if h, ok := ignoreTypedef[n.Name]; ok && p.IncludeHeaderIsExists(h) {
-				decls = nil
-				return
-			}
+			// if !p.IncludeHeaderIsExists(n.Pos.File) {
+			// 	// no need add struct from C STD
+			// 	decls = nil
+			// 	return
+			// }
+			// if h, ok := ignoreTypedef[n.Name]; ok && p.IncludeHeaderIsExists(h) {
+			// 	decls = nil
+			// 	return
+			// }
 			// Only for adding to ignore list
 			// fmt.Printf("%20s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
 		}
