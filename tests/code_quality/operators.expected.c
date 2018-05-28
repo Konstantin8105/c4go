@@ -17,6 +17,17 @@ func operators_equals() {
 	c = d
 	b = c
 	a = b
+	var a1 int = 42
+	var a2 int16 = 42
+	var a3 uint32 = 42
+	var a4 int32 = 42
+	var a5 uint32 = 42
+	var a6 int64 = 42
+	var b1 float32 = float32(42)
+	var b2 float32 = float32(42)
+	var c1 float64 = float64(42)
+	var c2 float64 = 42
+	var t int32 = int32(32.5)
 }
 func init() {
 }
