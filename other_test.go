@@ -284,9 +284,14 @@ func TestFrame3dd(t *testing.T) {
 		t.Fatalf("Cannot transpile `%v`: %v", args, err)
 	}
 
-	err := exec.Command("go", "build", "-o", folder+"src/frame3dd",
-		args.outputFile).Run()
+	cmd := exec.Command("go", "build", "-o", folder+"src/frame3dd",
+		args.outputFile)
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
 	if err != nil {
-		t.Fatalf("Cannot go build : %v", err)
+		t.Fatalf("cmd.Run() failed with %s : %v\n", err, stderr.String())
 	}
+
 }
