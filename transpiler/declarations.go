@@ -7,6 +7,7 @@ import (
 	"fmt"
 	goast "go/ast"
 	"go/token"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -144,25 +145,27 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			err = fmt.Errorf("cannot transpileRecordDecl `%v`. %v",
 				n.Name, err)
 		} else {
-			if _, ok := types.CStdStructType[name]; ok {
-				// no need add struct for registrated C standart library
-				decls = nil
-				return
+			if runtime.GOOS != "darwin" {
+				if _, ok := types.CStdStructType[name]; ok {
+					// no need add struct for registrated C standart library
+					decls = nil
+					return
+				}
+				if !p.IncludeHeaderIsExists(n.Pos.File) {
+					// no need add struct from C STD
+					decls = nil
+					return
+				}
+				if h, ok := ignoreRecordDecl[n.Name]; ok && p.IncludeHeaderIsExists(h) {
+					decls = nil
+					return
+				}
+				if addPackageUnsafe {
+					p.AddImports("unsafe")
+				}
+				// Only for adding to ignore list
+				// fmt.Printf("%20s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
 			}
-			if !p.IncludeHeaderIsExists(n.Pos.File) {
-				// no need add struct from C STD
-				decls = nil
-				return
-			}
-			if h, ok := ignoreRecordDecl[n.Name]; ok && p.IncludeHeaderIsExists(h) {
-				decls = nil
-				return
-			}
-			if addPackageUnsafe {
-				p.AddImports("unsafe")
-			}
-			// Only for adding to ignore list
-			// fmt.Printf("%20s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
 		}
 	}()
 
@@ -573,17 +576,19 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 		if err != nil {
 			err = fmt.Errorf("Cannot transpile Typedef Decl : err = %v", err)
 		} else {
-			if !p.IncludeHeaderIsExists(n.Pos.File) {
-				// no need add struct from C STD
-				decls = nil
-				return
+			if runtime.GOOS != "darwin" {
+				if !p.IncludeHeaderIsExists(n.Pos.File) {
+					// no need add struct from C STD
+					decls = nil
+					return
+				}
+				if h, ok := ignoreTypedef[n.Name]; ok && p.IncludeHeaderIsExists(h) {
+					decls = nil
+					return
+				}
+				// Only for adding to ignore list
+				// fmt.Printf("%20s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
 			}
-			if h, ok := ignoreTypedef[n.Name]; ok && p.IncludeHeaderIsExists(h) {
-				decls = nil
-				return
-			}
-			// Only for adding to ignore list
-			// fmt.Printf("%20s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
 		}
 	}()
 	n.Name = types.CleanCType(types.GenerateCorrectType(n.Name))
