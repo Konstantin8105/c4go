@@ -157,17 +157,7 @@ var temp = func() %s {
 	if err != nil {
 		return nil, defaultValueType, newPre, newPost, err
 	}
-
-	var values []goast.Expr
-	if !types.IsNullExpr(defaultValue) {
-		t, err := types.CastExpr(p, defaultValue, defaultValueType, a.Type)
-		if !p.AddMessage(p.GenerateWarningMessage(err, a)) {
-			values = append(values, t)
-			defaultValueType = a.Type
-		}
-	}
-
-	return values, defaultValueType, newPre, newPost, nil
+	return []goast.Expr{defaultValue}, defaultValueType, newPre, newPost, nil
 }
 
 // GenerateFuncType in according to types

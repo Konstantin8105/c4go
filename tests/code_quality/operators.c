@@ -1,3 +1,7 @@
+void f(unsigned d){
+	(void)(d);
+}
+
 void operators_equals()
 {
 	int a,b,c,d;
@@ -14,4 +18,7 @@ void operators_equals()
 	long       w3 = (long long)(42);
 	long long  w4 = (long long)(42);
 	short      w5 = (long long)(42);
+
+	// function
+	f(42);
 }

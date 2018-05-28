@@ -48,7 +48,15 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		return
 	}
 
-	if len(n.Type) != 0 && len(n.Type2) != 0 && n.Type != n.Type2 {
+	var cast bool = true
+	if in, ok := n.Children()[0].(*ast.IntegerLiteral); ok && in.Type == "int" {
+		if types.IsCInteger(p, n.Type) {
+			cast = false
+			exprType = n.Type
+		}
+	}
+
+	if len(n.Type) != 0 && len(n.Type2) != 0 && n.Type != n.Type2 && cast {
 		var tt string
 		tt, err = types.ResolveType(p, n.Type)
 		expr = &goast.CallExpr{
@@ -60,9 +68,17 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		return
 	}
 
-	if !types.IsFunction(exprType) &&
-		n.Kind != ast.ImplicitCastExprArrayToPointerDecay &&
-		n.Kind != "PointerToIntegral" {
+	if types.IsFunction(exprType) {
+		cast = false
+	}
+	if n.Kind == ast.ImplicitCastExprArrayToPointerDecay {
+		cast = false
+	}
+	if n.Kind == "PointerToIntegral" {
+		cast = false
+	}
+
+	if cast {
 		expr, err = types.CastExpr(p, expr, exprType, n.Type)
 		if err != nil {
 			return nil, "", nil, nil, err
