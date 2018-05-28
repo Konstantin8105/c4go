@@ -60,17 +60,9 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		return
 	}
 
-	var cast bool = true
-	if types.IsFunction(exprType) ||
-		n.Kind == ast.ImplicitCastExprArrayToPointerDecay ||
-		n.Kind == "PointerToIntegral" {
-		cast = false
-	}
-	if _, ok := n.Children()[0].(*ast.IntegerLiteral); ok && types.IsCInteger(p, n.Type) {
-		cast = false
-	}
-
-	if cast {
+	if !types.IsFunction(exprType) &&
+		n.Kind != ast.ImplicitCastExprArrayToPointerDecay &&
+		n.Kind != "PointerToIntegral" {
 		expr, err = types.CastExpr(p, expr, exprType, n.Type)
 		if err != nil {
 			return nil, "", nil, nil, err

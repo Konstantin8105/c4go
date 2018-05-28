@@ -159,29 +159,12 @@ var temp = func() %s {
 	}
 
 	var values []goast.Expr
-	var cast bool = true
-	if types.IsNullExpr(defaultValue) {
-		cast = false
-	}
-	if _, ok := a.Children()[0].(*ast.IntegerLiteral); ok && types.IsCInteger(p, a.Type) {
-		cast = false
-	}
-	if impl, ok := a.Children()[0].(*ast.ImplicitCastExpr); ok {
-		if in, ok := impl.Children()[0].(*ast.IntegerLiteral); ok {
-			if types.IsCInteger(p, in.Type) && types.IsCInteger(p, impl.Type) {
-				cast = false
-			}
-		}
-	}
-
-	if cast {
+	if !types.IsNullExpr(defaultValue) {
 		t, err := types.CastExpr(p, defaultValue, defaultValueType, a.Type)
 		if !p.AddMessage(p.GenerateWarningMessage(err, a)) {
 			values = append(values, t)
 			defaultValueType = a.Type
 		}
-	} else {
-		values = append(values, defaultValue)
 	}
 
 	return values, defaultValueType, newPre, newPost, nil
