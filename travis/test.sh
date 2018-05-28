@@ -55,6 +55,3 @@ source ./travis/sqlite.sh
 
 # Run script triangle
 source ./travis/triangle.sh
-
-# Run script frame3dd
-source ./travis/frame3dd.sh

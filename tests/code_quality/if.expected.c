@@ -7,7 +7,7 @@
 
 package code_quality
 
-// if_1 - transpiled function from  /home/konstantin/go/src/github.com/Konstantin8105/c4go/tests/code_quality/if.c:1
+// if_1 - transpiled function from  /home/lepricon/go/src/github.com/Konstantin8105/c4go/tests/code_quality/if.c:1
 func if_1() {
 	var a int = 5
 	var b int = 2
