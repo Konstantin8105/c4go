@@ -40,6 +40,25 @@ func IsCInteger(p *program.Program, cType string) bool {
 	return false
 }
 
+var cFloatType = []string{
+	"double",
+	"float",
+	"long double",
+}
+
+// IsCInteger - return true is C type integer
+func IsCFloat(p *program.Program, cType string) bool {
+	for i := range cFloatType {
+		if cType == cFloatType[i] {
+			return true
+		}
+	}
+	if rt, ok := p.TypedefType[cType]; ok {
+		return IsCFloat(p, rt)
+	}
+	return false
+}
+
 // TODO: Some of these are based on assumptions that may not be true for all
 // architectures (like the size of an int). At some point in the future we will
 // need to find out the sizes of some of there and pick the most compatible

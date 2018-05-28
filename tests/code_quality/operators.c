@@ -19,6 +19,25 @@ void operators_equals()
 	long long  w4 = (long long)(42);
 	short      w5 = (long long)(42);
 
+	// zero value
+	int        s1 = 0;
+	unsigned   s2 = 0;
+	long       s3 = 0;
+	long long  s4 = 0;
+	short      s5 = 0;
+
+	double     d1 = 0;
+	float      d2 = 0;
+	
+	int        x1 =(0);
+	unsigned   x2 =(0);
+	long       x3 =(0);
+	long long  x4 =(0);
+	short      x5 =(0);
+
+	double     z1 =(0);
+	float      z2 =(0);
+
 	// function
 	f(42);
 }

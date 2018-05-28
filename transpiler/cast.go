@@ -50,7 +50,7 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 
 	var cast bool = true
 	if in, ok := n.Children()[0].(*ast.IntegerLiteral); ok && in.Type == "int" {
-		if types.IsCInteger(p, n.Type) {
+		if types.IsCInteger(p, n.Type) || types.IsCFloat(p, n.Type) {
 			cast = false
 			exprType = n.Type
 		}

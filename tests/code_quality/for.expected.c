@@ -24,7 +24,7 @@ func f2() {
 // f3 - transpiled function from  /home/lepricon/go/src/github.com/Konstantin8105/c4go/tests/code_quality/for.c:13
 func f3() {
 	{
-		var i int = 0
+		var i int
 		for ; i < 10; i++ {
 		}
 	}

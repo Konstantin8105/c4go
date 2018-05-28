@@ -417,8 +417,19 @@ func (p *Program) String() string {
 	// After :
 	// func compare(a interface {}, b interface {}) (c4goDefaultReturn int) {
 	reg := util.GetRegex("interface( )?{(\r*)\n(\t*)}")
+	s := string(reg.ReplaceAll(buf.Bytes(), []byte("interface {}")))
 
-	return string(reg.ReplaceAll(buf.Bytes(), []byte("interface {}")))
+	sp := strings.Split(s, "\n")
+	for i := range sp {
+		if strings.HasSuffix(sp[i], "-= 1") {
+			sp[i] = strings.TrimSuffix(sp[i], "-= 1") + "--"
+		}
+		if strings.HasSuffix(sp[i], "+= 1") {
+			sp[i] = strings.TrimSuffix(sp[i], "+= 1") + "++"
+		}
+	}
+
+	return strings.Join(sp, "\n")
 }
 
 // IncludeHeaderIsExists return true if C #include header is inside list

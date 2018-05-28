@@ -900,6 +900,18 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 		err = nil // Error is ignored
 	}
+	// for ignore zero value. example:
+	// int i = 0;
+	// tranpile to:
+	// var i int // but not "var i int = 0"
+	if len(defaultValue) == 1 {
+		if bl, ok := defaultValue[0].(*goast.BasicLit); ok {
+			if bl.Kind == token.INT && bl.Value == "0" {
+				defaultValue = nil
+			}
+		}
+	}
+
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
 	// Allocate slice so that it operates like a fixed size array.
