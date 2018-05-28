@@ -557,6 +557,9 @@ var ignoreTypedef = map[string]string{
 	"float_t":               "/usr/include/x86_64-linux-gnu/bits/mathdef.h",
 	"double_t":              "/usr/include/x86_64-linux-gnu/bits/mathdef.h",
 	"_LIB_VERSION_TYPE":     "/usr/include/math.h",
+
+	"intptr_t":  "/usr/include/unistd.h",
+	"socklen_t": "/usr/include/unistd.h",
 }
 
 func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
