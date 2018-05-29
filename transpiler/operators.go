@@ -829,8 +829,16 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		if exprType == types.NullPointer {
 			return
 		}
-		if !types.IsFunction(exprType) &&
-			v.Kind != ast.ImplicitCastExprArrayToPointerDecay {
+
+		var cast bool = true
+		if types.IsFunction(exprType) {
+			cast = false
+		}
+		if v.Kind == ast.ImplicitCastExprArrayToPointerDecay {
+			cast = false
+		}
+
+		if cast {
 			expr, err = types.CastExpr(p, expr, exprType, v.Type)
 			if err != nil {
 				return nil, "", nil, nil, err

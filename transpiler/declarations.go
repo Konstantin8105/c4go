@@ -130,6 +130,15 @@ var ignoreRecordDecl = map[string]string{
 	"pthread_barrierattr_t":   "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
 	"random_data":             "/usr/include/stdlib.h",
 	"drand48_data":            "/usr/include/stdlib.h",
+
+	"siginfo_t":     "/usr/include/sys/signal.h",
+	"__sigaction_u": "/usr/include/sys/signal.h",
+	"__sigaction":   "/usr/include/sys/signal.h",
+	"sigaction":     "/usr/include/sys/signal.h",
+	"sig_t":         "/usr/include/sys/signal.h",
+	"sigvec":        "/usr/include/sys/signal.h",
+	"sigstack":      "/usr/include/sys/signal.h",
+	"__siginfo":     "/usr/include/sys/signal.h",
 }
 
 func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
@@ -162,7 +171,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 				p.AddImports("unsafe")
 			}
 			// Only for adding to ignore list
-			// fmt.Printf("%20s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
+			// fmt.Printf("%40s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
 		}
 	}()
 
@@ -557,6 +566,11 @@ var ignoreTypedef = map[string]string{
 	"float_t":               "/usr/include/x86_64-linux-gnu/bits/mathdef.h",
 	"double_t":              "/usr/include/x86_64-linux-gnu/bits/mathdef.h",
 	"_LIB_VERSION_TYPE":     "/usr/include/math.h",
+
+	"intptr_t":  "/usr/include/unistd.h",
+	"socklen_t": "/usr/include/unistd.h",
+
+	"siginfo_t": "/usr/include/sys/signal.h",
 }
 
 func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
@@ -580,7 +594,7 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 				return
 			}
 			// Only for adding to ignore list
-			// fmt.Printf("%20s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
+			// fmt.Printf("%40s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
 		}
 	}()
 	n.Name = types.CleanCType(types.GenerateCorrectType(n.Name))
@@ -744,7 +758,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 		name := n.Name
 		switch name {
 		// Below are for macOS.
-		case "__stdinp", "__stdoutp":
+		case "__stdinp", "__stdoutp", "__stderrp":
 			theType = "*noarch.File"
 			p.AddImport("github.com/Konstantin8105/c4go/noarch")
 			p.AppendStartupExpr(
@@ -897,6 +911,18 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 		err = nil // Error is ignored
 	}
+	// for ignore zero value. example:
+	// int i = 0;
+	// tranpile to:
+	// var i int // but not "var i int = 0"
+	if len(defaultValue) == 1 {
+		if bl, ok := defaultValue[0].(*goast.BasicLit); ok {
+			if bl.Kind == token.INT && bl.Value == "0" {
+				defaultValue = nil
+			}
+		}
+	}
+
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
 	// Allocate slice so that it operates like a fixed size array.

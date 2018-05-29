@@ -241,3 +241,57 @@ func getLogs(goFile string) (logs []string, err error) {
 	err = scanner.Err()
 	return
 }
+
+func TestFrame3dd(t *testing.T) {
+	folder := "./build/git-source/frame3dd/"
+
+	// Create build folder
+	if _, err := os.Stat(folder); os.IsNotExist(err) {
+		err = os.MkdirAll(folder, os.ModePerm)
+		if err != nil {
+			t.Fatalf("Cannot create folder %v . %v", folder, err)
+		}
+
+		// clone git repository
+
+		args := []string{"clone", "-b", "Debug2", "https://github.com/Konstantin8105/History_frame3DD.git", folder}
+		err = exec.Command("git", args...).Run()
+		if err != nil {
+			t.Fatalf("Cannot clone git repository with args `%v`: %v", args, err)
+		}
+	}
+
+	args := DefaultProgramArgs()
+	args.inputFiles = []string{
+		folder + "src/main.c",
+		folder + "src/frame3dd.c",
+		folder + "src/frame3dd_io.c",
+		folder + "src/coordtrans.c",
+		folder + "src/eig.c",
+		folder + "src/HPGmatrix.c",
+		folder + "src/HPGutil.c",
+		folder + "src/NRutil.c",
+	}
+	args.clangFlags = []string{
+		"-I" + folder + "viewer",
+		"-I" + folder + "microstran",
+	}
+	args.outputFile = folder + "src/main.go"
+	args.ast = false
+	args.verbose = false
+
+	if err := Start(args); err != nil {
+		t.Fatalf("Cannot transpile `%v`: %v", args, err)
+	}
+
+	cmd := exec.Command("go", "build", "-o", folder+"src/frame3dd",
+		args.outputFile)
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if err != nil {
+		t.Fatalf("cmd.Run() failed with %s : %v\n", err, stderr.String())
+	}
+
+}
