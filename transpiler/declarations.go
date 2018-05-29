@@ -7,7 +7,6 @@ import (
 	"fmt"
 	goast "go/ast"
 	"go/token"
-	"runtime"
 	"strconv"
 	"strings"
 
@@ -131,6 +130,16 @@ var ignoreRecordDecl = map[string]string{
 	"pthread_barrierattr_t":   "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
 	"random_data":             "/usr/include/stdlib.h",
 	"drand48_data":            "/usr/include/stdlib.h",
+
+	"sigval":        "/usr/include/sys/signal.h",
+	"siginfo_t":     "/usr/include/sys/signal.h",
+	"__sigaction_u": "/usr/include/sys/signal.h",
+	"__sigaction":   "/usr/include/sys/signal.h",
+	"sigaction":     "/usr/include/sys/signal.h",
+	"sig_t":         "/usr/include/sys/signal.h",
+	"sigvec":        "/usr/include/sys/signal.h",
+	"sigstack":      "/usr/include/sys/signal.h",
+	"__siginfo":     "/usr/include/sys/signal.h",
 }
 
 func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
@@ -145,27 +154,25 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			err = fmt.Errorf("cannot transpileRecordDecl `%v`. %v",
 				n.Name, err)
 		} else {
-			if runtime.GOOS != "darwin" {
-				if _, ok := types.CStdStructType[name]; ok {
-					// no need add struct for registrated C standart library
-					decls = nil
-					return
-				}
-				if !p.IncludeHeaderIsExists(n.Pos.File) {
-					// no need add struct from C STD
-					decls = nil
-					return
-				}
-				if h, ok := ignoreRecordDecl[n.Name]; ok && p.IncludeHeaderIsExists(h) {
-					decls = nil
-					return
-				}
-				if addPackageUnsafe {
-					p.AddImports("unsafe")
-				}
-				// Only for adding to ignore list
-				// fmt.Printf("%20s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
+			if _, ok := types.CStdStructType[name]; ok {
+				// no need add struct for registrated C standart library
+				decls = nil
+				return
 			}
+			if !p.IncludeHeaderIsExists(n.Pos.File) {
+				// no need add struct from C STD
+				decls = nil
+				return
+			}
+			if h, ok := ignoreRecordDecl[n.Name]; ok && p.IncludeHeaderIsExists(h) {
+				decls = nil
+				return
+			}
+			if addPackageUnsafe {
+				p.AddImports("unsafe")
+			}
+			// Only for adding to ignore list
+			// fmt.Printf("%40s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
 		}
 	}()
 
@@ -563,6 +570,8 @@ var ignoreTypedef = map[string]string{
 
 	"intptr_t":  "/usr/include/unistd.h",
 	"socklen_t": "/usr/include/unistd.h",
+
+	"siginfo_t": "/usr/include/sys/signal.h",
 }
 
 func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
@@ -576,19 +585,17 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 		if err != nil {
 			err = fmt.Errorf("Cannot transpile Typedef Decl : err = %v", err)
 		} else {
-			if runtime.GOOS != "darwin" {
-				if !p.IncludeHeaderIsExists(n.Pos.File) {
-					// no need add struct from C STD
-					decls = nil
-					return
-				}
-				if h, ok := ignoreTypedef[n.Name]; ok && p.IncludeHeaderIsExists(h) {
-					decls = nil
-					return
-				}
-				// Only for adding to ignore list
-				// fmt.Printf("%20s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
+			if !p.IncludeHeaderIsExists(n.Pos.File) {
+				// no need add struct from C STD
+				decls = nil
+				return
 			}
+			if h, ok := ignoreTypedef[n.Name]; ok && p.IncludeHeaderIsExists(h) {
+				decls = nil
+				return
+			}
+			// Only for adding to ignore list
+			// fmt.Printf("%40s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
 		}
 	}()
 	n.Name = types.CleanCType(types.GenerateCorrectType(n.Name))
@@ -752,7 +759,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 		name := n.Name
 		switch name {
 		// Below are for macOS.
-		case "__stdinp", "__stdoutp":
+		case "__stdinp", "__stdoutp", "__stderrp":
 			theType = "*noarch.File"
 			p.AddImport("github.com/Konstantin8105/c4go/noarch")
 			p.AppendStartupExpr(
