@@ -131,7 +131,6 @@ var ignoreRecordDecl = map[string]string{
 	"random_data":             "/usr/include/stdlib.h",
 	"drand48_data":            "/usr/include/stdlib.h",
 
-	"sigval":        "/usr/include/sys/signal.h",
 	"siginfo_t":     "/usr/include/sys/signal.h",
 	"__sigaction_u": "/usr/include/sys/signal.h",
 	"__sigaction":   "/usr/include/sys/signal.h",
