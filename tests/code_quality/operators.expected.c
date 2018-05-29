@@ -7,12 +7,12 @@
 
 package code_quality
 
-// f - transpiled function from  /home/lepricon/go/src/github.com/Konstantin8105/c4go/tests/code_quality/operators.c:1
+// f - transpiled function from  $GOPATH/src/github.com/Konstantin8105/c4go/tests/code_quality/operators.c:1
 func f(d uint32) {
 	_ = (d)
 }
 
-// operators_equals - transpiled function from  /home/lepricon/go/src/github.com/Konstantin8105/c4go/tests/code_quality/operators.c:5
+// operators_equals - transpiled function from  $GOPATH/src/github.com/Konstantin8105/c4go/tests/code_quality/operators.c:5
 // zero value
 // function
 //

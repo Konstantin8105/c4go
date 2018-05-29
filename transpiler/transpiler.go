@@ -8,6 +8,8 @@ import (
 	goast "go/ast"
 	"go/parser"
 	"go/token"
+	"os"
+	"strings"
 
 	"github.com/Konstantin8105/c4go/ast"
 	"github.com/Konstantin8105/c4go/program"
@@ -454,11 +456,15 @@ func transpileToNode(node ast.Node, p *program.Program) (
 				decls[0].(*goast.FuncDecl).Doc.List =
 					append(decls[0].(*goast.FuncDecl).Doc.List,
 						p.GetComments(node.Position())...)
+
+				// location of file
+				location := node.Position().GetSimpleLocation()
+				location = strings.Replace(location, os.Getenv("GOPATH"), "$GOPATH", -1)
 				decls[0].(*goast.FuncDecl).Doc.List =
 					append([]*goast.Comment{{
 						Text: fmt.Sprintf("// %s - transpiled function from %s",
 							decls[0].(*goast.FuncDecl).Name.Name,
-							node.Position().GetSimpleLocation()),
+							location),
 					}}, decls[0].(*goast.FuncDecl).Doc.List...)
 			}
 		}
