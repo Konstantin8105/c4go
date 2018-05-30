@@ -15,6 +15,7 @@ func f(d uint32) {
 // operators_equals - transpiled function from  $GOPATH/src/github.com/Konstantin8105/c4go/tests/code_quality/operators.c:7
 // zero value
 // function
+// array
 //
 func operators_equals() {
 	var a int
@@ -60,6 +61,7 @@ func operators_equals() {
 	var r5 [][][][][]int
 	var r6 [][][][][][]int
 	f(42)
+	var arr []float32 = make([]float32, 500)
 }
 func init() {
 }

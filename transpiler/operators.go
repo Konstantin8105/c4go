@@ -142,14 +142,24 @@ func transpileConditionalOperator(n *ast.ConditionalOperator, p *program.Program
 		}
 	}
 
+	stmts := append([]goast.Stmt{}, &goast.IfStmt{
+		Cond: a,
+		Body: &bod,
+		Else: &els,
+	})
+	if len(bod.List) > 0 {
+		if _, ok := bod.List[len(bod.List)-1].(*goast.ReturnStmt); ok {
+			stmts = append([]goast.Stmt{}, &goast.IfStmt{
+				Cond: a,
+				Body: &bod,
+			})
+			stmts = append(stmts, els.List...)
+		}
+	}
+
 	return util.NewFuncClosure(
 		returnType,
-		&goast.IfStmt{
-			Cond: a,
-			Body: &bod,
-			Else: &els,
-		},
-	), n.Type, preStmts, postStmts, nil
+		stmts...), n.Type, preStmts, postStmts, nil
 }
 
 // transpileParenExpr transpiles an expression that is wrapped in parentheses.
@@ -179,7 +189,9 @@ func transpileParenExpr(n *ast.ParenExpr, p *program.Program) (
 		return
 	}
 
-	if !types.IsFunction(exprType) && exprType != "void" &&
+	if !types.IsFunction(exprType) &&
+		exprType != "void" &&
+		exprType != "bool" &&
 		exprType != types.ToVoid {
 		expr, err = types.CastExpr(p, expr, exprType, n.Type)
 		if err != nil {

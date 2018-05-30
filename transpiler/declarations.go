@@ -961,7 +961,9 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 					Elt: util.NewTypeIdent(goArrayType),
 				},
 				util.NewIntLit(arraySize),
-				util.NewIntLit(arraySize),
+				// If len and capacity is same, then
+				// capacity is not need
+				// util.NewIntLit(arraySize),
 			),
 		}
 	}
