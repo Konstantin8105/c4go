@@ -20,6 +20,45 @@ func if_1() {
 	_ = (a)
 	_ = (b)
 	_ = (c)
+	var w int = func() int {
+		if 2 > 1 {
+			return -1
+		} else {
+			return 5
+		}
+	}()
+	var r int
+	r = func() int {
+		if 2 > 1 {
+			return -1
+		} else {
+			return 5
+		}
+	}()
+	r = func() int {
+		if 2 > 1 {
+			return -1
+		} else {
+			return 5
+		}
+	}()
+	r = func() int {
+		if w > 1 {
+			return -1
+		} else {
+			return 5
+		}
+	}()
+	r = func() int {
+		if w > 1 {
+			return -1
+		} else {
+			return 5
+		}
+	}()
+	if w > 0 {
+		r = 3
+	}
 }
 func init() {
 }
