@@ -40,4 +40,7 @@ void operators_equals()
 
 	// function
 	f(42);
+
+	// array
+	float arr[500];
 }
