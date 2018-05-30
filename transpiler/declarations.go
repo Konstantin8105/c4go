@@ -915,10 +915,24 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 	// int i = 0;
 	// tranpile to:
 	// var i int // but not "var i int = 0"
-	if len(defaultValue) == 1 {
+	if len(defaultValue) == 1 && defaultValue[0] != nil {
 		if bl, ok := defaultValue[0].(*goast.BasicLit); ok {
 			if bl.Kind == token.INT && bl.Value == "0" {
 				defaultValue = nil
+			}
+			if bl.Kind == token.FLOAT && bl.Value == "0" {
+				defaultValue = nil
+			}
+		} else if call, ok := defaultValue[0].(*goast.CallExpr); ok {
+			if len(call.Args) == 1 {
+				if bl, ok := call.Args[0].(*goast.BasicLit); ok {
+					if bl.Kind == token.INT && bl.Value == "0" {
+						defaultValue = nil
+					}
+					if bl.Kind == token.FLOAT && bl.Value == "0" {
+						defaultValue = nil
+					}
+				}
 			}
 		}
 	}
