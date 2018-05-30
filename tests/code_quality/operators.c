@@ -2,6 +2,8 @@ void f(unsigned d){
 	(void)(d);
 }
 
+#define NULL (void *)0
+
 void operators_equals()
 {
 	int a,b,c,d;
@@ -28,6 +30,9 @@ void operators_equals()
 
 	double     d1 = 0;
 	float      d2 = 0;
+
+	double     v1 = 0.0;
+	float      v2 = 0.0;
 	
 	int        x1 =(0);
 	unsigned   x2 =(0);
@@ -37,6 +42,16 @@ void operators_equals()
 
 	double     z1 =(0);
 	float      z2 =(0);
+
+	double     t1 =(0.0);
+	float      t2 =(0.0);
+
+	int      * r1 = NULL;
+	int     ** r2 = NULL;
+	int    *** r3 = NULL;
+	int   **** r4 = NULL;
+	int  ***** r5 = NULL;
+	int ****** r6 = NULL;
 
 	// function
 	f(42);
