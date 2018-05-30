@@ -232,6 +232,16 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 			}
 		}
 
+		// For functions without return type - no need add return at
+		// the end of body
+		if p.GetFunctionDefinition(n.Name).ReturnType == "void" {
+			if len(body.List) > 0 {
+				if _, ok := (body.List[len(body.List)-1]).(*goast.ReturnStmt); ok {
+					body.List = body.List[:len(body.List)-1]
+				}
+			}
+		}
+
 		// for function argument: ...
 		// added for "variadic function"
 		if strings.Contains(n.Type, "...") {
