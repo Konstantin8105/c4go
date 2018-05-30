@@ -23,45 +23,39 @@ func if_1() {
 	var w int = func() int {
 		if 2 > 1 {
 			return -1
-		} else {
-			return 5
 		}
+		return 5
 	}()
 	var r int
 	r = func() int {
 		if 2 > 1 {
 			return -1
-		} else {
-			return 5
 		}
+		return 5
 	}()
 	r = func() int {
 		if 2 > 1 {
 			return -1
-		} else {
-			return 5
 		}
+		return 5
 	}()
 	r = func() int {
 		if w > 1 {
 			return -1
-		} else {
-			return 5
 		}
+		return 5
 	}()
 	r = func() int {
 		if w > 1 {
 			return -1
-		} else {
-			return 5
 		}
+		return 5
 	}()
 	r = func() int {
 		if map[bool]int{false: 0, true: 1}[w > 1]+map[bool]int{false: 0, true: 1}[r == 4] != 0 {
 			return -1
-		} else {
-			return 5
 		}
+		return 5
 	}()
 	if w > 0 {
 		r = 3

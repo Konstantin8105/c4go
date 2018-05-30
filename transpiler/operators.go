@@ -142,14 +142,16 @@ func transpileConditionalOperator(n *ast.ConditionalOperator, p *program.Program
 		}
 	}
 
+	var stmts []goast.Stmt
+	stmts = append(stmts, &goast.IfStmt{
+		Cond: a,
+		Body: &bod,
+	})
+	stmts = append(stmts, els.List...)
+
 	return util.NewFuncClosure(
 		returnType,
-		&goast.IfStmt{
-			Cond: a,
-			Body: &bod,
-			Else: &els,
-		},
-	), n.Type, preStmts, postStmts, nil
+		stmts...), n.Type, preStmts, postStmts, nil
 }
 
 // transpileParenExpr transpiles an expression that is wrapped in parentheses.
