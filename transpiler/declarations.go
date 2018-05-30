@@ -934,6 +934,10 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 					}
 				}
 			}
+		} else if ind, ok := defaultValue[0].(*goast.Ident); ok {
+			if ind.Name == "nil" {
+				defaultValue = nil
+			}
 		}
 	}
 

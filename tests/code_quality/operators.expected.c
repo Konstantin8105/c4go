@@ -12,7 +12,7 @@ func f(d uint32) {
 	_ = (d)
 }
 
-// operators_equals - transpiled function from  $GOPATH/src/github.com/Konstantin8105/c4go/tests/code_quality/operators.c:5
+// operators_equals - transpiled function from  $GOPATH/src/github.com/Konstantin8105/c4go/tests/code_quality/operators.c:7
 // zero value
 // function
 //
@@ -53,6 +53,12 @@ func operators_equals() {
 	var z2 float32
 	var t1 float64
 	var t2 float32
+	var r1 []int
+	var r2 [][]int
+	var r3 [][][]int
+	var r4 [][][][]int
+	var r5 [][][][][]int
+	var r6 [][][][][][]int
 	f(42)
 }
 func init() {
