@@ -142,12 +142,20 @@ func transpileConditionalOperator(n *ast.ConditionalOperator, p *program.Program
 		}
 	}
 
-	var stmts []goast.Stmt
-	stmts = append(stmts, &goast.IfStmt{
+	stmts := append([]goast.Stmt{}, &goast.IfStmt{
 		Cond: a,
 		Body: &bod,
+		Else: &els,
 	})
-	stmts = append(stmts, els.List...)
+	if len(bod.List) > 0 {
+		if _, ok := bod.List[len(bod.List)-1].(*goast.ReturnStmt); ok {
+			stmts = append([]goast.Stmt{}, &goast.IfStmt{
+				Cond: a,
+				Body: &bod,
+			})
+			stmts = append(stmts, els.List...)
+		}
+	}
 
 	return util.NewFuncClosure(
 		returnType,
