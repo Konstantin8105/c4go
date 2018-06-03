@@ -47,12 +47,18 @@ func TestIntegrationScripts(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	testCppFiles, err := filepath.Glob("tests/*.cpp")
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	exampleFiles, err := filepath.Glob("examples/*.c")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	files := append(testFiles, exampleFiles...)
+	files = append(files, testCppFiles...)
 
 	isVerbose := flag.CommandLine.Lookup("test.v").Value.String() == "true"
 
@@ -73,6 +79,11 @@ func TestIntegrationScripts(t *testing.T) {
 	for _, file := range files {
 		t.Run(file, func(t *testing.T) {
 
+			compiler := "clang"
+			if strings.HasSuffix(file, "cpp") {
+				compiler = "clang++"
+			}
+
 			cProgram := programOut{}
 			goProgram := programOut{}
 
@@ -87,7 +98,7 @@ func TestIntegrationScripts(t *testing.T) {
 			}
 
 			// Compile C.
-			out, err := exec.Command("clang", "-lm", "-o", cPath, file).CombinedOutput()
+			out, err := exec.Command(compiler, "-lm", "-o", cPath, file).CombinedOutput()
 			if err != nil {
 				t.Fatalf("error: %s\n%s", err, out)
 			}
@@ -119,6 +130,10 @@ func TestIntegrationScripts(t *testing.T) {
 			// This appends a TestApp function to the output source so we
 			// can run "go test" against the produced binary.
 			programArgs.outputAsTest = true
+
+			if strings.HasSuffix(file, "cpp") {
+				programArgs.cppCode = true
+			}
 
 			// Compile Go
 			err = Start(programArgs)
