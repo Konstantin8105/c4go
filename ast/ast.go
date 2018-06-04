@@ -103,6 +103,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseCStyleCastExpr(line), nil
 	case "CXXMemberCallExpr":
 		return parseCXXMemberCallExpr(line), nil
+	case "CXXRecord":
+		return parseCXXRecord(line), nil
 	case "CXXRecordDecl":
 		return parseCXXRecordDecl(line), nil
 	case "DecayedType":

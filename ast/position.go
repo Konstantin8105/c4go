@@ -409,7 +409,7 @@ func setPosition(node Node, position Position) {
 		*QualType, *PointerType, *ParenType, *IncompleteArrayType,
 		*FunctionProtoType, *EnumType, *Enum, *ElaboratedType,
 		*ConstantArrayType, *BuiltinType, *ArrayFiller, *Field,
-		*DecayedType:
+		*DecayedType, *CXXRecord:
 		// These do not have positions so they can be ignored.
 	default:
 		panic(fmt.Sprintf("unknown node type: %+#v", node))
