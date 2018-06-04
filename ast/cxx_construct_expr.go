@@ -1,7 +1,7 @@
 package ast
 
-// CXXConstructorExpr is node constructor.
-type CXXConstructorExpr struct {
+// CXXConstructExpr is node constructor.
+type CXXConstructExpr struct {
 	Addr       Address
 	Pos        Position
 	Position2  string
@@ -10,16 +10,16 @@ type CXXConstructorExpr struct {
 	ChildNodes []Node
 }
 
-func parseCXXConstructorExpr(line string) *CXXConstructorExpr {
+func parseCXXConstructExpr(line string) *CXXConstructExpr {
 	groups := groupsFromRegex(
 		`<(?P<position>.*)> 
 		'(?P<type>.*?)'
-		( '(?P<type2>.*?)')?
+		 '(?P<type2>.*?)'
 		`,
 		line,
 	)
 
-	return &CXXConstructorExpr{
+	return &CXXConstructExpr{
 		Addr:       ParseAddress(groups["address"]),
 		Pos:        NewPositionFromString(groups["position"]),
 		Type:       groups["type"],
@@ -30,23 +30,23 @@ func parseCXXConstructorExpr(line string) *CXXConstructorExpr {
 
 // AddChild adds a new child node. Child nodes can then be accessed with the
 // Children attribute.
-func (n *CXXConstructorExpr) AddChild(node Node) {
+func (n *CXXConstructExpr) AddChild(node Node) {
 	n.ChildNodes = append(n.ChildNodes, node)
 }
 
 // Address returns the numeric address of the node. See the documentation for
 // the Address type for more information.
-func (n *CXXConstructorExpr) Address() Address {
+func (n *CXXConstructExpr) Address() Address {
 	return n.Addr
 }
 
 // Children returns the child nodes. If this node does not have any children or
 // this node does not support children it will always return an empty slice.
-func (n *CXXConstructorExpr) Children() []Node {
+func (n *CXXConstructExpr) Children() []Node {
 	return n.ChildNodes
 }
 
 // Position returns the position in the original source code.
-func (n *CXXConstructorExpr) Position() Position {
+func (n *CXXConstructExpr) Position() Position {
 	return n.Pos
 }
