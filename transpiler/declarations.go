@@ -698,6 +698,9 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 		name == "__darwin_pthread_key_t" ||
 		name == "__darwin_pthread_mutex_t" ||
 		name == "__darwin_pthread_mutexattr_t" ||
+		name == "__darwin_pthread_rwlock_t" ||
+		name == "__darwin_pthread_rwlockattr_t" ||
+		name == "__darwin_pthread_t" ||
 		name == "__darwin_pthread_once_t" {
 		return
 	}
