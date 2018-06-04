@@ -231,6 +231,8 @@ func fixPositions(nodes []Node, pos Position) {
 
 func setPosition(node Node, position Position) {
 	switch n := node.(type) {
+	case *AccessSpecDecl:
+		n.Pos = position
 	case *AlignedAttr:
 		n.Pos = position
 	case *AllocSizeAttr:
@@ -332,6 +334,8 @@ func setPosition(node Node, position Position) {
 	case *IntegerLiteral:
 		n.Pos = position
 	case *LabelStmt:
+		n.Pos = position
+	case *LinkageSpecDecl:
 		n.Pos = position
 	case *MallocAttr:
 		n.Pos = position

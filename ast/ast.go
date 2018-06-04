@@ -59,6 +59,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 	}
 
 	switch nodeName {
+	case "AccessSpecDecl":
+		return parseAccessSpecDecl(line), nil
 	case "AlignedAttr":
 		return parseAlignedAttr(line), nil
 	case "AllocSizeAttr":
@@ -181,6 +183,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseIntegerLiteral(line), nil
 	case "LabelStmt":
 		return parseLabelStmt(line), nil
+	case "LinkageSpecDecl":
+		return parseLinkageSpecDecl(line), nil
 	case "MallocAttr":
 		return parseMallocAttr(line), nil
 	case "MaxFieldAlignmentAttr":
