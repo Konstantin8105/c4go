@@ -101,6 +101,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseCompoundAssignOperator(line), nil
 	case "CStyleCastExpr":
 		return parseCStyleCastExpr(line), nil
+	case "CXXConstructorDecl":
+		return parseCXXConstructorDecl(line), nil
 	case "CXXMemberCallExpr":
 		return parseCXXMemberCallExpr(line), nil
 	case "CXXRecord":
