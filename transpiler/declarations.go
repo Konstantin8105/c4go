@@ -413,6 +413,78 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 	return
 }
 
+func transpileCXXRecordDecl(p *program.Program, n *ast.RecordDecl) (
+	decls []goast.Decl, err error) {
+
+	n.Name = types.GenerateCorrectType(n.Name)
+	name := n.Name
+
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("cannot transpileCXXRecordDecl : `%v`. %v",
+				n.Name, err)
+			p.AddMessage(p.GenerateWarningMessage(err, n))
+		}
+	}()
+
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("error - panic : %#v", r)
+		}
+	}()
+
+	// ignore if haven`t definition
+	if !n.Definition {
+		return
+	}
+
+	if name == "" || p.IsTypeAlreadyDefined(name) {
+		err = nil
+		return
+	}
+
+	// p.DefineType(name)
+	// defer func() {
+	// 	if err != nil {
+	// 		p.UndefineType(name)
+	// 	}
+	// }()
+
+	var fields []*goast.Field
+	for _, v := range n.Children() {
+		switch v := v.(type) {
+		case *ast.CXXRecordDecl:
+			// ignore
+
+		case *ast.FieldDecl:
+			var f *goast.Field
+			f, err = transpileFieldDecl(p, v)
+			if err != nil {
+				return
+			}
+			fields = append(fields, f)
+
+		default:
+			p.AddMessage(p.GenerateWarningMessage(
+				fmt.Errorf("Cannot transpilation field in CXXRecordDecl : %T", v), n))
+		}
+	}
+
+	return []goast.Decl{&goast.GenDecl{
+		Tok: token.TYPE,
+		Specs: []goast.Spec{
+			&goast.TypeSpec{
+				Name: util.NewIdent(name),
+				Type: &goast.StructType{
+					Fields: &goast.FieldList{
+						List: fields,
+					},
+				},
+			},
+		},
+	}}, nil
+}
+
 var ignoreTypedef = map[string]string{
 	"__u_char":   "bits/types.h",
 	"__u_short":  "bits/types.h",
