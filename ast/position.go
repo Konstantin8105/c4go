@@ -271,6 +271,8 @@ func setPosition(node Node, position Position) {
 		n.Pos = position
 	case *CXXConstructorDecl:
 		n.Pos = position
+	case *CXXConstructorExpr:
+		n.Pos = position
 	case *CXXMemberCallExpr:
 		n.Pos = position
 	case *CXXRecordDecl:
