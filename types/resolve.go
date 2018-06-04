@@ -288,6 +288,9 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 		if strings.HasPrefix(s, "union ") {
 			s = s[len("union "):]
 		}
+		if strings.HasPrefix(s, "class ") {
+			s = s[len("class "):]
+		}
 		return p.ImportType(s), nil
 	}
 

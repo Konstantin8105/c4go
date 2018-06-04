@@ -443,12 +443,12 @@ func transpileCXXRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		return
 	}
 
-	// p.DefineType(name)
-	// defer func() {
-	// 	if err != nil {
-	// 		p.UndefineType(name)
-	// 	}
-	// }()
+	p.DefineType(n.Kind + " " + name)
+	defer func() {
+		if err != nil {
+			p.UndefineType(n.Kind + " " + name)
+		}
+	}()
 
 	var fields []*goast.Field
 	for _, v := range n.Children() {
