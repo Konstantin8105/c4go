@@ -397,7 +397,7 @@ func getPreprocessSources(inputFiles, clangFlags []string, cppCode bool) (
 		args = append([]string{"-std=c++98"}, args...)
 		cmd = exec.Command("clang++", args...)
 	} else {
-		args = append([]string{"-std=c99"}, args...)
+		// args = append([]string{"-std=c99"}, args...)
 		cmd = exec.Command("clang", args...)
 	}
 	cmd.Stdout = &outFile
@@ -481,7 +481,7 @@ func getIncludeList(inputFiles, clangFlags []string, flag string, cppCode bool) 
 		args = append([]string{"-std=c++98"}, args...)
 		cmd = exec.Command("clang++", args...)
 	} else {
-		args = append([]string{"-std=c99"}, args...)
+		// args = append([]string{"-std=c99"}, args...)
 		cmd = exec.Command("clang", args...)
 	}
 	cmd.Stdout = &out

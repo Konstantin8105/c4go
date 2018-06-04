@@ -1,70 +1,90 @@
 #include "tests.h"
 
+//--------------------------
 class person {
 public:
     float name;
     int number;
 };
 
-/* TODO:
-class Rectangle {
-    int width, height;
-  public:
-    Rectangle ();
-    Rectangle (int,int);
-    void set_values (int,int);
-    int area() {return width*height;}
-};
-
-Rectangle::Rectangle () {
-  width = 5;
-  height = 5;
-}
-
-void Rectangle::set_values (int x, int y) {
-  width = x;
-  height = y;
-}
-
-Rectangle::Rectangle (int a, int b) {
-  width = a;
-  height = b;
-}
-
-class Circle {
-    int radius;
-  public:
-    Circle(int r) { radius = r; }
-    int circum() {return 2*radius*3;}
-};
-*/
-
-int main()
+void simple()
 {
-    plan(2);
-
 	person obj;
 	obj.name = 2.3;
 	obj.number = 4;
 
 	is_eq(obj.name,2.3);
 	is_eq(obj.number,4);
+}
 
-/* TODO:
-  Rectangle rect;
-  rect.set_values (3,4);
-  is_eq(rect.area(),12);
+/*
+//--------------------------
+class Rectangle {
+    int width, height;
+  public:
+    Rectangle ();
+    int area() {return width*height;}
+};
 
-Rectangle rectb (5,6);
-is_eq(rectb.area(),30);
+Rectangle::Rectangle () {
+  width = 4;
+  height = 5;
+}
 
-Rectangle rectc;
-is_eq(rectc.area(),25);
+void defaulf_constructor()
+{
+	Rectangle rec;
+	is_eq(rec.area(),20);
+}
 
-  Circle foo (10);   // functional form
-  is_eq(foo.circum(), 6*10);
-  Circle bar = 20;   // assignment init.
-  is_eq(bar.circum(), 6*20);
+//--------------------------
+class Rectangle2 {
+    int width, height;
+  public:
+    Rectangle2 (int,int);
+    int area() {return width*height;}
+};
+
+Rectangle2::Rectangle2 (int a, int b) {
+  width = a;
+  height = b;
+}
+
+void constructor()
+{
+	Rectangle2 rec(2,3);
+	is_eq(rec.area(),6);
+}
+
+//--------------------------
+class Rectangle3 {
+    int width, height;
+  public:
+    void set_values (int,int);
+    int area() {return width*height;}
+};
+
+void Rectangle3::set_values (int x, int y) {
+  width = x;
+  height = y;
+}
+
+void setter()
+{
+	Rectangle3 rec;
+	rec.set_values(4,5);
+	is_eq(rec.area(),20);
+}
 */
+
+int main()
+{
+    plan(2);
+
+	simple();
+	// defaulf_constructor();
+	// constructor();
+	// setter();
+
     done_testing();
 }

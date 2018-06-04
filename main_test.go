@@ -80,7 +80,7 @@ func TestIntegrationScripts(t *testing.T) {
 		t.Run(file, func(t *testing.T) {
 
 			compiler := "clang"
-			compilerFlag := "-std=c99"
+			compilerFlag := "" //"-std=c99"
 			if strings.HasSuffix(file, "cpp") {
 				compiler = "clang++"
 				compilerFlag = "-std=c++98"

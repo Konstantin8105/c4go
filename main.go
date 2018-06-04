@@ -278,7 +278,7 @@ func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.Fil
 		fmt.Println("Running clang for AST tree...")
 	}
 	compiler := "clang"
-	compilerFlag := "-std=c99"
+	compilerFlag := "" //"-std=c99"
 	if args.cppCode {
 		compiler = "clang++"
 		compilerFlag = "-std=c++98"
