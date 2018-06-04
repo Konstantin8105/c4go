@@ -2,6 +2,8 @@
   -V	print progress as comments
   -clang-flag value
     	Pass arguments to clang. You may provide multiple -clang-flag items.
+  -cpp
+    	transpile CPP code
   -h	print help information
   -o string
     	output Go generated code to the specified file
