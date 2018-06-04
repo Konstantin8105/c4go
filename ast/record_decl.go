@@ -6,14 +6,16 @@ import (
 
 // RecordDecl is node represents a record declaration.
 type RecordDecl struct {
-	Addr       Address
-	Pos        Position
-	Prev       string
-	Position2  string
-	Kind       string
-	Name       string
-	Definition bool
-	ChildNodes []Node
+	Addr         Address
+	Pos          Position
+	Prev         string
+	Position2    string
+	Kind         string
+	Name         string
+	Implicit     bool
+	IsReferenced bool
+	Definition   bool
+	ChildNodes   []Node
 }
 
 func parseRecordDecl(line string) *RecordDecl {
@@ -21,8 +23,10 @@ func parseRecordDecl(line string) *RecordDecl {
 		`(?:parent (?P<parent>0x[0-9a-f]+) )?
 		(?:prev (?P<prev>0x[0-9a-f]+) )?
 		<(?P<position>.*)>
-		[ ](?P<position2>[^ ]+ )?
-		(?P<kind>struct|union)
+		(?P<position2> col:\d+| line:\d+:\d+)?
+		(?P<implicit> implicit)?
+		(?P<referenced> referenced)?
+		 (?P<kind>class|struct|union)?
 		(?P<name>.*)`,
 		line,
 	)
@@ -39,14 +43,16 @@ func parseRecordDecl(line string) *RecordDecl {
 	}
 
 	return &RecordDecl{
-		Addr:       ParseAddress(groups["address"]),
-		Pos:        NewPositionFromString(groups["position"]),
-		Prev:       groups["prev"],
-		Position2:  strings.TrimSpace(groups["position2"]),
-		Kind:       groups["kind"],
-		Name:       name,
-		Definition: definition,
-		ChildNodes: []Node{},
+		Addr:         ParseAddress(groups["address"]),
+		Pos:          NewPositionFromString(groups["position"]),
+		Prev:         groups["prev"],
+		Position2:    strings.TrimSpace(groups["position2"]),
+		Kind:         groups["kind"],
+		Implicit:     len(groups["implicit"]) > 0,
+		IsReferenced: len(groups["referenced"]) > 0,
+		Name:         name,
+		Definition:   definition,
+		ChildNodes:   []Node{},
 	}
 }
 

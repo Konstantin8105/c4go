@@ -23,7 +23,13 @@ type Struct struct {
 }
 
 // NewStruct creates a new Struct definition from an ast.RecordDecl.
-func NewStruct(n *ast.RecordDecl) *Struct {
+func NewStruct(n *ast.RecordDecl) (_ *Struct, err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("Cannot create new structure : %T. Error : %v",
+				n, err)
+		}
+	}()
 	fields := make(map[string]interface{})
 
 	for _, field := range n.Children() {
@@ -35,7 +41,10 @@ func NewStruct(n *ast.RecordDecl) *Struct {
 			fields[f.Name] = f.Type
 
 		case *ast.RecordDecl:
-			fields[f.Name] = NewStruct(f)
+			fields[f.Name], err = NewStruct(f)
+			if err != nil {
+				return
+			}
 
 		case *ast.MaxFieldAlignmentAttr,
 			*ast.AlignedAttr,
@@ -46,7 +55,8 @@ func NewStruct(n *ast.RecordDecl) *Struct {
 			// FIXME: Should these really be ignored?
 
 		default:
-			panic(fmt.Sprintf("cannot decode: %#v", f))
+			err = fmt.Errorf("cannot decode: %#v", f)
+			return
 		}
 	}
 
@@ -54,7 +64,7 @@ func NewStruct(n *ast.RecordDecl) *Struct {
 		Name:    n.Name,
 		IsUnion: n.Kind == "union",
 		Fields:  fields,
-	}
+	}, nil
 }
 
 // IsUnion - return true if the cType is 'union' or

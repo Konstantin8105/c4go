@@ -469,6 +469,13 @@ func transpileToNode(node ast.Node, p *program.Program) (
 			}
 		}
 
+	case *ast.CXXRecordDecl:
+		if !strings.Contains(n.RecordDecl.Kind, "class") {
+			decls, err = transpileToNode(n.RecordDecl, p)
+		} else {
+			decls, err = transpileCXXRecordDecl(p, n)
+		}
+
 	case *ast.TypedefDecl:
 		decls, err = transpileTypedefDecl(p, n)
 

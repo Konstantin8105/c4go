@@ -177,7 +177,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("error - panic")
+			err = fmt.Errorf("error - panic : %#v", r)
 		}
 	}()
 
@@ -317,13 +317,18 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			declsIn, err = transpileToNode(field, p)
 			if err != nil {
 				err = fmt.Errorf("Cannot transpile %T", field)
+				p.AddMessage(p.GenerateWarningMessage(err, field))
 				return
 			}
 			decls = append(decls, declsIn...)
 		}
 	}
 
-	s := program.NewStruct(n)
+	s, err := program.NewStruct(n)
+	if err != nil {
+		p.AddMessage(p.GenerateWarningMessage(err, n))
+		return
+	}
 	if s.IsUnion {
 		if strings.HasPrefix(s.Name, "union ") {
 			p.Structs[s.Name] = s

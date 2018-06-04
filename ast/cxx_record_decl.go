@@ -1,59 +1,13 @@
 package ast
 
-import (
-	"strings"
-)
-
 // CXXRecordDecl is node represents a record declaration.
 type CXXRecordDecl struct {
-	Addr         Address
-	Pos          Position
-	Prev         string
-	Position2    string
-	Kind         string
-	Name         string
-	Implicit     bool
-	IsReferenced bool
-	Definition   bool
-	ChildNodes   []Node
+	*RecordDecl
 }
 
-func parseCXXRecordDecl(line string) *CXXRecordDecl {
-	groups := groupsFromRegex(
-		`(?:parent (?P<parent>0x[0-9a-f]+) )?
-		(?:prev (?P<prev>0x[0-9a-f]+) )?
-		<(?P<position>.*)>
-		(?P<position2> col:\d+| line:\d+:\d+)?
-		(?P<implicit> implicit)?
-		(?P<referenced> referenced)?
-		 (?P<kind>struct|union|class)
-		(?P<name>.*)`,
-		line,
-	)
-
-	definition := false
-	name := strings.TrimSpace(groups["name"])
-	if name == "definition" {
-		name = ""
-		definition = true
-	}
-	if strings.HasSuffix(name, " definition") {
-		name = name[0 : len(name)-11]
-		definition = true
-	}
-
-	return &CXXRecordDecl{
-		Addr:         ParseAddress(groups["address"]),
-		Pos:          NewPositionFromString(groups["position"]),
-		Prev:         groups["prev"],
-		Position2:    strings.TrimSpace(groups["position2"]),
-		Kind:         groups["kind"],
-		Implicit:     len(groups["implicit"]) > 0,
-		IsReferenced: len(groups["referenced"]) > 0,
-		Name:         name,
-		Definition:   definition,
-		ChildNodes:   []Node{},
-	}
+func parseCXXRecordDecl(line string) (res *CXXRecordDecl) {
+	res = &CXXRecordDecl{parseRecordDecl(line)}
+	return
 }
 
 // AddChild adds a new child node. Child nodes can then be accessed with the
