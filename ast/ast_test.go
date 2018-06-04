@@ -24,6 +24,11 @@ func runNodeTests(t *testing.T, tests map[string]Node) {
 		i++
 
 		t.Run(testName, func(t *testing.T) {
+			defer func() {
+				if r := recover(); r != nil {
+					t.Fatalf("Panic for : %v, %v", testName, line)
+				}
+			}()
 			// Append the name of the struct onto the front. This would make the
 			// complete line it would normally be parsing.
 			name := reflect.TypeOf(expected).Elem().Name()

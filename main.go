@@ -306,10 +306,9 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 	}
 	nodes, astErrors := convertLinesToNodesParallel(lines)
 	for i := range astErrors {
-		ls := strings.Split(astErrors[i].Error(), "\n")
-		for _, l := range ls {
-			p.AddMessage(fmt.Sprintf("// AST Error : %v\n", l))
-		}
+		p.AddMessage(fmt.Sprintf(
+			"/* AST Error :\n%v\n*/",
+			astErrors[i].Error()))
 	}
 
 	// build tree
