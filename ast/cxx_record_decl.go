@@ -6,15 +6,16 @@ import (
 
 // CXXRecordDecl is node represents a record declaration.
 type CXXRecordDecl struct {
-	Addr       Address
-	Pos        Position
-	Prev       string
-	Position2  string
-	Kind       string
-	Name       string
-	Implicit   bool
-	Definition bool
-	ChildNodes []Node
+	Addr         Address
+	Pos          Position
+	Prev         string
+	Position2    string
+	Kind         string
+	Name         string
+	Implicit     bool
+	IsReferenced bool
+	Definition   bool
+	ChildNodes   []Node
 }
 
 func parseCXXRecordDecl(line string) *CXXRecordDecl {
@@ -23,8 +24,9 @@ func parseCXXRecordDecl(line string) *CXXRecordDecl {
 		(?:prev (?P<prev>0x[0-9a-f]+) )?
 		<(?P<position>.*)>
 		(?P<position2> col:\d+| line:\d+:\d+)?
-		(?P<implicit> implicit)? 
-		(?P<kind>struct|union|class)
+		(?P<implicit> implicit)?
+		(?P<referenced> referenced)?
+		 (?P<kind>struct|union|class)
 		(?P<name>.*)`,
 		line,
 	)
@@ -41,15 +43,16 @@ func parseCXXRecordDecl(line string) *CXXRecordDecl {
 	}
 
 	return &CXXRecordDecl{
-		Addr:       ParseAddress(groups["address"]),
-		Pos:        NewPositionFromString(groups["position"]),
-		Prev:       groups["prev"],
-		Position2:  strings.TrimSpace(groups["position2"]),
-		Kind:       groups["kind"],
-		Name:       name,
-		Definition: definition,
-		Implicit:   len(groups["implicit"]) > 0,
-		ChildNodes: []Node{},
+		Addr:         ParseAddress(groups["address"]),
+		Pos:          NewPositionFromString(groups["position"]),
+		Prev:         groups["prev"],
+		Position2:    strings.TrimSpace(groups["position2"]),
+		Kind:         groups["kind"],
+		Implicit:     len(groups["implicit"]) > 0,
+		IsReferenced: len(groups["referenced"]) > 0,
+		Name:         name,
+		Definition:   definition,
+		ChildNodes:   []Node{},
 	}
 }
 
