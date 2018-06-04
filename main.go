@@ -248,7 +248,10 @@ func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.Fil
 		fmt.Println("Running clang preprocessor...")
 	}
 
-	filePP, err = preprocessor.NewFilePP(args.inputFiles, args.clangFlags)
+	filePP, err = preprocessor.NewFilePP(
+		args.inputFiles,
+		args.clangFlags,
+		args.cppCode)
 	if err != nil {
 		return
 	}
@@ -274,16 +277,19 @@ func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.Fil
 	if args.verbose {
 		fmt.Println("Running clang for AST tree...")
 	}
-	app := "clang"
+	compiler := "clang"
+	compilerFlag := "-std=c99"
 	if args.cppCode {
-		app = "clang++"
+		compiler = "clang++"
+		compilerFlag = "-std=c++98"
 	}
-	astPP, err := exec.Command(app, "-Xclang", "-ast-dump",
+	astPP, err := exec.Command(compiler, compilerFlag, "-Xclang", "-ast-dump",
 		"-fsyntax-only", "-fno-color-diagnostics", ppFilePath).Output()
 	if err != nil {
 		// If clang fails it still prints out the AST, so we have to run it
 		// again to get the real error.
-		errBody, _ := exec.Command(app, ppFilePath).CombinedOutput()
+		errBody, _ := exec.Command(
+			compiler, compilerFlag, ppFilePath).CombinedOutput()
 
 		panic("clang failed: " + err.Error() + ":\n\n" + string(errBody))
 	}

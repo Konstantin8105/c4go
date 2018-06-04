@@ -80,8 +80,10 @@ func TestIntegrationScripts(t *testing.T) {
 		t.Run(file, func(t *testing.T) {
 
 			compiler := "clang"
+			compilerFlag := "-std=c99"
 			if strings.HasSuffix(file, "cpp") {
 				compiler = "clang++"
+				compilerFlag = "-std=c++98"
 			}
 
 			cProgram := programOut{}
@@ -98,7 +100,9 @@ func TestIntegrationScripts(t *testing.T) {
 			}
 
 			// Compile C.
-			out, err := exec.Command(compiler, "-lm", "-o", cPath, file).CombinedOutput()
+			out, err := exec.Command(
+				compiler, compilerFlag, "-lm", "-o", cPath, file).
+				CombinedOutput()
 			if err != nil {
 				t.Fatalf("error: %s\n%s", err, out)
 			}
