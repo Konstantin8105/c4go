@@ -693,7 +693,12 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 
 	// ignore for darwin
 	if name == "__darwin_pthread_attr_t" ||
-		name == "_opaque_pthread_attr_t" {
+		name == "__darwin_pthread_cond_t" ||
+		name == "__darwin_pthread_condattr_t" ||
+		name == "__darwin_pthread_key_t" ||
+		name == "__darwin_pthread_mutex_t" ||
+		name == "__darwin_pthread_mutexattr_t" ||
+		name == "__darwin_pthread_once_t" {
 		return
 	}
 
