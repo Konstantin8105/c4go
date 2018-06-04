@@ -488,6 +488,9 @@ func transpileToNode(node ast.Node, p *program.Program) (
 	case *ast.EnumDecl:
 		decls, err = transpileEnumDecl(p, n)
 
+	case *ast.LinkageSpecDecl:
+		// ignore
+
 	case *ast.EmptyDecl:
 		if len(n.Children()) == 0 {
 			// ignore if length is zero, for avoid

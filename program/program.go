@@ -123,20 +123,20 @@ func NewProgram() (p *Program) {
 			// &ast.TypedefDecl{ ... Type:"struct __locale_struct *" ... }
 
 			"struct __va_list_tag [1]": {
-				Name:    "struct __va_list_tag [1]",
-				IsUnion: false,
+				Name: "struct __va_list_tag [1]",
+				Type: StructType,
 			},
 
 			// Pos:ast.Position{File:"/usr/include/xlocale.h", Line:27
 			"struct __locale_struct *": {
-				Name:    "struct __locale_struct *",
-				IsUnion: false,
+				Name: "struct __locale_struct *",
+				Type: StructType,
 			},
 
 			// Pos:ast.Position{File:"/usr/include/x86_64-linux-gnu/sys/time.h", Line:61
 			"struct timezone *__restrict": {
-				Name:    "struct timezone *__restrict",
-				IsUnion: false,
+				Name: "struct timezone *__restrict",
+				Type: StructType,
 			},
 		}),
 		Unions:                                   make(StructRegistry),

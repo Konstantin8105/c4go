@@ -329,7 +329,8 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 		return
 	}
-	if s.IsUnion {
+	switch s.Type {
+	case program.UnionType:
 		if strings.HasPrefix(s.Name, "union ") {
 			p.Structs[s.Name] = s
 			defer func() {
@@ -347,7 +348,8 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 				}
 			}()
 		}
-	} else {
+
+	case program.StructType:
 		if strings.HasPrefix(s.Name, "struct ") {
 			p.Structs[s.Name] = s
 			defer func() {
@@ -365,13 +367,18 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 				}
 			}()
 		}
+
+	default:
+		err = fmt.Errorf("Undefine type of struct : %v", s.Type)
+		return
 	}
 
 	name = strings.TrimPrefix(name, "struct ")
 	name = strings.TrimPrefix(name, "union ")
 
 	var d []goast.Decl
-	if s.IsUnion {
+	switch s.Type {
+	case program.UnionType:
 		// Union size
 		var size int
 		size, err = types.SizeOf(p, "union "+name)
@@ -392,7 +399,8 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		if err != nil {
 			return nil, err
 		}
-	} else {
+
+	case program.StructType:
 		d = append(d, &goast.GenDecl{
 			Tok: token.TYPE,
 			Specs: []goast.Spec{
@@ -406,6 +414,10 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 				},
 			},
 		})
+
+	default:
+		err = fmt.Errorf("Undefine type of struct : %v", s.Type)
+		return
 	}
 
 	decls = append(decls, d...)
@@ -679,6 +691,12 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 	n.Type2 = types.CleanCType(types.GenerateCorrectType(n.Type2))
 	name := n.Name
 
+	// ignore for darwin
+	if name == "__darwin_pthread_attr_t" ||
+		name == "_opaque_pthread_attr_t" {
+		return
+	}
+
 	if "struct "+n.Name == n.Type || "union "+n.Name == n.Type {
 		p.TypedefType[n.Name] = n.Type
 		return
@@ -780,8 +798,8 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 		// The name of the struct is not prefixed with "struct " because it is a
 		// typedef.
 		p.Structs[name] = &program.Struct{
-			Name:    name,
-			IsUnion: false,
+			Name: name,
+			Type: program.StructType,
 			Fields: map[string]interface{}{
 				"quot": intType,
 				"rem":  intType,
