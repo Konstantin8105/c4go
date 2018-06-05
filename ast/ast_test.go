@@ -1,11 +1,14 @@
 package ast
 
 import (
+	"bytes"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"io/ioutil"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -166,6 +169,30 @@ func TestAstNodes(t *testing.T) {
 				}
 			}()
 			Parse(c)
+		})
+	}
+
+	dat, err := ioutil.ReadFile("position.go")
+
+	index := bytes.Index(dat, []byte("setPosition"))
+	if index < 0 {
+		t.Fatalf("cannot found function")
+	}
+	dat = dat[index:]
+
+	for _, c := range nodesFromAst {
+		if c == "" || c == "\"NullStmt\"" {
+			continue
+		}
+		t.Run(fmt.Sprintf("%v", c), func(t *testing.T) {
+			c, err := strconv.Unquote(c)
+			if err != nil {
+				t.Fatalf("Unquote invalid : %v", err)
+			}
+			index := bytes.Index(dat, []byte(c))
+			if index < 0 {
+				t.Fatalf("cannot found type : %v", c)
+			}
 		})
 	}
 }
