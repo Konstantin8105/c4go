@@ -310,13 +310,13 @@ func transpileToStmt(node ast.Node, p *program.Program) (
 	var expr goast.Expr
 
 	switch n := node.(type) {
-	case *ast.DefaultStmt:
-		stmt, err = transpileDefaultStmt(n, p)
-		return
-
-	case *ast.CaseStmt:
-		stmt, preStmts, postStmts, err = transpileCaseStmt(n, p)
-		return
+	// case *ast.DefaultStmt:
+	// 	stmt, err = transpileDefaultStmt(n, p)
+	// 	return
+	//
+	// case *ast.CaseStmt:
+	// 	stmt, preStmts, postStmts, err = transpileCaseStmt(n, p)
+	// 	return
 
 	case *ast.SwitchStmt:
 		stmt, preStmts, postStmts, err = transpileSwitchStmt(n, p)
