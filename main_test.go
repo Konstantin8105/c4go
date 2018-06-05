@@ -182,6 +182,8 @@ func TestIntegrationScripts(t *testing.T) {
 			// warnings so it doesn't effect the comparison.
 			cProgramStderr := cProgram.stderr.String()
 			goProgramStderr := goProgram.stderr.String()
+			cProgramStdout := cProgram.stdout.String()
+			goProgramStdout := goProgram.stdout.String()
 
 			r := util.GetRegex("warning: no packages being tested depend on .+\n")
 			goProgramStderr = r.ReplaceAllString(goProgramStderr, "")
@@ -244,8 +246,12 @@ func TestIntegrationScripts(t *testing.T) {
 							i+1, indicator, fileLines[i])
 					}
 				}
-				t.Fatalf("Expected %s\nGot: %s\nParts of code:\n%s",
-					cProgramStderr, goProgramStderr, output)
+				t.Fatalf("\n%10s%s\n%10s%s\n\n%10s%s\n%10s%s\nParts of code:\n%s",
+					"Stderr Expect:", cProgramStderr,
+					"Stderr Got:", goProgramStderr,
+					"Stdout Expect:", cProgramStdout,
+					"Stdout Got:", goProgramStdout,
+					output)
 			}
 
 			// Check stdout
@@ -306,10 +312,19 @@ func TestIntegrationScripts(t *testing.T) {
 			removeLinesFromEnd := 5
 			if strings.Index(file, "examples/") >= 0 {
 				removeLinesFromEnd = 4
+			} else if file == "tests/exit_status.c" {
+				removeLinesFromEnd = 2
 			} else if file == "tests/exit.c" {
 				removeLinesFromEnd = 2
 			} else if strings.HasPrefix(goOutLines[len(goOutLines)-3], "exit status") {
 				removeLinesFromEnd = 3
+			}
+
+			if len(goOutLines)-removeLinesFromEnd < 0 {
+				fmt.Println("> ", file)
+				fmt.Println("> ", goOutLines)
+				fmt.Println("> ", len(goOutLines))
+				fmt.Println("> ", removeLinesFromEnd)
 			}
 
 			goOut := strings.Join(goOutLines[1:len(goOutLines)-removeLinesFromEnd], "\n") + "\n"

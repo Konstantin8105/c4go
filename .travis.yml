@@ -18,7 +18,7 @@ matrix:
       if: branch = master
     - env: SCRIPT=test CLANG=3.5
       os: linux
-      if: branch = master
+      # if: branch = master
     - env: SCRIPT=test CLANG=3.6
       os: linux
       if: branch = master
