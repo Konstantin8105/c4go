@@ -1,10 +1,5 @@
 package ast
 
-import (
-	"fmt"
-	"strconv"
-)
-
 // StringLiteral is type of string literal
 type StringLiteral struct {
 	Addr       Address
@@ -21,16 +16,11 @@ func parseStringLiteral(line string) *StringLiteral {
 		line,
 	)
 
-	s, err := strconv.Unquote(groups["value"])
-	if err != nil {
-		panic(fmt.Sprintf("Unable to unquote %s\n", groups["value"]))
-	}
-
 	return &StringLiteral{
 		Addr:       ParseAddress(groups["address"]),
 		Pos:        NewPositionFromString(groups["position"]),
 		Type:       groups["type"],
-		Value:      s,
+		Value:      unquote(groups["value"]),
 		IsLvalue:   true,
 		ChildNodes: []Node{},
 	}

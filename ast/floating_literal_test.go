@@ -2,6 +2,8 @@ package ast
 
 import (
 	"testing"
+
+	"github.com/Konstantin8105/c4go/preprocessor"
 )
 
 func TestFloatingLiteral(t *testing.T) {
@@ -23,4 +25,13 @@ func TestFloatingLiteral(t *testing.T) {
 	}
 
 	runNodeTests(t, nodes)
+}
+
+func TestFloatingLiteralRepairFL(t *testing.T) {
+	var fl FloatingLiteral
+	var file preprocessor.FilePP
+	errs := RepairFloatingLiteralsFromSource(&fl, file)
+	if len(errs) == 0 {
+		t.Errorf("Error is empty")
+	}
 }
