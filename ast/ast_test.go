@@ -2,6 +2,9 @@ package ast
 
 import (
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"reflect"
 	"strings"
 	"testing"
@@ -113,5 +116,56 @@ func TestNullStmt(t *testing.T) {
 	n, err := Parse("NullStmt")
 	if n != nil || err != nil {
 		t.Errorf("Not acceptable for NullStmt")
+	}
+}
+
+type Visitor interface {
+	Visit(node Node) (w Visitor)
+}
+
+type Founder struct{}
+
+var nodesFromAst []string
+
+func (f Founder) Visit(node ast.Node) (w ast.Visitor) {
+	if cs, ok := node.(*ast.CaseClause); ok {
+		nodesFromAst = append(nodesFromAst, cs.List[0].(*ast.BasicLit).Value)
+	}
+	return f
+}
+
+func TestAstNodes(t *testing.T) {
+	fset := token.NewFileSet() // positions are relative to fset
+	f, err := parser.ParseFile(fset, "ast.go", nil, parser.DeclarationErrors)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+
+	var fr Founder
+	ast.Walk(fr, f.Decls[4])
+
+	/*
+		108: *ast.CaseClause {
+		.  Case: -
+		.  List: []ast.Expr (len = 1) {
+		.  .  0: *ast.BasicLit {
+		.  .  .  ValuePos: -
+		.  .  .  Kind: STRING
+		.  .  .  Value: "\"WhileStmt\""
+		.  .  }
+		.  }
+	*/
+
+	nodesFromAst = append(nodesFromAst, "")
+
+	for _, c := range nodesFromAst {
+		t.Run(fmt.Sprintf("%v", c), func(t *testing.T) {
+			defer func() {
+				if r := recover(); r != nil {
+					t.Fatalf("Cannot parse")
+				}
+			}()
+			Parse(c)
+		})
 	}
 }
