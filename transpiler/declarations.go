@@ -773,10 +773,6 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 		return
 	}
 
-	if name == "__darwin_ct_rune_t" {
-		resolvedType = p.ImportType("github.com/Konstantin8105/c4go/darwin.CtRuneT")
-	}
-
 	if name == "div_t" || name == "ldiv_t" || name == "lldiv_t" {
 		intType := "int"
 		if name == "ldiv_t" {

@@ -109,14 +109,13 @@ var simpleResolveTypes = map[string]string{
 	// These are special cases that almost certainly don't work. I've put
 	// them here because for whatever reason there is no suitable type or we
 	// don't need these platform specific things to be implemented yet.
-	"__builtin_va_list":            "int64",
-	"__darwin_pthread_handler_rec": "int64",
-	"unsigned __int128":            "uint64",
-	"__int128":                     "int64",
-	"__mbstate_t":                  "int64",
-	"__sbuf":                       "int64",
-	"__sFILEX":                     "interface{}",
-	"FILE":                         "github.com/Konstantin8105/c4go/noarch.File",
+	"__builtin_va_list": "int64",
+	"unsigned __int128": "uint64",
+	"__int128":          "int64",
+	"__mbstate_t":       "int64",
+	"__sbuf":            "int64",
+	"__sFILEX":          "interface{}",
+	"FILE":              "github.com/Konstantin8105/c4go/noarch.File",
 }
 
 // CStdStructType - conversion map from C standart library structures to
@@ -131,13 +130,7 @@ var CStdStructType = map[string]string{
 	"struct tm": "github.com/Konstantin8105/c4go/noarch.Tm",
 	"time_t":    "github.com/Konstantin8105/c4go/noarch.TimeT",
 
-	// Darwin specific
-	"__darwin_ct_rune_t": "github.com/Konstantin8105/c4go/darwin.CtRuneT",
-	"fpos_t":             "int",
-	"struct __float2":    "github.com/Konstantin8105/c4go/darwin.Float2",
-	"struct __double2":   "github.com/Konstantin8105/c4go/darwin.Double2",
-	"Float2":             "github.com/Konstantin8105/c4go/darwin.Float2",
-	"Double2":            "github.com/Konstantin8105/c4go/darwin.Double2",
+	"fpos_t": "int",
 }
 
 // NullPointer - is look : (double *)(nil) or (FILE *)(nil)

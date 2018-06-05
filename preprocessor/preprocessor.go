@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"text/scanner"
 	"unicode"
@@ -377,11 +376,7 @@ func getPreprocessSources(inputFiles, clangFlags []string, cppCode bool) (
 	}
 
 	// Add open source defines
-	if runtime.GOOS == "darwin" {
-		clangFlags = append(clangFlags, "-D_XOPEN_SOURCE")
-	} else {
-		clangFlags = append(clangFlags, "-D_GNU_SOURCE")
-	}
+	clangFlags = append(clangFlags, "-D_GNU_SOURCE")
 
 	// preprocessor clang
 	var stderr bytes.Buffer

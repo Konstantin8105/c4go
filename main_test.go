@@ -164,7 +164,7 @@ func TestIntegrationScripts(t *testing.T) {
 				if os.Getenv("TRAVIS") == "true" {
 					args = append(args,
 						"-coverprofile="+testName+".coverprofile",
-						"-coverpkg=./noarch,./linux,./darwin",
+						"-coverpkg=./noarch,./linux",
 					)
 				}
 			}
