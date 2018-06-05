@@ -12,9 +12,9 @@ type RecordDecl struct {
 	Position2    string
 	Kind         string
 	Name         string
-	Implicit     bool
+	IsImplicit   bool
 	IsReferenced bool
-	Definition   bool
+	IsDefinition bool
 	ChildNodes   []Node
 }
 
@@ -48,10 +48,10 @@ func parseRecordDecl(line string) *RecordDecl {
 		Prev:         groups["prev"],
 		Position2:    strings.TrimSpace(groups["position2"]),
 		Kind:         groups["kind"],
-		Implicit:     len(groups["implicit"]) > 0,
+		IsImplicit:   len(groups["implicit"]) > 0,
 		IsReferenced: len(groups["referenced"]) > 0,
 		Name:         name,
-		Definition:   definition,
+		IsDefinition: definition,
 		ChildNodes:   []Node{},
 	}
 }

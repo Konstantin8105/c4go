@@ -3,11 +3,11 @@ package ast
 // ReturnsTwiceAttr is a type of attribute that is optionally attached to a variable
 // or struct field definition.
 type ReturnsTwiceAttr struct {
-	Addr       Address
-	Pos        Position
-	ChildNodes []Node
-	Inherited  bool
-	Implicit   bool
+	Addr        Address
+	Pos         Position
+	ChildNodes  []Node
+	IsInherited bool
+	IsImplicit  bool
 }
 
 func parseReturnsTwiceAttr(line string) *ReturnsTwiceAttr {
@@ -20,11 +20,11 @@ func parseReturnsTwiceAttr(line string) *ReturnsTwiceAttr {
 	)
 
 	return &ReturnsTwiceAttr{
-		Addr:       ParseAddress(groups["address"]),
-		Pos:        NewPositionFromString(groups["position"]),
-		ChildNodes: []Node{},
-		Inherited:  len(groups["inherited"]) > 0,
-		Implicit:   len(groups["implicit"]) > 0,
+		Addr:        ParseAddress(groups["address"]),
+		Pos:         NewPositionFromString(groups["position"]),
+		ChildNodes:  []Node{},
+		IsInherited: len(groups["inherited"]) > 0,
+		IsImplicit:  len(groups["implicit"]) > 0,
 	}
 }
 

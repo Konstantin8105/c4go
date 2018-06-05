@@ -11,7 +11,7 @@ type StringLiteral struct {
 	Pos        Position
 	Type       string
 	Value      string
-	Lvalue     bool
+	IsLvalue   bool
 	ChildNodes []Node
 }
 
@@ -31,7 +31,7 @@ func parseStringLiteral(line string) *StringLiteral {
 		Pos:        NewPositionFromString(groups["position"]),
 		Type:       groups["type"],
 		Value:      s,
-		Lvalue:     true,
+		IsLvalue:   true,
 		ChildNodes: []Node{},
 	}
 }

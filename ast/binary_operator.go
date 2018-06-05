@@ -6,7 +6,7 @@ type BinaryOperator struct {
 	Pos        Position
 	Type       string
 	Type2      string
-	Lvalue     bool
+	IsLvalue   bool
 	Operator   string
 	ChildNodes []Node
 }
@@ -26,7 +26,7 @@ func parseBinaryOperator(line string) *BinaryOperator {
 		Pos:        NewPositionFromString(groups["position"]),
 		Type:       groups["type1"],
 		Type2:      groups["type2"],
-		Lvalue:     len(groups["lvalue"]) > 0,
+		IsLvalue:   len(groups["lvalue"]) > 0,
 		Operator:   groups["operator"],
 		ChildNodes: []Node{},
 	}

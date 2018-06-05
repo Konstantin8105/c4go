@@ -6,15 +6,15 @@ import (
 
 // FieldDecl is node represents a field declaration.
 type FieldDecl struct {
-	Addr       Address
-	Pos        Position
-	Position2  string
-	Name       string
-	Type       string
-	Type2      string
-	Implicit   bool
-	Referenced bool
-	ChildNodes []Node
+	Addr         Address
+	Pos          Position
+	Position2    string
+	Name         string
+	Type         string
+	Type2        string
+	IsImplicit   bool
+	IsReferenced bool
+	ChildNodes   []Node
 }
 
 func parseFieldDecl(line string) *FieldDecl {
@@ -31,15 +31,15 @@ func parseFieldDecl(line string) *FieldDecl {
 	)
 
 	return &FieldDecl{
-		Addr:       ParseAddress(groups["address"]),
-		Pos:        NewPositionFromString(groups["position"]),
-		Position2:  strings.TrimSpace(groups["position2"]),
-		Name:       strings.TrimSpace(groups["name"]),
-		Type:       groups["type"],
-		Type2:      groups["type2"],
-		Implicit:   len(groups["implicit"]) > 0,
-		Referenced: len(groups["referenced"]) > 0,
-		ChildNodes: []Node{},
+		Addr:         ParseAddress(groups["address"]),
+		Pos:          NewPositionFromString(groups["position"]),
+		Position2:    strings.TrimSpace(groups["position2"]),
+		Name:         strings.TrimSpace(groups["name"]),
+		Type:         groups["type"],
+		Type2:        groups["type2"],
+		IsImplicit:   len(groups["implicit"]) > 0,
+		IsReferenced: len(groups["referenced"]) > 0,
+		ChildNodes:   []Node{},
 	}
 }
 

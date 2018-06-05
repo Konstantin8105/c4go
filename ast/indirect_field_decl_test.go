@@ -10,7 +10,7 @@ func TestIndirectFieldDecl(t *testing.T) {
 			Addr:       0x2be19a8,
 			Pos:        NewPositionFromString("line:167:25"),
 			Position2:  "col:25",
-			Implicit:   true,
+			IsImplicit: true,
 			Name:       "fpstate",
 			Type:       "struct _fpstate *",
 			ChildNodes: []Node{},

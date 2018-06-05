@@ -26,7 +26,7 @@ func TestBinaryOperator(t *testing.T) {
 			Pos:        NewPositionFromString("col:204, col:223"),
 			Type:       "int",
 			Type2:      "",
-			Lvalue:     true,
+			IsLvalue:   true,
 			Operator:   "=",
 			ChildNodes: []Node{},
 		},

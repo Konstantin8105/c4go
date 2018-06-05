@@ -9,8 +9,8 @@ import (
 type FormatAttr struct {
 	Addr         Address
 	Pos          Position
-	Implicit     bool
-	Inherited    bool
+	IsImplicit   bool
+	IsInherited  bool
 	FunctionName string
 	Unknown1     int
 	Unknown2     int
@@ -31,8 +31,8 @@ func parseFormatAttr(line string) *FormatAttr {
 	return &FormatAttr{
 		Addr:         ParseAddress(groups["address"]),
 		Pos:          NewPositionFromString(groups["position"]),
-		Implicit:     len(groups["implicit"]) > 0,
-		Inherited:    len(groups["inherited"]) > 0,
+		IsImplicit:   len(groups["implicit"]) > 0,
+		IsInherited:  len(groups["inherited"]) > 0,
 		FunctionName: groups["function"],
 		Unknown1:     util.Atoi(groups["unknown1"]),
 		Unknown2:     util.Atoi(groups["unknown2"]),

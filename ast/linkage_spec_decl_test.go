@@ -10,7 +10,7 @@ func TestLinkageSpecDecl(t *testing.T) {
 			Addr:       0x2efe7d8,
 			Pos:        NewPositionFromString("col:146"),
 			Position2:  "col:146",
-			Implicit:   true,
+			IsImplicit: true,
 			Name:       "C",
 			ChildNodes: []Node{},
 		},

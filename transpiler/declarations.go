@@ -182,7 +182,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 	}()
 
 	// ignore if haven`t definition
-	if !n.Definition {
+	if !n.IsDefinition {
 		return
 	}
 
@@ -446,7 +446,7 @@ func transpileCXXRecordDecl(p *program.Program, n *ast.RecordDecl) (
 	}()
 
 	// ignore if haven`t definition
-	if !n.Definition {
+	if !n.IsDefinition {
 		return
 	}
 

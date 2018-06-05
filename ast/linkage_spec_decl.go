@@ -9,7 +9,7 @@ type LinkageSpecDecl struct {
 	Addr       Address
 	Pos        Position
 	Position2  string
-	Implicit   bool
+	IsImplicit bool
 	Name       string
 	ChildNodes []Node
 }
@@ -28,7 +28,7 @@ func parseLinkageSpecDecl(line string) *LinkageSpecDecl {
 		Addr:       ParseAddress(groups["address"]),
 		Pos:        NewPositionFromString(groups["position"]),
 		Position2:  strings.TrimSpace(groups["position2"]),
-		Implicit:   len(groups["implicit"]) > 0,
+		IsImplicit: len(groups["implicit"]) > 0,
 		Name:       strings.TrimSpace(groups["name"]),
 		ChildNodes: []Node{},
 	}
