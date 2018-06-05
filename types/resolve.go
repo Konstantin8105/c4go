@@ -176,29 +176,15 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 		}
 	}()
 
-	// Uncomment only for debugging
-	// if strings.Contains(s, ":") {
-	// 	panic(fmt.Errorf("Found mistake resolve `%v` C type", s))
-	// }
+	if strings.Contains(s, ":") {
+		return "interface{}", errors.New("probably an incorrect type translation 0")
+	}
 
 	s = CleanCType(s)
 
 	// FIXME: This is a hack to avoid casting in some situations.
 	if s == "" {
 		return "interface{}", errors.New("probably an incorrect type translation 1")
-	}
-
-	// FIXME: I have no idea what this is.
-	if s == "const" {
-		return "interface{}", errors.New("probably an incorrect type translation 4")
-	}
-
-	if s == "char *[]" {
-		return "interface{}", errors.New("probably an incorrect type translation 2")
-	}
-
-	if s == "fpos_t" {
-		return "int", nil
 	}
 
 	// FIXME: I have no idea, how to solve.

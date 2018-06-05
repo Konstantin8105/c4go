@@ -105,10 +105,6 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 	// If the function has a direct substitute in Go we do not want to
 	// output the C definition of it.
 	f := p.GetFunctionDefinition(n.Name)
-	// if f != nil && f.Substitution != "" {
-	// 	err = nil
-	// 	return
-	// }
 
 	// Test if the function has a body. This is identified by a child node that
 	// is a CompoundStmt (since it is not valid to have a function body without
@@ -124,22 +120,6 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 			err = nil // Error is ignored
 		}
 	}
-
-	// These functions cause us trouble for whatever reason. Some of them might
-	// even work now.
-	//
-	// TODO: Some functions are ignored because they are too much trouble
-	// https://github.com/Konstantin8105/c4go/issues/78
-	// if n.Name == "__istype" ||
-	// 	n.Name == "__isctype" ||
-	// 	n.Name == "__wcwidth" ||
-	// 	n.Name == "__sputc" ||
-	// 	n.Name == "__inline_signbitf" ||
-	// 	n.Name == "__inline_signbitd" ||
-	// 	n.Name == "__inline_signbitl" {
-	// 	err = nil
-	// 	return
-	// }
 
 	if functionBody != nil {
 		// If verbose mode is on we print the name of the function as a comment

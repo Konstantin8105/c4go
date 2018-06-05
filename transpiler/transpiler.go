@@ -152,9 +152,7 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 		return
 
 	case *ast.FloatingLiteral:
-		expr = transpileFloatingLiteral(n)
-		exprType = "double"
-		err = nil
+		expr, exprType, err = transpileFloatingLiteral(n), "double", nil
 
 	case *ast.PredefinedExpr:
 		expr, exprType, err = transpilePredefinedExpr(n, p)
@@ -409,7 +407,8 @@ func transpileToStmt(node ast.Node, p *program.Program) (
 		foundToVoid = true
 	}
 	if len(node.Children()) > 0 {
-		if v, ok := node.Children()[0].(*ast.CStyleCastExpr); ok && v.Kind == ast.CStyleCastExprToVoid {
+		if v, ok := node.Children()[0].(*ast.CStyleCastExpr); ok &&
+			v.Kind == ast.CStyleCastExprToVoid {
 			foundToVoid = true
 		}
 	}
