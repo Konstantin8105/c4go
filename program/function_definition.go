@@ -82,6 +82,8 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int __isinff(float) -> linux.IsInff",
 		"int __isinf(double) -> linux.IsInf",
 		"int __isinfl(long double) -> linux.IsInf",
+		"double __builtin_nanf(const char*) -> linux.NaN",
+		"float __builtin_inff() -> linux.Inff",
 
 		// darwin/math.h
 		"int __inline_signbitf(float) -> noarch.Signbitf",

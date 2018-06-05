@@ -20,3 +20,13 @@ func IsInff(x float32) int {
 func IsInf(x float64) int {
 	return noarch.BoolToInt(math.IsInf(x, 0))
 }
+
+// NaN ...
+func NaN(s []byte) float64 {
+	return math.NaN()
+}
+
+// Inff handles __builtin_inff().
+func Inff() float32 {
+	return float32(math.Inf(0))
+}
