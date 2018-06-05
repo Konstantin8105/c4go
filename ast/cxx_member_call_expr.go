@@ -43,5 +43,5 @@ func (n *CXXMemberCallExpr) Children() []Node {
 
 // Position returns the position in the original source code.
 func (n *CXXMemberCallExpr) Position() Position {
-	return Position{}
+	return n.Pos
 }
