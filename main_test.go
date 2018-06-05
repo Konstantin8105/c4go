@@ -180,10 +180,13 @@ func TestIntegrationScripts(t *testing.T) {
 			// Check stderr. "go test" will produce warnings when packages are
 			// not referenced as dependencies. We need to strip out these
 			// warnings so it doesn't effect the comparison.
-			cProgramStderr := cProgram.stderr.String()
-			goProgramStderr := goProgram.stderr.String()
-			cProgramStdout := cProgram.stdout.String()
-			goProgramStdout := goProgram.stdout.String()
+			var (
+				cProgramStderr  = cProgram.stderr.String()
+				goProgramStderr = goProgram.stderr.String()
+
+				cProgramStdout  = cProgram.stdout.String()
+				goProgramStdout = goProgram.stdout.String()
+			)
 
 			r := util.GetRegex("warning: no packages being tested depend on .+\n")
 			goProgramStderr = r.ReplaceAllString(goProgramStderr, "")
