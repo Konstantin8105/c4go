@@ -691,20 +691,6 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 	n.Type2 = types.CleanCType(types.GenerateCorrectType(n.Type2))
 	name := n.Name
 
-	// ignore for darwin
-	if name == "__darwin_pthread_attr_t" ||
-		name == "__darwin_pthread_cond_t" ||
-		name == "__darwin_pthread_condattr_t" ||
-		name == "__darwin_pthread_key_t" ||
-		name == "__darwin_pthread_mutex_t" ||
-		name == "__darwin_pthread_mutexattr_t" ||
-		name == "__darwin_pthread_rwlock_t" ||
-		name == "__darwin_pthread_rwlockattr_t" ||
-		name == "__darwin_pthread_t" ||
-		name == "__darwin_pthread_once_t" {
-		return
-	}
-
 	if "struct "+n.Name == n.Type || "union "+n.Name == n.Type {
 		p.TypedefType[n.Name] = n.Type
 		return
