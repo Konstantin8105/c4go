@@ -306,6 +306,8 @@ func TestIntegrationScripts(t *testing.T) {
 			removeLinesFromEnd := 5
 			if strings.Index(file, "examples/") >= 0 {
 				removeLinesFromEnd = 4
+			} else if file == "tests/exit.c" {
+				removeLinesFromEnd = 2
 			} else if strings.HasPrefix(goOutLines[len(goOutLines)-3], "exit status") {
 				removeLinesFromEnd = 3
 			}
