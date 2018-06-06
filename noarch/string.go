@@ -95,3 +95,20 @@ func Strchr(str []byte, ch int) []byte {
 	}
 	return nil
 }
+
+// Memset sets the first num bytes of the block of memory pointed by ptr to
+// the specified value (interpreted as an unsigned char)
+func Memset(ptr []byte, value byte, num uint32) []byte {
+	for i := 0; uint32(i) < num; i++ {
+		ptr[i] = value
+	}
+	return ptr
+}
+
+// Memmove move block of memory
+func Memmove(ptr []byte, source []byte, num uint32) []byte {
+	for i := int(num); i >= 0; i-- {
+		ptr[i] = source[i]
+	}
+	return ptr
+}

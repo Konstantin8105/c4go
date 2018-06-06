@@ -6,7 +6,7 @@ type ParenExpr struct {
 	Pos        Position
 	Type       string
 	Type2      string
-	Lvalue     bool
+	IsLvalue   bool
 	IsBitfield bool
 	ChildNodes []Node
 }
@@ -25,7 +25,7 @@ func parseParenExpr(line string) *ParenExpr {
 		Pos:        NewPositionFromString(groups["position"]),
 		Type:       groups["type1"],
 		Type2:      groups["type2"],
-		Lvalue:     len(groups["lvalue"]) > 0,
+		IsLvalue:   len(groups["lvalue"]) > 0,
 		IsBitfield: len(groups["bitfield"]) > 0,
 		ChildNodes: []Node{},
 	}

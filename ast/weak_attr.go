@@ -2,21 +2,23 @@ package ast
 
 // WeakAttr for the WeakAttr node
 type WeakAttr struct {
-	Addr       Address
-	Pos        Position
-	ChildNodes []Node
+	Addr        Address
+	Pos         Position
+	IsInherited bool
+	ChildNodes  []Node
 }
 
 func parseWeakAttr(line string) *WeakAttr {
 	groups := groupsFromRegex(
-		`<(?P<position>.*)>`,
+		`<(?P<position>.*)>(?P<inherited> Inherited)?`,
 		line,
 	)
 
 	return &WeakAttr{
-		Addr:       ParseAddress(groups["address"]),
-		Pos:        NewPositionFromString(groups["position"]),
-		ChildNodes: []Node{},
+		Addr:        ParseAddress(groups["address"]),
+		Pos:         NewPositionFromString(groups["position"]),
+		IsInherited: len(groups["inherited"]) > 0,
+		ChildNodes:  []Node{},
 	}
 }
 

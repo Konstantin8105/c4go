@@ -49,6 +49,7 @@ type ProgramArgs struct {
 	clangFlags  []string
 	outputFile  string
 	packageName string
+	cppCode     bool
 
 	// A private option to output the Go as a *_test.go file.
 	outputAsTest bool
@@ -87,7 +88,6 @@ func convertLinesToNodes(lines []string) (nodes []treeNode, errs []error) {
 		if err != nil {
 			// add to error slice
 			errs = append(errs, err)
-			err = nil
 			// ignore error
 			node = nil
 		}
@@ -250,7 +250,10 @@ func generateAstLines(args ProgramArgs) (
 		fmt.Println("Running clang preprocessor...")
 	}
 
-	filePP, err = preprocessor.NewFilePP(args.inputFiles, args.clangFlags)
+	filePP, err = preprocessor.NewFilePP(
+		args.inputFiles,
+		args.clangFlags,
+		args.cppCode)
 	if err != nil {
 		return
 	}
@@ -276,12 +279,19 @@ func generateAstLines(args ProgramArgs) (
 	if args.verbose {
 		fmt.Println("Running clang for AST tree...")
 	}
-	astPP, err := exec.Command("clang", "-Xclang", "-ast-dump",
+	compiler := "clang"
+	compilerFlag := "" //"-std=c99"
+	if args.cppCode {
+		compiler = "clang++"
+		compilerFlag = "-std=c++98"
+	}
+	astPP, err := exec.Command(compiler, compilerFlag, "-Xclang", "-ast-dump",
 		"-fsyntax-only", "-fno-color-diagnostics", ppFilePath).Output()
 	if err != nil {
 		// If clang fails it still prints out the AST, so we have to run it
 		// again to get the real error.
-		errBody, _ := exec.Command("clang", ppFilePath).CombinedOutput()
+		errBody, _ := exec.Command(
+			compiler, compilerFlag, ppFilePath).CombinedOutput()
 
 		panic("clang failed: " + err.Error() + ":\n\n" + string(errBody))
 	}
@@ -304,10 +314,9 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 	}
 	nodes, astErrors := convertLinesToNodesParallel(lines)
 	for i := range astErrors {
-		ls := strings.Split(astErrors[i].Error(), "\n")
-		for _, l := range ls {
-			p.AddMessage(fmt.Sprintf("// AST Error : %v\n", l))
-		}
+		p.AddMessage(fmt.Sprintf(
+			"/* AST Error :\n%v\n*/",
+			astErrors[i].Error()))
 	}
 
 	// build tree
@@ -397,6 +406,8 @@ func runCommand() int {
 	var (
 		transpileCommand = flag.NewFlagSet(
 			"transpile", flag.ContinueOnError)
+		cppFlag = transpileCommand.Bool(
+			"cpp", false, "transpile CPP code")
 		verboseFlag = transpileCommand.Bool(
 			"V", false, "print progress as comments")
 		outputFlag = transpileCommand.String(
@@ -408,6 +419,8 @@ func runCommand() int {
 
 		astCommand = flag.NewFlagSet(
 			"ast", flag.ContinueOnError)
+		astCppFlag = astCommand.Bool(
+			"cpp", false, "transpile CPP code")
 		astHelpFlag = astCommand.Bool(
 			"h", false, "print help information")
 	)
@@ -426,7 +439,9 @@ func runCommand() int {
 		usage := "Usage: %s [<command>] [<flags>] file1.c ...\n\n"
 		usage += "Commands:\n"
 		usage += "  transpile\ttranspile an input C source file or files to Go\n"
-		usage += "  ast\t\tprint AST before translated Go code\n\n"
+		usage += "  ast\t\tprint AST before translated Go code\n"
+		usage += "\n"
+		fmt.Fprintf(stderr, usage, os.Args[0])
 
 		flag.PrintDefaults()
 	}
@@ -460,6 +475,7 @@ func runCommand() int {
 		args.ast = true
 		args.inputFiles = astCommand.Args()
 		args.clangFlags = clangFlags
+		args.cppCode = *astCppFlag
 	case "transpile":
 		err := transpileCommand.Parse(os.Args[2:])
 		if err != nil {
@@ -480,6 +496,7 @@ func runCommand() int {
 		args.packageName = *packageFlag
 		args.verbose = *verboseFlag
 		args.clangFlags = clangFlags
+		args.cppCode = *cppFlag
 	default:
 		flag.Usage()
 		return 6

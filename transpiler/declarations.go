@@ -42,7 +42,8 @@ func newFunctionField(p *program.Program, name, cType string) (
 		return
 	}
 
-	fieldType, err := types.ResolveType(p, cType)
+	// TODO : add err handling
+	fieldType, _ := types.ResolveType(p, cType)
 
 	return &goast.Field{
 		Names: []*goast.Ident{util.NewIdent(name)},
@@ -85,7 +86,6 @@ func transpileFieldDecl(p *program.Program, n *ast.FieldDecl) (
 		fieldType, err = types.ResolveType(p, arrayType)
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 		fieldType = fmt.Sprintf("[%d]%s", arraySize, fieldType)
-		err = nil
 	}
 
 	return &goast.Field{
@@ -94,7 +94,7 @@ func transpileFieldDecl(p *program.Program, n *ast.FieldDecl) (
 	}, nil
 }
 
-var ignoreRecordDecl map[string]string = map[string]string{
+var ignoreRecordDecl = map[string]string{
 	"struct __fsid_t":                             "/usr/include/x86_64-linux-gnu/bits/types.h",
 	"union __union_at__usr_include_wchar_h_85_3_": "/usr/include/wchar.h",
 	"struct __mbstate_t":                          "/usr/include/wchar.h",
@@ -113,6 +113,32 @@ var ignoreRecordDecl map[string]string = map[string]string{
 	"sigevent":                                    "/usr/include/time.h",
 	"__locale_struct":                             "/usr/include/xlocale.h",
 	"exception":                                   "/usr/include/math.h",
+
+	"wait":                    "/usr/include/x86_64-linux-gnu/bits/waitstatus.h",
+	"struct __sigset_t":       "/usr/include/x86_64-linux-gnu/bits/sigset.h",
+	"struct fd_set":           "/usr/include/x86_64-linux-gnu/sys/select.h",
+	"pthread_attr_t":          "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"__pthread_internal_list": "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"__pthread_mutex_s":       "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_mutex_t":         "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_mutexattr_t":     "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_cond_t":          "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_condattr_t":      "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_rwlock_t":        "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_rwlockattr_t":    "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_barrier_t":       "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_barrierattr_t":   "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"random_data":             "/usr/include/stdlib.h",
+	"drand48_data":            "/usr/include/stdlib.h",
+
+	"siginfo_t":     "/usr/include/sys/signal.h",
+	"__sigaction_u": "/usr/include/sys/signal.h",
+	"__sigaction":   "/usr/include/sys/signal.h",
+	"sigaction":     "/usr/include/sys/signal.h",
+	"sig_t":         "/usr/include/sys/signal.h",
+	"sigvec":        "/usr/include/sys/signal.h",
+	"sigstack":      "/usr/include/sys/signal.h",
+	"__siginfo":     "/usr/include/sys/signal.h",
 }
 
 func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
@@ -145,18 +171,18 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 				p.AddImports("unsafe")
 			}
 			// Only for adding to ignore list
-			// fmt.Printf("%20s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
+			// fmt.Printf("%40s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
 		}
 	}()
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("error - panic")
+			err = fmt.Errorf("error - panic : %#v", r)
 		}
 	}()
 
 	// ignore if haven`t definition
-	if !n.Definition {
+	if !n.IsDefinition {
 		return
 	}
 
@@ -291,15 +317,20 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			declsIn, err = transpileToNode(field, p)
 			if err != nil {
 				err = fmt.Errorf("Cannot transpile %T", field)
+				p.AddMessage(p.GenerateWarningMessage(err, field))
 				return
-			} else {
-				decls = append(decls, declsIn...)
 			}
+			decls = append(decls, declsIn...)
 		}
 	}
 
-	s := program.NewStruct(n)
-	if s.IsUnion {
+	s, err := program.NewStruct(n)
+	if err != nil {
+		p.AddMessage(p.GenerateWarningMessage(err, n))
+		return
+	}
+	switch s.Type {
+	case program.UnionType:
 		if strings.HasPrefix(s.Name, "union ") {
 			p.Structs[s.Name] = s
 			defer func() {
@@ -317,7 +348,8 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 				}
 			}()
 		}
-	} else {
+
+	case program.StructType:
 		if strings.HasPrefix(s.Name, "struct ") {
 			p.Structs[s.Name] = s
 			defer func() {
@@ -335,17 +367,18 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 				}
 			}()
 		}
+
+	default:
+		err = fmt.Errorf("Undefine type of struct : %v", s.Type)
+		return
 	}
 
-	if strings.HasPrefix(name, "struct ") {
-		name = name[len("struct "):]
-	}
-	if strings.HasPrefix(name, "union ") {
-		name = name[len("union "):]
-	}
+	name = strings.TrimPrefix(name, "struct ")
+	name = strings.TrimPrefix(name, "union ")
 
 	var d []goast.Decl
-	if s.IsUnion {
+	switch s.Type {
+	case program.UnionType:
 		// Union size
 		var size int
 		size, err = types.SizeOf(p, "union "+name)
@@ -356,18 +389,18 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			err = fmt.Errorf("could not determine the size of type `union %s`"+
 				" for that reason: %s", name, err)
 			return
-		} else {
-			// So, we got size, then
-			// Add imports needed
-			addPackageUnsafe = true
-
-			// Declaration for implementing union type
-			d, err = transpileUnion(name, size, fields)
-			if err != nil {
-				return nil, err
-			}
 		}
-	} else {
+		// So, we got size, then
+		// Add imports needed
+		addPackageUnsafe = true
+
+		// Declaration for implementing union type
+		d, err = transpileUnion(name, size, fields)
+		if err != nil {
+			return nil, err
+		}
+
+	case program.StructType:
 		d = append(d, &goast.GenDecl{
 			Tok: token.TYPE,
 			Specs: []goast.Spec{
@@ -381,6 +414,10 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 				},
 			},
 		})
+
+	default:
+		err = fmt.Errorf("Undefine type of struct : %v", s.Type)
+		return
 	}
 
 	decls = append(decls, d...)
@@ -388,7 +425,79 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 	return
 }
 
-var ignoreTypedef map[string]string = map[string]string{
+func transpileCXXRecordDecl(p *program.Program, n *ast.RecordDecl) (
+	decls []goast.Decl, err error) {
+
+	n.Name = types.GenerateCorrectType(n.Name)
+	name := n.Name
+
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("cannot transpileCXXRecordDecl : `%v`. %v",
+				n.Name, err)
+			p.AddMessage(p.GenerateWarningMessage(err, n))
+		}
+	}()
+
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("error - panic : %#v", r)
+		}
+	}()
+
+	// ignore if haven`t definition
+	if !n.IsDefinition {
+		return
+	}
+
+	if name == "" || p.IsTypeAlreadyDefined(name) {
+		err = nil
+		return
+	}
+
+	p.DefineType(n.Kind + " " + name)
+	defer func() {
+		if err != nil {
+			p.UndefineType(n.Kind + " " + name)
+		}
+	}()
+
+	var fields []*goast.Field
+	for _, v := range n.Children() {
+		switch v := v.(type) {
+		case *ast.CXXRecordDecl:
+			// ignore
+
+		case *ast.FieldDecl:
+			var f *goast.Field
+			f, err = transpileFieldDecl(p, v)
+			if err != nil {
+				return
+			}
+			fields = append(fields, f)
+
+		default:
+			p.AddMessage(p.GenerateWarningMessage(
+				fmt.Errorf("Cannot transpilation field in CXXRecordDecl : %T", v), n))
+		}
+	}
+
+	return []goast.Decl{&goast.GenDecl{
+		Tok: token.TYPE,
+		Specs: []goast.Spec{
+			&goast.TypeSpec{
+				Name: util.NewIdent(name),
+				Type: &goast.StructType{
+					Fields: &goast.FieldList{
+						List: fields,
+					},
+				},
+			},
+		},
+	}}, nil
+}
+
+var ignoreTypedef = map[string]string{
 	"__u_char":   "bits/types.h",
 	"__u_short":  "bits/types.h",
 	"__u_int":    "bits/types.h",
@@ -510,6 +619,47 @@ var ignoreTypedef map[string]string = map[string]string{
 	"cookie_close_function_t":   "/usr/include/libio.h",
 	"_IO_cookie_io_functions_t": "/usr/include/libio.h",
 	"cookie_io_functions_t":     "/usr/include/libio.h",
+
+	"__mbstate_t":           "/usr/include/wchar.h",
+	"_G_fpos_t":             "/usr/include/_G_config.h",
+	"_G_fpos64_t":           "/usr/include/_G_config.h",
+	"va_list":               "/usr/lib/llvm-4.0/bin/../lib/clang/4.0.0/include/stdarg.h",
+	"__gnuc_va_list":        "/usr/lib/llvm-4.0/bin/../lib/clang/4.0.0/include/stdarg.h",
+	"wchar_t":               "/usr/lib/llvm-4.0/bin/../lib/clang/4.0.0/include/stddef.h",
+	"idtype_t":              "/usr/include/x86_64-linux-gnu/bits/waitflags.h",
+	"__WAIT_STATUS":         "/usr/include/stdlib.h",
+	"int32_t":               "/usr/include/x86_64-linux-gnu/sys/types.h",
+	"__sig_atomic_t":        "/usr/include/x86_64-linux-gnu/bits/sigset.h",
+	"__sigset_t":            "/usr/include/x86_64-linux-gnu/bits/sigset.h",
+	"sigset_t":              "/usr/include/x86_64-linux-gnu/sys/select.h",
+	"__fd_mask":             "/usr/include/x86_64-linux-gnu/sys/select.h",
+	"fd_set":                "/usr/include/x86_64-linux-gnu/sys/select.h",
+	"fd_mask":               "/usr/include/x86_64-linux-gnu/sys/select.h",
+	"pthread_t":             "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_attr_t":        "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"__pthread_list_t":      "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_mutex_t":       "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_mutexattr_t":   "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_cond_t":        "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_condattr_t":    "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_key_t":         "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_once_t":        "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_rwlock_t":      "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_rwlockattr_t":  "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_spinlock_t":    "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_barrier_t":     "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"pthread_barrierattr_t": "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
+	"__compar_fn_t":         "/usr/include/stdlib.h",
+	"comparison_fn_t":       "/usr/include/stdlib.h",
+	"__compar_d_fn_t":       "/usr/include/stdlib.h",
+	"float_t":               "/usr/include/x86_64-linux-gnu/bits/mathdef.h",
+	"double_t":              "/usr/include/x86_64-linux-gnu/bits/mathdef.h",
+	"_LIB_VERSION_TYPE":     "/usr/include/math.h",
+
+	"intptr_t":  "/usr/include/unistd.h",
+	"socklen_t": "/usr/include/unistd.h",
+
+	"siginfo_t": "/usr/include/sys/signal.h",
 }
 
 func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
@@ -533,7 +683,7 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 				return
 			}
 			// Only for adding to ignore list
-			// fmt.Printf("%20s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
+			// fmt.Printf("%40s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
 		}
 	}()
 	n.Name = types.CleanCType(types.GenerateCorrectType(n.Name))
@@ -623,10 +773,6 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 		return
 	}
 
-	if name == "__darwin_ct_rune_t" {
-		resolvedType = p.ImportType("github.com/Konstantin8105/c4go/darwin.CtRuneT")
-	}
-
 	if name == "div_t" || name == "ldiv_t" || name == "lldiv_t" {
 		intType := "int"
 		if name == "ldiv_t" {
@@ -642,8 +788,8 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 		// The name of the struct is not prefixed with "struct " because it is a
 		// typedef.
 		p.Structs[name] = &program.Struct{
-			Name:    name,
-			IsUnion: false,
+			Name: name,
+			Type: program.StructType,
 			Fields: map[string]interface{}{
 				"quot": intType,
 				"rem":  intType,
@@ -697,7 +843,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 		name := n.Name
 		switch name {
 		// Below are for macOS.
-		case "__stdinp", "__stdoutp":
+		case "__stdinp", "__stdoutp", "__stderrp":
 			theType = "*noarch.File"
 			p.AddImport("github.com/Konstantin8105/c4go/noarch")
 			p.AppendStartupExpr(
@@ -825,34 +971,6 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 		}
 	}
 
-	if types.IsFunction(n.Type) {
-		var prefix string
-		var fields, returns []string
-		prefix, fields, returns, err = types.SeparateFunction(p, n.Type)
-		if err != nil {
-			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("Cannot resolve function : %v", err), n))
-			err = nil // Error is ignored
-			return
-		}
-		if len(prefix) != 0 {
-			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("Prefix is not used : `%v`", prefix), n))
-		}
-		functionType := GenerateFuncType(fields, returns)
-		nameVar1 := n.Name
-		decls = append(decls, &goast.GenDecl{
-			Tok: token.VAR,
-			Specs: []goast.Spec{&goast.ValueSpec{
-				Names: []*goast.Ident{{Name: nameVar1}},
-				Type:  functionType,
-				Doc:   p.GetMessageComments(),
-			},
-			}})
-		err = nil
-		return
-	}
-
 	theType = n.Type
 
 	p.GlobalVariables[n.Name] = theType
@@ -878,6 +996,36 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 		err = nil // Error is ignored
 	}
+	// for ignore zero value. example:
+	// int i = 0;
+	// tranpile to:
+	// var i int // but not "var i int = 0"
+	if len(defaultValue) == 1 && defaultValue[0] != nil {
+		if bl, ok := defaultValue[0].(*goast.BasicLit); ok {
+			if bl.Kind == token.INT && bl.Value == "0" {
+				defaultValue = nil
+			}
+			if bl.Kind == token.FLOAT && bl.Value == "0" {
+				defaultValue = nil
+			}
+		} else if call, ok := defaultValue[0].(*goast.CallExpr); ok {
+			if len(call.Args) == 1 {
+				if bl, ok := call.Args[0].(*goast.BasicLit); ok {
+					if bl.Kind == token.INT && bl.Value == "0" {
+						defaultValue = nil
+					}
+					if bl.Kind == token.FLOAT && bl.Value == "0" {
+						defaultValue = nil
+					}
+				}
+			}
+		} else if ind, ok := defaultValue[0].(*goast.Ident); ok {
+			if ind.Name == "nil" {
+				defaultValue = nil
+			}
+		}
+	}
+
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
 	// Allocate slice so that it operates like a fixed size array.
@@ -898,7 +1046,9 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 					Elt: util.NewTypeIdent(goArrayType),
 				},
 				util.NewIntLit(arraySize),
-				util.NewIntLit(arraySize),
+				// If len and capacity is same, then
+				// capacity is not need
+				// util.NewIntLit(arraySize),
 			),
 		}
 	}

@@ -27,6 +27,16 @@ func TestParseIncludeList(t *testing.T) {
 				"/usr/lib/llvm-3.8/bin/../lib/clang/3.8.0/include/stddef.h",
 			},
 		},
+		{
+			inputLine: ` main.o: \
+  /home/Глава\ 6/6\ .2/main.c  /home/e\ 1.c`,
+			list: []string{"/home/Глава 6/6 .2/main.c", "/home/e 1.c"},
+		},
+		{
+			inputLine: ` main.o: \
+  /home/lepricon/go/src/github.com/Konstantin8105/c4go/build/git-source/VasielBook/Глава\ 6/6.2/main.c`,
+			list: []string{"/home/lepricon/go/src/github.com/Konstantin8105/c4go/build/git-source/VasielBook/Глава 6/6.2/main.c"},
+		},
 	}
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("Test:%d", i), func(t *testing.T) {
@@ -35,13 +45,20 @@ func TestParseIncludeList(t *testing.T) {
 				t.Fatal(err)
 			}
 			if len(actual) != len(tc.list) {
-				t.Fatalf("Cannot parse line : %s. Actual result : %#v. Expected: %#v", tc.inputLine, actual, tc.list)
+				t.Fatalf("Cannot parse line : %s.\nActual result : %#v.\nExpected: %#v", tc.inputLine, actual, tc.list)
 			}
 			for i := range actual {
 				if actual[i] != tc.list[i] {
-					t.Fatalf("Cannot parse 'include' in line : %s. Actual result : %#v. Expected: %#v", tc.inputLine, actual[i], tc.list[i])
+					t.Fatalf("Cannot parse 'include' in line : %s.\nActual result : %#v.\nExpected: %#v", tc.inputLine, actual[i], tc.list[i])
 				}
 			}
 		})
+	}
+}
+
+func TestIncludeListFail(t *testing.T) {
+	_, err := parseIncludeList("without index")
+	if err == nil {
+		t.Fatalf("Cannot error withou :")
 	}
 }

@@ -84,10 +84,17 @@ void test_strCh()
     is_eq(strlenChar(z), 11);
 }
 
+void test_bool_to_int(){
+	int d = 3;
+	int x = (d > 0)*2/2 + (d < 10)*10 + (d == 4)/2*2 + 0 * (d == d);
+	is_eq(x,11);
+}
+
 int main()
 {
-    plan(29);
+    plan(30);
 
+	START_TEST(bool_to_int);
     START_TEST(cast);
     START_TEST(castbool);
     START_TEST(vertex);

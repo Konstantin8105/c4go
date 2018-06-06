@@ -32,6 +32,7 @@ func (p Position) GetSimpleLocation() (loc string) {
 	return fmt.Sprintf(" %s:%d ", file, p.Line)
 }
 
+// NewPositionFromString create a Position from string line
 func NewPositionFromString(s string) Position {
 	if s == "<invalid sloc>" || s == "" {
 		return Position{}
@@ -212,6 +213,7 @@ func mergePositions(p1, p2 Position) Position {
 // PositionBuiltIn - default value for fix position
 var PositionBuiltIn = "<built-in>"
 
+// FixPositions is fix positions of Nodes
 func FixPositions(nodes []Node) {
 	pos := Position{File: PositionBuiltIn}
 	fixPositions(nodes, pos)
@@ -229,6 +231,8 @@ func fixPositions(nodes []Node, pos Position) {
 
 func setPosition(node Node, position Position) {
 	switch n := node.(type) {
+	case *AccessSpecDecl:
+		n.Pos = position
 	case *AlignedAttr:
 		n.Pos = position
 	case *AllocSizeAttr:
@@ -267,6 +271,18 @@ func setPosition(node Node, position Position) {
 		n.Pos = position
 	case *CStyleCastExpr:
 		n.Pos = position
+	case *CXXConstructorDecl:
+		n.Pos = position
+	case *CXXConstructExpr:
+		n.Pos = position
+	case *CXXMethodDecl:
+		n.Pos = position
+	case *CXXMemberCallExpr:
+		n.Pos = position
+	case *CXXRecordDecl:
+		n.Pos = position
+	case *CXXThisExpr:
+		n.Pos = position
 	case *DeclRefExpr:
 		n.Pos = position
 	case *DeclStmt:
@@ -290,6 +306,8 @@ func setPosition(node Node, position Position) {
 	case *FloatingLiteral:
 		n.Pos = position
 	case *FormatAttr:
+		n.Pos = position
+	case *FormatArgAttr:
 		n.Pos = position
 	case *FullComment:
 		n.Pos = position
@@ -320,6 +338,8 @@ func setPosition(node Node, position Position) {
 	case *IntegerLiteral:
 		n.Pos = position
 	case *LabelStmt:
+		n.Pos = position
+	case *LinkageSpecDecl:
 		n.Pos = position
 	case *MallocAttr:
 		n.Pos = position
@@ -401,7 +421,7 @@ func setPosition(node Node, position Position) {
 		*QualType, *PointerType, *ParenType, *IncompleteArrayType,
 		*FunctionProtoType, *EnumType, *Enum, *ElaboratedType,
 		*ConstantArrayType, *BuiltinType, *ArrayFiller, *Field,
-		*DecayedType:
+		*DecayedType, *CXXRecord:
 		// These do not have positions so they can be ignored.
 	default:
 		panic(fmt.Sprintf("unknown node type: %+#v", node))

@@ -123,20 +123,20 @@ func NewProgram() (p *Program) {
 			// &ast.TypedefDecl{ ... Type:"struct __locale_struct *" ... }
 
 			"struct __va_list_tag [1]": {
-				Name:    "struct __va_list_tag [1]",
-				IsUnion: false,
+				Name: "struct __va_list_tag [1]",
+				Type: StructType,
 			},
 
 			// Pos:ast.Position{File:"/usr/include/xlocale.h", Line:27
 			"struct __locale_struct *": {
-				Name:    "struct __locale_struct *",
-				IsUnion: false,
+				Name: "struct __locale_struct *",
+				Type: StructType,
 			},
 
 			// Pos:ast.Position{File:"/usr/include/x86_64-linux-gnu/sys/time.h", Line:61
 			"struct timezone *__restrict": {
-				Name:    "struct timezone *__restrict",
-				IsUnion: false,
+				Name: "struct timezone *__restrict",
+				Type: StructType,
 			},
 		}),
 		Unions:                                   make(StructRegistry),
@@ -401,7 +401,9 @@ func (p *Program) String() string {
 		for i := range p.PreprocessorFile.GetComments() {
 			if p.PreprocessorFile.GetComments()[i].File == file {
 				if beginLine < p.PreprocessorFile.GetComments()[i].Line {
-					buf.WriteString(fmt.Sprintln(p.PreprocessorFile.GetComments()[i].Comment))
+					buf.WriteString(
+						fmt.Sprintln(
+							p.PreprocessorFile.GetComments()[i].Comment))
 				}
 			}
 		}
@@ -415,11 +417,22 @@ func (p *Program) String() string {
 	// After :
 	// func compare(a interface {}, b interface {}) (c4goDefaultReturn int) {
 	reg := util.GetRegex("interface( )?{(\r*)\n(\t*)}")
+	s := string(reg.ReplaceAll(buf.Bytes(), []byte("interface {}")))
 
-	return string(reg.ReplaceAll(buf.Bytes(), []byte("interface {}")))
+	sp := strings.Split(s, "\n")
+	for i := range sp {
+		if strings.HasSuffix(sp[i], "-= 1") {
+			sp[i] = strings.TrimSuffix(sp[i], "-= 1") + "--"
+		}
+		if strings.HasSuffix(sp[i], "+= 1") {
+			sp[i] = strings.TrimSuffix(sp[i], "+= 1") + "++"
+		}
+	}
+
+	return strings.Join(sp, "\n")
 }
 
-// IncudeHeaderIsExists - return true if C #include header is inside list
+// IncludeHeaderIsExists return true if C #include header is inside list
 func (p *Program) IncludeHeaderIsExists(includeHeader string) bool {
 	for _, inc := range p.PreprocessorFile.GetIncludeFiles() {
 		if strings.HasSuffix(inc.HeaderName, includeHeader) {

@@ -26,7 +26,7 @@ char arrnul[] = "this string has a \0 NUL";
 
 int main()
 {
-    plan(104);
+    plan(112);
 
     //              . Lower alpha (a)
     //              |  . Upper alpha (B)
@@ -47,6 +47,7 @@ int main()
     _CTYPE(ispunct, F, F, F, T, F, F, F, F);
     _CTYPE(isspace, F, F, F, F, F, T, T, F);
     _CTYPE(isupper, F, T, F, F, F, F, F, F);
+    _CTYPE(isblank, F, F, F, F, F, T, F, F);
     CTYPE(isxdigit, T, T, T, F, F, F, F, F);
 
     diag("tolower");

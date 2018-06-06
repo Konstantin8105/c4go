@@ -18,7 +18,7 @@ func TestParseComments(t *testing.T) {
 				"// comment1",
 			},
 			comments: []Comment{
-				Comment{
+				{
 					File:    "file.c",
 					Line:    10,
 					Comment: "// comment1",
@@ -32,7 +32,7 @@ func TestParseComments(t *testing.T) {
 				"/* comment1 */",
 			},
 			comments: []Comment{
-				Comment{
+				{
 					File:    "file.c",
 					Line:    10,
 					Comment: "/* comment1 */",
@@ -47,12 +47,12 @@ func TestParseComments(t *testing.T) {
 				"/* comment2 */",
 			},
 			comments: []Comment{
-				Comment{
+				{
 					File:    "file.c",
 					Line:    10,
 					Comment: "// comment1",
 				},
-				Comment{
+				{
 					File:    "file.c",
 					Line:    11,
 					Comment: "/* comment2 */",
@@ -67,12 +67,12 @@ func TestParseComments(t *testing.T) {
 				"// comment1",
 			},
 			comments: []Comment{
-				Comment{
+				{
 					File:    "file.c",
 					Line:    10,
 					Comment: "/* comment2 */",
 				},
-				Comment{
+				{
 					File:    "file.c",
 					Line:    11,
 					Comment: "// comment1",
@@ -86,12 +86,12 @@ func TestParseComments(t *testing.T) {
 				"/* comment */ // comment1",
 			},
 			comments: []Comment{
-				Comment{
+				{
 					File:    "file.c",
 					Line:    10,
 					Comment: "/* comment */",
 				},
-				Comment{
+				{
 					File:    "file.c",
 					Line:    10,
 					Comment: "// comment1",
@@ -105,7 +105,7 @@ func TestParseComments(t *testing.T) {
 				"// comment1 /* comment */",
 			},
 			comments: []Comment{
-				Comment{
+				{
 					File:    "file.c",
 					Line:    10,
 					Comment: "// comment1 /* comment */",
@@ -121,7 +121,7 @@ func TestParseComments(t *testing.T) {
 				"Text3 */",
 			},
 			comments: []Comment{
-				Comment{
+				{
 					File:    "file.c",
 					Line:    10,
 					Comment: "/* Text1\nText2\nText3 */",
@@ -139,27 +139,27 @@ func TestParseComments(t *testing.T) {
 				"// Text 5",
 			},
 			comments: []Comment{
-				Comment{
+				{
 					File:    "file.c",
 					Line:    10,
 					Comment: "/* Text-1 */",
 				},
-				Comment{
+				{
 					File:    "file.c",
 					Line:    10,
 					Comment: "// Text 0",
 				},
-				Comment{
+				{
 					File:    "file.c",
 					Line:    11,
 					Comment: "/* Text1\nText2\nText3 */",
 				},
-				Comment{
+				{
 					File:    "file.c",
 					Line:    13,
 					Comment: "// Text 4",
 				},
-				Comment{
+				{
 					File:    "file.c",
 					Line:    14,
 					Comment: "// Text 5",

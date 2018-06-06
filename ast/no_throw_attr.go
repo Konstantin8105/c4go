@@ -3,11 +3,11 @@ package ast
 // NoThrowAttr is a type of attribute that is optionally attached to a variable
 // or struct field definition.
 type NoThrowAttr struct {
-	Addr       Address
-	Pos        Position
-	ChildNodes []Node
-	Implicit   bool
-	Inherited  bool
+	Addr        Address
+	Pos         Position
+	ChildNodes  []Node
+	IsImplicit  bool
+	IsInherited bool
 }
 
 func parseNoThrowAttr(line string) *NoThrowAttr {
@@ -20,11 +20,11 @@ func parseNoThrowAttr(line string) *NoThrowAttr {
 	)
 
 	return &NoThrowAttr{
-		Addr:       ParseAddress(groups["address"]),
-		Pos:        NewPositionFromString(groups["position"]),
-		ChildNodes: []Node{},
-		Inherited:  len(groups["inherited"]) > 0,
-		Implicit:   len(groups["implicit"]) > 0,
+		Addr:        ParseAddress(groups["address"]),
+		Pos:         NewPositionFromString(groups["position"]),
+		ChildNodes:  []Node{},
+		IsInherited: len(groups["inherited"]) > 0,
+		IsImplicit:  len(groups["implicit"]) > 0,
 	}
 }
 

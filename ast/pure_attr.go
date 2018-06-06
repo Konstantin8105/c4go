@@ -3,11 +3,11 @@ package ast
 // PureAttr is a type of attribute that is optionally attached to a variable
 // or struct field definition.
 type PureAttr struct {
-	Addr       Address
-	Pos        Position
-	Implicit   bool
-	Inherited  bool
-	ChildNodes []Node
+	Addr        Address
+	Pos         Position
+	IsImplicit  bool
+	IsInherited bool
+	ChildNodes  []Node
 }
 
 func parsePureAttr(line string) *PureAttr {
@@ -19,11 +19,11 @@ func parsePureAttr(line string) *PureAttr {
 	)
 
 	return &PureAttr{
-		Addr:       ParseAddress(groups["address"]),
-		Pos:        NewPositionFromString(groups["position"]),
-		Implicit:   len(groups["implicit"]) > 0,
-		Inherited:  len(groups["inherited"]) > 0,
-		ChildNodes: []Node{},
+		Addr:        ParseAddress(groups["address"]),
+		Pos:         NewPositionFromString(groups["position"]),
+		IsImplicit:  len(groups["implicit"]) > 0,
+		IsInherited: len(groups["inherited"]) > 0,
+		ChildNodes:  []Node{},
 	}
 }
 

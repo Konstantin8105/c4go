@@ -221,6 +221,86 @@ void test_pointer_minus_pointer()
     is_eq(right_ptr - left_ptr, 20);
 }
 
+void test_array_to_value_int()
+{
+	int aqq[1][1] = { { 5 } };
+	int **pz;
+	int c;
+	///////////////
+	pz = aqq;
+	c = 99999;
+	c = *pz;
+	is_eq(c , 5.0);
+	///////////////
+	(void) pz;
+	(void) c;
+	///////////////
+}
+
+void test_array_to_value_unsigned()
+{
+	unsigned aqq[1][1] = { { 5 } };
+	unsigned **pz;
+	unsigned c;
+	///////////////
+	pz = aqq;
+	c = 99999;
+	c = *pz;
+	is_eq(c , 5.0);
+	///////////////
+	(void) pz;
+	(void) c;
+	///////////////
+}
+
+void test_array_to_value_long()
+{
+	long aqq[1][1] = { { 5 } };
+	long **pz;
+	long c;
+	///////////////
+	pz = aqq;
+	c = 99999;
+	c = *pz;
+	is_eq(c , 5.0);
+	///////////////
+	(void) pz;
+	(void) c;
+	///////////////
+}
+
+void test_array_to_value_char()
+{
+	long aqq[1][1] = { { 5 } };
+	long **pz;
+	long c;
+	///////////////
+	pz = aqq;
+	c = 99;
+	c = *pz;
+	is_eq(c , 5.0);
+	///////////////
+	(void) pz;
+	(void) c;
+	///////////////
+}
+
+void test_array_to_value_double()
+{
+	long aqq[1][1] = { { 5 } };
+	long **pz;
+	long c;
+	///////////////
+	pz = aqq;
+	c = 99999;
+	c = *pz;
+	is_eq(c , 5.0);
+	///////////////
+	(void) pz;
+	(void) c;
+	///////////////
+}
+
 #define SIZE 3
 void test_size_pointer()
 {
@@ -235,10 +315,49 @@ void test_size_pointer()
 	is_eq(pnt[0][2],B[0][2]);
 }
 
+#define STACK_SIZE      512
+#define STACK_PUSH(A)   (STACK[SP++] = A)
+static unsigned short STACK[STACK_SIZE];
+static unsigned int SP = 0;
+void test_array_increment()
+{
+	double a[10];
+	for (int i = 0;i < 10;i++)
+		a[i] = i;
+	is_eq(a[4],4);
+	int pc = 4;
+	is_eq(pc,4);
+	is_eq(a[pc++],4);
+	is_eq(pc,5);
+    unsigned short pc2 = 0;
+    STACK_PUSH(pc2);
+	is_eq(SP,1);
+}
+
+struct MyStruct {
+    int number;
+    char symbol;
+};
+void test_struct_init()
+{
+    struct MyStruct objA = {.symbol = 'A', .number = 100};
+    struct MyStruct objB = {.number = 200};
+	is_eq(objA.symbol, 'A');
+	is_eq(objA.number,100);
+	is_eq(objB.number,200);
+}
+
 int main()
 {
-    plan(140);
+    plan(153);
 
+	START_TEST(struct_init);
+	START_TEST(array_increment);
+	START_TEST(array_to_value_int);
+	START_TEST(array_to_value_unsigned);
+	START_TEST(array_to_value_long);
+	START_TEST(array_to_value_char);
+	START_TEST(array_to_value_double);
 	START_TEST(size_pointer);
     START_TEST(intarr);
     START_TEST(doublearr);

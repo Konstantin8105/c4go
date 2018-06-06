@@ -8,7 +8,7 @@ int d(int v)
 
 int main()
 {
-    plan(12);
+    plan(13);
 
     int x = 1;
 
@@ -79,6 +79,11 @@ int main()
 		if ( NULL == NULL ) {
 			pass("null test 6")
 		}
+	}
+
+	diag("Bool to int");
+	if ( (9 != 0) *2){
+		pass("ok");
 	}
 
 	/*

@@ -263,7 +263,9 @@ func IsGoKeyword(w string) bool {
 	case "break", "default", "func", "interface", "select", "case", "defer",
 		"go", "map", "struct", "chan", "else", "goto", "package", "switch",
 		"const", "fallthrough", "if", "range", "type", "continue", "for",
-		"import", "return", "var", "_", "init":
+		"import", "return", "var", "_", "init",
+		// Go packages
+		"fmt":
 		return true
 	}
 
@@ -418,7 +420,7 @@ func NewAnonymousFunction(body, deferBody []goast.Stmt,
 	return &goast.CallExpr{Fun: &goast.FuncLit{
 		Type: &goast.FuncType{
 			Results: &goast.FieldList{List: []*goast.Field{
-				&goast.Field{Type: goast.NewIdent(returnType)},
+				{Type: goast.NewIdent(returnType)},
 			}},
 		},
 		Body: &goast.BlockStmt{

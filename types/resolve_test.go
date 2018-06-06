@@ -238,6 +238,12 @@ func TestResolveFunction(t *testing.T) {
 			fields:  []string{""},
 			returns: []string{"void"},
 		},
+		{
+			input:   "int (*)()",
+			prefix:  "",
+			fields:  []string{""},
+			returns: []string{"int"},
+		},
 	}
 
 	for i, tc := range tcs {
@@ -318,6 +324,18 @@ func TestGenerateCorrectType(t *testing.T) {
 			if act != tc.out {
 				t.Errorf("Not correct result.\nExpected:%s\nActual:%s\n",
 					tc.out, act)
+			}
+		})
+	}
+}
+
+func TestResolveError(t *testing.T) {
+	tcs := []string{"w:w", "", "const"}
+	for i, tc := range tcs {
+		t.Run(fmt.Sprintf("%v", i), func(t *testing.T) {
+			var p program.Program
+			if _, err := types.ResolveType(&p, tc); err == nil {
+				t.Fatalf("Not acceptable")
 			}
 		})
 	}

@@ -213,9 +213,22 @@ void q_sort()
     is_eq(values[5], 100);
 }
 
+#define COMPLEX struct MyComplex
+struct MyComplex {
+    double re;
+    double im;
+};
+void struct_with_define()
+{
+	COMPLEX a = {45,12};
+	is_eq(a.im,12);
+}
+
 int main()
 {
-    plan(752);
+    plan(753);
+
+	struct_with_define();
 
     char* endptr;
 

@@ -8,6 +8,7 @@ import (
 	goast "go/ast"
 	"go/parser"
 	"go/token"
+	"os"
 	"strings"
 
 	"github.com/Konstantin8105/c4go/ast"
@@ -147,13 +148,11 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 
 	switch n := node.(type) {
 	case *ast.StringLiteral:
-		expr = transpileStringLiteral(n)
-		exprType = "const char *"
+		expr, exprType, err = transpileStringLiteral(p, n, false)
+		return
 
 	case *ast.FloatingLiteral:
-		expr = transpileFloatingLiteral(n)
-		exprType = "double"
-		err = nil
+		expr, exprType, err = transpileFloatingLiteral(n), "double", nil
 
 	case *ast.PredefinedExpr:
 		expr, exprType, err = transpilePredefinedExpr(n, p)
@@ -212,12 +211,29 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 	case *ast.ImplicitValueInitExpr:
 		var t string
 		t = n.Type1
-		if strings.HasPrefix(t, "struct ") {
-			t = t[len("struct "):]
+		t, err = types.ResolveType(p, t)
+		p.AddMessage(p.GenerateWarningMessage(err, n))
+		var isStruct bool
+		if _, ok := p.Structs[t]; ok {
+			isStruct = true
 		}
-		expr = &goast.CompositeLit{
-			Type:   util.NewIdent(t),
-			Lbrace: 1,
+		if _, ok := p.Structs["struct "+t]; ok {
+			isStruct = true
+		}
+		if isStruct {
+			expr = &goast.CompositeLit{
+				Type:   util.NewIdent(t),
+				Lbrace: 1,
+			}
+			return
+		}
+		expr = &goast.CallExpr{
+			Fun:    goast.NewIdent(t),
+			Lparen: 1,
+			Args: []goast.Expr{&goast.BasicLit{
+				Kind:  token.INT,
+				Value: "0",
+			}},
 		}
 		return
 
@@ -292,13 +308,13 @@ func transpileToStmt(node ast.Node, p *program.Program) (
 	var expr goast.Expr
 
 	switch n := node.(type) {
-	case *ast.DefaultStmt:
-		stmt, err = transpileDefaultStmt(n, p)
-		return
-
-	case *ast.CaseStmt:
-		stmt, preStmts, postStmts, err = transpileCaseStmt(n, p)
-		return
+	// case *ast.DefaultStmt:
+	// 	stmt, err = transpileDefaultStmt(n, p)
+	// 	return
+	//
+	// case *ast.CaseStmt:
+	// 	stmt, preStmts, postStmts, err = transpileCaseStmt(n, p)
+	// 	return
 
 	case *ast.SwitchStmt:
 		stmt, preStmts, postStmts, err = transpileSwitchStmt(n, p)
@@ -391,7 +407,8 @@ func transpileToStmt(node ast.Node, p *program.Program) (
 		foundToVoid = true
 	}
 	if len(node.Children()) > 0 {
-		if v, ok := node.Children()[0].(*ast.CStyleCastExpr); ok && v.Kind == ast.CStyleCastExprToVoid {
+		if v, ok := node.Children()[0].(*ast.CStyleCastExpr); ok &&
+			v.Kind == ast.CStyleCastExprToVoid {
 			foundToVoid = true
 		}
 	}
@@ -438,13 +455,24 @@ func transpileToNode(node ast.Node, p *program.Program) (
 				decls[0].(*goast.FuncDecl).Doc.List =
 					append(decls[0].(*goast.FuncDecl).Doc.List,
 						p.GetComments(node.Position())...)
+
+				// location of file
+				location := node.Position().GetSimpleLocation()
+				location = strings.Replace(location, os.Getenv("GOPATH"), "$GOPATH", -1)
 				decls[0].(*goast.FuncDecl).Doc.List =
-					append([]*goast.Comment{&goast.Comment{
+					append([]*goast.Comment{{
 						Text: fmt.Sprintf("// %s - transpiled function from %s",
 							decls[0].(*goast.FuncDecl).Name.Name,
-							node.Position().GetSimpleLocation()),
+							location),
 					}}, decls[0].(*goast.FuncDecl).Doc.List...)
 			}
+		}
+
+	case *ast.CXXRecordDecl:
+		if !strings.Contains(n.RecordDecl.Kind, "class") {
+			decls, err = transpileToNode(n.RecordDecl, p)
+		} else {
+			decls, err = transpileCXXRecordDecl(p, n.RecordDecl)
 		}
 
 	case *ast.TypedefDecl:
@@ -458,6 +486,9 @@ func transpileToNode(node ast.Node, p *program.Program) (
 
 	case *ast.EnumDecl:
 		decls, err = transpileEnumDecl(p, n)
+
+	case *ast.LinkageSpecDecl:
+		// ignore
 
 	case *ast.EmptyDecl:
 		if len(n.Children()) == 0 {

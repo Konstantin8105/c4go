@@ -29,15 +29,15 @@ var structFieldTranslations = map[string]map[string]string{
 		"rem":  "Rem",
 	},
 	"struct tm": {
-		"tm_sec":   "Tm_sec",
-		"tm_min":   "Tm_min",
-		"tm_hour":  "Tm_hour",
-		"tm_mday":  "Tm_mday",
-		"tm_mon":   "Tm_mon",
-		"tm_year":  "Tm_year",
-		"tm_wday":  "Tm_wday",
-		"tm_yday":  "Tm_yday",
-		"tm_isdst": "Tm_isdst",
+		"tm_sec":   "TmSec",
+		"tm_min":   "TmMin",
+		"tm_hour":  "TmHour",
+		"tm_mday":  "TmMday",
+		"tm_mon":   "TmMon",
+		"tm_year":  "TmYear",
+		"tm_wday":  "TmWday",
+		"tm_yday":  "TmYday",
+		"tm_isdst": "TmIsdst",
 	},
 }
 
@@ -50,6 +50,19 @@ func transpileDeclRefExpr(n *ast.DeclRefExpr, p *program.Program) (
 		if v, ok := p.EnumConstantToEnum[n.Name]; ok {
 			expr, exprType, err = util.NewIdent(n.Name), v, nil
 			return
+		}
+	}
+
+	if n.For == "Function" {
+		var includeFile string
+		includeFile, err = p.GetIncludeFileNameByFunctionSignature(n.Name, n.Type)
+		p.AddMessage(p.GenerateWarningMessage(err, n))
+		if includeFile != "" && p.IncludeHeaderIsExists(includeFile) {
+			name := p.GetFunctionDefinition(n.Name).Substitution
+			if strings.Contains(name, ".") {
+				p.AddImport(strings.Split(name, ".")[0])
+			}
+			return goast.NewIdent(name), n.Type, nil
 		}
 	}
 
@@ -235,8 +248,13 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 
 		var expr goast.Expr
 		var err error
-		expr, _, _, _, err = transpileToExpr(node, p, true)
+		if sl, ok := node.(*ast.StringLiteral); ok {
+			expr, _, err = transpileStringLiteral(p, sl, true)
+		} else {
+			expr, _, _, _, err = transpileToExpr(node, p, true)
+		}
 		if err != nil {
+			p.AddMessage(p.GenerateWarningMessage(err, node))
 			return nil, "", err
 		}
 
@@ -362,9 +380,6 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
-	lhsResolvedType, err := types.ResolveType(p, lhsType)
-	p.AddMessage(p.GenerateWarningMessage(err, n))
-
 	// lhsType will be something like "struct foo"
 	structType := p.GetStruct(lhsType)
 	// added for support "struct typedef"
@@ -423,12 +438,6 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 				rhs, n.IsLvalue, n.Name)
 			p.AddMessage(p.GenerateWarningMessage(err, n))
 		}
-	}
-
-	// FIXME: This is just a hack
-	if util.InStrings(lhsResolvedType, []string{"darwin.Float2", "darwin.Double2"}) {
-		rhs = util.GetExportedName(rhs)
-		rhsType = "int"
 	}
 
 	x := lhs

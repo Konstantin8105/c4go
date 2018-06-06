@@ -31,7 +31,7 @@ func transpileTranslationUnitDecl(p *program.Program, n *ast.TranslationUnitDecl
 		}
 		if rec, ok := presentNode.(*ast.RecordDecl); ok {
 			// ignore RecordDecl if haven`t definition
-			if rec.Name == "" && !rec.Definition {
+			if rec.Name == "" && !rec.IsDefinition {
 				continue
 			}
 		}
@@ -66,8 +66,6 @@ func transpileTranslationUnitDecl(p *program.Program, n *ast.TranslationUnitDecl
 						tryLaterRecordDecl[i+1:]...)
 				}
 				goto again
-			} else {
-				err = nil // ignore error
 			}
 		}
 	}
@@ -77,7 +75,6 @@ func transpileTranslationUnitDecl(p *program.Program, n *ast.TranslationUnitDecl
 			decls = append(decls, recDecl...)
 		} else {
 			p.AddMessage(p.GenerateWarningMessage(err, n))
-			err = nil // ignore error
 		}
 	}
 	return

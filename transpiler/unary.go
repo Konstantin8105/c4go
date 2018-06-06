@@ -40,7 +40,6 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 		if p, ok := n.Children()[0].(*ast.ParenExpr); ok {
 			n.Children()[0] = p.Children()[0]
 			goto remove_paren
-			return
 		}
 
 		var left goast.Expr
