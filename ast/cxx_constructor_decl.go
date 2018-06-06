@@ -7,6 +7,8 @@ import (
 // CXXConstructorDecl is node constructor.
 type CXXConstructorDecl struct {
 	Addr       Address
+	Parent     string
+	Prev       string
 	Pos        Position
 	Position2  string
 	IsImplicit bool
@@ -20,7 +22,9 @@ type CXXConstructorDecl struct {
 
 func parseCXXConstructorDecl(line string) *CXXConstructorDecl {
 	groups := groupsFromRegex(
-		`<(?P<position>.*)>
+		`(?:parent (?P<parent>0x[0-9a-f]+) )?
+		(?:prev (?P<prev>0x[0-9a-f]+) )?
+		<(?P<position>.*)>
 		(?P<position2> col:\d+| line:\d+:\d+)?
 		(?P<implicit> implicit)?
 		(?P<used> used)?
@@ -33,6 +37,8 @@ func parseCXXConstructorDecl(line string) *CXXConstructorDecl {
 
 	return &CXXConstructorDecl{
 		Addr:       ParseAddress(groups["address"]),
+		Prev:       groups["prev"],
+		Parent:     groups["parent"],
 		Pos:        NewPositionFromString(groups["position"]),
 		Position2:  strings.TrimSpace(groups["position2"]),
 		IsImplicit: len(groups["implicit"]) > 0,

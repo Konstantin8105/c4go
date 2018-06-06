@@ -17,7 +17,6 @@ void simple()
 	is_eq(obj.number,4);
 }
 
-/*
 //--------------------------
 class Rectangle {
     int width, height;
@@ -75,16 +74,50 @@ void setter()
 	rec.set_values(4,5);
 	is_eq(rec.area(),20);
 }
-*/
+
+
+//--------------------------
+class Rectangle4 {
+    int width, height;
+  public:
+    Rectangle4 (int a ,int b ) {
+  		width = a;
+  		height = b;
+	}
+    int area() {return width*height;}
+};
+
+void constructor2()
+{
+	Rectangle4 rec(2,3);
+	is_eq(rec.area(),6);
+}
+
+
+//--------------------------
+class Rectangle5 {
+    int width, height;
+  public:
+    Rectangle5 (int a ,int b ): width(a), height(b){}
+    int area() {return width*height;}
+};
+
+void constructor3()
+{
+	Rectangle5 rec(2,3);
+	is_eq(rec.area(),6);
+}
 
 int main()
 {
-    plan(2);
+    plan(7);
 
 	simple();
-	// defaulf_constructor();
-	// constructor();
-	// setter();
+	defaulf_constructor();
+	constructor();
+	constructor2();
+	constructor3();
+	setter();
 
     done_testing();
 }
