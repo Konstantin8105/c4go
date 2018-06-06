@@ -72,18 +72,19 @@ int main()
 }
 ```
 
-Go code of file `prome.go`:
+Go code of file `prime.go`:
 ```golang
 /*
-	Package main - transpiled by c4go
+        Package main - transpiled by c4go
 
-	If you have found any issues, please raise an issue at:
-	https://github.com/Konstantin8105/c4go/
+        If you have found any issues, please raise an issue at:
+        https://github.com/Konstantin8105/c4go/
 */
 
 package main
 
 import "unsafe"
+import "fmt"
 import "github.com/Konstantin8105/c4go/noarch"
 
 type size_t uint32
@@ -93,10 +94,10 @@ type __gnuc_va_list int64
 type __codecvt_result int
 
 const (
-	__codecvt_ok      __codecvt_result = 0
-	__codecvt_partial                  = 1
-	__codecvt_error                    = 2
-	__codecvt_noconv                   = 3
+        __codecvt_ok      __codecvt_result = 0
+        __codecvt_partial                  = 1
+        __codecvt_error                    = 2
+        __codecvt_noconv                   = 3
 )
 
 var stdin *noarch.File
@@ -105,33 +106,33 @@ var stdout *noarch.File
 
 var stderr *noarch.File
 
-// main - transpiled function from  /examples/prime.c:3
+// main - transpiled function from  $GOPATH/src/github.com/Konstantin8105/c4go/examples/prime.c:3
 func main() {
-	var n int
-	var c int
-	noarch.Printf([]byte("Enter a number\n\x00"))
-	noarch.Scanf([]byte("%d\x00"), (*[100000000]int)(unsafe.Pointer(&n))[:])
-	noarch.Printf([]byte("The number is: %d\n\x00"), n)
-	if n == 2 {
-		noarch.Printf([]byte("Prime number.\n\x00"))
-	} else {
-		for c = 2; c <= n-1; c++ {
-			if n%c == 0 {
-				break
-			}
-		}
-		if c != n {
-			noarch.Printf([]byte("Not prime.\n\x00"))
-		} else {
-			noarch.Printf([]byte("Prime number.\n\x00"))
-		}
-	}
-	return
+        var n int
+        var c int
+        fmt.Printf("Enter a number\n")
+        noarch.Scanf([]byte("%d\x00"), (*[100000000]int)(unsafe.Pointer(&n))[:])
+        noarch.Printf([]byte("The number is: %d\n\x00"), n)
+        if n == 2 {
+                noarch.Printf([]byte("Prime number.\n\x00"))
+        } else {
+                for c = 2; c <= n-1; c++ {
+                        if n%c == 0 {
+                                break
+                        }
+                }
+                if c != n {
+                        noarch.Printf([]byte("Not prime.\n\x00"))
+                } else {
+                        noarch.Printf([]byte("Prime number.\n\x00"))
+                }
+        }
+        return
 }
 func init() {
-	stdin = noarch.Stdin
-	stdout = noarch.Stdout
-	stderr = noarch.Stderr
+        stdin = noarch.Stdin
+        stdout = noarch.Stdout
+        stderr = noarch.Stderr
 }
 ```
 # C standart library implementation
