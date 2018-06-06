@@ -2,25 +2,11 @@ package ast
 
 // CXXMemberCallExpr struct
 type CXXMemberCallExpr struct {
-	Addr       Address
-	Pos        Position
-	Type       string
-	ChildNodes []Node
+	*CallExpr
 }
 
 func parseCXXMemberCallExpr(line string) *CXXMemberCallExpr {
-	groups := groupsFromRegex(
-		`<(?P<position>.*)>
-		 '(?P<type>.*)'`,
-		line,
-	)
-
-	return &CXXMemberCallExpr{
-		Addr:       ParseAddress(groups["address"]),
-		Pos:        NewPositionFromString(groups["position"]),
-		Type:       groups["type"],
-		ChildNodes: []Node{},
-	}
+	return &CXXMemberCallExpr{parseCallExpr(line)}
 }
 
 // AddChild adds a new child node. Child nodes can then be accessed with the
