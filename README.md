@@ -114,7 +114,7 @@ func main() {
         noarch.Scanf([]byte("%d\x00"), (*[100000000]int)(unsafe.Pointer(&n))[:])
         noarch.Printf([]byte("The number is: %d\n\x00"), n)
         if n == 2 {
-                noarch.Printf([]byte("Prime number.\n\x00"))
+                fmt.Printf("Prime number.\n")
         } else {
                 for c = 2; c <= n-1; c++ {
                         if n%c == 0 {
@@ -122,9 +122,9 @@ func main() {
                         }
                 }
                 if c != n {
-                        noarch.Printf([]byte("Not prime.\n\x00"))
+                        fmt.Printf("Not prime.\n")
                 } else {
-                        noarch.Printf([]byte("Prime number.\n\x00"))
+                        fmt.Printf("Prime number.\n")
                 }
         }
         return
@@ -135,6 +135,7 @@ func init() {
         stderr = noarch.Stderr
 }
 ```
+
 # C standart library implementation
 
 ```
