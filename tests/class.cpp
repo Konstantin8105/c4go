@@ -98,6 +98,7 @@ void constructor2()
 class Rectangle5 {
     int width, height;
   public:
+    Rectangle5() {};
     Rectangle5 (int a ,int b ): width(a), height(b){}
     int area() {return width*height;}
 };
