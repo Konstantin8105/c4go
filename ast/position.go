@@ -281,6 +281,8 @@ func setPosition(node Node, position Position) {
 		n.Pos = position
 	case *CXXRecordDecl:
 		n.Pos = position
+	case *CXXThisExpr:
+		n.Pos = position
 	case *DeclRefExpr:
 		n.Pos = position
 	case *DeclStmt:
