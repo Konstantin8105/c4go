@@ -152,9 +152,7 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 		return
 
 	case *ast.FloatingLiteral:
-		expr = transpileFloatingLiteral(n)
-		exprType = "double"
-		err = nil
+		expr, exprType, err = transpileFloatingLiteral(n), "double", nil
 
 	case *ast.PredefinedExpr:
 		expr, exprType, err = transpilePredefinedExpr(n, p)
@@ -310,13 +308,13 @@ func transpileToStmt(node ast.Node, p *program.Program) (
 	var expr goast.Expr
 
 	switch n := node.(type) {
-	case *ast.DefaultStmt:
-		stmt, err = transpileDefaultStmt(n, p)
-		return
-
-	case *ast.CaseStmt:
-		stmt, preStmts, postStmts, err = transpileCaseStmt(n, p)
-		return
+	// case *ast.DefaultStmt:
+	// 	stmt, err = transpileDefaultStmt(n, p)
+	// 	return
+	//
+	// case *ast.CaseStmt:
+	// 	stmt, preStmts, postStmts, err = transpileCaseStmt(n, p)
+	// 	return
 
 	case *ast.SwitchStmt:
 		stmt, preStmts, postStmts, err = transpileSwitchStmt(n, p)
@@ -409,7 +407,8 @@ func transpileToStmt(node ast.Node, p *program.Program) (
 		foundToVoid = true
 	}
 	if len(node.Children()) > 0 {
-		if v, ok := node.Children()[0].(*ast.CStyleCastExpr); ok && v.Kind == ast.CStyleCastExprToVoid {
+		if v, ok := node.Children()[0].(*ast.CStyleCastExpr); ok &&
+			v.Kind == ast.CStyleCastExprToVoid {
 			foundToVoid = true
 		}
 	}
@@ -469,6 +468,13 @@ func transpileToNode(node ast.Node, p *program.Program) (
 			}
 		}
 
+	case *ast.CXXRecordDecl:
+		if !strings.Contains(n.RecordDecl.Kind, "class") {
+			decls, err = transpileToNode(n.RecordDecl, p)
+		} else {
+			decls, err = transpileCXXRecordDecl(p, n.RecordDecl)
+		}
+
 	case *ast.TypedefDecl:
 		decls, err = transpileTypedefDecl(p, n)
 
@@ -480,6 +486,9 @@ func transpileToNode(node ast.Node, p *program.Program) (
 
 	case *ast.EnumDecl:
 		decls, err = transpileEnumDecl(p, n)
+
+	case *ast.LinkageSpecDecl:
+		// ignore
 
 	case *ast.EmptyDecl:
 		if len(n.Children()) == 0 {

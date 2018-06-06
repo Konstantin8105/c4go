@@ -7,7 +7,7 @@ type IndirectFieldDecl struct {
 	Addr       Address
 	Pos        Position
 	Position2  string
-	Implicit   bool
+	IsImplicit bool
 	Name       string
 	Type       string
 	ChildNodes []Node
@@ -27,7 +27,7 @@ func parseIndirectFieldDecl(line string) *IndirectFieldDecl {
 		Addr:       ParseAddress(groups["address"]),
 		Pos:        NewPositionFromString(groups["position"]),
 		Position2:  strings.TrimSpace(groups["position2"]),
-		Implicit:   len(groups["implicit"]) > 0,
+		IsImplicit: len(groups["implicit"]) > 0,
 		Name:       groups["name"],
 		Type:       groups["type"],
 		ChildNodes: []Node{},

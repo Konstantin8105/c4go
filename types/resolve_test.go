@@ -328,3 +328,15 @@ func TestGenerateCorrectType(t *testing.T) {
 		})
 	}
 }
+
+func TestResolveError(t *testing.T) {
+	tcs := []string{"w:w", "", "const"}
+	for i, tc := range tcs {
+		t.Run(fmt.Sprintf("%v", i), func(t *testing.T) {
+			var p program.Program
+			if _, err := types.ResolveType(&p, tc); err == nil {
+				t.Fatalf("Not acceptable")
+			}
+		})
+	}
+}

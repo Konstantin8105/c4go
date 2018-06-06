@@ -1,12 +1,21 @@
 package linux
 
-import "testing"
+import (
+	"os"
+	"testing"
+)
 
 func TestAssertFail(t *testing.T) {
-	isTest = true
+	var res int
+	osExit = func(code int) {
+		res = code
+	}
 	defer func() {
-		isTest = false
+		osExit = os.Exit
 	}()
 
 	_ = AssertFail([]byte(""), []byte(""), 10, []byte(""))
+	if res != 134 {
+		t.Fatalf("Another result")
+	}
 }

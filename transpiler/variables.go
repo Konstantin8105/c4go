@@ -380,9 +380,6 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
-	lhsResolvedType, err := types.ResolveType(p, lhsType)
-	p.AddMessage(p.GenerateWarningMessage(err, n))
-
 	// lhsType will be something like "struct foo"
 	structType := p.GetStruct(lhsType)
 	// added for support "struct typedef"
@@ -441,12 +438,6 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 				rhs, n.IsLvalue, n.Name)
 			p.AddMessage(p.GenerateWarningMessage(err, n))
 		}
-	}
-
-	// FIXME: This is just a hack
-	if util.InStrings(lhsResolvedType, []string{"darwin.Float2", "darwin.Double2"}) {
-		rhs = util.GetExportedName(rhs)
-		rhsType = "int"
 	}
 
 	x := lhs

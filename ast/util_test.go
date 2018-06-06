@@ -35,3 +35,16 @@ func TestAtof(t *testing.T) {
 	}()
 	_ = atof("Some not float64")
 }
+
+func TestUnquote(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			t.Errorf("Not acceptable result")
+		}
+	}()
+	_ = unquote("\"")
+}
+
+func TestTypesTree(t *testing.T) {
+	_ = typesTree(nil, 0)
+}

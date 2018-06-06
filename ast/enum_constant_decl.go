@@ -2,13 +2,13 @@ package ast
 
 // EnumConstantDecl is node represents a enum constant declaration.
 type EnumConstantDecl struct {
-	Addr       Address
-	Pos        Position
-	Position2  string
-	Referenced bool
-	Name       string
-	Type       string
-	ChildNodes []Node
+	Addr         Address
+	Pos          Position
+	Position2    string
+	IsReferenced bool
+	Name         string
+	Type         string
+	ChildNodes   []Node
 }
 
 func parseEnumConstantDecl(line string) *EnumConstantDecl {
@@ -22,13 +22,13 @@ func parseEnumConstantDecl(line string) *EnumConstantDecl {
 	)
 
 	return &EnumConstantDecl{
-		Addr:       ParseAddress(groups["address"]),
-		Pos:        NewPositionFromString(groups["position"]),
-		Position2:  groups["position2"],
-		Referenced: len(groups["referenced"]) > 0,
-		Name:       groups["name"],
-		Type:       groups["type"],
-		ChildNodes: []Node{},
+		Addr:         ParseAddress(groups["address"]),
+		Pos:          NewPositionFromString(groups["position"]),
+		Position2:    groups["position2"],
+		IsReferenced: len(groups["referenced"]) > 0,
+		Name:         groups["name"],
+		Type:         groups["type"],
+		ChildNodes:   []Node{},
 	}
 }
 

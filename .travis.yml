@@ -1,8 +1,12 @@
 language: go
 
+go:
+  - "1.8"
+
 os:
   - linux
-  - osx
+    # Mac osx is too different clang
+    #  - osx
 
 env:
   global:
@@ -17,7 +21,7 @@ matrix:
       if: branch = master
     - env: SCRIPT=test CLANG=3.5
       os: linux
-      if: branch = master
+      # if: branch = master
     - env: SCRIPT=test CLANG=3.6
       os: linux
       if: branch = master
@@ -43,6 +47,8 @@ before_install:
         sudo apt-get update
         sudo apt-cache search clang
         sudo apt-get install -f -y --force-yes clang-$CLANG lldb-$CLANG
+      # else
+      #   brew install llvm
       fi
 
   # gocovmerge is used to merge all the separate unit/integration test coverage

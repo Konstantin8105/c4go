@@ -10,7 +10,7 @@ func TestPredefinedExpr(t *testing.T) {
 			Addr:       0x33d6e08,
 			Pos:        NewPositionFromString("col:30"),
 			Type:       "const char [25]",
-			Lvalue:     true,
+			IsLvalue:   true,
 			Name:       "__PRETTY_FUNCTION__",
 			ChildNodes: []Node{},
 		},

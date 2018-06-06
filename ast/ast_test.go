@@ -1,8 +1,14 @@
 package ast
 
 import (
+	"bytes"
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
+	"io/ioutil"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -24,6 +30,11 @@ func runNodeTests(t *testing.T, tests map[string]Node) {
 		i++
 
 		t.Run(testName, func(t *testing.T) {
+			defer func() {
+				if r := recover(); r != nil {
+					t.Fatalf("Panic for : %v, %v", testName, line)
+				}
+			}()
 			// Append the name of the struct onto the front. This would make the
 			// complete line it would normally be parsing.
 			name := reflect.TypeOf(expected).Elem().Name()
@@ -58,6 +69,15 @@ func runNodeTests(t *testing.T, tests map[string]Node) {
 			if pos.Line < 0 || pos.Column < 0 || pos.LineEnd < 0 ||
 				pos.ColumnEnd < 0 {
 				t.Errorf("Not acceptable negative position")
+			}
+			var posC Position
+			posC.Line = -1
+			if pos.Line == -1 {
+				t.Fatalf("Not correct default line position")
+			}
+			setPosition(actual, posC)
+			if pos.Line != -1 {
+				t.Log("Cannot change position")
 			}
 		})
 	}
@@ -108,5 +128,80 @@ func TestNullStmt(t *testing.T) {
 	n, err := Parse("NullStmt")
 	if n != nil || err != nil {
 		t.Errorf("Not acceptable for NullStmt")
+	}
+}
+
+type Visitor interface {
+	Visit(node Node) (w Visitor)
+}
+
+type Founder struct{}
+
+var nodesFromAst []string
+
+func (f Founder) Visit(node ast.Node) (w ast.Visitor) {
+	if cs, ok := node.(*ast.CaseClause); ok {
+		nodesFromAst = append(nodesFromAst, cs.List[0].(*ast.BasicLit).Value)
+	}
+	return f
+}
+
+func TestAstNodes(t *testing.T) {
+	fset := token.NewFileSet() // positions are relative to fset
+	f, err := parser.ParseFile(fset, "ast.go", nil, parser.DeclarationErrors)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+
+	var fr Founder
+	ast.Walk(fr, f.Decls[4])
+
+	/*
+		108: *ast.CaseClause {
+		.  Case: -
+		.  List: []ast.Expr (len = 1) {
+		.  .  0: *ast.BasicLit {
+		.  .  .  ValuePos: -
+		.  .  .  Kind: STRING
+		.  .  .  Value: "\"WhileStmt\""
+		.  .  }
+		.  }
+	*/
+
+	nodesFromAst = append(nodesFromAst, "")
+
+	for _, c := range nodesFromAst {
+		t.Run(fmt.Sprintf("%v", c), func(t *testing.T) {
+			defer func() {
+				if r := recover(); r != nil {
+					t.Fatalf("Cannot parse")
+				}
+			}()
+			Parse(c)
+		})
+	}
+
+	dat, err := ioutil.ReadFile("position.go")
+
+	index := bytes.Index(dat, []byte("setPosition"))
+	if index < 0 {
+		t.Fatalf("cannot found function")
+	}
+	dat = dat[index:]
+
+	for _, c := range nodesFromAst {
+		if c == "" || c == "\"NullStmt\"" {
+			continue
+		}
+		t.Run(fmt.Sprintf("%v", c), func(t *testing.T) {
+			c, err := strconv.Unquote(c)
+			if err != nil {
+				t.Fatalf("Unquote invalid : %v", err)
+			}
+			index := bytes.Index(dat, []byte(c))
+			if index < 0 {
+				t.Fatalf("cannot found type : %v", c)
+			}
+		})
 	}
 }

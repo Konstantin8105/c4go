@@ -59,21 +59,10 @@ type FunctionDefinition struct {
 //
 var builtInFunctionDefinitions = map[string][]string{
 	"assert.h": {
-		// darwin/assert.h
-		"int __builtin_expect(int, int) -> darwin.BuiltinExpect",
-		"bool __assert_rtn(const char*, const char*, int, const char*) -> darwin.AssertRtn",
-
 		// linux/assert.h
 		"bool __assert_fail(const char*, const char*, unsigned int, const char*) -> linux.AssertFail",
 	},
 	"ctype.h": {
-		// darwin/ctype.h
-		"uint32 __istype(__darwin_ct_rune_t, uint32) -> darwin.IsType",
-		"__darwin_ct_rune_t __isctype(__darwin_ct_rune_t, uint32) -> darwin.IsCType",
-		"__darwin_ct_rune_t __tolower(__darwin_ct_rune_t) -> darwin.ToLower",
-		"__darwin_ct_rune_t __toupper(__darwin_ct_rune_t) -> darwin.ToUpper",
-		"uint32 __maskrune(__darwin_ct_rune_t, uint32) -> darwin.MaskRune",
-
 		// linux/ctype.h
 		"const unsigned short int** __ctype_b_loc() -> linux.CtypeLoc",
 		"int tolower(int) -> linux.ToLower",
@@ -93,23 +82,13 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int __isinff(float) -> linux.IsInff",
 		"int __isinf(double) -> linux.IsInf",
 		"int __isinfl(long double) -> linux.IsInf",
+		"double __builtin_nanf(const char*) -> linux.NaN",
+		"float __builtin_inff() -> linux.Inff",
 
 		// darwin/math.h
-		"double __builtin_fabs(double) -> darwin.Fabs",
-		"float __builtin_fabsf(float) -> darwin.Fabsf",
-		"double __builtin_fabsl(double) -> darwin.Fabsl",
-		"double __builtin_inf() -> darwin.Inf",
-		"float __builtin_inff() -> darwin.Inff",
-		"double __builtin_infl() -> darwin.Infl",
-		"Double2 __sincospi_stret(double) -> darwin.SincospiStret",
-		"Float2 __sincospif_stret(float) -> darwin.SincospifStret",
-		"Double2 __sincos_stret(double) -> darwin.SincosStret",
-		"Float2 __sincosf_stret(float) -> darwin.SincosfStret",
-		"float __builtin_huge_valf() -> darwin.Inff",
 		"int __inline_signbitf(float) -> noarch.Signbitf",
 		"int __inline_signbitd(double) -> noarch.Signbitd",
 		"int __inline_signbitl(long double) -> noarch.Signbitl",
-		"double __builtin_nanf(const char*) -> darwin.NaN",
 
 		// math.h
 		"double acos(double) -> math.Acos",
@@ -224,12 +203,6 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int snprintf(char*, int, const char *, ...) -> noarch.Snprintf",
 		"int vsprintf(char*, const char *, ...) -> noarch.Vsprintf",
 		"int vsnprintf(char*, int, const char *, ...) -> noarch.Vsnprintf",
-
-		// darwin/stdio.h
-		"int __builtin___sprintf_chk(char*, int, int, char*) -> darwin.BuiltinSprintfChk",
-		"int __builtin___snprintf_chk(char*, int, int, int, char*) -> darwin.BuiltinSnprintfChk",
-		"int __builtin___vsprintf_chk(char*, int, int, char*) -> darwin.BuiltinVsprintfChk",
-		"int __builtin___vsnprintf_chk(char*, int, int, int, char*) -> darwin.BuiltinVsnprintfChk",
 	},
 	"string.h": {
 		// string.h
@@ -245,24 +218,10 @@ var builtInFunctionDefinitions = map[string][]string{
 		// in according to noarch.Strlen
 		"int strlen(const char*) -> noarch.Strlen",
 
-		// darwin/string.h
-		// should be: const char*, char*, size_t
-		"char* __builtin___strcpy_chk(const char*, char*, int) -> darwin.BuiltinStrcpy",
-		// should be: const char*, char*, size_t, size_t
-		"char* __builtin___strncpy_chk(const char*, char*, int, int) -> darwin.BuiltinStrncpy",
-
-		// should be: size_t __builtin_object_size(const void*, int)
-		"int __builtin_object_size(const char*, int) -> darwin.BuiltinObjectSize",
-
-		// see https://opensource.apple.com/source/Libc/Libc-763.12/include/secure/_string.h.auto.html
-		"char* __builtin___strcat_chk(char *, const char *, int) -> darwin.BuiltinStrcat",
 		"char* __inline_strcat_chk(char *, const char *) -> noarch.Strcat",
 
 		"char * memset(char *, char, unsigned int) -> noarch.Memset",
 		"char * memmove(char *, char *, unsigned int) -> noarch.Memmove",
-
-		"char * __builtin___memset_chk(char *, char, unsigned int, int) -> darwin.BuiltinMemset",
-		"char * __builtin___memmove_chk(char *, char *, unsigned int, int) -> darwin.BuiltinMemmove",
 	},
 	"stdlib.h": {
 		// stdlib.h
@@ -301,11 +260,6 @@ var builtInFunctionDefinitions = map[string][]string{
 		"struct tm * gmtime(const time_t *) -> noarch.Gmtime",
 		"time_t mktime(struct tm *) -> noarch.Mktime",
 		"char * asctime(struct tm *) -> noarch.Asctime",
-	},
-	"endian.h": {
-		// I'm not sure which header file these comes from?
-		"uint32 __builtin_bswap32(uint32) -> darwin.BSwap32",
-		"uint64 __builtin_bswap64(uint64) -> darwin.BSwap64",
 	},
 }
 
@@ -449,8 +403,7 @@ func (p *Program) loadFunctionDefinitions() {
 				}
 			}
 
-			if strings.HasPrefix(substitution, "darwin.") ||
-				strings.HasPrefix(substitution, "linux.") ||
+			if strings.HasPrefix(substitution, "linux.") ||
 				strings.HasPrefix(substitution, "noarch.") {
 				substitution = "github.com/Konstantin8105/c4go/" + substitution
 			}

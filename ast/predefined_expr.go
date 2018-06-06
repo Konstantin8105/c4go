@@ -6,7 +6,7 @@ type PredefinedExpr struct {
 	Pos        Position
 	Type       string
 	Name       string
-	Lvalue     bool
+	IsLvalue   bool
 	ChildNodes []Node
 }
 
@@ -21,7 +21,7 @@ func parsePredefinedExpr(line string) *PredefinedExpr {
 		Pos:        NewPositionFromString(groups["position"]),
 		Type:       groups["type"],
 		Name:       groups["name"],
-		Lvalue:     true,
+		IsLvalue:   true,
 		ChildNodes: []Node{},
 	}
 }

@@ -177,12 +177,12 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("error - panic")
+			err = fmt.Errorf("error - panic : %#v", r)
 		}
 	}()
 
 	// ignore if haven`t definition
-	if !n.Definition {
+	if !n.IsDefinition {
 		return
 	}
 
@@ -317,14 +317,20 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			declsIn, err = transpileToNode(field, p)
 			if err != nil {
 				err = fmt.Errorf("Cannot transpile %T", field)
+				p.AddMessage(p.GenerateWarningMessage(err, field))
 				return
 			}
 			decls = append(decls, declsIn...)
 		}
 	}
 
-	s := program.NewStruct(n)
-	if s.IsUnion {
+	s, err := program.NewStruct(n)
+	if err != nil {
+		p.AddMessage(p.GenerateWarningMessage(err, n))
+		return
+	}
+	switch s.Type {
+	case program.UnionType:
 		if strings.HasPrefix(s.Name, "union ") {
 			p.Structs[s.Name] = s
 			defer func() {
@@ -342,7 +348,8 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 				}
 			}()
 		}
-	} else {
+
+	case program.StructType:
 		if strings.HasPrefix(s.Name, "struct ") {
 			p.Structs[s.Name] = s
 			defer func() {
@@ -360,13 +367,18 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 				}
 			}()
 		}
+
+	default:
+		err = fmt.Errorf("Undefine type of struct : %v", s.Type)
+		return
 	}
 
 	name = strings.TrimPrefix(name, "struct ")
 	name = strings.TrimPrefix(name, "union ")
 
 	var d []goast.Decl
-	if s.IsUnion {
+	switch s.Type {
+	case program.UnionType:
 		// Union size
 		var size int
 		size, err = types.SizeOf(p, "union "+name)
@@ -387,7 +399,8 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		if err != nil {
 			return nil, err
 		}
-	} else {
+
+	case program.StructType:
 		d = append(d, &goast.GenDecl{
 			Tok: token.TYPE,
 			Specs: []goast.Spec{
@@ -401,11 +414,87 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 				},
 			},
 		})
+
+	default:
+		err = fmt.Errorf("Undefine type of struct : %v", s.Type)
+		return
 	}
 
 	decls = append(decls, d...)
 
 	return
+}
+
+func transpileCXXRecordDecl(p *program.Program, n *ast.RecordDecl) (
+	decls []goast.Decl, err error) {
+
+	n.Name = types.GenerateCorrectType(n.Name)
+	name := n.Name
+
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("cannot transpileCXXRecordDecl : `%v`. %v",
+				n.Name, err)
+			p.AddMessage(p.GenerateWarningMessage(err, n))
+		}
+	}()
+
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("error - panic : %#v", r)
+		}
+	}()
+
+	// ignore if haven`t definition
+	if !n.IsDefinition {
+		return
+	}
+
+	if name == "" || p.IsTypeAlreadyDefined(name) {
+		err = nil
+		return
+	}
+
+	p.DefineType(n.Kind + " " + name)
+	defer func() {
+		if err != nil {
+			p.UndefineType(n.Kind + " " + name)
+		}
+	}()
+
+	var fields []*goast.Field
+	for _, v := range n.Children() {
+		switch v := v.(type) {
+		case *ast.CXXRecordDecl:
+			// ignore
+
+		case *ast.FieldDecl:
+			var f *goast.Field
+			f, err = transpileFieldDecl(p, v)
+			if err != nil {
+				return
+			}
+			fields = append(fields, f)
+
+		default:
+			p.AddMessage(p.GenerateWarningMessage(
+				fmt.Errorf("Cannot transpilation field in CXXRecordDecl : %T", v), n))
+		}
+	}
+
+	return []goast.Decl{&goast.GenDecl{
+		Tok: token.TYPE,
+		Specs: []goast.Spec{
+			&goast.TypeSpec{
+				Name: util.NewIdent(name),
+				Type: &goast.StructType{
+					Fields: &goast.FieldList{
+						List: fields,
+					},
+				},
+			},
+		},
+	}}, nil
 }
 
 var ignoreTypedef = map[string]string{
@@ -684,10 +773,6 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 		return
 	}
 
-	if name == "__darwin_ct_rune_t" {
-		resolvedType = p.ImportType("github.com/Konstantin8105/c4go/darwin.CtRuneT")
-	}
-
 	if name == "div_t" || name == "ldiv_t" || name == "lldiv_t" {
 		intType := "int"
 		if name == "ldiv_t" {
@@ -703,8 +788,8 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 		// The name of the struct is not prefixed with "struct " because it is a
 		// typedef.
 		p.Structs[name] = &program.Struct{
-			Name:    name,
-			IsUnion: false,
+			Name: name,
+			Type: program.StructType,
 			Fields: map[string]interface{}{
 				"quot": intType,
 				"rem":  intType,

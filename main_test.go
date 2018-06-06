@@ -47,12 +47,18 @@ func TestIntegrationScripts(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	testCppFiles, err := filepath.Glob("tests/*.cpp")
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	exampleFiles, err := filepath.Glob("examples/*.c")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	files := append(testFiles, exampleFiles...)
+	files = append(files, testCppFiles...)
 
 	isVerbose := flag.CommandLine.Lookup("test.v").Value.String() == "true"
 
@@ -73,6 +79,13 @@ func TestIntegrationScripts(t *testing.T) {
 	for _, file := range files {
 		t.Run(file, func(t *testing.T) {
 
+			compiler := "clang"
+			compilerFlag := "" //"-std=c99"
+			if strings.HasSuffix(file, "cpp") {
+				compiler = "clang++"
+				compilerFlag = "-std=c++98"
+			}
+
 			cProgram := programOut{}
 			goProgram := programOut{}
 
@@ -87,7 +100,9 @@ func TestIntegrationScripts(t *testing.T) {
 			}
 
 			// Compile C.
-			out, err := exec.Command("clang", "-lm", "-o", cPath, file).CombinedOutput()
+			out, err := exec.Command(
+				compiler, compilerFlag, "-lm", "-o", cPath, file).
+				CombinedOutput()
 			if err != nil {
 				t.Fatalf("error: %s\n%s", err, out)
 			}
@@ -120,6 +135,10 @@ func TestIntegrationScripts(t *testing.T) {
 			// can run "go test" against the produced binary.
 			programArgs.outputAsTest = true
 
+			if strings.HasSuffix(file, "cpp") {
+				programArgs.cppCode = true
+			}
+
 			// Compile Go
 			err = Start(programArgs)
 			if err != nil {
@@ -145,7 +164,7 @@ func TestIntegrationScripts(t *testing.T) {
 				if os.Getenv("TRAVIS") == "true" {
 					args = append(args,
 						"-coverprofile="+testName+".coverprofile",
-						"-coverpkg=./noarch,./linux,./darwin",
+						"-coverpkg=./noarch,./linux",
 					)
 				}
 			}
@@ -161,8 +180,13 @@ func TestIntegrationScripts(t *testing.T) {
 			// Check stderr. "go test" will produce warnings when packages are
 			// not referenced as dependencies. We need to strip out these
 			// warnings so it doesn't effect the comparison.
-			cProgramStderr := cProgram.stderr.String()
-			goProgramStderr := goProgram.stderr.String()
+			var (
+				cProgramStderr  = cProgram.stderr.String()
+				goProgramStderr = goProgram.stderr.String()
+
+				cProgramStdout  = cProgram.stdout.String()
+				goProgramStdout = goProgram.stdout.String()
+			)
 
 			r := util.GetRegex("warning: no packages being tested depend on .+\n")
 			goProgramStderr = r.ReplaceAllString(goProgramStderr, "")
@@ -225,8 +249,12 @@ func TestIntegrationScripts(t *testing.T) {
 							i+1, indicator, fileLines[i])
 					}
 				}
-				t.Fatalf("Expected %s\nGot: %s\nParts of code:\n%s",
-					cProgramStderr, goProgramStderr, output)
+				t.Fatalf("\n%10s%s\n%10s%s\n\n%10s%s\n%10s%s\nParts of code:\n%s",
+					"Stderr Expect:", cProgramStderr,
+					"Stderr Got:", goProgramStderr,
+					"Stdout Expect:", cProgramStdout,
+					"Stdout Got:", goProgramStdout,
+					output)
 			}
 
 			// Check stdout
@@ -289,6 +317,13 @@ func TestIntegrationScripts(t *testing.T) {
 				removeLinesFromEnd = 4
 			} else if strings.HasPrefix(goOutLines[len(goOutLines)-3], "exit status") {
 				removeLinesFromEnd = 3
+			}
+
+			if len(goOutLines)-removeLinesFromEnd < 0 {
+				fmt.Println("> ", file)
+				fmt.Println("> ", goOutLines)
+				fmt.Println("> ", len(goOutLines))
+				fmt.Println("> ", removeLinesFromEnd)
 			}
 
 			goOut := strings.Join(goOutLines[1:len(goOutLines)-removeLinesFromEnd], "\n") + "\n"
