@@ -32,7 +32,7 @@ func runNodeTests(t *testing.T, tests map[string]Node) {
 		t.Run(testName, func(t *testing.T) {
 			defer func() {
 				if r := recover(); r != nil {
-					t.Fatalf("Panic for : %v, %v", testName, line)
+					t.Fatalf("Panic for : %v, %v\n%v", testName, line, r)
 				}
 			}()
 			// Append the name of the struct onto the front. This would make the

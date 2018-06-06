@@ -2,6 +2,8 @@ package program
 
 import (
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/Konstantin8105/c4go/ast"
 )
@@ -25,5 +27,6 @@ func (p *Program) GenerateWarningMessage(e error, n ast.Node) string {
 	// panic("found")
 	// }
 
+	message = strings.Replace(message, os.Getenv("GOPATH"), "$GOPATH", -1)
 	return message
 }
