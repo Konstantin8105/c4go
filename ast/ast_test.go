@@ -70,6 +70,15 @@ func runNodeTests(t *testing.T, tests map[string]Node) {
 				pos.ColumnEnd < 0 {
 				t.Errorf("Not acceptable negative position")
 			}
+			var posC Position
+			posC.Line = -1
+			if pos.Line == -1 {
+				t.Fatalf("Not correct default line position")
+			}
+			setPosition(actual, posC)
+			if pos.Line != -1 {
+				t.Log("Cannot change position")
+			}
 		})
 	}
 }
