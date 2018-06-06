@@ -55,3 +55,10 @@ func TestParseIncludeList(t *testing.T) {
 		})
 	}
 }
+
+func TestIncludeListFail(t *testing.T) {
+	_, err := parseIncludeList("without index")
+	if err == nil {
+		t.Fatalf("Cannot error withou :")
+	}
+}

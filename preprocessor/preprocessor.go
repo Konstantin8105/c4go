@@ -70,10 +70,7 @@ func (e *entity) isSame(x *entity) bool {
 	for k := range e.lines {
 		is := e.lines[k]
 		js := x.lines[k]
-		if len(*is) != len(*js) {
-			return false
-		}
-		if *is != *js {
+		if len(*is) != len(*js) || *is != *js {
 			return false
 		}
 	}
