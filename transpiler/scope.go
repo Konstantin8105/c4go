@@ -32,7 +32,8 @@ func transpileCompoundStmt(n *ast.CompoundStmt, p *program.Program) (
 		}
 
 		var result []goast.Stmt
-		if isVaList {
+		switch {
+		case isVaList:
 			// Implementation va_start
 			result = []goast.Stmt{
 				&goast.AssignStmt{
@@ -48,7 +49,7 @@ func transpileCompoundStmt(n *ast.CompoundStmt, p *program.Program) (
 					},
 				},
 			}
-		} else {
+		default:
 			// Other cases
 			if parent, ok := x.(*ast.ParenExpr); ok {
 				x = parent.Children()[0]
@@ -62,6 +63,7 @@ func transpileCompoundStmt(n *ast.CompoundStmt, p *program.Program) (
 		if result != nil {
 			stmts = append(stmts, result...)
 		}
+
 	}
 
 	return &goast.BlockStmt{

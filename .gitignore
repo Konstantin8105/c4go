@@ -12,3 +12,4 @@
 /.vscode
 *.coverprofile
 tests/*.go
+examples/*.go
