@@ -16,7 +16,7 @@ void simple()
 	is_eq(obj.name,2.3);
 	is_eq(obj.number,4);
 }
-
+/*
 //--------------------------
 class Rectangle {
     int width, height;
@@ -108,17 +108,17 @@ void constructor3()
 	Rectangle5 rec(2,3);
 	is_eq(rec.area(),6);
 }
-
+*/
 int main()
 {
-    plan(7);
+    plan(2);
 
 	simple();
-	defaulf_constructor();
-	constructor();
-	constructor2();
-	constructor3();
-	setter();
+	// defaulf_constructor();
+	// constructor();
+	// constructor2();
+	// constructor3();
+	// setter();
 
     done_testing();
 }
