@@ -105,7 +105,10 @@ func transpileCompoundStmt(n *ast.CompoundStmt, p *program.Program) (
 			result = []goast.Stmt{
 				&goast.ExprStmt{
 					X: &goast.CallExpr{
-						Fun:    goast.NewIdent("fmt.Printf"),
+						Fun: &goast.SelectorExpr{
+							X:   goast.NewIdent("fmt"),
+							Sel: goast.NewIdent("Printf"),
+						},
 						Lparen: 1,
 						Args: []goast.Expr{
 							&goast.BasicLit{
