@@ -357,6 +357,12 @@ func transpileArraySubscriptExpr(n *ast.ArraySubscriptExpr, p *program.Program) 
 
 func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 	_ goast.Expr, _ string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("Cannot transpile MemberExpr. err = %v", err)
+			p.AddMessage(p.GenerateWarningMessage(err, n))
+		}
+	}()
 
 	n.Type = types.GenerateCorrectType(n.Type)
 	n.Type2 = types.GenerateCorrectType(n.Type2)
@@ -397,6 +403,10 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 	// for anonymous structs
 	if structType == nil {
 		structType = p.GetStruct(types.CleanCType(baseType))
+	}
+	// typedef types
+	if structType == nil {
+		structType = p.GetStruct(p.TypedefType[baseType])
 	}
 	// other case
 	for _, t := range originTypes {
