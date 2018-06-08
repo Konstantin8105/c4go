@@ -212,18 +212,6 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		}
 	}()
 
-	if insideCall, ok := n.Children()[0].(*ast.CallExpr); ok {
-		// TODO :
-		// expr, resultType, preStmts, postStmts, err = transpileCallExpr(insideCall, p)
-		// return &goast.CallExpr{
-		// 	Fun:    expr,
-		// 	Lparen: 1,
-		// }, n.Type, preStmts, postStmts, err
-		_ = insideCall
-		err = fmt.Errorf("Call of call node is not implemented")
-		return
-	}
-
 	functionName, err := getNameOfFunctionFromCallExpr(p, n)
 	if err != nil {
 		return nil, "", nil, nil, err
