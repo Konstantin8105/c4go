@@ -37,6 +37,19 @@ func TestParseIncludeList(t *testing.T) {
   /home/lepricon/go/src/github.com/Konstantin8105/c4go/build/git-source/VasielBook/Глава\ 6/6.2/main.c`,
 			list: []string{"/home/lepricon/go/src/github.com/Konstantin8105/c4go/build/git-source/VasielBook/Глава 6/6.2/main.c"},
 		},
+		{
+			inputLine: ` shell.o: /tmp/SQLITE/sqlite-amalgamation-3220000/shell.c \
+  /tmp/SQLITE/sqlite-amalgamation-3220000/sqlite3.h
+sqlite3.o: /tmp/SQLITE/sqlite-amalgamation-3220000/sqlite3.c /tmp/1.h \
+ /tmp/2.h`,
+			list: []string{
+				"/tmp/SQLITE/sqlite-amalgamation-3220000/shell.c",
+				"/tmp/SQLITE/sqlite-amalgamation-3220000/sqlite3.h",
+				"/tmp/SQLITE/sqlite-amalgamation-3220000/sqlite3.c",
+				"/tmp/1.h",
+				"/tmp/2.h",
+			},
+		},
 	}
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("Test:%d", i), func(t *testing.T) {

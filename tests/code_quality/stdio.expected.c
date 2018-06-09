@@ -14,14 +14,6 @@ type size_t uint32
 type __time_t int32
 type va_list int64
 type __gnuc_va_list int64
-type __codecvt_result int
-
-const (
-	__codecvt_ok      __codecvt_result = 0
-	__codecvt_partial                  = 1
-	__codecvt_error                    = 2
-	__codecvt_noconv                   = 3
-)
 
 var stdin *noarch.File
 

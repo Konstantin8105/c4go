@@ -94,53 +94,6 @@ func transpileFieldDecl(p *program.Program, n *ast.FieldDecl) (
 	}, nil
 }
 
-var ignoreRecordDecl = map[string]string{
-	"struct __fsid_t":                             "/usr/include/x86_64-linux-gnu/bits/types.h",
-	"union __union_at__usr_include_wchar_h_85_3_": "/usr/include/wchar.h",
-	"struct __mbstate_t":                          "/usr/include/wchar.h",
-	"struct _G_fpos_t":                            "/usr/include/_G_config.h",
-	"struct _G_fpos64_t":                          "/usr/include/_G_config.h",
-	"_IO_jump_t":                                  "/usr/include/libio.h",
-	"_IO_marker":                                  "/usr/include/libio.h",
-	"_IO_FILE":                                    "/usr/include/libio.h",
-	"_IO_FILE_plus":                               "/usr/include/libio.h",
-	"struct _IO_cookie_io_functions_t":            "/usr/include/libio.h",
-	"_IO_cookie_file":                             "/usr/include/libio.h",
-	"obstack":                                     "/usr/include/stdio.h",
-	"timeval":                                     "/usr/include/x86_64-linux-gnu/bits/time.h",
-	"timespec":                                    "/usr/include/time.h",
-	"itimerspec":                                  "/usr/include/time.h",
-	"sigevent":                                    "/usr/include/time.h",
-	"__locale_struct":                             "/usr/include/xlocale.h",
-	"exception":                                   "/usr/include/math.h",
-
-	"wait":                    "/usr/include/x86_64-linux-gnu/bits/waitstatus.h",
-	"struct __sigset_t":       "/usr/include/x86_64-linux-gnu/bits/sigset.h",
-	"struct fd_set":           "/usr/include/x86_64-linux-gnu/sys/select.h",
-	"pthread_attr_t":          "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"__pthread_internal_list": "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"__pthread_mutex_s":       "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"pthread_mutex_t":         "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"pthread_mutexattr_t":     "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"pthread_cond_t":          "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"pthread_condattr_t":      "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"pthread_rwlock_t":        "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"pthread_rwlockattr_t":    "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"pthread_barrier_t":       "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"pthread_barrierattr_t":   "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"random_data":             "/usr/include/stdlib.h",
-	"drand48_data":            "/usr/include/stdlib.h",
-
-	"siginfo_t":     "/usr/include/sys/signal.h",
-	"__sigaction_u": "/usr/include/sys/signal.h",
-	"__sigaction":   "/usr/include/sys/signal.h",
-	"sigaction":     "/usr/include/sys/signal.h",
-	"sig_t":         "/usr/include/sys/signal.h",
-	"sigvec":        "/usr/include/sys/signal.h",
-	"sigstack":      "/usr/include/sys/signal.h",
-	"__siginfo":     "/usr/include/sys/signal.h",
-}
-
 func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 	decls []goast.Decl, err error) {
 
@@ -153,20 +106,6 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			err = fmt.Errorf("cannot transpileRecordDecl `%v`. %v",
 				n.Name, err)
 		} else {
-			if _, ok := types.CStdStructType[name]; ok {
-				// no need add struct for registrated C standart library
-				decls = nil
-				return
-			}
-			if !p.IncludeHeaderIsExists(n.Pos.File) {
-				// no need add struct from C STD
-				decls = nil
-				return
-			}
-			if h, ok := ignoreRecordDecl[n.Name]; ok && p.IncludeHeaderIsExists(h) {
-				decls = nil
-				return
-			}
 			if addPackageUnsafe {
 				p.AddImports("unsafe")
 			}
@@ -180,6 +119,10 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			err = fmt.Errorf("error - panic : %#v", r)
 		}
 	}()
+
+	if !p.PreprocessorFile.IsUserSource(n.Pos.File) {
+		return
+	}
 
 	// ignore if haven`t definition
 	if !n.IsDefinition {
@@ -268,15 +211,6 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			}
 
 		case *ast.IndirectFieldDecl:
-			// ignore
-
-		case *ast.AlignedAttr:
-			// ignore
-
-		case *ast.PackedAttr:
-			// ignore
-
-		case *ast.MaxFieldAlignmentAttr:
 			// ignore
 
 		case *ast.FullComment:
