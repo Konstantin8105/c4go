@@ -53,7 +53,7 @@ func TranspileAST(fileName, packageName string, p *program.Program, root ast.Nod
 					List: []*goast.Field{
 						{
 							Names: []*goast.Ident{util.NewIdent("t")},
-							Type:  util.NewTypeIdent("*testing.T"),
+							Type:  goast.NewIdent("*testing.T"),
 						},
 					},
 				},
@@ -209,33 +209,7 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 		return transpileStmtExpr(n, p)
 
 	case *ast.ImplicitValueInitExpr:
-		var t string
-		t = n.Type1
-		t, err = types.ResolveType(p, t)
-		p.AddMessage(p.GenerateWarningMessage(err, n))
-		var isStruct bool
-		if _, ok := p.Structs[t]; ok {
-			isStruct = true
-		}
-		if _, ok := p.Structs["struct "+t]; ok {
-			isStruct = true
-		}
-		if isStruct {
-			expr = &goast.CompositeLit{
-				Type:   util.NewIdent(t),
-				Lbrace: 1,
-			}
-			return
-		}
-		expr = &goast.CallExpr{
-			Fun:    goast.NewIdent(t),
-			Lparen: 1,
-			Args: []goast.Expr{&goast.BasicLit{
-				Kind:  token.INT,
-				Value: "0",
-			}},
-		}
-		return
+		return transpileImplicitValueInitExpr(n, p)
 
 	case *ast.OffsetOfExpr:
 		expr, exprType, err = transpileOffsetOfExpr(n, p)

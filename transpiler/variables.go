@@ -357,6 +357,12 @@ func transpileArraySubscriptExpr(n *ast.ArraySubscriptExpr, p *program.Program) 
 
 func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 	_ goast.Expr, _ string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("Cannot transpile MemberExpr. err = %v", err)
+			p.AddMessage(p.GenerateWarningMessage(err, n))
+		}
+	}()
 
 	n.Type = types.GenerateCorrectType(n.Type)
 	n.Type2 = types.GenerateCorrectType(n.Type2)
@@ -397,6 +403,10 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 	// for anonymous structs
 	if structType == nil {
 		structType = p.GetStruct(types.CleanCType(baseType))
+	}
+	// typedef types
+	if structType == nil {
+		structType = p.GetStruct(p.TypedefType[baseType])
 	}
 	// other case
 	for _, t := range originTypes {
@@ -483,4 +493,46 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 		X:   x,
 		Sel: util.NewIdent(rhs),
 	}, n.Type, preStmts, postStmts, nil
+}
+
+func transpileImplicitValueInitExpr(n *ast.ImplicitValueInitExpr, p *program.Program) (
+	expr goast.Expr, exprType string, _ []goast.Stmt, _ []goast.Stmt, err error) {
+
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("Cannot transpileImplicitValueInitExpr. err = %v", err)
+		}
+	}()
+
+	exprType = n.Type1
+
+	var t string
+	t = n.Type1
+	t, err = types.ResolveType(p, t)
+	p.AddMessage(p.GenerateWarningMessage(err, n))
+
+	var isStruct bool
+	if _, ok := p.Structs[t]; ok {
+		isStruct = true
+	}
+	if _, ok := p.Structs["struct "+t]; ok {
+		isStruct = true
+	}
+	if isStruct {
+		expr = &goast.CompositeLit{
+			Type:   util.NewIdent(t),
+			Lbrace: 1,
+		}
+		return
+	}
+
+	expr = &goast.CallExpr{
+		Fun:    goast.NewIdent(t),
+		Lparen: 1,
+		Args: []goast.Expr{&goast.BasicLit{
+			Kind:  token.INT,
+			Value: "0",
+		}},
+	}
+	return
 }
