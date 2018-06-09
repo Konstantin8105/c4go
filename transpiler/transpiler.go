@@ -53,7 +53,7 @@ func TranspileAST(fileName, packageName string, p *program.Program, root ast.Nod
 					List: []*goast.Field{
 						{
 							Names: []*goast.Ident{util.NewIdent("t")},
-							Type:  util.NewTypeIdent("*testing.T"),
+							Type:  goast.NewIdent("*testing.T"),
 						},
 					},
 				},

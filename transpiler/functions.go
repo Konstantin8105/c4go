@@ -160,7 +160,7 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 					&goast.AssignStmt{
 						Lhs: []goast.Expr{fieldList.List[0].Names[0]},
 						Tok: token.DEFINE,
-						Rhs: []goast.Expr{util.NewCallExpr("len", util.NewTypeIdent("os.Args"))},
+						Rhs: []goast.Expr{util.NewCallExpr("len", goast.NewIdent("os.Args"))},
 					},
 				)
 			}
@@ -177,7 +177,7 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 						Key:   goast.NewIdent("_"),
 						Value: util.NewIdent("argvSingle"),
 						Tok:   token.DEFINE,
-						X:     util.NewTypeIdent("os.Args"),
+						X:     goast.NewIdent("os.Args"),
 						Body: &goast.BlockStmt{
 							List: []goast.Stmt{
 								&goast.AssignStmt{
@@ -341,8 +341,10 @@ func transpileReturnStmt(n *ast.ReturnStmt, p *program.Program) (
 		litExpr, isLiteral := e.(*goast.BasicLit)
 		if !isLiteral || (isLiteral && litExpr.Value != "0") {
 			p.AddImport("os")
-			return util.NewExprStmt(util.NewCallExpr("os.Exit", results...)),
-				preStmts, postStmts, nil
+			return util.NewExprStmt(&goast.CallExpr{
+				Fun:  goast.NewIdent("os.Exit"),
+				Args: results,
+			}), preStmts, postStmts, nil
 		}
 		results = []goast.Expr{}
 	}
