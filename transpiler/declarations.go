@@ -252,7 +252,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			if err != nil {
 				err = fmt.Errorf("Cannot transpile %T", field)
 				p.AddMessage(p.GenerateWarningMessage(err, field))
-				continue
+				return
 			}
 			decls = append(decls, declsIn...)
 		}
