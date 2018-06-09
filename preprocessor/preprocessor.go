@@ -202,6 +202,17 @@ func (f FilePP) GetIncludeFiles() []IncludeHeader {
 	return f.includes
 }
 
+// IsUserSource get is it source from user
+func (f FilePP) IsUserSource(in string) bool {
+	for i := range f.includes {
+		if in == f.includes[i].HeaderName &&
+			f.includes[i].IsUserSource {
+			return true
+		}
+	}
+	return false
+}
+
 // GetSnippet return short part of code inside preprocessor C code
 func (f FilePP) GetSnippet(file string,
 	line, lineEnd int,
