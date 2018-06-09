@@ -480,12 +480,31 @@ func transpileCallExprCalloc(n *ast.CallExpr, p *program.Program) (
 	if err != nil {
 		return nil, "", nil, nil, err
 	}
+
+	//
+	// -UnaryExprOrTypeTraitExpr 0x24e0498 <col:27, col:39> 'unsigned long' sizeof 'float'
+	//
+	// OR
+	//
+	// t.w = (float*) calloc(t.nw, sizeof(*t.w));
+	// -UnaryExprOrTypeTraitExpr <> 'unsigned long' sizeof
+	//  `-ParenExpr <> 'float' lvalue
+	//    `-UnaryOperator <> 'float' lvalue prefix '*'
+	//      `-ImplicitCastExpr <> 'float *' <LValueToRValue>
+	//        `-MemberExpr <> 'float *' lvalue .w 0x2548b38
+	//          `-DeclRefExpr <> 'struct cws':'struct cws' lvalue Var 0x2548c40 't' 'struct cws': 'struct cws'
 	if v, ok := n.Children()[2].(*ast.UnaryExprOrTypeTraitExpr); ok {
-		allocType = v.Type2
+		if v.Type2 == "" {
+			_, t, _, _, _ := transpileToExpr(v.Children()[0], p, false)
+			allocType = t
+		} else {
+			allocType = v.Type2
+		}
 	} else {
 		return nil, "", nil, nil,
 			fmt.Errorf("Unsupport type '%T' in function calloc", n.Children()[2])
 	}
+
 	goType, err := types.ResolveType(p, allocType)
 	if err != nil {
 		return nil, "", nil, nil, err

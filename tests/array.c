@@ -349,7 +349,7 @@ void test_struct_init()
 
 int main()
 {
-    plan(153);
+    plan(154);
 
 	START_TEST(struct_init);
 	START_TEST(array_increment);
@@ -817,6 +817,19 @@ int main()
 
     test_pointer_arith_size_t();
     test_pointer_minus_pointer();
+
+	diag("calloc with struct");
+	{
+		struct cws {
+			float *w;
+			int   nw;
+		};
+		struct cws t;
+		t.nw = 5;
+    	t.w = (float*) calloc(t.nw, sizeof(*t.w));
+		is_not_null(t.w);
+		(void)(t);
+	}
 
     done_testing();
 }
