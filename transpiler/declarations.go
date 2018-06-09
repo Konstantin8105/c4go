@@ -106,12 +106,8 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			err = fmt.Errorf("cannot transpileRecordDecl `%v`. %v",
 				n.Name, err)
 		} else {
-			if !p.PreprocessorFile.IsUserSource(n.Pos.File) {
-				decls = nil
-			} else {
-				if addPackageUnsafe {
-					p.AddImports("unsafe")
-				}
+			if addPackageUnsafe {
+				p.AddImports("unsafe")
 			}
 			// Only for adding to ignore list
 			// fmt.Printf("%40s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
@@ -123,6 +119,10 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			err = fmt.Errorf("error - panic : %#v", r)
 		}
 	}()
+
+	if !p.PreprocessorFile.IsUserSource(n.Pos.File) {
+		return
+	}
 
 	// ignore if haven`t definition
 	if !n.IsDefinition {
@@ -213,15 +213,6 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		case *ast.IndirectFieldDecl:
 			// ignore
 
-		case *ast.AlignedAttr:
-			// ignore
-
-		case *ast.PackedAttr:
-			// ignore
-
-		case *ast.MaxFieldAlignmentAttr:
-			// ignore
-
 		case *ast.FullComment:
 			// We haven't Go ast struct for easy inject a comments.
 			// All comments are added like CommentsGroup.
@@ -261,7 +252,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			if err != nil {
 				err = fmt.Errorf("Cannot transpile %T", field)
 				p.AddMessage(p.GenerateWarningMessage(err, field))
-				return
+				continue
 			}
 			decls = append(decls, declsIn...)
 		}

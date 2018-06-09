@@ -434,6 +434,7 @@ func generateIncludeList(userList, allList []string) (
 			IsUserSource: isUser,
 		})
 	}
+
 	return
 }
 
