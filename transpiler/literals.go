@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"fmt"
 	"go/token"
+	"regexp"
 	"strings"
 
 	goast "go/ast"
@@ -23,15 +24,29 @@ func transpileFloatingLiteral(n *ast.FloatingLiteral) *goast.BasicLit {
 	return util.NewFloatLit(n.Value)
 }
 
+var regexpUnsigned *regexp.Regexp
+var regexpLongDouble *regexp.Regexp
+
+func init() {
+	regexpUnsigned = regexp.MustCompile(`%(\d+)?u`)
+	regexpLongDouble = regexp.MustCompile(`%(\d+)?(.\d+)?lf`)
+}
+
 // ConvertToGoFlagFormat convert format flags from C to Go
 func ConvertToGoFlagFormat(str string) string {
 	// %u to %d
-	if strings.Contains(str, "%u") {
-		str = strings.Replace(str, "%u", "%d", -1)
+	{
+		match := regexpUnsigned.FindAllStringSubmatch(str, -1)
+		for _, sub := range match {
+			str = strings.Replace(str, sub[0], sub[0][:len(sub[0])-1]+"d", -1)
+		}
 	}
 	// from %lf to %f
-	if strings.Contains(str, "%lf") {
-		str = strings.Replace(str, "%lf", "%f", -1)
+	{
+		match := regexpLongDouble.FindAllStringSubmatch(str, -1)
+		for _, sub := range match {
+			str = strings.Replace(str, sub[0], sub[0][:len(sub[0])-2]+"f", -1)
+		}
 	}
 	return str
 }
