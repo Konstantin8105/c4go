@@ -12,7 +12,7 @@
     test_##t();
 
 // size of that file
-int filesize = 11123;
+int filesize = 11360;
 
 void test_putchar()
 {
@@ -45,6 +45,16 @@ void test_printf()
     printf("# floats: %4.2f %+.0e %E \n", 3.1416, 3.1416, 3.1416);
     printf("# Width trick: %*d \n", 5, 10);
     printf("# %s \n", "A string");
+
+	// Type printf
+	unsigned long long ull = 42;
+	printf("Long long : %u\n",ull);
+	unsigned int ui = 42;
+	printf("uint : %u\n",ui);
+	double d = 42.42;
+	printf("double : %f\n",d);
+	printf("double : %lf\n",d);
+	printf("double : %2.2f\n",d);
 
 	// Literal error
     printf("Символьный литерал \'A\':\t%d\n", sizeof('A'));

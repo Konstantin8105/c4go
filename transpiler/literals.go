@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"fmt"
 	"go/token"
+	"strings"
 
 	goast "go/ast"
 
@@ -22,8 +23,25 @@ func transpileFloatingLiteral(n *ast.FloatingLiteral) *goast.BasicLit {
 	return util.NewFloatLit(n.Value)
 }
 
+// ConvertToGoFlagFormat convert format flags from C to Go
+func ConvertToGoFlagFormat(str string) string {
+	// %u to %d
+	if strings.Contains(str, "%u") {
+		str = strings.Replace(str, "%u", "%d", -1)
+	}
+	// from %lf to %f
+	if strings.Contains(str, "%lf") {
+		str = strings.Replace(str, "%lf", "%f", -1)
+	}
+	return str
+}
+
 func transpileStringLiteral(p *program.Program, n *ast.StringLiteral, arrayToArray bool) (
 	expr goast.Expr, exprType string, err error) {
+
+	// Convert format flags
+	n.Value = ConvertToGoFlagFormat(n.Value)
+
 	// Example:
 	// StringLiteral 0x280b918 <col:29> 'char [30]' lvalue "%0"
 	baseType := types.GetBaseType(n.Type)
