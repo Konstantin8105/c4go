@@ -277,12 +277,7 @@ func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.Fil
 	if args.verbose {
 		fmt.Println("Running clang for AST tree...")
 	}
-	compiler := "clang"
-	compilerFlag := "" //"-std=c99"
-	if args.cppCode {
-		compiler = "clang++"
-		compilerFlag = "-std=c++98"
-	}
+	compiler, compilerFlag := preprocessor.Compiler(args.cppCode)
 	astPP, err := exec.Command(compiler, compilerFlag, "-Xclang", "-ast-dump",
 		"-fsyntax-only", "-fno-color-diagnostics", ppFilePath).Output()
 	if err != nil {

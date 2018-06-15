@@ -79,12 +79,8 @@ func TestIntegrationScripts(t *testing.T) {
 	for _, file := range files {
 		t.Run(file, func(t *testing.T) {
 
-			compiler := "clang"
-			compilerFlag := "" //"-std=c99"
-			if strings.HasSuffix(file, "cpp") {
-				compiler = "clang++"
-				compilerFlag = "-std=c++98"
-			}
+			compiler, compilerFlag := preprocessor.Compiler(
+				strings.HasSuffix(file, "cpp"))
 
 			cProgram := programOut{}
 			goProgram := programOut{}
