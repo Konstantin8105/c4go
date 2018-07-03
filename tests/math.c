@@ -12,7 +12,27 @@ unsigned long long ullmax = 18446744073709551615ull;
 
 int main()
 {
-    plan(397);
+    plan(399);
+
+	double w1 = 100;
+	double w2 = 2;
+	double x1 = 3;
+	double x2 = 4;
+	double Ln = 2;
+	double R1o;
+	R1o = ( (2.0*w1+w2)*x1*x1 - (w1+2.0*w2)*x2*x2 + 
+			 3.0*(w1+w2)*Ln*(x2-x1) - (w1-w2)*x1*x2 ) / (6.0*Ln);
+	is_eq(R1o,-34.16666666666666429819088);
+
+	double f01;
+		f01 = (  3.0*(w2+4.0*w1)*x1*x1*x1*x1 -  3.0*(w1+4.0*w2)*x2*x2*x2*x2
+		      - 15.0*(w2+3.0*w1)*Ln*x1*x1*x1 + 15.0*(w1+3.0*w2)*Ln*x2*x2*x2
+		      -  3.0*(w1-w2)*x1*x2*(x1*x1 + x2*x2)
+		      + 20.0*(w2+2.0*w1)*Ln*Ln*x1*x1 - 20.0*(w1+2.0*w2)*Ln*Ln*x2*x2
+		      + 15.0*(w1-w2)*Ln*x1*x2*(x1+x2)
+		      -  3.0*(w1-w2)*x1*x1*x2*x2 - 20.0*(w1-w2)*Ln*Ln*x1*x2 ) / 360.0;
+		is_eq(f01,23.07222222222222285381577);
+
 
 	diag("Sqrt function");
 	double (*f)(double) = sqrt;
