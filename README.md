@@ -9,12 +9,12 @@ A tool for [transpiling](https://en.wikipedia.org/wiki/Source-to-source_compiler
 
 Milestone of project:
 
-1. Tranpiling project [GNU GSL](https://www.gnu.org/software/gsl/).
-2. Tranpiling project [GTK+](https://www.gtk.org/).
+1. Transpiling project [GNU GSL](https://www.gnu.org/software/gsl/).
+2. Transpiling project [GTK+](https://www.gtk.org/).
 
 Notes:
-* Transpiler work on linux and mac machines
-* Need installed `clang`. See [llvm download page](http://releases.llvm.org/download.html)
+* Transpiler works on linux and mac machines
+* Need to have installed `clang`. See [llvm download page](http://releases.llvm.org/download.html)
 
 # Installation
 
