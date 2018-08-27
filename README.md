@@ -53,13 +53,17 @@ int main()
     int n, c;
 
     printf("Enter a number\n");
+	// get value
     scanf("%d", &n);
     printf("The number is: %d\n", n);
 
+	// ------- 
     if (n == 2)
         printf("Prime number.\n");
-    else {
-        for (c = 2; c <= n - 1; c++) {
+    else
+    {
+        for (c = 2; c <= n - 1; c++)
+        {
             if (n % c == 0)
                 break;
         }
@@ -74,12 +78,12 @@ int main()
 
 Go code of file `prime.go`:
 ```golang
-/*
-        Package main - transpiled by c4go
-
-        If you have found any issues, please raise an issue at:
-        https://github.com/Konstantin8105/c4go/
-*/
+//
+//	Package main - transpiled by c4go
+//
+//	If you have found any issues, please raise an issue at:
+//	https://github.com/Konstantin8105/c4go/
+//
 
 package main
 
@@ -100,31 +104,35 @@ var stderr *noarch.File
 
 // main - transpiled function from  $GOPATH/src/github.com/Konstantin8105/c4go/examples/prime.c:3
 func main() {
-        var n int
-        var c int
-        fmt.Printf("Enter a number\n")
-        noarch.Scanf([]byte("%d\x00"), (*[100000000]int)(unsafe.Pointer(&n))[:])
-        noarch.Printf([]byte("The number is: %d\n\x00"), n)
-        if n == 2 {
-                fmt.Printf("Prime number.\n")
-        } else {
-                for c = 2; c <= n-1; c++ {
-                        if n%c == 0 {
-                                break
-                        }
-                }
-                if c != n {
-                        fmt.Printf("Not prime.\n")
-                } else {
-                        fmt.Printf("Prime number.\n")
-                }
-        }
-        return
+	var n int
+	var c int
+	fmt.Printf("Enter a number\n")
+	noarch.Scanf([]byte("%d\x00"), (*[100000000]int)(unsafe.Pointer(&n))[:])
+	// get value
+	//
+	noarch.Printf([]byte("The number is: %d\n\x00"), n)
+	if n == 2 {
+		fmt.Printf("Prime number.\n")
+		// -------
+		//
+	} else {
+		for c = 2; c <= n-1; c++ {
+			if n%c == 0 {
+				break
+			}
+		}
+		if c != n {
+			fmt.Printf("Not prime.\n")
+		} else {
+			fmt.Printf("Prime number.\n")
+		}
+	}
+	return
 }
 func init() {
-        stdin = noarch.Stdin
-        stdout = noarch.Stdout
-        stderr = noarch.Stderr
+	 stdin = noarch.Stdin
+	 stdout = noarch.Stdout
+	 stderr = noarch.Stderr
 }
 ```
 

@@ -278,6 +278,20 @@ func transpileToStmt(node ast.Node, p *program.Program) (
 		preStmts = nilFilterStmts(preStmts)
 		postStmts = nilFilterStmts(postStmts)
 	}()
+	defer func() {
+		com := p.GetComments(node.Position())
+		for i := range com {
+			postStmts = append(postStmts, &goast.ExprStmt{
+				X: goast.NewIdent(com[i].Text),
+			})
+		}
+		cg := p.GetMessageComments()
+		for i := range cg.List {
+			postStmts = append(postStmts, &goast.ExprStmt{
+				X: goast.NewIdent(cg.List[i].Text),
+			})
+		}
+	}()
 
 	var expr goast.Expr
 
@@ -422,13 +436,14 @@ func transpileToNode(node ast.Node, p *program.Program) (
 		decls, err = transpileTranslationUnitDecl(p, n)
 
 	case *ast.FunctionDecl:
+		com := p.GetComments(node.Position())
 		decls, err = transpileFunctionDecl(n, p)
 		if len(decls) > 0 {
 			if _, ok := decls[0].(*goast.FuncDecl); ok {
 				decls[0].(*goast.FuncDecl).Doc = p.GetMessageComments()
 				decls[0].(*goast.FuncDecl).Doc.List =
 					append(decls[0].(*goast.FuncDecl).Doc.List,
-						p.GetComments(node.Position())...)
+						com...)
 
 				// location of file
 				location := node.Position().GetSimpleLocation()

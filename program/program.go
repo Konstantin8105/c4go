@@ -208,20 +208,28 @@ func (p *Program) GetMessageComments() (_ *goast.CommentGroup) {
 // GetComments - return comments
 func (p *Program) GetComments(n ast.Position) (out []*goast.Comment) {
 	beginLine := p.commentLine[n.File]
-	lastLine := n.LineEnd
+	lastLine := n.Line
+	if lastLine < beginLine {
+		return
+	}
 	for i := range p.PreprocessorFile.GetComments() {
-		if p.PreprocessorFile.GetComments()[i].File == n.File {
-			if beginLine < p.PreprocessorFile.GetComments()[i].Line &&
-				p.PreprocessorFile.GetComments()[i].Line <= lastLine {
-				out = append(out, &goast.Comment{
-					Text: p.PreprocessorFile.GetComments()[i].Comment,
-				})
-				if p.PreprocessorFile.GetComments()[i].Comment[0:2] == "/"+"*" {
-					out = append(out, &goast.Comment{
-						Text: "// ",
-					})
-				}
-			}
+		if p.PreprocessorFile.GetComments()[i].File != n.File {
+			continue
+		}
+		if beginLine >= p.PreprocessorFile.GetComments()[i].Line {
+			continue
+		}
+		if p.PreprocessorFile.GetComments()[i].Line > lastLine {
+			continue
+		}
+		// add comment
+		out = append(out, &goast.Comment{
+			Text: p.PreprocessorFile.GetComments()[i].Comment,
+		})
+		if p.PreprocessorFile.GetComments()[i].Comment[0:2] == "/"+"*" {
+			out = append(out, &goast.Comment{
+				Text: "// ",
+			})
 		}
 	}
 	if len(out) > 0 {
