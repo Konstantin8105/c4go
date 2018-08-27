@@ -216,7 +216,7 @@ func (p *Program) GetComments(n ast.Position) (out []*goast.Comment) {
 				out = append(out, &goast.Comment{
 					Text: p.PreprocessorFile.GetComments()[i].Comment,
 				})
-				if p.PreprocessorFile.GetComments()[i].Comment[0:2] == "/*" {
+				if p.PreprocessorFile.GetComments()[i].Comment[0:2] == "/"+"*" {
 					out = append(out, &goast.Comment{
 						Text: "// ",
 					})
@@ -326,12 +326,12 @@ func (p *Program) GetNextIdentifier(prefix string) string {
 func (p *Program) String() string {
 	var buf bytes.Buffer
 
-	buf.WriteString(fmt.Sprintf(`/*
-	Package main - transpiled by c4go
-
-	If you have found any issues, please raise an issue at:
-	https://github.com/Konstantin8105/c4go/
-*/
+	buf.WriteString(fmt.Sprintf(`//
+//	Package main - transpiled by c4go
+//
+//	If you have found any issues, please raise an issue at:
+//	https://github.com/Konstantin8105/c4go/
+//
 
 `))
 

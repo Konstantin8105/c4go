@@ -3,6 +3,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"flag"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"go/parser"
 	"go/token"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path"
@@ -776,4 +778,74 @@ func TestWrongAST(t *testing.T) {
 		args.outputFile = basename + strconv.Itoa(i) + ".go"
 		_ = generateGoCode(args, c, filePP)
 	}
+}
+
+func getGoCode(dir string) (files []string, err error) {
+	ents, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return
+	}
+
+	for _, ent := range ents {
+		if ent.IsDir() {
+			if ent.Name() == "build" {
+				// ignore folder "build"
+				continue
+			}
+			var fs []string
+			fs, err = getGoCode(dir + "/" + ent.Name())
+			if err != nil {
+				return
+			}
+			files = append(files, fs...)
+			continue
+		}
+		if !strings.HasSuffix(ent.Name(), ".go") {
+			continue
+		}
+		if strings.Contains(ent.Name(), "_test.go") {
+			continue
+		}
+		files = append(files, dir+"/"+ent.Name())
+	}
+
+	return
+}
+
+func TestTodoComments(t *testing.T) {
+	// Show all todos in code
+	source, err := getGoCode("./")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var amount int
+
+	for i := range source {
+		t.Run(source[i], func(t *testing.T) {
+			file, err := os.Open(source[i])
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer file.Close()
+
+			pos := 1
+			scanner := bufio.NewScanner(file)
+			for scanner.Scan() {
+				line := scanner.Text()
+				pos++
+				if !strings.Contains(line, "/"+"*") {
+					continue
+				}
+				index := strings.Index(line, "/"+"*")
+				t.Errorf("%d %s", pos, line[index:])
+				amount++
+			}
+
+			if err := scanner.Err(); err != nil {
+				log.Fatal(err)
+			}
+		})
+	}
+	t.Logf("Amount comments: %d", amount)
 }

@@ -171,41 +171,37 @@ var temp = func() %s {
 }
 
 // GenerateFuncType in according to types
-/*
-Type: *ast.FuncType {
-.  Func: 13:7
-.  Params: *ast.FieldList {
-.  .  Opening: 13:12
-.  .  List: []*ast.Field (len = 2) {
-.  .  .  0: *ast.Field {
-.  .  .  .  Type: *ast.Ident {
-.  .  .  .  .  NamePos: 13:13
-.  .  .  .  .  Name: "int"
-.  .  .  .  }
-.  .  .  }
-.  .  .  1: *ast.Field {
-.  .  .  .  Type: *ast.Ident {
-.  .  .  .  .  NamePos: 13:17
-.  .  .  .  .  Name: "int"
-.  .  .  .  }
-.  .  .  }
-.  .  }
-.  .  Closing: 13:20
-.  }
-.  Results: *ast.FieldList {
-.  .  Opening: -
-.  .  List: []*ast.Field (len = 1) {
-.  .  .  0: *ast.Field {
-.  .  .  .  Type: *ast.Ident {
-.  .  .  .  .  NamePos: 13:21
-.  .  .  .  .  Name: "string"
-.  .  .  .  }
-.  .  .  }
-.  .  }
-.  .  Closing: -
-.  }
-}
-*/
+// Type: *ast.FuncType {
+// .  Func: 13:7
+// .  Params: *ast.FieldList {
+// .  .  Opening: 13:12
+// .  .  List: []*ast.Field (len = 2) {
+// .  .  .  0: *ast.Field {
+// .  .  .  .  Type: *ast.Ident {
+// .  .  .  .  .  NamePos: 13:13
+// .  .  .  .  .  Name: "int"
+// .  .  .  .  }
+// .  .  .  }
+// .  .  .  1: *ast.Field {
+// .  .  .  .  Type: *ast.Ident {
+// .  .  .  .  .  NamePos: 13:17
+// .  .  .  .  .  Name: "int"
+// .  .  .  .  }
+// .  .  .  }
+// .  .  }
+// .  }
+// .  Results: *ast.FieldList {
+// .  .  Opening: -
+// .  .  List: []*ast.Field (len = 1) {
+// .  .  .  0: *ast.Field {
+// .  .  .  .  Type: *ast.Ident {
+// .  .  .  .  .  NamePos: 13:21
+// .  .  .  .  .  Name: "string"
+// .  .  .  .  }
+// .  .  .  }
+// .  .  }
+// .  }
+// }
 func GenerateFuncType(fields, returns []string) *goast.FuncType {
 	var ft goast.FuncType
 	{

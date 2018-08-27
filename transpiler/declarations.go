@@ -16,20 +16,18 @@ import (
 	"github.com/Konstantin8105/c4go/util"
 )
 
-/*
-Example of AST for union without name inside struct:
--RecordDecl 0x40d41b0 <...> line:453:8 struct EmptyName definition
- |-RecordDecl 0x40d4260 <...> line:454:2 union definition
- | |-FieldDecl 0x40d4328 <...> col:8 referenced l1 'long'
- | `-FieldDecl 0x40d4388 <...> col:8 referenced l2 'long'
- |-FieldDecl 0x40d4420 <...> col:2 implicit referenced 'union EmptyName::(anonymous at struct.c:454:2)'
- |-IndirectFieldDecl 0x40d4478 <...> col:8 implicit l1 'long'
- | |-Field 0x40d4420 '' 'union EmptyName::(anonymous at /struct.c:454:2)'
- | `-Field 0x40d4328 'l1' 'long'
- `-IndirectFieldDecl 0x40d44c8 <...> col:8 implicit l2 'long'
-   |-Field 0x40d4420 '' 'union EmptyName::(anonymous at /struct.c:454:2)'
-   `-Field 0x40d4388 'l2' 'long'
-*/
+// Example of AST for union without name inside struct:
+// -RecordDecl 0x40d41b0 <...> line:453:8 struct EmptyName definition
+//  |-RecordDecl 0x40d4260 <...> line:454:2 union definition
+//  | |-FieldDecl 0x40d4328 <...> col:8 referenced l1 'long'
+//  | `-FieldDecl 0x40d4388 <...> col:8 referenced l2 'long'
+//  |-FieldDecl 0x40d4420 <...> col:2 implicit referenced 'union EmptyName::(anonymous at struct.c:454:2)'
+//  |-IndirectFieldDecl 0x40d4478 <...> col:8 implicit l1 'long'
+//  | |-Field 0x40d4420 '' 'union EmptyName::(anonymous at /struct.c:454:2)'
+//  | `-Field 0x40d4328 'l1' 'long'
+//  `-IndirectFieldDecl 0x40d44c8 <...> col:8 implicit l2 'long'
+//    |-Field 0x40d4420 '' 'union EmptyName::(anonymous at /struct.c:454:2)'
+//    `-Field 0x40d4388 'l2' 'long'
 
 func newFunctionField(p *program.Program, name, cType string) (
 	_ *goast.Field, err error) {
@@ -852,16 +850,14 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 		}}, "", nil
 	}
 
-	/*
-		Example of DeclStmt for C code:
-		void * a = NULL;
-		void(*t)(void) = a;
-		Example of AST:
-		`-VarDecl 0x365fea8 <col:3, col:20> col:9 used t 'void (*)(void)' cinit
-		  `-ImplicitCastExpr 0x365ff48 <col:20> 'void (*)(void)' <BitCast>
-		    `-ImplicitCastExpr 0x365ff30 <col:20> 'void *' <LValueToRValue>
-		      `-DeclRefExpr 0x365ff08 <col:20> 'void *' lvalue Var 0x365f8c8 'r' 'void *'
-	*/
+	// Example of DeclStmt for C code:
+	// void * a = NULL;
+	// void(*t)(void) = a;
+	// Example of AST:
+	// `-VarDecl 0x365fea8 <col:3, col:20> col:9 used t 'void (*)(void)' cinit
+	//   `-ImplicitCastExpr 0x365ff48 <col:20> 'void (*)(void)' <BitCast>
+	//     `-ImplicitCastExpr 0x365ff30 <col:20> 'void *' <LValueToRValue>
+	//       `-DeclRefExpr 0x365ff08 <col:20> 'void *' lvalue Var 0x365f8c8 'r' 'void *'
 
 	if len(n.Children()) > 0 {
 		if v, ok := (n.Children()[0]).(*ast.ImplicitCastExpr); ok {

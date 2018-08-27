@@ -308,7 +308,7 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 	nodes, astErrors := convertLinesToNodesParallel(lines)
 	for i := range astErrors {
 		p.AddMessage(fmt.Sprintf(
-			"/* AST Error :\n%v\n*/",
+			"/"+"* AST Error :\n%v\n*"+"/",
 			astErrors[i].Error()))
 	}
 

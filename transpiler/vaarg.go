@@ -29,15 +29,14 @@ func transpileVAArgExpr(n *ast.VAArgExpr, p *program.Program) (
 	//    `-DeclRefExpr 0x32393e0 <col:31> 'va_list':'struct __va_list_tag [1]' lvalue Var 0x3239058 'ap' 'va_list':'struct __va_list_tag [1]'
 
 	// Example of C code:
-	/*
-	   va_list ap;
-	   int i;
-	   va_start(ap, num_args);
-	   for(i = 0; i < num_args; i++) {
-	      val += va_arg(ap, int); // <<- This line
-	   }
-	   va_end(ap);
-	*/
+	//
+	// va_list ap;
+	// int i;
+	// va_start(ap, num_args);
+	// for(i = 0; i < num_args; i++) {
+	//    val += va_arg(ap, int); // <<- This line
+	// }
+	// va_end(ap);
 
 	var varName string
 	if impl, ok := n.Children()[0].(*ast.ImplicitCastExpr); ok {
