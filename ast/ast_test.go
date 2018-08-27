@@ -182,6 +182,9 @@ func TestAstNodes(t *testing.T) {
 	}
 
 	dat, err := ioutil.ReadFile("position.go")
+	if err != nil {
+		t.Fatalf("Error to read file `position.go`: %v", err)
+	}
 
 	index := bytes.Index(dat, []byte("setPosition"))
 	if index < 0 {
