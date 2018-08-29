@@ -37,11 +37,11 @@ type programOut struct {
 // indicated by the build flags at the top of the file. To include integration
 // tests use:
 //
-//     go test -tags=integration
+//     go test -v -tags=integration
 //
 // You can also run a single file with:
 //
-//     go test -tags=integration -run=TestIntegrationScripts/tests/ctype.c
+//     go test -v -tags=integration -run=TestIntegrationScripts/tests/ctype.c
 //
 func TestIntegrationScripts(t *testing.T) {
 	testFiles, err := filepath.Glob("tests/*.c")

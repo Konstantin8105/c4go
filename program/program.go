@@ -226,7 +226,7 @@ func (p *Program) GetComments(n ast.Position) (out []*goast.Comment) {
 		out = append(out, &goast.Comment{
 			Text: p.PreprocessorFile.GetComments()[i].Comment,
 		})
-		if p.PreprocessorFile.GetComments()[i].Comment[0:2] == "/"+"*" {
+		if p.PreprocessorFile.GetComments()[i].Comment[1] == '*' {
 			out = append(out, &goast.Comment{
 				Text: "// ",
 			})
