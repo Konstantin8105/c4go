@@ -523,10 +523,37 @@ void struct_typ2()
 	is_eq(b.i,10);
 }
 
+typedef struct map_node_s map_node_t;
+
+struct map_node_s {
+  unsigned hash;
+  map_node_t *next;
+};
+
+map_node_t* ret(){
+	map_node_t mt;
+	mt.hash = 42;
+	return &mt;
+}
+
+void test_map_resize() {
+	map_node_t mt;
+	mt.hash = 12;
+	map_node_t *n = &mt;
+	is_not_null(n);
+	is_true(n->hash == 12);
+	map_node_t *n2 = ret();
+	is_not_null(n2);
+	is_true(n2->hash == 42);
+	n2->hash = 15;
+	is_true(n2->hash == 15);
+}
+
 int main()
 {
-    plan(88);
+    plan(93);
 
+	test_map_resize();
 	struct_typ2();
 	struct_byte_array();
 	test_pointer_member();

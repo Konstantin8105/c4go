@@ -249,7 +249,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			declsIn, err = transpileToNode(field, p)
 			if err != nil {
 				err = fmt.Errorf("Cannot transpile %T", field)
-				p.AddMessage(p.GenerateWarningMessage(err, field))
+				// p.AddMessage(p.GenerateWarningMessage(err, field))
 				return
 			}
 			decls = append(decls, declsIn...)
