@@ -134,6 +134,26 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 	if err != nil {
 		return nil, "", nil, nil, err
 	}
+
+	// specific case:
+	//
+	// UnaryOperator 'int' prefix '!'
+	// `-ParenExpr 'int'
+	//   `-BinaryOperator 'int' '='
+	//     |-DeclRefExpr 'int' lvalue Var 0x3329b60 'y' 'int'
+	//     `-ImplicitCastExpr 'int' <LValueToRValue>
+	//       `-DeclRefExpr 'int' lvalue Var 0x3329ab8 'p' 'int'
+	if par, ok := e.(*goast.ParenExpr); ok {
+		if bi, ok := par.X.(*goast.BinaryExpr); ok {
+			if bi.Op == token.ASSIGN { // =
+				preStmts = append(preStmts, &goast.ExprStmt{
+					X: bi,
+				})
+				e = bi.X
+			}
+		}
+	}
+
 	// null in C is zero
 	if eType == types.NullPointer {
 		e = &goast.BasicLit{

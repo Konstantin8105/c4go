@@ -8,7 +8,7 @@ int d(int v)
 
 int main()
 {
-    plan(13);
+    plan(15);
 
     int x = 1;
 
@@ -106,6 +106,18 @@ int main()
 		}
 	}
 	*/
+
+	diag("equal on if paren");
+	{
+		int p = 45;
+		int y = 12;
+		if (!(!(y = p, y))){
+			pass("case 1");
+		}
+		if (!(!(y = p))){
+			pass("case 2");
+		}
+	}
 
     done_testing();
 }
