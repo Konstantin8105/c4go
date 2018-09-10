@@ -42,7 +42,7 @@ double* return_null()
 
 int main()
 {
-    plan(98);
+    plan(100);
 
     int i = 10;
     signed char j = 1;
@@ -408,6 +408,14 @@ int main()
 		v = buf + (prefix != 0);
 		is_not_null(v);
 		is_streq(v,"ext");
+	}
+	
+	diag("Bitwise complement operator ~");
+	{
+		int i = 35;
+		int o = ~(i);
+		is_eq(o,-36);
+		is_eq(~-12,11);
 	}
 
     done_testing();
