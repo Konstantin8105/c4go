@@ -19,3 +19,21 @@ func NotInt(x int) int {
 
 	return 0
 }
+
+// NotUint16 performs a logical not (!) on an integer and returns an integer.
+func NotUint16(x uint16) int {
+	if x == 0 {
+		return 1
+	}
+
+	return 0
+}
+
+// NotUint32 performs a logical not (!) on an integer and returns an integer.
+func NotUint32(x uint32) int {
+	if x == 0 {
+		return 1
+	}
+
+	return 0
+}

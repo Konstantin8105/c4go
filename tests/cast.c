@@ -92,7 +92,7 @@ void test_bool_to_int(){
 
 int main()
 {
-    plan(30);
+    plan(33);
 
 	START_TEST(bool_to_int);
     START_TEST(cast);
@@ -178,6 +178,21 @@ int main()
         void* ptr3 = &tLong;
         is_eq(*(long*)ptr3, 556);
     }
+	diag("uint16 to bool");
+	{
+		unsigned short d1 = 2;
+		if (!(!(d1))) {
+			pass("unsigned short to bool")
+		}
+		unsigned int d2 = 2;
+		if (!(!(d2))) {
+			pass("unsigned int to bool")
+		}
+		unsigned long d3 = 2;
+		if (!(!(d3))) {
+			pass("unsigned long to bool")
+		}
+	}
 
     char_overflow();
 
