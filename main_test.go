@@ -322,6 +322,10 @@ func TestIntegrationScripts(t *testing.T) {
 				fmt.Println("> ", goOutLines)
 				fmt.Println("> ", len(goOutLines))
 				fmt.Println("> ", removeLinesFromEnd)
+				if len(goOutLines) <= removeLinesFromEnd {
+					t.Logf("Ignored")
+					return
+				}
 			}
 
 			goOut := strings.Join(goOutLines[1:len(goOutLines)-removeLinesFromEnd], "\n") + "\n"
