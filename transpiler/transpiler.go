@@ -217,9 +217,12 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 	case *ast.VAArgExpr:
 		expr, exprType, preStmts, postStmts, err = transpileVAArgExpr(n, p)
 
+	case *ast.FullComment:
+		// Do nothing
+
 	default:
 		p.AddMessage(p.GenerateWarningMessage(
-			fmt.Errorf("cannot transpile to expr : %T", node), node))
+			fmt.Errorf("cannot transpile to expr in transpileToExpr : %T", node), node))
 		expr = util.NewNil()
 	}
 
@@ -270,6 +273,7 @@ func transpileToStmt(node ast.Node, p *program.Program) (
 
 	defer func() {
 		if err != nil {
+			err = fmt.Errorf("Cannot transpileToStmt : %v", err)
 			p.AddMessage(p.GenerateWarningMessage(err, node))
 			err = nil // Error is ignored
 		}
