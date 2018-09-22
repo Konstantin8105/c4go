@@ -295,3 +295,74 @@ func TestFrame3dd(t *testing.T) {
 	}
 
 }
+
+func TestMultifiles(t *testing.T) {
+	type fs struct {
+		input  []string
+		clang  []string
+		output string
+	}
+	tcs := []struct {
+		prefix    string
+		gitSource string
+		files     []fs
+	}{
+		{
+			prefix:    "parg",
+			gitSource: "https://github.com/jibsen/parg.git",
+			files: []fs{
+				{
+					input: []string{"build/git-source/parg/parg.c"},
+					clang: []string{
+						"-Ibuild/git-source/parg/",
+					},
+					output: "build/git-source/parg/parg.go",
+				},
+				{
+					input: []string{
+						"build/git-source/parg/test/test_parg.c",
+					},
+					clang: []string{
+						"-Ibuild/git-source/parg/",
+					},
+					output: "build/git-source/parg/test/test.go",
+				},
+			},
+		},
+	}
+
+	for _, tc := range tcs {
+		fileList, err := getFileList(tc.prefix, tc.gitSource)
+		if err != nil {
+			t.Fatal(err)
+		}
+		fmt.Println(">", fileList)
+
+		for _, f := range tc.files {
+			t.Run(fmt.Sprintf("%v", f), func(t *testing.T) {
+				args := DefaultProgramArgs()
+				args.inputFiles = f.input
+				args.clangFlags = f.clang
+				args.outputFile = f.output
+				args.ast = false
+				args.verbose = false
+
+				if err := Start(args); err != nil {
+					t.Fatalf("Cannot transpile `%v`: %v", args, err)
+				}
+
+				// logging warnings
+				var err error
+				var logs []string
+				logs, err = getLogs(f.output)
+				if err != nil {
+					t.Errorf("Error in `%v`: %v", f.output, err)
+				}
+				for _, log := range logs {
+					fmt.Printf("`%v`:%v\n", f.output, log)
+				}
+
+			})
+		}
+	}
+}
