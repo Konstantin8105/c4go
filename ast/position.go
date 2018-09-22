@@ -3,6 +3,7 @@ package ast
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/Konstantin8105/c4go/util"
 )
@@ -34,7 +35,7 @@ func (p Position) GetSimpleLocation() (loc string) {
 
 // NewPositionFromString create a Position from string line
 func NewPositionFromString(s string) Position {
-	if s == "<invalid sloc>" || s == "" {
+	if strings.Contains(s, "<invalid sloc>") || s == "" {
 		return Position{}
 	}
 
