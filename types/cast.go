@@ -72,6 +72,16 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		}
 	}()
 
+	if cFromType == "" {
+		err2 = fmt.Errorf("cFromType is empty")
+		return
+	}
+
+	if cToType == "" {
+		err2 = fmt.Errorf("cToType is empty")
+		return
+	}
+
 	// Uncomment only for debugging
 	if strings.Contains(cFromType, ":") {
 		err2 = fmt.Errorf("Found mistake `cFromType` `%v` C type : %#v",

@@ -153,6 +153,12 @@ var temp = func() %s {
 		return expr, va.Type, nil, nil, nil
 	}
 
+	switch a.Children()[0].(type) {
+	case *ast.FullComment:
+		// do nothing
+		return
+	}
+
 	defaultValue, defaultValueType, newPre, newPost, err := atomicOperation(a.Children()[0], p)
 	if err != nil {
 		return nil, defaultValueType, newPre, newPost, err

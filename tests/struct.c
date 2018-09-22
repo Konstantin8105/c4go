@@ -549,10 +549,22 @@ void test_map_resize() {
 	is_true(n2->hash == 15);
 }
 
+typedef float ext_vec;
+extern ext_vec Re;
+void test_extern_vec(){
+	ext_vec e;
+	Re = 12.0;
+	e = 5.0;
+	is_eq(e,5.0);
+	is_eq(Re,12.0);
+}
+ext_vec Re;
+
 int main()
 {
-    plan(93);
+    plan(95);
 
+	test_extern_vec();
 	test_map_resize();
 	struct_typ2();
 	struct_byte_array();
