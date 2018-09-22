@@ -329,6 +329,26 @@ func TestMultifiles(t *testing.T) {
 				},
 			},
 		},
+		{
+			prefix:    "stmr.c",
+			gitSource: "https://github.com/wooorm/stmr.c",
+			files: []fs{
+				{
+					input:  []string{"build/git-source/stmr.c/stmr.c"},
+					output: "build/git-source/stmr.c/stmr.go",
+				},
+			},
+		},
+		{
+			prefix:    "tinyexpr",
+			gitSource: "https://github.com/codeplea/tinyexpr.git",
+			files: []fs{
+				{
+					input:  []string{"build/git-source/tinyexpr/tinyexpr.c"},
+					output: "build/git-source/tinyexpr/tinyexpr.go",
+				},
+			},
+		},
 	}
 
 	for _, tc := range tcs {
