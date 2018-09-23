@@ -35,7 +35,7 @@ func TestParseComments(t *testing.T) {
 				{
 					File:    "file.c",
 					Line:    10,
-					Comment: "/* comment1 */",
+					Comment: "// comment1 ",
 				},
 			},
 		},
@@ -55,7 +55,7 @@ func TestParseComments(t *testing.T) {
 				{
 					File:    "file.c",
 					Line:    11,
-					Comment: "/* comment2 */",
+					Comment: "// comment2 ",
 				},
 			},
 		},
@@ -70,7 +70,7 @@ func TestParseComments(t *testing.T) {
 				{
 					File:    "file.c",
 					Line:    10,
-					Comment: "/* comment2 */",
+					Comment: "// comment2 ",
 				},
 				{
 					File:    "file.c",
@@ -89,7 +89,7 @@ func TestParseComments(t *testing.T) {
 				{
 					File:    "file.c",
 					Line:    10,
-					Comment: "/* comment */",
+					Comment: "// comment ",
 				},
 				{
 					File:    "file.c",
@@ -124,7 +124,17 @@ func TestParseComments(t *testing.T) {
 				{
 					File:    "file.c",
 					Line:    10,
-					Comment: "/* Text1\nText2\nText3 */",
+					Comment: "// Text1",
+				},
+				{
+					File:    "file.c",
+					Line:    10,
+					Comment: "//Text2",
+				},
+				{
+					File:    "file.c",
+					Line:    10,
+					Comment: "//Text3 ",
 				},
 			},
 		},
@@ -142,7 +152,7 @@ func TestParseComments(t *testing.T) {
 				{
 					File:    "file.c",
 					Line:    10,
-					Comment: "/* Text-1 */",
+					Comment: "// Text-1 ",
 				},
 				{
 					File:    "file.c",
@@ -152,7 +162,17 @@ func TestParseComments(t *testing.T) {
 				{
 					File:    "file.c",
 					Line:    11,
-					Comment: "/* Text1\nText2\nText3 */",
+					Comment: "// Text1",
+				},
+				{
+					File:    "file.c",
+					Line:    11,
+					Comment: "//Text2",
+				},
+				{
+					File:    "file.c",
+					Line:    11,
+					Comment: "//Text3 ",
 				},
 				{
 					File:    "file.c",
