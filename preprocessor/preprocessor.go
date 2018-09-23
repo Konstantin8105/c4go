@@ -44,11 +44,27 @@ func (e *entity) parseComments(comments *[]Comment) {
 	s.Filename = e.include
 	for tok := s.Scan(); tok != scanner.EOF; tok = s.Scan() {
 		if scanner.TokenString(tok) == "Comment" {
-			(*comments) = append(*comments, Comment{
-				File:    e.include,
-				Line:    s.Position.Line + e.positionInSource - 1,
-				Comment: s.TokenText(),
-			})
+			// parse multiline comments to single line comment
+			var lines []string
+			if s.TokenText()[1] == '*' {
+				lines = strings.Split(s.TokenText(), "\n")
+				lines[0] = strings.TrimLeft(lines[0], "/"+"*")
+				lines[len(lines)-1] = strings.TrimRight(lines[len(lines)-1], "*"+"/")
+				for i := range lines {
+					lines[i] = "/" + "/" + lines[i]
+				}
+			} else {
+				lines = append(lines, s.TokenText())
+			}
+
+			// save comments
+			for _, l := range lines {
+				(*comments) = append(*comments, Comment{
+					File:    e.include,
+					Line:    s.Position.Line + e.positionInSource - 1,
+					Comment: l,
+				})
+			}
 		}
 	}
 }
