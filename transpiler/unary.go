@@ -336,11 +336,11 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 					switch vv := a.Children()[0].(type) {
 					case *ast.MemberExpr, *ast.DeclRefExpr:
 						var typeVV string
-						if vvv, ok := vv.(*ast.MemberExpr); ok {
-							typeVV = vvv.Type
-						}
-						if vvv, ok := vv.(*ast.DeclRefExpr); ok {
-							typeVV = vvv.Type
+						switch vt := vv.(type) {
+						case *ast.MemberExpr:
+							typeVV = vt.Type
+						case *ast.DeclRefExpr:
+							typeVV = vt.Type
 						}
 						typeVV = types.GetBaseType(typeVV)
 
@@ -358,7 +358,8 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 						}
 						a = vv
 						continue
-					case *ast.ImplicitCastExpr, *ast.CStyleCastExpr:
+					case *ast.ImplicitCastExpr, *ast.CStyleCastExpr,
+						*ast.ArraySubscriptExpr:
 						a = vv
 						continue
 					}

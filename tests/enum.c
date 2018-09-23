@@ -132,6 +132,13 @@ void test_unary(){
 	is_eq(XOPEN_,1);
 }
 
+// test of comments
+typedef enum {
+	PARG_NOARG,  /**< No argument */
+	PARG_REQARG, /**< Required argument */
+	PARG_OPTARG  /**< Optional argument */
+} parg_arg_num;
+
 // main function
 int main()
 {

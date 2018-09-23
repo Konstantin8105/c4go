@@ -347,10 +347,34 @@ void test_struct_init()
 	is_eq(objB.number,200);
 }
 
+struct parg_option {
+	const char *name;
+	int has_arg;     
+	int *flag;     
+	int val;      
+};
+
+static const struct parg_option po_def[] = {
+	{ "noarg"  , 1 , NULL, 'n' },
+	{ "optarg" , 2 , NULL, 'o' },
+	{ "reqarg" , 3 , NULL, 'r' },
+	{ "foo"    , 4 , NULL, 'f' },
+	{ "foobar" , 5 , NULL, 'b' },
+	{ 0        , 6 , 0   ,  0  }
+};
+
+void test_parg_struct(){
+	is_eq(po_def[0].has_arg, 1);
+	is_eq(po_def[5].has_arg, 6);
+	is_streq(po_def[1].name, "optarg");
+}
+
+
 int main()
 {
-    plan(154);
+    plan(157);
 
+	test_parg_struct();
 	START_TEST(struct_init);
 	START_TEST(array_increment);
 	START_TEST(array_to_value_int);
