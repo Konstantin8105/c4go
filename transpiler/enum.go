@@ -92,14 +92,9 @@ func transpileEnumConstantDecl(p *program.Program, n *ast.EnumConstantDecl) (
 	default:
 		if len(n.Children()) > 0 {
 			var err error
-			switch n.Children()[0].(type) {
-			case *ast.FullComment:
-				// do nothing
-			default:
-				value, _, preStmts, postStmts, err = transpileToExpr(n.Children()[0], p, false)
-				if err != nil {
-					panic(err)
-				}
+			value, _, preStmts, postStmts, err = transpileToExpr(n.Children()[0], p, false)
+			if err != nil {
+				panic(err)
 			}
 		}
 	}
@@ -181,14 +176,6 @@ func transpileEnumDeclWithType(p *program.Program, n *ast.EnumDecl, enumType str
 	var i int
 	for _, child := range n.Children() {
 		switch child.(type) {
-		case *ast.FullComment, *ast.BlockCommandComment,
-			*ast.HTMLStartTagComment, *ast.HTMLEndTagComment,
-			*ast.InlineCommandComment, *ast.ParagraphComment,
-			*ast.ParamCommandComment, *ast.TextComment,
-			*ast.VerbatimLineComment, *ast.VerbatimBlockComment,
-			*ast.VerbatimBlockLineComment:
-			// comments are ignored
-			continue
 		case *ast.EnumConstantDecl:
 			// go to next
 		default:

@@ -211,12 +211,6 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		case *ast.IndirectFieldDecl:
 			// ignore
 
-		case *ast.FullComment:
-			// We haven't Go ast struct for easy inject a comments.
-			// All comments are added like CommentsGroup.
-			// So, we can ignore that comment, because all comments
-			// will be added by another way.
-
 		case *ast.TransparentUnionAttr:
 			// Don't do anythink
 			// Example of AST:

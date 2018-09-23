@@ -183,6 +183,16 @@ func buildTree(nodes []treeNode, depth int) []ast.Node {
 		switch section[0].node.(type) {
 		case *ast.C4goErrorNode:
 			continue
+
+		// ignore all comments in ast tree
+		case *ast.FullComment, *ast.BlockCommandComment,
+			*ast.HTMLStartTagComment, *ast.HTMLEndTagComment,
+			*ast.InlineCommandComment, *ast.ParagraphComment,
+			*ast.ParamCommandComment, *ast.TextComment,
+			*ast.VerbatimLineComment, *ast.VerbatimBlockComment,
+			*ast.VerbatimBlockLineComment:
+			continue
+
 		default:
 			for _, child := range children {
 				if section[0].node == nil {
