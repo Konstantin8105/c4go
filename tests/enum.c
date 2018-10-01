@@ -139,14 +139,21 @@ typedef enum {
 	PARG_OPTARG  /**< Optional argument */
 } parg_arg_num;
 
+
+enum { e1 = 1, e2 };
+
 // main function
 int main()
 {
-    plan(43);
+    plan(45);
 
 	test_unary();
 	test_parent();
 	test_enum_inside_struct();
+
+	// step 0
+	is_eq(e1 , 1);
+	is_eq(e2 , 2);
 
     // step 1
     enum number n;
