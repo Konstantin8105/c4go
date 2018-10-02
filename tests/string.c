@@ -3,7 +3,7 @@
 
 int main()
 {
-    plan(32);
+    plan(35);
 
     diag("TODO: __builtin_object_size");
     // https://github.com/Konstantin8105/c4go/issues/359
@@ -132,6 +132,14 @@ int main()
 		char str[] = "memmove can be very useful......";
 		memmove (str+20,str+15,11);
 		is_streq(str,"memmove can be very very useful.");
+	}
+	{
+		diag("memcmp");
+		char a1[] = {'a','b','c'};
+		char a2[] = "abd";
+		is_true(memcmp(a1, a1, 3) == 0);
+		is_true(memcmp(a1, a2, 3) < 0);
+		is_true(memcmp(a2, a1, 3) > 0);
 	}
 
     done_testing();
