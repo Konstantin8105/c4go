@@ -222,6 +222,7 @@ var builtInFunctionDefinitions = map[string][]string{
 
 		"char * memset(char *, char, unsigned int) -> noarch.Memset",
 		"char * memmove(char *, char *, unsigned int) -> noarch.Memmove",
+		"int memcmp(const char *, const char *, unsigned int) -> noarch.Memcmp",
 	},
 	"stdlib.h": {
 		// stdlib.h
