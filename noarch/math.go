@@ -122,3 +122,13 @@ func Cbrtf(x float32) float32 {
 func Log1pf(arg float32) float32 {
 	return float32(math.Log1p(float64(arg)))
 }
+
+// Copysignf copies sign of y to absolute value of x
+func Copysignf(x float32, y float32) {
+	return float32(math.Copysign(float64(x), float64(y)))
+}
+
+// Expf : finds e^x
+func Expf(x float32) float32 {
+	return float32(math.Exp(float64(x)))
+}

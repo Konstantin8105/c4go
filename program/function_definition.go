@@ -98,7 +98,6 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double ceil(double) -> math.Ceil",
 		"double cos(double) -> math.Cos",
 		"double cosh(double) -> math.Cosh",
-		"double exp(double) -> math.Exp",
 		"double fabs(double) -> math.Abs",
 		"double floor(double) -> math.Floor",
 		"double fmod(double, double) -> math.Mod",
@@ -111,6 +110,10 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double sqrt(double) -> math.Sqrt",
 		"double tan(double) -> math.Tan",
 		"double tanh(double) -> math.Tanh",
+
+		"double copysign(double, double) -> math.Copysign",
+		"float copysignf(float, float) -> noarch.Copysignf",
+		"long double copysignl(long double, long double) -> math.Copysign",
 
 		"double fma(double, double, double) -> noarch.Fma",
 		"float fmaf(float, float, float) -> noarch.Fmaf",
@@ -131,6 +134,10 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double exp2(double) -> math.Exp2",
 		"float exp2f(float) -> noarch.Exp2f",
 		"long double exp2l(long double) -> math.Exp2",
+
+		"double exp(double) -> math.Exp",
+		"float expf(float) -> noarch.Expf",
+		"long double expl(long double) -> math.Exp",
 
 		"double log2(double) -> math.Log2",
 		"float log2f(float) -> noarch.Log2f",

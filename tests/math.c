@@ -12,7 +12,7 @@ unsigned long long ullmax = 18446744073709551615ull;
 
 int main()
 {
-    plan(411);
+    plan(415);
 
 	double w1 = 100;
 	double w2 = 2;
@@ -506,6 +506,12 @@ int main()
     is_eq(tanh(INFINITY), 1);
     is_eq(tanh(-INFINITY), -1);
     is_nan(tanh(NAN));
+
+    diag("copysign");
+    is_eq(copysign(1.0, +2.0), +1.0);
+    is_eq(copysign(1.0, -2.0), -1.0);
+    is_inf(copysign(INFINITY, -2.0), -1);
+    is_nan(copysign(NAN, -2.0));
 
 	diag("fma");
 	{
