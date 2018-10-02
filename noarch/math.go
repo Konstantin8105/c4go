@@ -124,7 +124,7 @@ func Log1pf(arg float32) float32 {
 }
 
 // Copysignf copies sign of y to absolute value of x
-func Copysignf(x float32, y float32) {
+func Copysignf(x float32, y float32) float32 {
 	return float32(math.Copysign(float64(x), float64(y)))
 }
 
