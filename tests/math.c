@@ -12,7 +12,7 @@ unsigned long long ullmax = 18446744073709551615ull;
 
 int main()
 {
-    plan(402);
+    plan(411);
 
 	double w1 = 100;
 	double w2 = 2;
@@ -360,6 +360,17 @@ int main()
     is_inf(log10(INFINITY), 1);
     is_nan(log10(-INFINITY));
     is_nan(log10(NAN));
+	
+    diag("log1p");
+    is_inf(log1p(-1), -1);
+    is_eq(log1p(0), 0);
+    is_nan(log1p(-2));
+    is_eq(log1p(-0.5), -0.69314718055994528623);
+    is_eq(log1p(M_PI - 1), 1.14472988584940016388);
+    is_eq(log1p(M_E - 1), 1);
+    is_inf(log1p(INFINITY), 1);
+    is_nan(log1p(-INFINITY));
+    is_nan(log1p(NAN));
 
     diag("pow");
 
