@@ -12,7 +12,7 @@ unsigned long long ullmax = 18446744073709551615ull;
 
 int main()
 {
-    plan(402);
+    plan(411);
 
 	double w1 = 100;
 	double w2 = 2;
