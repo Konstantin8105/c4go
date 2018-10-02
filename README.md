@@ -57,7 +57,7 @@ int main()
     scanf("%d", &n);
     printf("The number is: %d\n", n);
 
-	// ------- 
+	// -------
     if (n == 2)
         printf("Prime number.\n");
     else
@@ -153,7 +153,7 @@ func init() {
             stddef.h	       2/6	        33.3%
              stdio.h	     33/46	        71.7%
             stdlib.h	     31/47	          66%
-            string.h	     10/24	        41.7%
+            string.h	     11/24	        45.8%
               time.h	      8/15	        53.3%
              wchar.h	      0/68	           0%
             wctype.h	      0/22	           0%
