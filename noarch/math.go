@@ -112,3 +112,8 @@ func Coshf(a float32) float32 {
 func Tanhf(a float32) float32 {
 	return float32(math.Tanh(float64(a)))
 }
+
+// Cbrt compute cube root
+func Cbrtf(x float32) float32 {
+	return float32(math.Cbrt(float64(x)))
+}
