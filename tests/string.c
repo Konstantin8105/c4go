@@ -3,7 +3,7 @@
 
 int main()
 {
-    plan(35);
+    plan(36);
 
     diag("TODO: __builtin_object_size");
     // https://github.com/Konstantin8105/c4go/issues/359
