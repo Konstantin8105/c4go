@@ -96,7 +96,7 @@ int main()
         strncpy(str, "these", 3);
         strncat(str, " strings", 7);
         strncat(str, " is", 3);
-        strncat(str, " concatenated.", 13);
+        strncat(str, " concatenated.", 14);
         is_streq(str, "the string is concatenated.");
     }
     {
