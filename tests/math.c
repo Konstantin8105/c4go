@@ -12,7 +12,7 @@ unsigned long long ullmax = 18446744073709551615ull;
 
 int main()
 {
-    plan(399);
+    plan(402);
 
 	double w1 = 100;
 	double w2 = 2;
@@ -658,6 +658,20 @@ int main()
 		double angle = 2.0;
 		is_eq(atanh(tanh(angle)),angle);
 	}
+
+    diag("cbrt, cbrtf, cbrtl");
+    {
+        double res = 2.12345;
+        is_eq(cbrt(res * res * res), res);
+    }
+    {
+        float res = 2.12345;
+        is_eq(cbrtf(res * res * res), res);
+    }
+    {
+        long double res = 2.12345;
+        is_eq(cbrtl(res * res * res), res);
+    }
 
     done_testing();
 }
