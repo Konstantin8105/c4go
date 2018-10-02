@@ -91,6 +91,15 @@ int main()
         is_streq(str, "these strings are concatenated.");
     }
     {
+        diag("strncat");
+        char str[80];
+        strncpy(str, "these", 3);
+        strncat(str, " strings", 7);
+        strncat(str, " is", 3);
+        strncat(str, " concatenated.", 13);
+        is_streq(str, "the string is concatenated.");
+    }
+    {
         diag("strcmp");
         {
             char* a = "ab";
