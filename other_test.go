@@ -4,6 +4,9 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"io"
+	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,12 +16,31 @@ import (
 	"testing"
 )
 
+func checkApplication(name string, args ...string) bool {
+	cmd := exec.Command(name, args...)
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
+	err := cmd.Run()
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+var (
+	buildFolder = "build"
+	gitFolder   = "git-source"
+	separator   = string(os.PathSeparator)
+)
+
 func getFileList(prefix, gitSource string) (fileList []string, err error) {
-	var (
-		buildFolder = "build"
-		gitFolder   = "git-source"
-		separator   = string(os.PathSeparator)
-	)
+	// check "git" is exist
+	if !checkApplication("git", "--help") {
+		err = fmt.Errorf("git is not found : %v", err)
+		return
+	}
 
 	// Create build folder
 	folder := buildFolder + separator + gitFolder + separator + prefix + separator
@@ -242,6 +264,159 @@ func getLogs(goFile string) (logs []string, err error) {
 	return
 }
 
+func downloadFile(filepath string, url string) (err error) {
+
+	// Create the file
+	out, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	// Get the data
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Check server response
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("bad status: %s", resp.Status)
+	}
+
+	// Writer the body to file
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func TestGSL(t *testing.T) {
+	t.Skip("too long test")
+	var err error
+
+	source := "http://mirror.tochlab.net/pub/gnu/gsl/gsl-2.4.tar.gz"
+	prefix := "GSL"
+
+	folder := buildFolder + separator + gitFolder + separator + prefix + separator
+	if _, err = os.Stat(folder); os.IsNotExist(err) {
+		err = os.MkdirAll(folder, os.ModePerm)
+		if err != nil {
+			err = fmt.Errorf("Cannot create folder %v . %v", folder, err)
+			return
+		}
+
+		// download file
+		err = downloadFile(folder+"gsl.tar.gz", source)
+		if err != nil {
+			t.Fatalf("Cannot download : %v", err)
+			return
+		}
+
+		// check "tar" is exist
+		if !checkApplication("tar", "--help") {
+			t.Fatalf("tar is not found. %v", err)
+			return
+		}
+
+		// extract file
+		// tar -C /usr/local -xzf gsl.tar.gz
+		cmd := exec.Command("tar", "-C", folder, "-xzf", folder+"gsl.tar.gz")
+		var stdout, stderr bytes.Buffer
+		cmd.Stdout = &stdout
+		cmd.Stderr = &stderr
+		err = cmd.Run()
+		if err != nil {
+			t.Fatalf("%s", stderr.String())
+			return
+		}
+	}
+
+	// check "gccecho" is exist
+	if !checkApplication("gccecho", "--help") {
+		t.Fatalf("gccecho is not found. "+
+			"Please install `go get -u github.com/Konstantin8105/gccecho`:"+
+			" %v", err)
+		return
+	}
+
+	folder += "gsl-2.4" + separator
+
+	// run configure
+	{
+		cmd := exec.Command("./configure", "CC=gccecho")
+		var stdout, stderr bytes.Buffer
+		cmd.Dir, err = filepath.Abs(folder)
+		if err != nil {
+			t.Fatalf("Cannot find absolute path : %v", err)
+			return
+		}
+		cmd.Stdout = &stdout
+		cmd.Stderr = &stderr
+		err = cmd.Run()
+		if err != nil {
+			t.Fatalf("%s%s", stderr.String(), err)
+			return
+		}
+		fmt.Println(stdout.String())
+	}
+
+	// make
+	{
+		cmd := exec.Command("make")
+		var stdout, stderr bytes.Buffer
+		cmd.Dir, err = filepath.Abs(folder)
+		if err != nil {
+			t.Fatalf("Cannot find absolute path : %v", err)
+			return
+		}
+		cmd.Stdout = &stdout
+		cmd.Stderr = &stderr
+		err = cmd.Run()
+		if err != nil {
+			t.Fatalf("%s%s", stderr.String(), err)
+			return
+		}
+		fmt.Println(stdout.String())
+	}
+
+	// read file
+	file, err := os.Open("/tmp/gcc.log")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if !strings.HasPrefix(line, "ARG") {
+			continue
+		}
+		index := strings.Index(line, "-c")
+		if index < 0 {
+			continue
+		}
+		line = line[index+len("-c"):]
+		index = strings.Index(line, " ")
+		if index < 0 {
+			continue
+		}
+		line = line[:index]
+		if !strings.HasSuffix(strings.ToLower(line), ".c") {
+			continue
+		}
+		fmt.Println("line = ", line)
+	}
+
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+}
+
 func TestFrame3dd(t *testing.T) {
 	folder := "./build/git-source/frame3dd/"
 
@@ -293,7 +468,6 @@ func TestFrame3dd(t *testing.T) {
 	if err != nil {
 		t.Fatalf("cmd.Run() failed with %s : %v\n", err, stderr.String())
 	}
-
 }
 
 func TestMultifiles(t *testing.T) {

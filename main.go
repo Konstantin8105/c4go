@@ -234,7 +234,9 @@ func Start(args ProgramArgs) (err error) {
 	return nil
 }
 
-func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.FilePP, err error) {
+func generateAstLines(args ProgramArgs) (
+	lines []string, filePP preprocessor.FilePP, err error) {
+
 	if args.verbose {
 		fmt.Println("Start tanspiling ...")
 	}
@@ -506,7 +508,7 @@ func runCommand() int {
 	}
 
 	if err := Start(args); err != nil {
-		fmt.Printf("Error: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return 7
 	}
 
