@@ -117,3 +117,8 @@ func Tanhf(a float32) float32 {
 func Cbrtf(x float32) float32 {
 	return float32(math.Cbrt(float64(x)))
 }
+
+// Log1pf compute ln(1+arg)
+func Log1pf(arg float32) float32 {
+	return float32(math.Log1p(float64(arg)))
+}
