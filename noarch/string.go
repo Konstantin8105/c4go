@@ -112,3 +112,16 @@ func Memmove(ptr []byte, source []byte, num uint32) []byte {
 	}
 	return ptr
 }
+
+// Memcmp - compare two buffers
+// Compares the first count characters of the objects pointed to be lhs and rhs
+func Memcmp(lhs []byte, rhs []byte, count uint32) int {
+	for i := 0; i < int(count); i ++ {
+		if int(lhs[i]) < int(rhs[i]) {
+			return -1
+		} else if int (lhs[i]) > int(rhs[i]) {
+			return 1
+		}
+	}
+	return 0
+}
