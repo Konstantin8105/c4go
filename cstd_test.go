@@ -432,6 +432,18 @@ func TestCSTD(t *testing.T) {
 		fmt.Printf("%s\n", l.line)
 	}
 
+	// checking with README.md
+	b, err := ioutil.ReadFile("README.md")
+	if err != nil {
+		t.Fatalf("Cannot read file README.md : %v", err)
+	}
+	for _, l := range ps {
+		if !bytes.Contains(b, []byte(l.line)) {
+			t.Errorf("Please update information in file `README.md` about :\n`%s`",
+				l.line)
+		}
+	}
+
 	// Detail information
 	fmt.Println("\nDetail information:")
 	for _, l := range ps {

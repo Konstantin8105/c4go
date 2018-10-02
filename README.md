@@ -146,14 +146,14 @@ func init() {
             iso646.h	          	    undefined
             limits.h	          	    undefined
             locale.h	       0/3	           0%
-              math.h	     33/58	        56.9%
+              math.h	     34/58	        58.6%
             setjmp.h	       0/3	           0%
             signal.h	       0/3	           0%
             stdarg.h	       4/4	         100%
             stddef.h	       2/6	        33.3%
              stdio.h	     33/46	        71.7%
             stdlib.h	     31/47	          66%
-            string.h	      9/24	        37.5%
+            string.h	     10/24	        41.7%
               time.h	      8/15	        53.3%
              wchar.h	      0/68	           0%
             wctype.h	      0/22	           0%
