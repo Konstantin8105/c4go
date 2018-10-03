@@ -24,16 +24,16 @@ Notes:
 go get -u github.com/Konstantin8105/c4go
 ```
 
-# Example of using
+# Usage example
 
 ```bash
-# Change your location to folder with examples:
+# Change your location to the folder with examples:
 cd $GOPATH/src/github.com/Konstantin8105/c4go/examples/
 
-# Transpile one file from C example folder:
+# Transpile one file from the C example folder:
 c4go transpile prime.c
 
-# Look on result
+# Look at the result
 nano prime.go
 
 # Check the result:
