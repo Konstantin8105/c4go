@@ -244,8 +244,10 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	}
 
 	// C null pointer can cast to any pointer
-	if cFromType == NullPointer {
-		return goast.NewIdent("nil"), nil
+	if cFromType == NullPointer && len(cToType) > 0 {
+		if cToType[len(cToType)-1] == '*' {
+			return expr, nil
+		}
 	}
 
 	// Replace for specific case of fromType for darwin:
@@ -260,7 +262,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	if strings.Contains(fromType, "enum") && !strings.Contains(toType, "enum") {
 		in := goast.CallExpr{
 			Fun: &goast.Ident{
-				Name: "int",
+				Name: "int32",
 			},
 			Lparen: 1,
 			Args: []goast.Expr{
@@ -308,7 +310,25 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return expr, err
 	}
 
-	if fromType == "null" && toType == "[][]byte" {
+	if toType == fromType {
+		return expr, nil
+	}
+
+	// Let's assume that anything can be converted to a void pointer.
+	if cToType == "void *" {
+		if strings.HasPrefix(fromType, "[]") {
+			cNewFromType := string(util.GetRegex(`\[(\d+)\]$`).ReplaceAllLiteral([]byte(cFromType), []byte("*")))
+			if cNewFromType != cFromType {
+				expr, err = CastExpr(p, expr, cFromType, cNewFromType)
+				if err != nil {
+					return expr, err
+				}
+			}
+		}
+		return util.NewCallExpr("unsafe.Pointer", expr), nil
+	}
+
+	if fromType == "null" && strings.HasPrefix(toType, "*") {
 		return util.NewNil(), nil
 	}
 
@@ -334,7 +354,19 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return expr, nil
 	}
 
-	if fromType == toType {
+	if strings.HasPrefix(fromType, "[]") && strings.HasPrefix(toType, "*") &&
+		fromType[2:] == toType[1:] {
+		match := util.GetRegex(`\[(\d*)\]$`).FindStringSubmatch(cFromType)
+		if strings.HasSuffix(cToType, "*") && len(match) > 0 {
+			// we need to convert from array to pointer
+			return &goast.UnaryExpr{
+				Op: token.AND,
+				X: &goast.IndexExpr{
+					X:     expr,
+					Index: util.NewIntLit(0),
+				},
+			}, nil
+		}
 		return expr, nil
 	}
 
@@ -354,7 +386,22 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		// Darwin specific
 		"__darwin_ct_rune_t", "darwin.CtRuneT",
 	}
+	unsigned := map[string]bool{"byte": true, "uint8": true, "uint16": true, "uint32": true, "uint64": true,
+		"__uint16_t": true, "size_t": true, "darwin_ct_rune_t": true, "darwin.CtRuneT": true}
+	var isFromNumber, isFromUnsigned, isToNumber, isToUnsigned bool
 	for _, v := range types {
+		if fromType == v {
+			isFromNumber = true
+			if b, ok := unsigned[v]; ok && b {
+				isFromUnsigned = true
+			}
+		}
+		if toType == v {
+			isToNumber = true
+			if b, ok := unsigned[v]; ok && b {
+				isToUnsigned = true
+			}
+		}
 		if fromType == v && toType == "bool" {
 			e := util.NewBinaryExpr(
 				expr,
@@ -367,17 +414,25 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 			return e, nil
 		}
 		if fromType == "bool" && toType == v {
-			e := util.NewGoExpr(`map[bool]int{false: 0, true: 1}[replaceme]`)
+			e := util.NewGoExpr(`func(val bool) int32 { if val { return 1 } else { return 0 } }(replaceme)`)
 			// Swap replaceme with the current expression
-			e.(*goast.IndexExpr).Index = expr
+			e.(*goast.CallExpr).Args = []goast.Expr{expr}
 			return CastExpr(p, e, "int", cToType)
+		}
+	}
+	if isFromNumber && isToNumber && isToUnsigned && !isFromUnsigned {
+		// To fix x overflows unsigned we swap cast and complement operator.
+		if e, ok := expr.(*goast.UnaryExpr); ok && e.Op == token.XOR {
+			c, err := CastExpr(p, e.X, cFromType, cToType)
+			e.X = c
+			return e, err
 		}
 	}
 
 	// In the forms of:
-	// - `string` -> `[]byte`
+	// - `string` -> `*byte`
 	// - `string` -> `char *[13]`
-	match1 := util.GetRegex(`\[\]byte`).FindStringSubmatch(toType)
+	match1 := util.GetRegex(`\*byte`).FindStringSubmatch(toType)
 	match2 := util.GetRegex(`char \*\[(\d+)\]`).FindStringSubmatch(toType)
 	if fromType == "string" && (len(match1) > 0 || len(match2) > 0) {
 		// Construct a byte array from "first":
@@ -405,7 +460,13 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 
 		value.Elts = append(value.Elts, util.NewIntLit(0))
 
-		return value, nil
+		return &goast.UnaryExpr{
+			Op: token.AND,
+			X: &goast.IndexExpr{
+				X:     value,
+				Index: util.NewIntLit(0),
+			},
+		}, nil
 	}
 
 	// In the forms of:
@@ -414,7 +475,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	match1 = util.GetRegex(`\[(\d+)\]byte`).FindStringSubmatch(fromType)
 	match2 = util.GetRegex(`char \*\[(\d+)\]`).FindStringSubmatch(fromType)
 	if (len(match1) > 0 || len(match2) > 0) && toType == "string" {
-		var size int
+		size := 0
 		if len(match1) > 0 {
 			size = util.Atoi(match1[1])
 		} else {
@@ -441,7 +502,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return e, nil
 	}
 
-	if fromType == "[]byte" && toType == "bool" {
+	if fromType == "*byte" && toType == "bool" {
 		return util.NewUnaryExpr(
 			token.NOT, util.NewCallExpr("noarch.CStringIsNull", expr),
 		), nil
@@ -462,8 +523,23 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return util.NewCallExpr(toType, expr), nil
 	}
 
+	if strings.HasPrefix(toType, "*") && strings.HasPrefix(fromType, "*") {
+		return &goast.CallExpr{
+			Fun: &goast.ParenExpr{
+				X: util.NewTypeIdent(toType),
+			},
+			Args: []goast.Expr{
+				util.NewCallExpr("unsafe.Pointer", expr),
+			},
+		}, nil
+	}
+
 	p.AddImport("github.com/Konstantin8105/c4go/noarch")
 
+	if strings.HasPrefix(toType, "[]") && strings.HasPrefix(fromType, "*") && isArrayToPointerExpr(expr) {
+		expr = extractArrayFromPointer(expr)
+		fromType = "[]" + fromType[1:]
+	}
 	leftName := fromType
 	rightName := toType
 
@@ -480,31 +556,83 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return expr, nil
 	}
 
-	if IsPointer(cFromType) && cToType == "bool" {
-		expr = &goast.BinaryExpr{
-			Op: token.NEQ,
-			X:  expr,
-			Y:  goast.NewIdent("nil"),
+	exportedLeftName := util.GetExportedName(leftName)
+	exportedRightName := util.GetExportedName(rightName)
+	functionName := fmt.Sprintf("noarch.%sTo%s",
+		exportedLeftName, exportedRightName)
+
+	if strings.HasSuffix(exportedLeftName, "Slice") && strings.HasSuffix(exportedRightName, "Slice") {
+		p.AddMessage(fmt.Sprintf("// Warning: using unsafe slice cast to convert from %s to %s", fromType, toType))
+		fromSize, err := SizeOf(p, GetBaseType(cFromType))
+		if err != nil {
+			return nil, err
 		}
-		return expr, nil
+		toSize, err := SizeOf(p, GetBaseType(cToType))
+		if err != nil {
+			return nil, err
+		}
+		if _, arrSize := GetArrayTypeAndSize(cFromType); arrSize > 0 {
+			expr = &goast.SliceExpr{X: expr}
+		}
+		return &goast.StarExpr{
+			X: &goast.CallExpr{
+				Fun: &goast.StarExpr{
+					X: &goast.Ident{
+						Name: toType,
+					},
+				},
+				Lparen: 1,
+				Args: []goast.Expr{
+					util.NewCallExpr("unsafe.Pointer",
+						util.NewCallExpr("noarch.UnsafeSliceToSlice", expr, util.NewIntLit(fromSize), util.NewIntLit(toSize))),
+				},
+				Rparen: 2,
+			},
+		}, nil
 	}
 
 	if IsCInteger(p, cFromType) && IsPointer(cToType) {
 		expr = goast.NewIdent("nil")
 		return expr, nil
 	}
-
+/*
 	functionName := fmt.Sprintf("noarch.%sTo%s",
 		util.GetExportedName(leftName), util.GetExportedName(rightName))
 	p.AddMessage(p.GenerateWarningMessage(
 		fmt.Errorf("Function `%v` haven`t implementation", functionName), nil))
-
+*/
 	// FIXME: This is a hack to get SQLite3 to transpile.
 	if strings.Contains(functionName, "RowSetEntry") {
 		functionName = "FIXME111"
 	}
 
 	return util.NewCallExpr(functionName, expr), nil
+}
+
+func isArrayToPointerExpr(expr goast.Expr) bool {
+	if p1, ok := expr.(*goast.ParenExpr); ok {
+		if p2, ok := p1.X.(*goast.UnaryExpr); ok && p2.Op == token.AND {
+			if p3, ok := p2.X.(*goast.IndexExpr); ok {
+				if p4, ok := p3.Index.(*goast.BasicLit); ok &&
+					p4.Kind == token.INT &&
+					p4.Value == "0" {
+					return true
+				}
+			}
+		}
+	}
+
+	return false
+}
+func extractArrayFromPointer(expr goast.Expr) goast.Expr {
+	if p1, ok := expr.(*goast.ParenExpr); ok {
+		if p2, ok := p1.X.(*goast.UnaryExpr); ok && p2.Op == token.AND {
+			if p3, ok := p2.X.(*goast.IndexExpr); ok {
+				return p3.X
+			}
+		}
+	}
+	return nil
 }
 
 // IsNullExpr tries to determine if the expression is the result of the NULL
