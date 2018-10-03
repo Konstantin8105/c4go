@@ -148,7 +148,6 @@ func TestIntegrationScripts(t *testing.T) {
 			args := []string{
 				"test",
 				programArgs.outputFile,
-				"-v",
 			}
 			if strings.Index(file, "examples/") == -1 {
 				testName := strings.Split(file, ".")[0][6:]
@@ -166,7 +165,8 @@ func TestIntegrationScripts(t *testing.T) {
 					)
 				}
 			}
-			args = append(args, "--", "some", "args")
+
+			args = append(args, "-args", "some", "args")
 
 			cmd = exec.Command("go", args...)
 			cmd.Stdin = strings.NewReader("7")
