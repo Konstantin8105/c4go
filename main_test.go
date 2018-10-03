@@ -182,12 +182,17 @@ func TestIntegrationScripts(t *testing.T) {
 			cCombine := cProgram.stdout.String() + cProgram.stderr.String()
 			goCombine := goProgram.stdout.String() + goProgram.stderr.String()
 
-			t.Logf("Output of go program: \n`%v`", goCombine)
-
+			// Remove Go test specific lines
 			{
 				lines := strings.Split(goCombine, "\n")
 				for i := 0; i < len(lines); i++ {
 					if strings.Contains(lines[i], "warning: no packages being tested") {
+						continue
+					}
+					if strings.Contains(lines[i], "=== RUN   TestApp\n") {
+						continue
+					}
+					if strings.Contains(lines[i], "exit status") {
 						continue
 					}
 					goCombine += lines[i]
@@ -205,25 +210,6 @@ func TestIntegrationScripts(t *testing.T) {
 				t.Fatal("Cannot get currently dir")
 			}
 			goCombine = strings.Replace(goCombine, currentDir+"/", "", -1)
-
-			// remove Go test specific lines
-			goCombine = strings.Replace(goCombine, "=== RUN   TestApp\n", "", -1)
-			ind := strings.Index(goCombine, "--- PASS:")
-			if ind >= 0 {
-				goCombine = goCombine[:ind]
-			}
-			ind = strings.Index(goCombine, "FAIL	command-line-arguments")
-			if ind >= 0 {
-				goCombine = goCombine[:ind]
-			}
-
-			// travis specific of exit
-			if os.Getenv("TRAVIS") == "true" {
-				ind = strings.Index(goCombine, "exit status")
-				if ind >= 0 {
-					goCombine = goCombine[:ind]
-				}
-			}
 
 			if cCombine != goCombine {
 				// Add addition debug information for lines like:
