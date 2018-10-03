@@ -166,9 +166,8 @@ func TestIntegrationScripts(t *testing.T) {
 					)
 				}
 			}
-			args = append(args, "-args")
 			if os.Getenv("TRAVIS") != "true" { // for local testing
-				args = append(args, "-test.v")
+				args = append(args, "-args", "-test.v")
 			}
 			args = append(args, "--", "some", "args")
 
