@@ -204,6 +204,14 @@ func TestIntegrationScripts(t *testing.T) {
 				goCombine = goCombine[:ind]
 			}
 
+			// travis specific of exit
+			if os.Getenv("TRAVIS") == "true" {
+				ind = strings.Index(goCombine, "exit status")
+				if ind >= 0 {
+					goCombine = goCombine[:ind]
+				}
+			}
+
 			if cCombine != goCombine {
 				// Add addition debug information for lines like:
 				// build/tests/cast/main_test.go:195:1: expected '}', found 'type'
