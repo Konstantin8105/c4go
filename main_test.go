@@ -182,6 +182,8 @@ func TestIntegrationScripts(t *testing.T) {
 			cCombine := cProgram.stdout.String() + cProgram.stderr.String()
 			goCombine := goProgram.stdout.String() + goProgram.stderr.String()
 
+			t.Logf("Output of go program: \n`%v`", goCombine)
+
 			{
 				lines := strings.Split(goCombine, "\n")
 				for i := 0; i < len(lines); i++ {
