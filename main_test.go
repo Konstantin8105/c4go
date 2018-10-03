@@ -147,6 +147,7 @@ func TestIntegrationScripts(t *testing.T) {
 			// all of the fmt.* output would be suppressed.
 			args := []string{
 				"test",
+				"-v",
 				programArgs.outputFile,
 			}
 			if strings.Index(file, "examples/") == -1 {
@@ -166,7 +167,7 @@ func TestIntegrationScripts(t *testing.T) {
 				}
 			}
 
-			args = append(args, "-args", "some", "args")
+			args = append(args, "-args", "-test.v", "--", "some", "args")
 
 			cmd = exec.Command("go", args...)
 			cmd.Stdin = strings.NewReader("7")
@@ -186,8 +187,10 @@ func TestIntegrationScripts(t *testing.T) {
 				goProgramStdout = goProgram.stdout.String()
 			)
 
-			r := util.GetRegex("warning: no packages being tested depend on .+\n")
-			goProgramStderr = r.ReplaceAllString(goProgramStderr, "")
+			goProgramStderr = strings.Replace(goProgramStderr,
+				"warning: no packages being tested depend on .+\n",
+				"",
+				-1)
 
 			// It is need only for "tests/assert.c"
 			// for change absolute path to local path
