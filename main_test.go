@@ -147,8 +147,8 @@ func TestIntegrationScripts(t *testing.T) {
 			// all of the fmt.* output would be suppressed.
 			args := []string{
 				"test",
-				"-v",
 				programArgs.outputFile,
+				"-v",
 			}
 			if strings.Index(file, "examples/") == -1 {
 				testName := strings.Split(file, ".")[0][6:]
@@ -166,7 +166,6 @@ func TestIntegrationScripts(t *testing.T) {
 					)
 				}
 			}
-
 			args = append(args, "-args", "-test.v", "--", "some", "args")
 
 			cmd = exec.Command("go", args...)
