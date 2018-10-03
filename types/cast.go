@@ -139,6 +139,10 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	// cFromType  : double (int, float, double)
 	// cToType    : double (*)(int, float, double)
 	if IsFunction(cFromType) {
+		if cToType == "void *" {
+			p.AddImport("github.com/elliotchance/c2go/noarch")
+			return util.NewCallExpr("noarch.CastInterfaceToPointer", expr), nil
+		}
 		return expr, nil
 	}
 
@@ -150,21 +154,26 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return expr, nil
 	}
 
+	// Exception for va_list:
+	// A pointer to struct __va_list_tag is always a variable called
+	// "c2goVaList" in go.
+	if fromType == "va_list" && toType == "struct __va_list_tag *" {
+		ret := &goast.BasicLit{Kind: token.STRING, Value: "c2goVaList"}
+		return ret, nil
+	}
+
 	// casting
-	if fromType == "void *" && toType[len(toType)-1] == '*' &&
-		!strings.Contains(toType, "FILE") && toType[len(toType)-2] != '*' {
-		toType = strings.Replace(toType, "*", " ", -1)
-		t, err := ResolveType(p, toType)
+	if fromType == "void *" && toType[len(toType)-1] == '*' && !strings.Contains(toType, "FILE") {
+		toType, err := ResolveType(p, toType)
 		if err != nil {
 			return nil, err
 		}
-		return &goast.TypeAssertExpr{
-			X:      expr,
-			Lparen: 1,
-			Type: &goast.ArrayType{
-				Lbrack: 1,
-				Elt:    util.NewIdent(t),
-			}}, nil
+		return &goast.CallExpr{
+			Fun: &goast.ParenExpr{
+				X: util.NewTypeIdent(toType),
+			},
+			Args: []goast.Expr{expr},
+		}, nil
 	}
 
 	// Checking amount recursive typedef element
