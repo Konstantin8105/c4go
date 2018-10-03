@@ -146,7 +146,7 @@ func init() {
             iso646.h	          	    undefined
             limits.h	          	    undefined
             locale.h	       0/3	           0%
-              math.h	     36/58	        62.1%
+              math.h	     37/58	        63.8%
             setjmp.h	       0/3	           0%
             signal.h	       0/3	           0%
             stdarg.h	       4/4	         100%

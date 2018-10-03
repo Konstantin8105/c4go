@@ -178,6 +178,10 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double cbrt(double) -> math.Cbrt",
 		"float cbrtf(float) -> noarch.Cbrtf",
 		"long double cbrtl(long double) -> math.Cbrt",
+
+		"double hypot(double, double) -> math.Hypot",
+		"float hypotf(float) -> noarch.Hypotf",
+		"long double hypotl(long double, long double) -> math.Hypot",
 	},
 	"stdio.h": {
 

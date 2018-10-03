@@ -12,7 +12,7 @@ unsigned long long ullmax = 18446744073709551615ull;
 
 int main()
 {
-    plan(415);
+    plan(421);
 
 	double w1 = 100;
 	double w2 = 2;
@@ -678,6 +678,14 @@ int main()
         long double res = 2.12345;
         is_eq(cbrtl(res * res * res), res);
     }
+
+    diag("hypot, hypotf, hypotl");
+    is_eq(hypot(0, 0), 0);
+    is_eq(hypot(3, 4), 5);
+    is_eq(hypotf(0, 0), 0);
+    is_eq(hypotf(3, 4), 5);
+    is_eq(hypotl(0, 0), 0);
+    is_eq(hypotl(3, 4), 5);
 
     done_testing();
 }
