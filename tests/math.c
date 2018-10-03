@@ -12,7 +12,7 @@ unsigned long long ullmax = 18446744073709551615ull;
 
 int main()
 {
-    plan(399);
+    plan(421);
 
 	double w1 = 100;
 	double w2 = 2;
@@ -360,6 +360,17 @@ int main()
     is_inf(log10(INFINITY), 1);
     is_nan(log10(-INFINITY));
     is_nan(log10(NAN));
+	
+    diag("log1p");
+    is_inf(log1p(-1), -1);
+    is_eq(log1p(0), 0);
+    is_nan(log1p(-2));
+    is_eq(log1p(-0.5), -0.69314718055994528623);
+    is_eq(log1p(M_PI - 1), 1.14472988584940016388);
+    is_eq(log1p(M_E - 1), 1);
+    is_inf(log1p(INFINITY), 1);
+    is_nan(log1p(-INFINITY));
+    is_nan(log1p(NAN));
 
     diag("pow");
 
@@ -495,6 +506,12 @@ int main()
     is_eq(tanh(INFINITY), 1);
     is_eq(tanh(-INFINITY), -1);
     is_nan(tanh(NAN));
+
+    diag("copysign");
+    is_eq(copysign(1.0, +2.0), +1.0);
+    is_eq(copysign(1.0, -2.0), -1.0);
+    is_inf(copysign(INFINITY, -2.0), -1);
+    is_nan(copysign(NAN, -2.0));
 
 	diag("fma");
 	{
@@ -647,6 +664,28 @@ int main()
 		double angle = 2.0;
 		is_eq(atanh(tanh(angle)),angle);
 	}
+
+    diag("cbrt, cbrtf, cbrtl");
+    {
+        double res = 2.12345;
+        is_eq(cbrt(res * res * res), res);
+    }
+    {
+        float res = 2.12345;
+        is_eq(cbrtf(res * res * res), res);
+    }
+    {
+        long double res = 2.12345;
+        is_eq(cbrtl(res * res * res), res);
+    }
+
+    diag("hypot, hypotf, hypotl");
+    is_eq(hypot(0, 0), 0);
+    is_eq(hypot(3, 4), 5);
+    is_eq(hypotf(0, 0), 0);
+    is_eq(hypotf(3, 4), 5);
+    is_eq(hypotl(0, 0), 0);
+    is_eq(hypotl(3, 4), 5);
 
     done_testing();
 }

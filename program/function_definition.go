@@ -98,7 +98,6 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double ceil(double) -> math.Ceil",
 		"double cos(double) -> math.Cos",
 		"double cosh(double) -> math.Cosh",
-		"double exp(double) -> math.Exp",
 		"double fabs(double) -> math.Abs",
 		"double floor(double) -> math.Floor",
 		"double fmod(double, double) -> math.Mod",
@@ -111,6 +110,10 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double sqrt(double) -> math.Sqrt",
 		"double tan(double) -> math.Tan",
 		"double tanh(double) -> math.Tanh",
+
+		"double copysign(double, double) -> math.Copysign",
+		"float copysignf(float, float) -> noarch.Copysignf",
+		"long double copysignl(long double, long double) -> math.Copysign",
 
 		"double fma(double, double, double) -> noarch.Fma",
 		"float fmaf(float, float, float) -> noarch.Fmaf",
@@ -132,9 +135,17 @@ var builtInFunctionDefinitions = map[string][]string{
 		"float exp2f(float) -> noarch.Exp2f",
 		"long double exp2l(long double) -> math.Exp2",
 
+		"double exp(double) -> math.Exp",
+		"float expf(float) -> noarch.Expf",
+		"long double expl(long double) -> math.Exp",
+
 		"double log2(double) -> math.Log2",
 		"float log2f(float) -> noarch.Log2f",
 		"long double log2l(long double) -> math.Log2",
+
+		"double log1p(double) -> math.Log1p",
+		"float log1pf(float) -> noarch.Log1pf",
+		"long double log1pl(long double) -> math.Log1p",
 
 		"double fdim(double, double) -> noarch.Fdim",
 		"float fdimf(float, float) -> noarch.Fdimf",
@@ -163,6 +174,14 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double tanh(double) -> math.Tanh",
 		"float tanhf(float) -> noarch.Tanhf",
 		"long double tanhl(long double) -> math.Tanh",
+
+		"double cbrt(double) -> math.Cbrt",
+		"float cbrtf(float) -> noarch.Cbrtf",
+		"long double cbrtl(long double) -> math.Cbrt",
+
+		"double hypot(double, double) -> math.Hypot",
+		"float hypotf(float) -> noarch.Hypotf",
+		"long double hypotl(long double, long double) -> math.Hypot",
 	},
 	"stdio.h": {
 
@@ -207,6 +226,7 @@ var builtInFunctionDefinitions = map[string][]string{
 	"string.h": {
 		// string.h
 		"char* strcat(char *, const char *) -> noarch.Strcat",
+		"char* strncat(char *, const char *, int) -> noarch.Strncat",
 		"int strcmp(const char *, const char *) -> noarch.Strcmp",
 		"char * strchr(char *, int) -> noarch.Strchr",
 
@@ -222,6 +242,7 @@ var builtInFunctionDefinitions = map[string][]string{
 
 		"char * memset(char *, char, unsigned int) -> noarch.Memset",
 		"char * memmove(char *, char *, unsigned int) -> noarch.Memmove",
+		"int memcmp(const char *, const char *, unsigned int) -> noarch.Memcmp",
 	},
 	"stdlib.h": {
 		// stdlib.h
