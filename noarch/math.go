@@ -118,6 +118,11 @@ func Cbrtf(x float32) float32 {
 	return float32(math.Cbrt(float64(x)))
 }
 
+// Hypotf compute the square root of the sum of the squares of x and y
+func Hypotf(x, y float32) float32 {
+	return float32(math.Hypot(float64(x), float64(y)))
+}
+
 // Log1pf compute ln(1+arg)
 func Log1pf(arg float32) float32 {
 	return float32(math.Log1p(float64(arg)))
