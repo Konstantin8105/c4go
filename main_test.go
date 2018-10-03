@@ -185,14 +185,30 @@ func TestIntegrationScripts(t *testing.T) {
 			// Remove Go test specific lines
 			{
 				lines := strings.Split(goCombine, "\n")
+				goCombine = ""
 				for i := 0; i < len(lines); i++ {
-					if strings.Contains(lines[i], "warning: no packages being tested") {
+					if strings.HasPrefix(lines[i], "warning: no packages being tested") {
 						continue
 					}
-					if strings.Contains(lines[i], "=== RUN   TestApp\n") {
+					if strings.HasPrefix(lines[i], "=== RUN   TestApp") {
 						continue
 					}
-					if strings.Contains(lines[i], "exit status") {
+					if strings.HasPrefix(lines[i], "FAIL\t") {
+						continue
+					}
+					if strings.HasPrefix(lines[i], "exit status") {
+						continue
+					}
+					if lines[i] == "PASS" {
+						continue
+					}
+					if strings.HasPrefix(lines[i], "coverage:") {
+						continue
+					}
+					if strings.HasPrefix(lines[i], "--- PASS: TestApp") {
+						continue
+					}
+					if strings.HasPrefix(lines[i], "ok  \tcommand-line-arguments") {
 						continue
 					}
 					goCombine += lines[i]
