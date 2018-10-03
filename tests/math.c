@@ -12,7 +12,7 @@ unsigned long long ullmax = 18446744073709551615ull;
 
 int main()
 {
-    plan(421);
+    plan(476);
 
 	double w1 = 100;
 	double w2 = 2;
@@ -321,6 +321,73 @@ int main()
     is_nan(fmod(INFINITY, NAN));
     is_nan(fmod(-INFINITY, NAN));
     is_nan(fmod(NAN, NAN));
+
+    diag("remainder")
+
+    // remainder(x, 0)
+    is_nan(remainder(0, 0));
+    is_nan(remainder(1, 0));
+    is_nan(remainder(-1, 0));
+    is_nan(remainder(0.5, 0));
+    is_nan(remainder(1.23e300, 0));
+    is_nan(remainder(-1.23e-300, 0));
+    is_nan(remainder(M_PI, 0));
+    is_nan(remainder(M_E, 0));
+    is_nan(remainder(INFINITY, 0));
+    is_nan(remainder(-INFINITY, 0));
+    is_nan(remainder(NAN, 0));
+
+    // remainder(x, 0.5)
+    is_eq(remainder(0, 0.5), 0);
+    is_eq(remainder(1, 0.5), 0);
+    is_negzero(remainder(-1, 0.5));
+    is_eq(remainder(0.5, 0.5), 0);
+    is_eq(remainder(1.23e300, 0.5), 0);
+    is_negzero(remainder(-1.23e-300, 0.5));
+    is_eq(remainder(M_PI, 0.5), M_PI - 3);
+    is_eq(remainder(M_E, 0.5), M_E - 2.5);
+    is_nan(remainder(INFINITY, 0.5));
+    is_nan(remainder(-INFINITY, 0.5));
+    is_nan(remainder(NAN, 0.5));
+
+    // remainder(x, INFINITY)
+    is_eq(remainder(0, INFINITY), 0);
+    is_eq(remainder(1, INFINITY), 1);
+    is_negzero(remainder(-1, INFINITY));
+    is_eq(remainder(0.5, INFINITY), 0.5);
+    is_eq(remainder(1.23e300, INFINITY), 1.23e300);
+    is_negzero(remainder(-1.23e-300, INFINITY));
+    is_eq(remainder(M_PI, INFINITY), M_PI);
+    is_eq(remainder(M_E, INFINITY), M_E);
+    is_nan(remainder(INFINITY, INFINITY));
+    is_nan(remainder(-INFINITY, INFINITY));
+    is_nan(remainder(NAN, INFINITY));
+
+    // remainder(x, -INFINITY)
+    is_eq(remainder(0, -INFINITY), 0);
+    is_eq(remainder(1, -INFINITY), 1);
+    is_negzero(remainder(-1, -INFINITY));
+    is_eq(remainder(0.5, -INFINITY), 0.5);
+    is_eq(remainder(1.23e300, -INFINITY), 1.23e300);
+    is_negzero(remainder(-1.23e-300, -INFINITY));
+    is_eq(remainder(M_PI, -INFINITY), M_PI);
+    is_eq(remainder(M_E, -INFINITY), M_E);
+    is_nan(remainder(INFINITY, -INFINITY));
+    is_nan(remainder(-INFINITY, -INFINITY));
+    is_nan(remainder(NAN, -INFINITY));
+
+    // remainder(x, NAN)
+    is_nan(remainder(0, NAN));
+    is_nan(remainder(1, NAN));
+    is_nan(remainder(-1, NAN));
+    is_nan(remainder(0.5, NAN));
+    is_nan(remainder(1.23e300, NAN));
+    is_nan(remainder(-1.23e-300, NAN));
+    is_nan(remainder(M_PI, NAN));
+    is_nan(remainder(M_E, NAN));
+    is_nan(remainder(INFINITY, NAN));
+    is_nan(remainder(-INFINITY, NAN));
+    is_nan(remainder(NAN, NAN));
 
     diag("ldexp");
     is_eq(ldexp(0, 2), 0);
