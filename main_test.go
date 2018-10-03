@@ -166,7 +166,11 @@ func TestIntegrationScripts(t *testing.T) {
 					)
 				}
 			}
-			args = append(args, "-args", "-test.v", "--", "some", "args")
+			args = append(args, "-args")
+			if os.Getenv("TRAVIS") != "true" { // for local testing
+				args = append(args, "-test.v")
+			}
+			args = append(args, "--", "some", "args")
 
 			cmd = exec.Command("go", args...)
 			cmd.Stdin = strings.NewReader("7")
