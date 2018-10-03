@@ -84,6 +84,7 @@ int main()
     {
         diag("strcat");
         char str[80];
+        for (int i = 0;i<80;i++) str[i] = 0;
         strcpy(str, "these ");
         strcat(str, "strings ");
         strcat(str, "are ");
@@ -93,6 +94,7 @@ int main()
     {
         diag("strncat");
         char str[80];
+        for (int i = 0;i<80;i++) str[i] = 0;
         strncpy(str, "these", 3);
         strncat(str, " strings", 7);
         strncat(str, " is", 3);

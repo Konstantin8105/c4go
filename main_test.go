@@ -166,6 +166,9 @@ func TestIntegrationScripts(t *testing.T) {
 					)
 				}
 			}
+			if os.Getenv("TRAVIS") != "true" { // for local testing
+				args = append(args, "-args", "-test.v")
+			}
 			args = append(args, "--", "some", "args")
 
 			cmd = exec.Command("go", args...)
@@ -249,9 +252,9 @@ func TestIntegrationScripts(t *testing.T) {
 				}
 				t.Fatalf("\n%10s%s\n%10s%s\n\n%10s%s\n%10s%s\nParts of code:\n%s",
 					"Stderr Expect:", cProgramStderr,
-					"Stderr Got:", goProgramStderr,
+					"Stderr Got   :", goProgramStderr,
 					"Stdout Expect:", cProgramStdout,
-					"Stdout Got:", goProgramStdout,
+					"Stdout Got   :", goProgramStdout,
 					output)
 			}
 
