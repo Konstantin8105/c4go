@@ -600,7 +600,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		}, nil
 	}
 
-	if IsCInteger(p, cFromType) && IsPointer(cToType) {
+	if IsCInteger(p, cFromType) && IsPointer(p, cToType) {
 		expr = goast.NewIdent("nil")
 		return expr, nil
 	}

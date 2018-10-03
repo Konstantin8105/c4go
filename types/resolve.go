@@ -130,7 +130,7 @@ var CStdStructType = map[string]string{
 	"struct tm": "github.com/Konstantin8105/c4go/noarch.Tm",
 	"time_t":    "github.com/Konstantin8105/c4go/noarch.TimeT",
 
-	"fpos_t": "int",
+	"fpos_t": "int32",
 }
 
 // NullPointer - is look : (double *)(nil) or (FILE *)(nil)
@@ -246,6 +246,14 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 		return g, e
 	}
 
+	// The simple resolve types are the types that we know there is an exact Go
+	// equivalent. For example float, int, etc.
+	for k, v := range simpleResolveTypes {
+		if k == s {
+			return p.ImportType(v), nil
+		}
+	}
+
 	// Check is it typedef enum
 	if _, ok := p.EnumTypedefName[s]; ok {
 		return ResolveType(p, "int")
@@ -309,7 +317,24 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 		if s[0] == 's' {
 			start++
 		}
-		return s[start:], nil
+
+		if s[len(s)-1] == '*' {
+			s = s[start : len(s)-2]
+
+			var t string
+			t, err = ResolveType(p, s)
+			return "*" + t, err
+		}
+
+		s = s[start:]
+
+		for _, v := range simpleResolveTypes {
+			if v == s {
+				return p.ImportType(simpleResolveTypes[s]), nil
+			}
+		}
+
+		return ResolveType(p, s)
 	}
 
 	// Enums are by name.
@@ -323,7 +348,21 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 
 	// I have no idea how to handle this yet.
 	if strings.Contains(s, "anonymous union") {
-		return "interface{}", errors.New("probably an incorrect type translation 3")
+		return "unsafe.Pointer", errors.New("probably an incorrect type translation 3")
+	}
+
+	// It may be a pointer of a simple type. For example, float *, int *,
+	// etc.
+	if util.GetRegex("[\\w ]+\\*+$").MatchString(s) {
+		// The "-1" is important because there may or may not be a space between
+		// the name and the "*". If there is an extra space it will be trimmed
+		// off.
+		t, err := ResolveType(p, strings.TrimSpace(s[:len(s)-1]))
+		// Pointers are always converted into slices, except with some specific
+		// entities that are shared in the Go libraries.
+		prefix := "*"
+
+		return prefix + t, err
 	}
 
 	// Function pointers are not yet supported. In the mean time they will be
@@ -341,19 +380,25 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 			fmt.Errorf("function pointers are not supported [2] : '%s'", s)
 	}
 
-	// for case : "int []"
-	if strings.HasSuffix(s, " []") {
-		var r string
-		r, err = ResolveType(p, s[:len(s)-len(" []")])
-		if err != nil {
-			return
+	// It could be an array of fixed length. These needs to be converted to
+	// slices.
+	// int [2][3] -> [][]int
+	// int [2][3][4] -> [][][]int
+	{
+		search2 := util.GetRegex(`([\w\* ]+)((\[\d+\])+)`).FindStringSubmatch(s)
+		if len(search2) > 2 {
+			t, err := ResolveType(p, search2[1])
+
+			var re = util.GetRegex(`[0-9]+`)
+			arraysNoSize := re.ReplaceAllString(search2[2], "")
+
+			return fmt.Sprintf("%s%s", arraysNoSize, t), err
 		}
-		return "[]" + r, nil
 	}
 
 	errMsg := fmt.Sprintf(
 		"I couldn't find an appropriate Go type for the C type '%s'.", s)
-	return "interface{}", errors.New(errMsg)
+	return "unsafe.Pointer", errors.New(errMsg)
 }
 
 // resolveType determines the Go type from a C type.
@@ -431,45 +476,26 @@ func IsFunction(s string) bool {
 	return strings.Contains(s, "(")
 }
 
-//IsCPointer - check C type is pointer
-func IsCPointer(s string) bool {
-	if len(s) == 0 {
-		return false
-	}
-	for i := len(s) - 1; i >= 0; i-- {
-		switch s[i] {
-		case ' ':
-			continue
-		case '*':
-			return true
-		default:
-			break
-		}
-	}
-	return false
-}
-
-// IsCArray - check C type is array
-func IsCArray(s string) bool {
-	if len(s) == 0 {
-		return false
-	}
-	for i := len(s) - 1; i >= 0; i-- {
-		switch s[i] {
-		case ' ':
-			continue
-		case ']':
-			return true
-		default:
-			break
-		}
-	}
-	return false
-}
-
 // IsPointer - check type is pointer
-func IsPointer(s string) bool {
-	return strings.ContainsAny(s, "*[]")
+func IsPointer(p *program.Program, s string) bool {
+	if strings.ContainsAny(s, "*[]") {
+		return true
+	}
+	if v, ok := p.TypedefType[s]; ok {
+		return IsPointer(p, v)
+	}
+	return false
+}
+
+// IsPurePointer - check type is pointer
+func IsPurePointer(p *program.Program, s string) bool {
+	if strings.ContainsAny(s, "*") {
+		return true
+	}
+	if v, ok := p.TypedefType[s]; ok {
+		return IsPurePointer(p, v)
+	}
+	return false
 }
 
 // IsLastArray - check type have array '[]'
@@ -821,4 +847,26 @@ func GetBaseType(s string) string {
 			strings.Replace(s, "(*)", "*", -1)))
 	}
 	return s
+}
+
+// goIntegerType - slice of Go integer type
+var goIntegerType = []string{
+	"int8",
+	"int16",
+	"int32",
+	"int64",
+	"uint8",
+	"uint16",
+	"uint32",
+	"uint64",
+}
+
+// IsGoIntegerType - return whether the given Go type is an integer type
+func IsGoIntegerType(s string) bool {
+	for _, i := range goIntegerType {
+		if i == s {
+			return true
+		}
+	}
+	return false
 }
