@@ -55,6 +55,11 @@ func getFileList(prefix, gitSource string) (fileList []string, err error) {
 }
 
 func TestBookSources(t *testing.T) {
+	// test create not for TRAVIS CI
+	if os.Getenv("TRAVIS") == "true" {
+		t.Skip()
+	}
+
 	defer func() {
 		if r := recover(); r != nil {
 			t.Errorf("Panic is not acceptable: %v", r)
@@ -243,6 +248,11 @@ func getLogs(goFile string) (logs []string, err error) {
 }
 
 func TestFrame3dd(t *testing.T) {
+	// test create not for TRAVIS CI
+	if os.Getenv("TRAVIS") == "true" {
+		t.Skip()
+	}
+
 	folder := "./build/git-source/frame3dd/"
 
 	// Create build folder
@@ -297,6 +307,11 @@ func TestFrame3dd(t *testing.T) {
 }
 
 func TestMultifiles(t *testing.T) {
+	// test create not for TRAVIS CI
+	if os.Getenv("TRAVIS") == "true" {
+		t.Skip()
+	}
+
 	type fs struct {
 		input  []string
 		clang  []string
