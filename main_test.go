@@ -189,10 +189,8 @@ func TestIntegrationScripts(t *testing.T) {
 				goProgramStdout = goProgram.stdout.String()
 			)
 
-			goProgramStderr = strings.Replace(goProgramStderr,
-				"warning: no packages being tested depend on .+\n",
-				"",
-				-1)
+			r := util.GetRegex("warning: no packages being tested depend on .+\n")
+			goProgramStderr = r.ReplaceAllString(goProgramStderr, "")
 
 			// It is need only for "tests/assert.c"
 			// for change absolute path to local path
