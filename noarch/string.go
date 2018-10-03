@@ -110,9 +110,11 @@ func Strcat(dest, src *byte) *byte {
 // The terminating null character in destination is overwritten by the first
 // character of source, and a null-character is included at the end
 // of the new string formed by the concatenation of both in destination.
-func Strncat(dest, src []byte, len int) []byte {
-	Strncpy(dest[Strlen(dest):], src, len)
-	return dest
+func Strncat(dest, src *byte, len int32) *byte {
+	d := []byte(CStringToString(dest))
+	dp := d[int(Strlen(dest)):]
+	Strncpy((*byte)(unsafe.Pointer(uintptr(unsafe.Pointer(&dp)))), src, len)
+	return (*byte)(unsafe.Pointer(uintptr(unsafe.Pointer(&d))))
 }
 
 // Strcmp - compare two strings

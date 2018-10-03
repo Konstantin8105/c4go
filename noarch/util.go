@@ -2,6 +2,8 @@ package noarch
 
 import (
 	"reflect"
+	"sync"
+	"unsafe"
 )
 
 // CStringToString returns a string that contains all the bytes in the

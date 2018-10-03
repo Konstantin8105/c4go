@@ -388,11 +388,6 @@ func Free(anything unsafe.Pointer) {
 	delete(memMgmt, addr)
 }
 
-// Free doesn't do anything since memory is managed by the Go garbage collector.
-// However, I will leave it here as a placeholder for now.
-func Free(anything interface{}) {
-}
-
 func atof(str *byte) (float64, int32) {
 	// First start by removing any trailing whitespace. We have to record how
 	// much whitespace is trimmed off to correct for the final length.
