@@ -67,12 +67,12 @@ func IsCFloat(p *program.Program, cType string) bool {
 // Please keep them sorted by name.
 var simpleResolveTypes = map[string]string{
 	"bool":                   "bool",
-	"char *":                 "[]byte",
+	"char *":                 "*byte",
 	"char":                   "byte",
-	"char*":                  "[]byte",
+	"char*":                  "*byte",
 	"double":                 "float64",
 	"float":                  "float32",
-	"int":                    "int",
+	"int":                    "int32",
 	"long double":            "float64",
 	"long int":               "int32",
 	"long long":              "int64",
@@ -89,13 +89,13 @@ var simpleResolveTypes = map[string]string{
 	"unsigned short":         "uint16",
 	"unsigned short int":     "uint16",
 	"void":                   "",
-	"_Bool":                  "int",
+	"_Bool":                  "int8",
 
 	// void*
-	"void*":  "interface{}",
-	"void *": "interface{}",
+	"void*":  "unsafe.Pointer",
+	"void *": "unsafe.Pointer",
 
-	// null is a special case (it should probably have a less ambiguos name)
+	// null is a special case (it should probably have a less ambiguous name)
 	// when using the NULL macro.
 	"null": "null",
 
