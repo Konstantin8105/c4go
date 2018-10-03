@@ -182,8 +182,19 @@ func TestIntegrationScripts(t *testing.T) {
 			cCombine := cProgram.stdout.String() + cProgram.stderr.String()
 			goCombine := goProgram.stdout.String() + goProgram.stderr.String()
 
-			r := util.GetRegex("warning: no packages being tested depend on .+\n")
-			goCombine = r.ReplaceAllString(goCombine, "")
+			{
+				lines := strings.Split(goCombine, "\n")
+				for i := 0; i < len(lines); i++ {
+					if strings.Contains(lines[i], "warning: no packages being tested") {
+						continue
+					}
+					goCombine += lines[i]
+					if i == len(lines)-1 {
+						continue
+					}
+					goCombine += "\n"
+				}
+			}
 
 			// It is need only for "tests/assert.c"
 			// for change absolute path to local path
