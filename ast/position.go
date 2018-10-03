@@ -252,6 +252,8 @@ func setPosition(node Node, position Position) {
 		n.Pos = position
 	case *BreakStmt:
 		n.Pos = position
+	case *C11NoReturnAttr:
+		n.Pos = position
 	case *CallExpr:
 		n.Pos = position
 	case *CaseStmt:
@@ -350,9 +352,13 @@ func setPosition(node Node, position Position) {
 		n.Pos = position
 	case *ModeAttr:
 		n.Pos = position
+	case *NoAliasAttr:
+		n.Pos = position
 	case *NoInlineAttr:
 		n.Pos = position
 	case *NoThrowAttr:
+		n.Pos = position
+	case *NotTailCalledAttr:
 		n.Pos = position
 	case *NonNullAttr:
 		n.Pos = position
@@ -422,7 +428,7 @@ func setPosition(node Node, position Position) {
 		*QualType, *PointerType, *ParenType, *IncompleteArrayType,
 		*FunctionProtoType, *EnumType, *Enum, *ElaboratedType,
 		*ConstantArrayType, *BuiltinType, *ArrayFiller, *Field,
-		*DecayedType, *CXXRecord:
+		*DecayedType, *CXXRecord, *AttributedType:
 		// These do not have positions so they can be ignored.
 	default:
 		panic(fmt.Sprintf("unknown node type: %+#v", node))
