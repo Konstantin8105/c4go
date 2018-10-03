@@ -3,6 +3,9 @@
 package transpiler
 
 import (
+	"github.com/Konstantin8105/c4go/program"
+	"github.com/Konstantin8105/c4go/types"
+	"github.com/Konstantin8105/c4go/util"
 	goast "go/ast"
 	"reflect"
 )
@@ -61,4 +64,20 @@ func combineStmts(stmt goast.Stmt, preStmts, postStmts []goast.Stmt) (stmts []go
 		stmts = append(stmts, postStmts...)
 	}
 	return
+}
+
+// combineMultipleStmts - combine elements to slice
+func combineMultipleStmts(stmts, preStmts, postStmts []goast.Stmt) []goast.Stmt {
+	return combineStmts(nil, preStmts, append(stmts, postStmts...))
+}
+
+// GetUintptrForPointer - return uintptr for pointer
+// Example : uint64(uintptr(unsafe.Pointer( ...pointer... )))
+func GetUintptrForPointer(p *program.Program, expr goast.Expr, exprType string) (goast.Expr, string, error) {
+	returnType := "long long"
+	expr, err := types.CastExpr(p, expr, exprType, "void*")
+
+	return util.NewCallExpr("int64",
+		util.NewCallExpr("uintptr",
+			expr)), returnType, err
 }

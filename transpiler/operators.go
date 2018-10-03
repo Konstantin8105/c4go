@@ -245,7 +245,7 @@ func pointerArithmetic(p *program.Program,
 		err = fmt.Errorf("right type is not C integer type : '%s'", rightType)
 		return
 	}
-	if !types.IsPointer(leftType) {
+	if !types.IsPointer(p, leftType) {
 		err = fmt.Errorf("left type is not a pointer : '%s'", leftType)
 		return
 	}
@@ -342,7 +342,7 @@ func transpileCompoundAssignOperator(
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
 	// Pointer arithmetic
-	if types.IsPointer(n.Type) &&
+	if types.IsPointer(p, n.Type) &&
 		(operator == token.ADD_ASSIGN || operator == token.SUB_ASSIGN) {
 		operator = convertToWithoutAssign(operator)
 		v, vType, newPre, newPost, err := pointerArithmetic(p, left, leftType, right, rightType, operator)
@@ -684,8 +684,9 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		if vv, ok := v.Children()[0].(*ast.UnaryOperator); ok && vv.IsPrefix && vv.Operator == "*" {
 			if vvv, ok := vv.Children()[0].(*ast.ImplicitCastExpr); ok {
 				if vvvv, ok := vvv.Children()[0].(*ast.DeclRefExpr); ok {
-					if types.IsPointer(vvvv.Type) {
-						varName := vvvv.Name
+					if types.IsPointer(p, vvvv.Type) {
+						var varName string
+						varName = vvvv.Name
 
 						var exprResolveType string
 						exprResolveType, err = types.ResolveType(p, v.Type)
@@ -965,7 +966,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			postStmts = nil
 
 			var returnValue goast.Expr = util.NewIdent(varName)
-			if types.IsPointer(decl.Type) && !types.IsPointer(v.Type) {
+			if types.IsPointer(p, decl.Type) && !types.IsPointer(p, v.Type) {
 				returnValue = &goast.IndexExpr{
 					X: returnValue,
 					Index: &goast.BasicLit{

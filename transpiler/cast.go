@@ -9,6 +9,7 @@ import (
 	"github.com/Konstantin8105/c4go/program"
 	"github.com/Konstantin8105/c4go/types"
 	"github.com/Konstantin8105/c4go/util"
+	"go/token"
 )
 
 func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, exprIsStmt bool) (
@@ -103,6 +104,35 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 	}
 
 	return
+}
+
+func isCastToUnsignedOfUnaryComplement(n *ast.ImplicitCastExpr, p *program.Program) (ret bool) {
+	if !types.IsCInteger(p, n.Type) || !strings.Contains(n.Type, "unsigned ") {
+		return
+	}
+	cn, ok := n.Children()[0].(*ast.UnaryOperator)
+	if !ok || getTokenForOperator(cn.Operator) != token.XOR {
+		return
+	}
+	return types.IsCInteger(p, cn.Type) && !strings.Contains(cn.Type, "unsigned ")
+}
+
+func swapCastAndComplement(n *ast.ImplicitCastExpr, p *program.Program, exprIsStmt bool) (
+	expr goast.Expr,
+	exprType string,
+	preStmts []goast.Stmt,
+	postStmts []goast.Stmt,
+	err error) {
+	uo := n.Children()[0].(*ast.UnaryOperator)
+	copyUnary := &ast.UnaryOperator{}
+	copyImplicit := &ast.ImplicitCastExpr{}
+	*copyUnary = *uo
+	*copyImplicit = *n
+	unaryChildren := uo.ChildNodes
+	copyUnary.ChildNodes = []ast.Node{copyImplicit}
+	copyUnary.Type = copyImplicit.Type
+	copyImplicit.ChildNodes = unaryChildren
+	return transpileToExpr(copyUnary, p, exprIsStmt)
 }
 
 func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsStmt bool) (
