@@ -201,6 +201,12 @@ int compare(const void* a, const void* b)
     return (*(int*)a - *(int*)b);
 }
 
+void test_system() {
+    diag("system");
+    is_eq(system("true"), 0);
+    is_not_eq(system("false"), 0);
+}
+
 void q_sort()
 {
     diag("qsort");
@@ -226,7 +232,7 @@ void struct_with_define()
 
 int main()
 {
-    plan(753);
+    plan(755);
 
 	struct_with_define();
 
@@ -494,6 +500,8 @@ int main()
     test_strtol("123", 8, 83, "");
     test_strtol("123abc", 16, 1194684, "");
     test_strtol("123abc", 8, 83, "abc");
+
+    test_system();
 
     q_sort();
 
