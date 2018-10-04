@@ -7,8 +7,6 @@ import (
 	"bytes"
 	"fmt"
 	"go/token"
-	"regexp"
-	"strings"
 
 	goast "go/ast"
 
@@ -24,83 +22,43 @@ func transpileFloatingLiteral(n *ast.FloatingLiteral) *goast.BasicLit {
 	return util.NewFloatLit(n.Value)
 }
 
-var regexpUnsigned *regexp.Regexp
-var regexpLongDouble *regexp.Regexp
-
-func init() {
-	regexpUnsigned = regexp.MustCompile(`%(\d+)?u`)
-	regexpLongDouble = regexp.MustCompile(`%(\d+)?(.\d+)?lf`)
-}
-
-// ConvertToGoFlagFormat convert format flags from C to Go
-func ConvertToGoFlagFormat(str string) string {
-	// %u to %d
-	{
-		match := regexpUnsigned.FindAllStringSubmatch(str, -1)
-		for _, sub := range match {
-			str = strings.Replace(str, sub[0], sub[0][:len(sub[0])-1]+"d", -1)
-		}
-	}
-	// from %lf to %f
-	{
-		match := regexpLongDouble.FindAllStringSubmatch(str, -1)
-		for _, sub := range match {
-			str = strings.Replace(str, sub[0], sub[0][:len(sub[0])-2]+"f", -1)
-		}
-	}
-	return str
-}
-
-func transpileStringLiteral(p *program.Program, n *ast.StringLiteral, arrayToArray bool) (
-	expr goast.Expr, exprType string, err error) {
-
-	// Convert format flags
-	n.Value = ConvertToGoFlagFormat(n.Value)
-
+func transpileStringLiteral(n *ast.StringLiteral) goast.Expr {
 	// Example:
 	// StringLiteral 0x280b918 <col:29> 'char [30]' lvalue "%0"
-	baseType := types.GetBaseType(n.Type)
-	if baseType != "char" {
-		err = fmt.Errorf("Type is not `char` : %v", n.Type)
-		p.AddMessage(p.GenerateWarningMessage(err, n))
-		return
+	s, err := types.GetAmountArraySize(n.Type)
+	if err != nil {
+		return toBytePointer(util.NewCallExpr("[]byte",
+			util.NewStringLit(strconv.Quote(n.Value+"\x00"))))
 	}
-	var s int
-	s, err = types.GetAmountArraySize(n.Type)
-	if !arrayToArray {
-		if err != nil {
-			expr = util.NewCallExpr("[]byte",
-				util.NewStringLit(strconv.Quote(n.Value+"\x00")))
-			exprType = "const char *"
-			return
-		}
-		buf := bytes.NewBufferString(n.Value + "\x00")
-		if buf.Len() < s {
-			buf.Write(make([]byte, s-buf.Len()))
-		}
-		expr = util.NewCallExpr("[]byte",
-			util.NewStringLit(strconv.Quote(buf.String())))
-		exprType = "const char *"
-		return
+	buf := bytes.NewBufferString(n.Value + "\x00")
+	if buf.Len() < s {
+		buf.Write(make([]byte, s-buf.Len()))
 	}
-	// Example:
-	//
-	// var sba SBA = SBA{10, func() (b [100]byte) {
-	// 	copy(b[:], "qwe")
-	// 	return b
-	// }()}
-	expr = goast.NewIdent(fmt.Sprintf(
-		"func() (b [%v]byte) { copy(b[:],\"%s\" );return }()",
-		s, n.Value))
-	exprType = n.Type
-	return
+	return toBytePointer(util.NewCallExpr("[]byte",
+		util.NewStringLit(strconv.Quote(buf.String()))))
 }
 
-func transpileIntegerLiteral(n *ast.IntegerLiteral) *goast.BasicLit {
-	return &goast.BasicLit{
+func toBytePointer(expr goast.Expr) goast.Expr {
+	return &goast.ParenExpr{
+		X: &goast.UnaryExpr{
+			Op: token.AND,
+			X: &goast.IndexExpr{
+				X:     expr,
+				Index: util.NewIntLit(0),
+			},
+		},
+	}
+}
+
+func transpileIntegerLiteral(n *ast.IntegerLiteral) (ret goast.Expr) {
+	ret = &goast.BasicLit{
 		Kind:  token.INT,
 		Value: n.Value,
 	}
+	if n.Type == "int" {
+		ret = util.NewCallExpr("int32", ret)
+	}
+	return
 }
 
 func transpileCharacterLiteral(n *ast.CharacterLiteral) *goast.BasicLit {
@@ -117,23 +75,34 @@ func transpilePredefinedExpr(n *ast.PredefinedExpr, p *program.Program) (goast.E
 	// TODO: Predefined expressions are not evaluated
 	// https://github.com/Konstantin8105/c4go/issues/81
 
+	var e goast.Expr
 	switch n.Name {
 	case "__PRETTY_FUNCTION__":
-		return util.NewCallExpr(
+		e = util.NewCallExpr(
 			"[]byte",
-			util.NewStringLit(`"void print_number(int *)"`),
-		), "const char*", nil
+			util.NewStringLit(`"void print_number(int *)\x00"`),
+		)
 
 	case "__func__":
-		return util.NewCallExpr(
+		e = util.NewCallExpr(
 			"[]byte",
-			util.NewStringLit(strconv.Quote(p.Function.Name)),
-		), "const char*", nil
+			util.NewStringLit(strconv.Quote(p.Function.Name+"\x00")),
+		)
 
 	default:
 		// There are many more.
 		panic(fmt.Sprintf("unknown PredefinedExpr: %s", n.Name))
 	}
+	e = &goast.ParenExpr{
+		X: &goast.UnaryExpr{
+			Op: token.AND,
+			X: &goast.IndexExpr{
+				X:     e,
+				Index: util.NewIntLit(0),
+			},
+		},
+	}
+	return e, "const char*", nil
 }
 
 func transpileCompoundLiteralExpr(n *ast.CompoundLiteralExpr, p *program.Program) (goast.Expr, string, error) {

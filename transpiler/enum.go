@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"go/token"
 	"strconv"
-	"strings"
 
 	goast "go/ast"
 
@@ -46,7 +45,7 @@ func ctypeEnumValue(value int, t token.Token) goast.Expr {
 func transpileEnumConstantDecl(p *program.Program, n *ast.EnumConstantDecl) (
 	*goast.ValueSpec, []goast.Stmt, []goast.Stmt) {
 	var value goast.Expr = util.NewIdent("iota")
-	valueType := "int"
+	valueType := "int32"
 	preStmts := []goast.Stmt{}
 	postStmts := []goast.Stmt{}
 
@@ -107,28 +106,112 @@ func transpileEnumConstantDecl(p *program.Program, n *ast.EnumConstantDecl) (
 	}, preStmts, postStmts
 }
 
-func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (
-	decls []goast.Decl, err error) {
-	defer func() {
-		if err != nil {
-			err = fmt.Errorf("Cannot transpileEnumDecl. %v", err)
-		}
-	}()
-
-	if !p.PreprocessorFile.IsUserSource(n.Pos.File) &&
-		!strings.Contains(n.Pos.File, "ctype.h") {
-		return
-	}
-
-	n.Name = types.GenerateCorrectType(n.Name)
-	n.Name = strings.TrimPrefix(n.Name, "enum ")
+func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (decls []goast.Decl, err error) {
+	preStmts := []goast.Stmt{}
+	postStmts := []goast.Stmt{}
 
 	// For case `enum` without name
 	if n.Name == "" {
-		return transpileEnumDeclWithType(p, n, "int")
+		// create all EnumConstant like just constants
+		var counter int
+		for _, child := range n.Children() {
+			if c, ok := child.(*ast.EnumConstantDecl); ok {
+				var (
+					e       goast.Spec
+					newPre  []goast.Stmt
+					newPost []goast.Stmt
+					val     *goast.ValueSpec
+				)
+				val, newPre, newPost = transpileEnumConstantDecl(p, c)
+
+				if len(newPre) > 0 || len(newPost) > 0 {
+					p.AddMessage(p.GenerateWarningMessage(fmt.Errorf("Check - added in code : (%d)(%d)", len(newPre), len(newPost)), n))
+				}
+
+				preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+
+				parseEnumBasicLit := func(b *goast.BasicLit) (_ goast.Spec, counter int, err error) {
+					value, err := strconv.Atoi(b.Value)
+					if err != nil {
+						err = fmt.Errorf("Cannot parse '%s' in BasicLit", b.Value)
+						return
+					}
+					return &goast.ValueSpec{
+						Names:  []*goast.Ident{{Name: c.Name}},
+						Values: []goast.Expr{&goast.BasicLit{Kind: token.INT, Value: b.Value}},
+						Type:   val.Type,
+						Doc:    p.GetMessageComments(),
+					}, value, nil
+				}
+
+				switch v := val.Values[0].(type) {
+				case *goast.Ident:
+					e = &goast.ValueSpec{
+						Names:  []*goast.Ident{{Name: c.Name}},
+						Values: []goast.Expr{&goast.BasicLit{Kind: token.INT, Value: strconv.Itoa(counter)}},
+						Type:   val.Type,
+						Doc:    p.GetMessageComments(),
+					}
+					counter++
+
+				case *goast.BasicLit:
+					var value int
+					e, value, err = parseEnumBasicLit(v)
+					if err != nil {
+						e = val
+						counter++
+						p.AddMessage(p.GenerateWarningMessage(
+							fmt.Errorf("Cannot parse '%s' in BasicLit", v.Value), n))
+						break
+					}
+					counter = value
+					counter++
+
+				case *goast.CallExpr:
+					e = val
+					if id, ok := v.Fun.(*goast.Ident); !ok || len(v.Args) != 1 ||
+						!types.IsGoIntegerType(id.Name) {
+						p.AddMessage(p.GenerateWarningMessage(fmt.Errorf("Add support of continues counter for type : *goast.CallExpr != integer cast"), n))
+						break
+					}
+					if lit, ok := v.Args[0].(*goast.BasicLit); ok {
+						var value int
+						e, value, err = parseEnumBasicLit(lit)
+						if err != nil {
+							e = val
+							counter++
+							p.AddMessage(p.GenerateWarningMessage(
+								fmt.Errorf("Cannot parse '%s' in BasicLit", lit.Value), n))
+							break
+						}
+						counter = value
+						counter++
+					} else {
+						p.AddMessage(p.GenerateWarningMessage(fmt.Errorf("Add support of continues counter for type : *goast.CallExpr (integer cast) with argument type : %T", v), n))
+					}
+				default:
+					e = val
+					p.AddMessage(p.GenerateWarningMessage(fmt.Errorf("Add support of continues counter for type : %T", v), n))
+				}
+
+				decls = append(decls, &goast.GenDecl{
+					Tok: token.CONST,
+					Specs: []goast.Spec{
+						e,
+					},
+				})
+			}
+		}
+		err = nil
+		return
 	}
 
 	// For case `enum` with name
+	theType, err := types.ResolveType(p, "int")
+	if err != nil {
+		// by defaults enum in C is INT
+		p.AddMessage(p.GenerateWarningMessage(err, n))
+	}
 
 	// Create alias of enum for int
 	decls = append(decls, &goast.GenDecl{
@@ -139,8 +222,7 @@ func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (
 					Name: n.Name,
 					Obj:  goast.NewObj(goast.Typ, n.Name),
 				},
-				// by defaults enum in C is INT
-				Type: util.NewTypeIdent("int"),
+				Type: util.NewTypeIdent(theType),
 			},
 		},
 	})
@@ -150,151 +232,87 @@ func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (
 		p.DefineType(n.Name)
 	}
 
-	var d []goast.Decl
-	d, err = transpileEnumDeclWithType(p, n, n.Name)
-	decls = append(decls, d...)
-	return
-}
+	baseType := util.NewTypeIdent(n.Name)
 
-func transpileEnumDeclWithType(p *program.Program, n *ast.EnumDecl, enumType string) (
-	decls []goast.Decl, err error) {
-	defer func() {
-		if err != nil {
-			err = fmt.Errorf("Cannot transpileEnumDeclWithoutName. %v", err)
-		}
-	}()
-	preStmts := []goast.Stmt{}
-	postStmts := []goast.Stmt{}
-
-	// initialization decls
-	d := &goast.GenDecl{
+	decl := &goast.GenDecl{
 		Tok: token.CONST,
 	}
 
-	// create all EnumConstant like just constants
+	// counter for replace iota
 	var counter int
 	var i int
-	for _, child := range n.Children() {
-		switch child.(type) {
-		case *ast.EnumConstantDecl:
-			// go to next
-		default:
-			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("unsupported type `%T` in enum", child), child))
-			return
+	for _, c := range n.Children() {
+		if _, ok := c.(*ast.EnumConstantDecl); !ok {
+			// add for avoid comments elements
+			continue
 		}
-		child := child.(*ast.EnumConstantDecl)
-		var (
-			e       *goast.ValueSpec
-			newPre  []goast.Stmt
-			newPost []goast.Stmt
-			val     *goast.ValueSpec
-		)
-		val, newPre, newPost = transpileEnumConstantDecl(p, child)
+		e, newPre, newPost := transpileEnumConstantDecl(p, c.(*ast.EnumConstantDecl))
+		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
-		if len(newPre) > 0 || len(newPost) > 0 {
-			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("Check - added in code : (%d)(%d)",
-					len(newPre), len(newPost)), n))
-		}
+		e.Names[0].Obj = goast.NewObj(goast.Con, e.Names[0].Name)
 
-		preStmts, postStmts = combinePreAndPostStmts(
-			preStmts, postStmts, newPre, newPost)
-
-	remove_parent_expr:
-		if v, ok := val.Values[0].(*goast.ParenExpr); ok {
-			val.Values[0] = v.X
-			goto remove_parent_expr
-		}
-
-		sign := 1
-		if unary, ok := val.Values[0].(*goast.UnaryExpr); ok {
-			if unary.Op == token.SUB {
-				sign = -1
-			}
-			val.Values[0] = unary.X
-		}
-
-		switch v := val.Values[0].(type) {
-		case *goast.Ident:
-			e = &goast.ValueSpec{
-				Names: []*goast.Ident{{Name: child.Name}},
-				Values: []goast.Expr{&goast.BasicLit{
-					Kind:  token.INT,
-					Value: strconv.Itoa(counter),
-				}},
-				Type: val.Type,
-				Doc:  p.GetMessageComments(),
-			}
-			counter++
-
-		case *goast.BasicLit:
-			var value int
-			value, err = strconv.Atoi(v.Value)
-			if err != nil {
-				err = fmt.Errorf("Cannot parse '%s' in BasicLit", v.Value)
-				return
-			}
-			if err != nil {
-				e = val
-				counter++
-				p.AddMessage(p.GenerateWarningMessage(
-					fmt.Errorf("Cannot parse '%s' in BasicLit", v.Value), n))
-				break
-			}
-			if sign == -1 {
-				e = &goast.ValueSpec{
-					Names: []*goast.Ident{{Name: child.Name}},
-					Values: []goast.Expr{&goast.UnaryExpr{
-						X: &goast.BasicLit{
-							Kind:  token.INT,
-							Value: v.Value,
-						},
-						Op: token.SUB,
-					}},
-					Type: val.Type,
-					Doc:  p.GetMessageComments(),
-				}
-			} else {
-				e = &goast.ValueSpec{
-					Names: []*goast.Ident{{Name: child.Name}},
-					Values: []goast.Expr{&goast.BasicLit{
-						Kind:  token.INT,
-						Value: v.Value,
-					}},
-					Type: val.Type,
-					Doc:  p.GetMessageComments(),
-				}
-			}
-			counter = value * sign
-			counter++
-
-		default:
-			e = val
-			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("Add support of continues counter for type : %T",
-					v), n))
-		}
-
-		valSpec := &goast.ValueSpec{
-			Names:  e.Names,
-			Values: e.Values,
+		if i > 0 {
+			e.Type = nil
+			e.Values = nil
 		}
 
 		if i == 0 {
-			valSpec.Type = goast.NewIdent(enumType)
+			e.Type = baseType
+			if t, ok := e.Type.(*goast.Ident); ok {
+				t.Obj = &goast.Object{
+					Name: n.Name,
+					Kind: goast.Typ,
+					Decl: &goast.TypeSpec{
+						Name: &goast.Ident{
+							Name: n.Name,
+						},
+						Type: &goast.Ident{
+							Name: "int", // enum in C is "INT" by default
+						},
+					},
+				}
+			}
 		}
 
-		d.Specs = append(d.Specs, valSpec)
+		if len(c.(*ast.EnumConstantDecl).ChildNodes) > 0 {
+			if integr, ok := c.(*ast.EnumConstantDecl).ChildNodes[0].(*ast.IntegerLiteral); ok {
+				is, err := strconv.ParseInt(integr.Value, 10, 64)
+				if err != nil {
+					p.AddMessage(p.GenerateWarningMessage(err, n))
+				}
+				counter = int(is)
+			}
+		}
+
+		// Insert value of constants
+		e.Values = []goast.Expr{
+			&goast.BasicLit{
+				Kind:  token.INT,
+				Value: strconv.Itoa(counter),
+			},
+		}
+
+		// Position inside (....), it is
+		// not value of constants
+		e.Names[0].Obj.Data = i
+		counter++
+
+		decl.Specs = append(decl.Specs, e)
+
+		// registration of enum constants
+		p.EnumConstantToEnum[e.Names[0].Name] = "enum " + n.Name
+
+		// calculate next position without comments
 		i++
-
-		if enumType != "int" {
-			// registration of enum constants
-			p.EnumConstantToEnum[child.Name] = "enum " + enumType
-		}
 	}
-	d.Lparen = 1
-	decls = append(decls, d)
+
+	// important value for creating (.....)
+	// with constants inside
+	decl.Lparen = 1
+	decl.Rparen = 2
+
+	decls = append(decls, decl)
+
 	err = nil
 	return
 }

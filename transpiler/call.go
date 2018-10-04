@@ -270,8 +270,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			Name: functionName,
 		}
 		if len(n.Children()) > 0 {
-			if v, ok := n.Children()[0].(*ast.ImplicitCastExpr); ok &&
-				(types.IsFunction(v.Type) || types.IsTypedefFunction(p, v.Type)) {
+			if v, ok := n.Children()[0].(*ast.ImplicitCastExpr); ok && (types.IsFunction(v.Type) || types.IsTypedefFunction(p, v.Type)) {
 				t := v.Type
 				if v, ok := p.TypedefType[t]; ok {
 					t = v
@@ -334,8 +333,34 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			return nil, "unknown2", nil, nil, err
 		}
 		argTypes = append(argTypes, eType)
-		preStmts, postStmts = combinePreAndPostStmts(
-			preStmts, postStmts, newPre, newPost)
+
+		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+
+		_, arraySize := types.GetArrayTypeAndSize(eType)
+
+		// If we are using varargs with Printf we need to make sure that certain
+		// types are cast correctly.
+		if functionName == "fmt.Printf" {
+			// Make sure that any string parameters (const char*) are truncated
+			// to the NULL byte.
+			if arraySize != -1 {
+				p.AddImport("github.com/elliotchance/c2go/noarch")
+				e = util.NewCallExpr(
+					"noarch.CStringToString",
+					&goast.SliceExpr{X: e},
+				)
+			}
+
+			// Byte slices (char*) must also be truncated to the NULL byte.
+			//
+			// TODO: This would also apply to other formatting functions like
+			// fprintf, etc.
+			if i > len(functionDef.ArgumentTypes)-1 &&
+				(eType == "char *" || eType == "char*") {
+				p.AddImport("github.com/elliotchance/c2go/noarch")
+				e = util.NewCallExpr("noarch.CStringToString", e)
+			}
+		}
 
 		args = append(args, e)
 		i++
@@ -460,6 +485,10 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		}
 		preStmts = append(preStmts, devNull)
 		return nil, "", preStmts, postStmts, nil
+	}
+
+	for i := range realArgs {
+		goast.Print(token.NewFileSet(), realArgs[i])
 	}
 
 	return util.NewCallExpr(functionName, realArgs...),

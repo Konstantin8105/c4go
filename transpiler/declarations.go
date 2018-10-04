@@ -617,6 +617,10 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 	n.Type2 = types.CleanCType(types.GenerateCorrectType(n.Type2))
 	name := n.Name
 
+	if !p.PreprocessorFile.IsUserSource(n.Pos.File) {
+		return
+	}
+
 	if "struct "+n.Name == n.Type || "union "+n.Name == n.Type {
 		p.TypedefType[n.Name] = n.Type
 		return
@@ -658,7 +662,7 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 			Specs: []goast.Spec{
 				&goast.TypeSpec{
 					Name: util.NewIdent(name),
-					Type: util.NewTypeIdent("int"),
+					Type: util.NewTypeIdent("int32"),
 				},
 			},
 		})

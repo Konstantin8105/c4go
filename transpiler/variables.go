@@ -29,15 +29,15 @@ var structFieldTranslations = map[string]map[string]string{
 		"rem":  "Rem",
 	},
 	"struct tm": {
-		"tm_sec":   "TmSec",
-		"tm_min":   "TmMin",
-		"tm_hour":  "TmHour",
-		"tm_mday":  "TmMday",
-		"tm_mon":   "TmMon",
-		"tm_year":  "TmYear",
-		"tm_wday":  "TmWday",
-		"tm_yday":  "TmYday",
-		"tm_isdst": "TmIsdst",
+		"tm_sec":   "Tm_sec",
+		"tm_min":   "Tm_min",
+		"tm_hour":  "Tm_hour",
+		"tm_mday":  "Tm_mday",
+		"tm_mon":   "Tm_mon",
+		"tm_year":  "Tm_year",
+		"tm_wday":  "Tm_wday",
+		"tm_yday":  "Tm_yday",
+		"tm_isdst": "Tm_isdst",
 	},
 }
 
@@ -235,6 +235,28 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 	e.Type1 = types.GenerateCorrectType(e.Type1)
 	e.Type2 = types.GenerateCorrectType(e.Type2)
 
+	var goType string
+	arrayType, arraySize := types.GetArrayTypeAndSize(e.Type1)
+	if arraySize != -1 {
+		goArrayType, err := types.ResolveType(p, arrayType)
+		if err == nil {
+			goType = goArrayType
+		}
+	} else {
+		goType2, err := types.ResolveType(p, e.Type1)
+		if err == nil {
+			goType = goType2
+		}
+	}
+	var goStruct *program.Struct
+	if e.Type1 == e.Type2 {
+		goStruct = p.GetStruct(goType)
+		if goStruct == nil {
+			goStruct = p.GetStruct("struct " + goType)
+		}
+	}
+	fieldIndex := 0
+
 	for _, node := range e.Children() {
 		// Skip ArrayFiller
 		if _, ok := node.(*ast.ArrayFiller); ok {
@@ -243,24 +265,39 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 		}
 
 		var expr goast.Expr
+		var exprType string
 		var err error
-		if sl, ok := node.(*ast.StringLiteral); ok {
-			expr, _, err = transpileStringLiteral(p, sl, true)
-		} else {
-			expr, _, _, _, err = transpileToExpr(node, p, true)
-		}
+		expr, exprType, _, _, err = transpileToExpr(node, p, true)
 		if err != nil {
 			p.AddMessage(p.GenerateWarningMessage(err, node))
 			return nil, "", err
 		}
-
+		if goStruct != nil {
+			if fieldIndex >= len(goStruct.FieldNames) {
+				// index out of range
+				goto CONTINUE_INIT
+			}
+			fn := goStruct.FieldNames[fieldIndex]
+			if _, ok := goStruct.Fields[fn]; !ok {
+				// field name not in map
+				goto CONTINUE_INIT
+			}
+			if field, ok := goStruct.Fields[goStruct.FieldNames[fieldIndex]].(string); ok {
+				expr2, err := types.CastExpr(p, expr, exprType, field)
+				if err == nil {
+					expr = expr2
+				}
+			}
+			fieldIndex++
+		}
+	CONTINUE_INIT:
 		resp = append(resp, expr)
 	}
 
 	var t goast.Expr
 	var cTypeString string
 
-	arrayType, arraySize := types.GetArrayTypeAndSize(e.Type1)
+	arrayType, arraySize = types.GetArrayTypeAndSize(e.Type1)
 	if arraySize != -1 {
 		goArrayType, err := types.ResolveType(p, arrayType)
 		p.AddMessage(p.GenerateWarningMessage(err, e))
@@ -292,7 +329,7 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 		}
 	}
 
-	goType, err := types.ResolveType(p, e.Type1)
+	goType, err = types.ResolveType(p, e.Type1)
 	if err != nil {
 		return nil, "", err
 	}

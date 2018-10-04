@@ -245,6 +245,13 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 		} else {
 			eType = eType[:f] + "*" + eType[e+1:]
 		}
+		expr = &goast.UnaryExpr{
+			X: &goast.IndexExpr{
+				X:     expr,
+				Index: util.NewIntLit(0),
+			},
+			Op: token.AND,
+		}
 		return
 	}
 
@@ -252,14 +259,17 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 	// Out: eType = 'int *'
 	// FIXME: This will need to use a real slice to reference the original
 	// value.
-	resolvedType, err := types.ResolveType(p, eType)
+	_, err = types.ResolveType(p, eType)
 	if err != nil {
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 		return
 	}
 
 	p.AddImport("unsafe")
-	expr = util.CreateSliceFromReference(resolvedType, expr)
+	expr = &goast.UnaryExpr{
+		X:  expr,
+		Op: token.AND,
+	}
 
 	// We now have a pointer to the original type.
 	eType += " *"

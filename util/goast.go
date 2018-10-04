@@ -299,58 +299,36 @@ func ConvertFunctionNameFromCtoGo(name string) string {
 	return name
 }
 
-// GetUintptrForSlice - return uintptr for slice
-// Example : uint64(uintptr(unsafe.Pointer((*(**int)(unsafe.Pointer(& ...slice... )))))))
-func GetUintptrForSlice(expr goast.Expr) (goast.Expr, string) {
-	returnType := "long"
+// CreatePointerFromReference - create a pointer, like :
+// (*int)(unsafe.Pointer(&a))
+func CreatePointerFromReference(goType string, expr goast.Expr) (e goast.Expr) {
+	// If the Go type is blank it means that the C type is 'void'.
+	if goType == "" {
+		goType = "unsafe.Pointer"
+	}
 
-	return &goast.CallExpr{
-		Fun:    goast.NewIdent("uint64"),
-		Lparen: 1,
-		Args: []goast.Expr{&goast.CallExpr{
-			Fun:    goast.NewIdent("uintptr"),
-			Lparen: 1,
-			Args: []goast.Expr{&goast.CallExpr{
-				Fun: &goast.SelectorExpr{
-					X:   goast.NewIdent("unsafe"),
-					Sel: goast.NewIdent("Pointer"),
-				},
-				Lparen: 1,
-				Args: []goast.Expr{&goast.StarExpr{
-					Star: 1,
-					X: &goast.CallExpr{
-						Fun: &goast.ParenExpr{
-							Lparen: 1,
-							X: &goast.StarExpr{
-								Star: 1,
-								X: &goast.StarExpr{
-									Star: 1,
-									X:    goast.NewIdent("int"),
-								},
-							},
-						},
-						Lparen: 1,
-						Args: []goast.Expr{&goast.CallExpr{
-							Fun: &goast.SelectorExpr{
-								X:   goast.NewIdent("unsafe"),
-								Sel: goast.NewIdent("Pointer"),
-							},
-							Lparen: 1,
-							Args: []goast.Expr{&goast.UnaryExpr{
-								Op: token.AND,
-								X:  expr,
-							}},
-						}},
-					},
-				}},
-			}},
-		}},
-	}, returnType
+	// You must always call this Go before using CreatePointerFromReference:
+	//
+	//     p.AddImport("unsafe")
+	//
+	e = NewCallExpr("unsafe.Pointer", &goast.UnaryExpr{
+		X:  expr,
+		Op: token.AND,
+	})
+	if goType != "unsafe.Pointer" {
+		e = &goast.CallExpr{
+			Fun: &goast.ParenExpr{
+				X: NewTypeIdent(goType),
+			},
+			Args: []goast.Expr{expr},
+		}
+	}
+	return
 }
 
-// CreateSliceFromReference - create a slice, like :
-// (*[1]int)(unsafe.Pointer(&a))[:]
-func CreateSliceFromReference(goType string, expr goast.Expr) *goast.SliceExpr {
+// CreateUnlimitedSliceFromReference - create a slice, like :
+// (*[1000000000]int)(unsafe.Pointer(&a))[:]
+func CreateUnlimitedSliceFromReference(goType string, expr goast.Expr) *goast.SliceExpr {
 	// If the Go type is blank it means that the C type is 'void'.
 	if goType == "" {
 		goType = "interface{}"
@@ -359,24 +337,20 @@ func CreateSliceFromReference(goType string, expr goast.Expr) *goast.SliceExpr {
 	// This is a hack to convert a reference to a variable into a slice that
 	// points to the same location. It will look similar to:
 	//
-	//     (*[1]int)(unsafe.Pointer(&a))[:]
+	//     (*[1000000000]int)(unsafe.Pointer(&a))[:]
 	//
-	// You must always call this Go before using CreateSliceFromReference:
+	// You must always call this Go before using CreateUnlimitedSliceFromReference:
 	//
 	//     p.AddImport("unsafe")
 	//
 	return &goast.SliceExpr{
 		X: NewCallExpr(
-			fmt.Sprintf("(*[100000000]%s)", goType),
-			&goast.CallExpr{
-				Fun: goast.NewIdent("unsafe.Pointer"),
-				Args: []goast.Expr{
-					&goast.UnaryExpr{
-						X:  expr,
-						Op: token.AND,
-					},
-				},
+			fmt.Sprintf("(*[1000000000]%s)", goType),
+			NewCallExpr("unsafe.Pointer", &goast.UnaryExpr{
+				X:  expr,
+				Op: token.AND,
 			}),
+		),
 	}
 }
 
@@ -427,7 +401,7 @@ func NewAnonymousFunction(body, deferBody []goast.Stmt,
 	returnValue goast.Expr,
 	returnType string) *goast.CallExpr {
 
-	if deferBody != nil {
+	if len(deferBody) > 0 {
 		body = append(body, []goast.Stmt{&goast.DeferStmt{
 			Defer: 1,
 			Call: &goast.CallExpr{
@@ -443,7 +417,7 @@ func NewAnonymousFunction(body, deferBody []goast.Stmt,
 	return &goast.CallExpr{Fun: &goast.FuncLit{
 		Type: &goast.FuncType{
 			Results: &goast.FieldList{List: []*goast.Field{
-				{Type: goast.NewIdent(returnType)},
+				&goast.Field{Type: goast.NewIdent(returnType)},
 			}},
 		},
 		Body: &goast.BlockStmt{
@@ -452,4 +426,19 @@ func NewAnonymousFunction(body, deferBody []goast.Stmt,
 			}),
 		},
 	}}
+}
+
+// IsAddressable returns whether it's possible to obtain an address of expr
+// using the unary & operator.
+func IsAddressable(expr goast.Expr) bool {
+	if _, ok := expr.(*goast.Ident); ok {
+		return true
+	}
+	if ie, ok := expr.(*goast.IndexExpr); ok {
+		return IsAddressable(ie.X)
+	}
+	if pe, ok := expr.(*goast.ParenExpr); ok {
+		return IsAddressable(pe.X)
+	}
+	return false
 }

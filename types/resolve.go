@@ -130,7 +130,8 @@ var CStdStructType = map[string]string{
 	"struct tm": "github.com/Konstantin8105/c4go/noarch.Tm",
 	"time_t":    "github.com/Konstantin8105/c4go/noarch.TimeT",
 
-	"fpos_t": "int32",
+	"fpos_t":                 "int32",
+	"struct __va_list_tag *": "github.com/elliotchance/c2go/noarch.VaList",
 }
 
 // NullPointer - is look : (double *)(nil) or (FILE *)(nil)
@@ -194,24 +195,7 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 		s = strings.Replace(s, "__locale_data", "int", -1)
 	}
 	if strings.Contains(s, "__locale_struct") {
-		return "int", nil
-	}
-	if strings.Contains(s, "__sFILEX") {
-		s = strings.Replace(s, "__sFILEX", "int", -1)
-	}
-
-	// The simple resolve types are the types that we know there is an exact Go
-	// equivalent. For example float, int, etc.
-	for k, v := range simpleResolveTypes {
-		if k == s {
-			return p.ImportType(v), nil
-		}
-	}
-
-	if t, ok := p.GetBaseTypeOfTypedef(s); ok {
-		if strings.HasPrefix(t, "union ") {
-			return t[len("union "):], nil
-		}
+		return ResolveType(p, "int")
 	}
 
 	// function type is pointer in Go by default
@@ -238,6 +222,14 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 		// "div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
 		ii := p.ImportType(tt)
 		return ii, nil
+	}
+
+	// Try resolving correct type (covers anonymous structs/unions)
+	correctType := GenerateCorrectType(s)
+	if correctType != s {
+		if res, err := ResolveType(p, correctType); err == nil {
+			return res, nil
+		}
 	}
 
 	// For function
@@ -281,34 +273,12 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 		return p.ImportType(s), nil
 	}
 
-	// It may be a pointer of a simple type. For example, float *, int *,
-	// etc.
-	if strings.HasSuffix(s, "*") {
-		// The "-1" is important because there may or may not be a space between
-		// the name and the "*". If there is an extra space it will be trimmed
-		// off.
-		t, err := ResolveType(p, strings.TrimSpace(s[:len(s)-1]))
-		prefix := "[]"
-		if strings.Contains(t, "noarch.File") {
-			prefix = "*"
-		}
-		return prefix + t, err
+	if _, ok := p.Structs["struct "+s]; ok {
+		return p.ImportType(s), nil
 	}
 
-	// It could be an array of fixed length. These needs to be converted to
-	// slices.
-	// int [2][3] -> [][]int
-	// int [2][3][4] -> [][][]int
-	st := strings.Replace(s, "(", "", -1)
-	st = strings.Replace(st, ")", "", -1)
-	search2 := util.GetRegex(`([\w\* ]+)((\[\d+\])+)`).FindStringSubmatch(st)
-	if len(search2) > 2 {
-		t, err := ResolveType(p, search2[1])
-
-		var re = util.GetRegex(`[0-9]+`)
-		arraysNoSize := re.ReplaceAllString(search2[2], "")
-
-		return fmt.Sprintf("%s%s", arraysNoSize, t), err
+	if _, ok := p.Unions["union "+s]; ok {
+		return p.ImportType(s), nil
 	}
 
 	// Structures are by name.
@@ -384,16 +354,14 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 	// slices.
 	// int [2][3] -> [][]int
 	// int [2][3][4] -> [][][]int
-	{
-		search2 := util.GetRegex(`([\w\* ]+)((\[\d+\])+)`).FindStringSubmatch(s)
-		if len(search2) > 2 {
-			t, err := ResolveType(p, search2[1])
+	search2 := util.GetRegex(`([\w\* ]+)((\[\d+\])+)`).FindStringSubmatch(s)
+	if len(search2) > 2 {
+		t, err := ResolveType(p, search2[1])
 
-			var re = util.GetRegex(`[0-9]+`)
-			arraysNoSize := re.ReplaceAllString(search2[2], "")
+		var re = util.GetRegex(`[0-9]+`)
+		arraysNoSize := re.ReplaceAllString(search2[2], "")
 
-			return fmt.Sprintf("%s%s", arraysNoSize, t), err
-		}
+		return fmt.Sprintf("%s%s", arraysNoSize, t), err
 	}
 
 	errMsg := fmt.Sprintf(
@@ -475,7 +443,6 @@ func IsFunction(s string) bool {
 	s = strings.Replace(s, "(*)", "", -1)
 	return strings.Contains(s, "(")
 }
-
 
 //IsCPointer - check C type is pointer
 func IsCPointer(s string) bool {
