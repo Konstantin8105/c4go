@@ -13,7 +13,7 @@ Milestones of the project:
 2. Transpiling project [GTK+](https://www.gtk.org/).
 
 Notes:
-* Transpiler works on linux and mac machines
+* Transpiler works on linux machines
 * Need to have installed `clang`. See [llvm download page](http://releases.llvm.org/download.html)
 
 # Installation
