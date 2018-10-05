@@ -487,10 +487,6 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		return nil, "", preStmts, postStmts, nil
 	}
 
-	for i := range realArgs {
-		goast.Print(token.NewFileSet(), realArgs[i])
-	}
-
 	return util.NewCallExpr(functionName, realArgs...),
 		functionDef.ReturnType, preStmts, postStmts, nil
 }
