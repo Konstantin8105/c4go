@@ -184,7 +184,31 @@ func NewBinaryExpr(left goast.Expr, operator token.Token, right goast.Expr,
 		Op: operator,
 		Y:  right,
 	}
+	if !stmt && isAssignishOperator(operator) {
+		return NewFuncClosure(returnType, NewExprStmt(b), &goast.ReturnStmt{
+			Results: []goast.Expr{left},
+		})
+	}
 	return b
+}
+
+func isAssignishOperator(t token.Token) bool {
+	switch t {
+	case token.ADD_ASSIGN, // +=
+		token.SUB_ASSIGN,     // -=
+		token.MUL_ASSIGN,     // *=
+		token.QUO_ASSIGN,     // /=
+		token.REM_ASSIGN,     // %=
+		token.AND_ASSIGN,     // &=
+		token.OR_ASSIGN,      // |=
+		token.XOR_ASSIGN,     // ^=
+		token.SHL_ASSIGN,     // <<=
+		token.SHR_ASSIGN,     // >>=
+		token.AND_NOT_ASSIGN, // &^=
+		token.ASSIGN:         // =
+		return true
+	}
+	return false
 }
 
 // NewIdent - create a new Go ast Ident
@@ -240,6 +264,29 @@ func NewFloatLit(value float64) *goast.BasicLit {
 	return &goast.BasicLit{
 		Kind:  token.FLOAT,
 		Value: strconv.FormatFloat(value, 'g', -1, 64),
+	}
+}
+
+// NewVaListTag creates a new VaList Literal.
+func NewVaListTag() goast.Expr {
+	var p token.Pos
+	elts := make([]goast.Expr, 2)
+	elts[0] = &goast.KeyValueExpr{
+		Key:   &goast.BasicLit{Kind: token.STRING, Value: "Pos"},
+		Colon: p,
+		Value: &goast.BasicLit{Kind: token.STRING, Value: "0"},
+	}
+	elts[1] = &goast.KeyValueExpr{
+		Key:   &goast.BasicLit{Kind: token.STRING, Value: "Args"},
+		Colon: p,
+		Value: &goast.BasicLit{Kind: token.STRING, Value: "c2goArgs"},
+	}
+
+	return &goast.CompositeLit{
+		Type:   &goast.BasicLit{Kind: token.STRING, Value: "noarch.VaList"},
+		Lbrace: p,
+		Elts:   elts,
+		Rbrace: p,
 	}
 }
 

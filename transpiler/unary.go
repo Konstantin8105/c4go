@@ -128,6 +128,31 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 	}, p, false)
 }
 
+
+func getSoleChildDeclRefExpr(n *ast.UnaryOperator) (result *ast.DeclRefExpr, err error) {
+	var inspect ast.Node = n
+	for {
+		if inspect == nil {
+			break
+		}
+		if ret, ok := inspect.Children()[0].(*ast.DeclRefExpr); ok {
+			return ret, nil
+		}
+		if len(inspect.Children()) > 1 {
+			return nil, fmt.Errorf("node has to many children: %T", inspect)
+		} else if len(inspect.Children()) == 1 {
+			if _, ok := inspect.Children()[0].(*ast.ParenExpr); !ok {
+				err = fmt.Errorf("unsupported type %T", n.Children()[0])
+				return
+			}
+			inspect = inspect.Children()[0]
+		} else {
+			break
+		}
+	}
+	return nil, fmt.Errorf("could not find supported type DeclRefExpr")
+}
+
 func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 	goast.Expr, string, []goast.Stmt, []goast.Stmt, error) {
 	e, eType, preStmts, postStmts, err := transpileToExpr(n.Children()[0], p, false)
@@ -182,7 +207,7 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 	t, err := types.ResolveType(p, eType)
 	p.AddMessage(p.GenerateWarningMessage(err, n))
 
-	if t == "[]byte" {
+	if t == "*byte" {
 		return util.NewUnaryExpr(
 			token.NOT, util.NewCallExpr("noarch.CStringIsNull", e),
 		), "bool", preStmts, postStmts, nil
