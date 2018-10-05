@@ -71,6 +71,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseArraySubscriptExpr(line), nil
 	case "AsmLabelAttr":
 		return parseAsmLabelAttr(line), nil
+	case "AttributedType":
+		return parseAttributedType(line), nil
 	case "AvailabilityAttr":
 		return parseAvailabilityAttr(line), nil
 	case "BinaryOperator":
@@ -81,6 +83,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseBreakStmt(line), nil
 	case "BuiltinType":
 		return parseBuiltinType(line), nil
+	case "C11NoReturnAttr":
+		return parseC11NoReturnAttr(line), nil
 	case "CallExpr":
 		return parseCallExpr(line), nil
 	case "CaseStmt":
@@ -197,12 +201,16 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseMemberExpr(line), nil
 	case "ModeAttr":
 		return parseModeAttr(line), nil
+	case "NoAliasAttr":
+		return parseNoAliasAttr(line), nil
 	case "NoInlineAttr":
 		return parseNoInlineAttr(line), nil
 	case "NoThrowAttr":
 		return parseNoThrowAttr(line), nil
 	case "NonNullAttr":
 		return parseNonNullAttr(line), nil
+	case "NotTailCalledAttr":
+		return parseNotTailCalledAttr(line), nil
 	case "OffsetOfExpr":
 		return parseOffsetOfExpr(line), nil
 	case "PackedAttr":
