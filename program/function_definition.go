@@ -191,8 +191,8 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int _IO_putc(int, FILE*) -> noarch.Fputc",
 
 		// stdio.h
-		"int printf(const char*, ...) -> noarch.Printf",
-		"int scanf(const char*, ...) -> noarch.Scanf",
+		"int printf(const char*) -> noarch.Printf",
+		"int scanf(const char*) -> noarch.Scanf",
 		"int putchar(int) -> noarch.Putchar",
 		"int puts(const char *) -> noarch.Puts",
 		"FILE* fopen(const char *, const char *) -> noarch.Fopen",
@@ -206,8 +206,8 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int feof(FILE*) -> noarch.Feof",
 		"char* tmpnam(char*) -> noarch.Tmpnam",
 		"int fflush(FILE*) -> noarch.Fflush",
-		"int fprintf(FILE*, const char*, ...) -> noarch.Fprintf",
-		"int fscanf(FILE*, const char*, ...) -> noarch.Fscanf",
+		"int fprintf(FILE*, const char*) -> noarch.Fprintf",
+		"int fscanf(FILE*, const char*) -> noarch.Fscanf",
 		"int fgetc(FILE*) -> noarch.Fgetc",
 		"int fputc(int, FILE*) -> noarch.Fputc",
 		"int getc(FILE*) -> noarch.Fgetc",

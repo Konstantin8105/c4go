@@ -80,7 +80,7 @@ func getName(p *program.Program, firstChild ast.Node) (name string, err error) {
 
 	case *ast.ArraySubscriptExpr:
 		var expr goast.Expr
-		expr, _, _, _, err = transpileArraySubscriptExpr(fc, p)
+		expr, _, _, _, err = transpileArraySubscriptExpr(fc, p, false)
 		if err != nil {
 			return
 		}
@@ -363,6 +363,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		}
 
 		args = append(args, e)
+
 		i++
 	}
 
@@ -421,31 +422,16 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		// [char *, char *, char *, int, double]
 		//
 		for i, a := range args {
-			realType := "unknownType"
-			if i < len(functionDef.ArgumentTypes) {
-				if len(functionDef.ArgumentTypes) > 1 &&
-					i >= len(functionDef.ArgumentTypes)-1 &&
-					functionDef.ArgumentTypes[len(functionDef.ArgumentTypes)-1] == "..." {
-					realType = functionDef.ArgumentTypes[len(functionDef.ArgumentTypes)-2]
-				} else {
-					if len(functionDef.ArgumentTypes) > 0 {
-						if len(functionDef.ArgumentTypes[i]) != 0 {
-							realType = functionDef.ArgumentTypes[i]
-							if strings.TrimSpace(realType) != "void" {
-								a, err = types.CastExpr(p, a, argTypes[i], realType)
+			if i > len(functionDef.ArgumentTypes)-1 {
+				// This means the argument is one of the varargs so we don't
+				// know what type it needs to be cast to.
+			} else {
+				a, err = types.CastExpr(p, a, argTypes[i],
+					functionDef.ArgumentTypes[i])
 
-								if p.AddMessage(p.GenerateWarningMessage(err, n)) {
-									a = util.NewNil()
-								}
-							}
-						}
-					}
+				if p.AddMessage(p.GenerateWarningMessage(err, n)) {
+					a = util.NewNil()
 				}
-			}
-
-			if strings.Contains(realType, "...") {
-				p.AddMessage(p.GenerateWarningMessage(
-					fmt.Errorf("not acceptable type '...'"), n))
 			}
 
 			if a == nil {

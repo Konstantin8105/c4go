@@ -207,10 +207,10 @@ func transpileParenExpr(n *ast.ParenExpr, p *program.Program) (
 
 // pointerArithmetic - operations between 'int' and pointer
 // Example C code : ptr += i
-// ptr = (*(*[1]int)(unsafe.Pointer(uintptr(unsafe.Pointer(&ptr[0])) + (i)*unsafe.Sizeof(ptr[0]))))[:]
-// , where i  - right
+// ptr = ((*int)(unsafe.Pointer(uintptr(unsafe.Pointer(ptr)) + (i)*unsafe.Sizeof(*ptr))))
+// , where i  - left
 //        '+' - operator
-//      'ptr' - left
+//      'ptr' - right
 //      'int' - leftType transpiled in Go type
 // Note:
 // 1) rigthType MUST be 'int'
