@@ -12,11 +12,11 @@ import (
 // C string is as long as the number of characters between the beginning of the
 // string and the terminating null character (without including the terminating
 // null character itself).
-func Strlen(a *byte) int32 {
+func Strlen(a *byte) int {
 	// TODO: The transpiler should have a syntax that means this proxy function
 	// does not need to exist.
 
-	return int32(len(CStringToString(a)))
+	return int(len(CStringToString(a)))
 }
 
 // Strcpy copies the C string pointed by source into the array pointed by
@@ -58,12 +58,12 @@ func Strcpy(dest, src *byte) *byte {
 //
 // destination and source shall not overlap (see memmove for a safer alternative
 // when overlapping).
-func Strncpy(dest, src *byte, len int32) *byte {
+func Strncpy(dest, src *byte, len int) *byte {
 	// Copy up to the len or first NULL bytes - whichever comes first.
 	var (
 		pSrc  = src
 		pDest = dest
-		i     int32
+		i     int
 	)
 	for i < len && *pSrc != 0 {
 		*pDest = *pSrc
@@ -110,7 +110,7 @@ func Strcat(dest, src *byte) *byte {
 // The terminating null character in destination is overwritten by the first
 // character of source, and a null-character is included at the end
 // of the new string formed by the concatenation of both in destination.
-func Strncat(dest, src *byte, len int32) *byte {
+func Strncat(dest, src *byte, len int) *byte {
 	d := []byte(CStringToString(dest))
 	dp := d[int(Strlen(dest)):]
 	Strncpy((*byte)(unsafe.Pointer(uintptr(unsafe.Pointer(&dp)))), src, len)
@@ -119,19 +119,19 @@ func Strncat(dest, src *byte, len int32) *byte {
 
 // Strcmp - compare two strings
 // Compares the C string str1 to the C string str2.
-func Strcmp(str1, str2 *byte) int32 {
-	return int32(bytes.Compare([]byte(CStringToString(str1)), []byte(CStringToString(str2))))
+func Strcmp(str1, str2 *byte) int {
+	return int(bytes.Compare([]byte(CStringToString(str1)), []byte(CStringToString(str2))))
 }
 
 // Strncmp - compare two strings
 // Compares the C string str1 to the C string str2 upto the first NULL character
 // or n-th character whichever comes first.
-func Strncmp(str1, str2 *byte, n int32) int32 {
+func Strncmp(str1, str2 *byte, n int) int {
 	a := []byte(CStringToString(str1))
 	a = a[:int(min(int(n), len(a)))]
 	b := []byte(CStringToString(str2))
 	b = b[:int(min(int(n), len(b)))]
-	return int32(bytes.Compare(a, b))
+	return int(bytes.Compare(a, b))
 }
 
 // Strstr - locate a substring in a string
@@ -156,14 +156,14 @@ func min(a, b int) int {
 
 // Strchr - Locate first occurrence of character in string
 // See: http://www.cplusplus.com/reference/cstring/strchr/
-func Strchr(str *byte, ch int32) *byte {
+func Strchr(str *byte, ch int) *byte {
 	i := 0
 	var pStr = str
 	for {
 		if *pStr == '\x00' {
 			break
 		}
-		if int32(*pStr) == ch {
+		if int(*pStr) == ch {
 			return pStr
 		}
 		i++
@@ -174,9 +174,9 @@ func Strchr(str *byte, ch int32) *byte {
 
 // Memset treats dst as a binary array and sets size bytes to the value val.
 // Returns dst.
-func Memset(dst unsafe.Pointer, val int32, size int32) unsafe.Pointer {
+func Memset(dst unsafe.Pointer, val int, size int) unsafe.Pointer {
 	data := toByteSlice((*byte)(dst), size)
-	var i int32
+	var i int
 	var vb = byte(val)
 	for i = 0; i < size; i++ {
 		data[i] = vb
@@ -190,7 +190,7 @@ func Memset(dst unsafe.Pointer, val int32, size int32) unsafe.Pointer {
 // in Go we rely on the built-in copy function, which has no such limitation.
 // To copy overlapping regions in C memmove should be used, so we map that function
 // to Memcpy as well.
-func Memcpy(dst unsafe.Pointer, src unsafe.Pointer, size int32) unsafe.Pointer {
+func Memcpy(dst unsafe.Pointer, src unsafe.Pointer, size int) unsafe.Pointer {
 	bDst := toByteSlice((*byte)(dst), size)
 	bSrc := toByteSlice((*byte)(src), size)
 	copy(bDst, bSrc)
@@ -207,8 +207,8 @@ func Memmove(ptr []byte, source []byte, num uint32) []byte {
 
 // Memcmp compares two binary arrays upto n bytes.
 // Different from strncmp, memcmp does not stop at the first NULL byte.
-func Memcmp(src1, src2 unsafe.Pointer, n int32) int32 {
+func Memcmp(src1, src2 unsafe.Pointer, n int) int {
 	b1 := toByteSlice((*byte)(src1), n)
 	b2 := toByteSlice((*byte)(src2), n)
-	return int32(bytes.Compare(b1, b2))
+	return int(bytes.Compare(b1, b2))
 }

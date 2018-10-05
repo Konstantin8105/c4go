@@ -72,14 +72,14 @@ var simpleResolveTypes = map[string]string{
 	"char*":                  "*byte",
 	"double":                 "float64",
 	"float":                  "float32",
-	"int":                    "int32",
+	"int":                    "int",
 	"long double":            "float64",
-	"long int":               "int32",
+	"long int":               "int",
 	"long long":              "int64",
 	"long long int":          "int64",
 	"long long unsigned int": "uint64",
-	"long unsigned int":      "uint32",
-	"long":                   "int32",
+	"long unsigned int":      "uint",
+	"long":                   "int",
 	"short":                  "int16",
 	"signed char":            "int8",
 	"unsigned char":          "uint8",
@@ -130,7 +130,7 @@ var CStdStructType = map[string]string{
 	"struct tm": "github.com/Konstantin8105/c4go/noarch.Tm",
 	"time_t":    "github.com/Konstantin8105/c4go/noarch.TimeT",
 
-	"fpos_t":                 "int32",
+	"fpos_t":                 "int",
 	"struct __va_list_tag *": "github.com/elliotchance/c2go/noarch.VaList",
 }
 
@@ -857,6 +857,7 @@ func GetBaseType(s string) string {
 var goIntegerType = []string{
 	"int8",
 	"int16",
+	"int",
 	"int32",
 	"int64",
 	"uint8",

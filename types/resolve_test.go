@@ -16,7 +16,7 @@ type resolveTestCase struct {
 }
 
 var resolveTestCases = []resolveTestCase{
-	{"int", "int32"},
+	{"int", "int"},
 	{"bool", "bool"},
 	{"_Bool", "int8"},
 	{"char", "byte"},
@@ -27,11 +27,11 @@ var resolveTestCases = []resolveTestCase{
 	{"div_t", "noarch.DivT"},
 	{"ldiv_t", "noarch.LdivT"},
 	{"lldiv_t", "noarch.LldivT"},
-	{"fpos_t", "int32"},
-	{"int [2]", "[]int32"},
-	{"int [2][3]", "[][]int32"},
-	{"int [2][3][4]", "[][][]int32"},
-	{"int [2][3][4][5]", "[][][][]int32"},
+	{"fpos_t", "int"},
+	{"int [2]", "[]int"},
+	{"int [2][3]", "[][]int"},
+	{"int [2][3][4]", "[][][]int"},
+	{"int [2][3][4][5]", "[][][][]int"},
 }
 
 func TestResolve(t *testing.T) {

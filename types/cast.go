@@ -271,7 +271,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	if strings.Contains(fromType, "enum") && !strings.Contains(toType, "enum") {
 		in := goast.CallExpr{
 			Fun: &goast.Ident{
-				Name: "int32",
+				Name: "int",
 			},
 			Lparen: 1,
 			Args: []goast.Expr{
@@ -423,7 +423,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 			return e, nil
 		}
 		if fromType == "bool" && toType == v {
-			e := util.NewGoExpr(`func(val bool) int32 { if val { return 1 } else { return 0 } }(replaceme)`)
+			e := util.NewGoExpr(`func(val bool) int { if val { return 1 } else { return 0 } }(replaceme)`)
 			// Swap replaceme with the current expression
 			e.(*goast.CallExpr).Args = []goast.Expr{expr}
 			return CastExpr(p, e, "int", cToType)
@@ -604,12 +604,12 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		expr = goast.NewIdent("nil")
 		return expr, nil
 	}
-/*
-	functionName := fmt.Sprintf("noarch.%sTo%s",
-		util.GetExportedName(leftName), util.GetExportedName(rightName))
-	p.AddMessage(p.GenerateWarningMessage(
-		fmt.Errorf("Function `%v` haven`t implementation", functionName), nil))
-*/
+	/*
+		functionName := fmt.Sprintf("noarch.%sTo%s",
+			util.GetExportedName(leftName), util.GetExportedName(rightName))
+		p.AddMessage(p.GenerateWarningMessage(
+			fmt.Errorf("Function `%v` haven`t implementation", functionName), nil))
+	*/
 	// FIXME: This is a hack to get SQLite3 to transpile.
 	if strings.Contains(functionName, "RowSetEntry") {
 		functionName = "FIXME111"

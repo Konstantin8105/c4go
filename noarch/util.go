@@ -25,7 +25,7 @@ func CStringToString(s *byte) string {
 		return ""
 	}
 
-	return string(toByteSlice(s, int32(end)))
+	return string(toByteSlice(s, int(end)))
 }
 
 // StringToCString returns the C string (also known as a null terminated string)
@@ -63,7 +63,7 @@ func CPointerToGoPointer(a interface{}) interface{} {
 }
 
 // toByteSlice returns a byte slice to a with the given length.
-func toByteSlice(a *byte, length int32) []byte {
+func toByteSlice(a *byte, length int) []byte {
 	header := reflect.SliceHeader{
 		uintptr(unsafe.Pointer(a)),
 		int(length),
@@ -85,7 +85,7 @@ func GoPointerToCPointer(destination interface{}, value interface{}) {
 // UnsafeSliceToSlice takes a slice and transforms it into a slice of a different type.
 // For this we need to adjust the length and capacity in accordance with the sizes
 // of the underlying types.
-func UnsafeSliceToSlice(a interface{}, fromSize int32, toSize int32) *reflect.SliceHeader {
+func UnsafeSliceToSlice(a interface{}, fromSize int, toSize int) *reflect.SliceHeader {
 	v := reflect.ValueOf(a)
 
 	// v might not be addressable, use this trick to get v2 = v,

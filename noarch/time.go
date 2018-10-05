@@ -11,16 +11,16 @@ import (
 // since 00:00 hours, Jan 1, 1970 UTC (i.e., a unix timestamp).
 // Although libraries may implement this type using alternative time
 // representations.
-type TimeT int32
+type TimeT int
 
 // NullToTimeT converts a NULL to an array of TimeT.
-func NullToTimeT(i int32) *TimeT {
+func NullToTimeT(i int) *TimeT {
 	return nil
 }
 
 // Time returns the current time.
 func Time(tloc *TimeT) TimeT {
-	var t = TimeT(int32(time.Now().Unix()))
+	var t = TimeT(int(time.Now().Unix()))
 
 	if tloc != nil {
 		*tloc = t
@@ -29,8 +29,8 @@ func Time(tloc *TimeT) TimeT {
 	return t
 }
 
-// IntToTimeT converts an int32 to a TimeT.
-func IntToTimeT(t int32) TimeT {
+// IntToTimeT converts an int to a TimeT.
+func IntToTimeT(t int) TimeT {
 	return TimeT(t)
 }
 
@@ -53,16 +53,16 @@ func TimeTToFloat64(t TimeT) float64 {
 // Structure containing a calendar date and time broken down into its
 // components
 type Tm struct {
-	Tm_sec   int32
-	Tm_min   int32
-	Tm_hour  int32
-	Tm_mday  int32
-	Tm_mon   int32
-	Tm_year  int32
-	Tm_wday  int32
-	Tm_yday  int32
-	Tm_isdst int32
-	// tm_gmtoff int32
+	Tm_sec   int
+	Tm_min   int
+	Tm_hour  int
+	Tm_mday  int
+	Tm_mon   int
+	Tm_year  int
+	Tm_wday  int
+	Tm_yday  int
+	Tm_isdst int
+	// tm_gmtoff int
 	// tm_zone   []byte
 }
 
@@ -72,14 +72,14 @@ type Tm struct {
 func LocalTime(timer *TimeT) (tm *Tm) {
 	t := time.Unix(int64(*timer), 0)
 	tm = &Tm{}
-	tm.Tm_sec = int32(t.Second())
-	tm.Tm_min = int32(t.Minute())
-	tm.Tm_hour = int32(t.Hour())
-	tm.Tm_mday = int32(t.Day())
-	tm.Tm_mon = int32(t.Month() - 1)
-	tm.Tm_year = int32(t.Year() - 1900)
-	tm.Tm_wday = int32(t.Weekday())
-	tm.Tm_yday = int32(t.YearDay() - 1)
+	tm.Tm_sec = int(t.Second())
+	tm.Tm_min = int(t.Minute())
+	tm.Tm_hour = int(t.Hour())
+	tm.Tm_mday = int(t.Day())
+	tm.Tm_mon = int(t.Month() - 1)
+	tm.Tm_year = int(t.Year() - 1900)
+	tm.Tm_wday = int(t.Weekday())
+	tm.Tm_yday = int(t.YearDay() - 1)
 	return
 }
 
@@ -88,14 +88,14 @@ func Gmtime(timer *TimeT) (tm *Tm) {
 	t := time.Unix(int64(*timer), 0)
 	t = t.UTC()
 	tm = &Tm{}
-	tm.Tm_sec = int32(t.Second())
-	tm.Tm_min = int32(t.Minute())
-	tm.Tm_hour = int32(t.Hour())
-	tm.Tm_mday = int32(t.Day())
-	tm.Tm_mon = int32(t.Month() - 1)
-	tm.Tm_year = int32(t.Year() - 1900)
-	tm.Tm_wday = int32(t.Weekday())
-	tm.Tm_yday = int32(t.YearDay() - 1)
+	tm.Tm_sec = int(t.Second())
+	tm.Tm_min = int(t.Minute())
+	tm.Tm_hour = int(t.Hour())
+	tm.Tm_mday = int(t.Day())
+	tm.Tm_mon = int(t.Month() - 1)
+	tm.Tm_year = int(t.Year() - 1900)
+	tm.Tm_wday = int(t.Weekday())
+	tm.Tm_yday = int(t.YearDay() - 1)
 	return
 }
 
@@ -106,9 +106,9 @@ func Mktime(tm *Tm) TimeT {
 	t := time.Date(int(tm.Tm_year+1900), time.Month(tm.Tm_mon)+1, int(tm.Tm_mday),
 		int(tm.Tm_hour), int(tm.Tm_min), int(tm.Tm_sec), 0, time.Now().Location())
 
-	tm.Tm_wday = int32(t.Weekday())
+	tm.Tm_wday = int(t.Weekday())
 
-	return TimeT(int32(t.Unix()))
+	return TimeT(int(t.Unix()))
 }
 
 // constants for asctime

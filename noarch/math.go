@@ -5,28 +5,28 @@ import (
 )
 
 // Signbitf ...
-func Signbitf(x float32) int32 {
+func Signbitf(x float32) int {
 	return BoolToInt(math.Signbit(float64(x)))
 }
 
 // Signbitd ...
-func Signbitd(x float64) int32 {
+func Signbitd(x float64) int {
 	return BoolToInt(math.Signbit(x))
 }
 
 // Signbitl ...
-func Signbitl(x float64) int32 {
+func Signbitl(x float64) int {
 	return BoolToInt(math.Signbit(x))
 }
 
 // IsNaN ...
-func IsNaN(x float64) int32 {
+func IsNaN(x float64) int {
 	return BoolToInt(math.IsNaN(x))
 }
 
 // Ldexp is the inverse of Frexp.
 // Ldexp uses math.Ldexp to calculate the value.
-func Ldexp(frac float64, exp int32) float64 {
+func Ldexp(frac float64, exp int) float64 {
 	return math.Ldexp(frac, int(exp))
 }
 

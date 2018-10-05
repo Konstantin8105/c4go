@@ -56,7 +56,7 @@ func transpileIntegerLiteral(n *ast.IntegerLiteral) (ret goast.Expr) {
 		Value: n.Value,
 	}
 	if n.Type == "int" {
-		ret = util.NewCallExpr("int32", ret)
+		ret = util.NewCallExpr("int", ret)
 	}
 	return
 }

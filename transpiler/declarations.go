@@ -662,7 +662,7 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 			Specs: []goast.Spec{
 				&goast.TypeSpec{
 					Name: util.NewIdent(name),
-					Type: util.NewTypeIdent("int32"),
+					Type: util.NewTypeIdent("int"),
 				},
 			},
 		})

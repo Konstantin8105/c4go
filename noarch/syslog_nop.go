@@ -8,18 +8,18 @@ func Closelog() {
 }
 
 // void    openlog(const char *, int, int);
-func Openlog(ident *byte, logopt int32, facility int32) {
+func Openlog(ident *byte, logopt int, facility int) {
 }
 
 // int     setlogmask(int);
-func Setlogmask(mask int32) int32 {
+func Setlogmask(mask int) int {
 	return 0
 }
 
 // void    syslog(int, const char *, ...);
-func Syslog(priority int32, format *byte, args ...interface{}) {
+func Syslog(priority int, format *byte, args ...interface{}) {
 }
 
 // void    vsyslog(int, const char *, struct __va_list_tag *);
-func Vsyslog(priority int32, format *byte, args VaList) {
+func Vsyslog(priority int, format *byte, args VaList) {
 }

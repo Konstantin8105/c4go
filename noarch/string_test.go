@@ -10,7 +10,7 @@ func TestStringCopy(t *testing.T) {
 		name   string
 		dst    *byte
 		src    *byte
-		length int32
+		length int
 		want   string
 	}{
 		{"src longer than length", &make([]byte, 4)[0], &[]byte("asdf")[0], 2, "as"},

@@ -14,14 +14,14 @@ import (
 
 // DivT is the representation of "div_t". It is used by div().
 type DivT struct {
-	Quot int32 // quotient
-	Rem  int32 // remainder
+	Quot int // quotient
+	Rem  int // remainder
 }
 
 // LdivT is the representation of "ldiv_t". It is used by ldiv().
 type LdivT struct {
-	Quot int32 // quotient
-	Rem  int32 // remainder
+	Quot int // quotient
+	Rem  int // remainder
 }
 
 // LldivT is the representation of "lldiv_t". It is used by lldiv().
@@ -35,7 +35,7 @@ type LldivT struct {
 // In C++, this function is also overloaded in header <cmath> for floating-point
 // types (see cmath abs), in header <complex> for complex numbers (see complex
 // abs), and in header <valarray> for valarrays (see valarray abs).
-func Abs(n int32) int32 {
+func Abs(n int) int {
 	if n < 0 {
 		return -n
 	}
@@ -102,8 +102,8 @@ func Atof(str *byte) float64 {
 // integral number, or if no such sequence exists because either str is empty or
 // it contains only whitespace characters, no conversion is performed and zero
 // is returned.
-func Atoi(str *byte) int32 {
-	return int32(Atol(str))
+func Atoi(str *byte) int {
+	return int(Atol(str))
 }
 
 // Atol parses the C-string str interpreting its content as an integral number,
@@ -122,8 +122,8 @@ func Atoi(str *byte) int32 {
 // integral number, or if no such sequence exists because either str is empty or
 // it contains only whitespace characters, no conversion is performed and zero
 // is returned.
-func Atol(str *byte) int32 {
-	return int32(Atoll(str))
+func Atol(str *byte) int {
+	return int(Atoll(str))
 }
 
 // Atoll parses the C-string str interpreting its content as an integral number,
@@ -138,7 +138,7 @@ func Atoll(str *byte) int64 {
 	return x
 }
 
-func atoll(str *byte, radix int32) (int64, int) {
+func atoll(str *byte, radix int) (int64, int) {
 	// First start by removing any trailing whitespace. We need to record how
 	// much whitespace is trimmed off for the correct offset later.
 	cStr := CStringToString(str)
@@ -154,7 +154,7 @@ func atoll(str *byte, radix int32) (int64, int) {
 	// We must stop consuming characters when we get to a character that is
 	// invalid for the radix. Build a regex to satisfy this.
 	rx := ""
-	var i int32
+	var i int
 	for ; i < radix; i++ {
 		if i < 10 {
 			rx += string(48 + i)
@@ -177,7 +177,7 @@ func atoll(str *byte, radix int32) (int64, int) {
 // Div returns the integral quotient and remainder of the division of numer by
 // denom ( numer/denom ) as a structure of type div_t, ldiv_t or lldiv_t, which
 // has two members: quot and rem.
-func Div(numer, denom int32) DivT {
+func Div(numer, denom int) DivT {
 	return DivT{
 		Quot: numer / denom,
 		Rem:  numer % denom,
@@ -185,7 +185,7 @@ func Div(numer, denom int32) DivT {
 }
 
 // Exit uses os.Exit to stop program execution.
-func Exit(exitCode int32) {
+func Exit(exitCode int) {
 	os.Exit(int(exitCode))
 }
 
@@ -214,7 +214,7 @@ func Getenv(name *byte) *byte {
 // Labs returns the absolute value of parameter n ( /n/ ).
 //
 // This is the long int version of abs.
-func Labs(n int32) int32 {
+func Labs(n int) int {
 	if n < 0 {
 		return -n
 	}
@@ -225,7 +225,7 @@ func Labs(n int32) int32 {
 // Ldiv returns the integral quotient and remainder of the division of numer by
 // denom ( numer/denom ) as a structure of type ldiv_t, which has two members:
 // quot and rem.
-func Ldiv(numer, denom int32) LdivT {
+func Ldiv(numer, denom int) LdivT {
 	return LdivT{
 		Quot: numer / denom,
 		Rem:  numer % denom,
@@ -254,8 +254,8 @@ func Lldiv(numer, denom int64) LldivT {
 }
 
 // Rand returns a random number using math/rand.Int().
-func Rand() int32 {
-	return int32(rand.Int())
+func Rand() int {
+	return int(rand.Int())
 }
 
 // Strtod parses the C-string str interpreting its content as a floating point
@@ -328,12 +328,12 @@ func Strtold(str *byte, endptr **byte) float64 {
 //
 // For locales other than the "C" locale, additional subject sequence forms may
 // be accepted.
-func Strtol(str *byte, endptr **byte, radix int32) int32 {
-	return int32(Strtoll(str, endptr, radix))
+func Strtol(str *byte, endptr **byte, radix int) int {
+	return int(Strtoll(str, endptr, radix))
 }
 
 // Strtoll works the same way as Strtol but returns a long long.
-func Strtoll(str *byte, endptr **byte, radix int32) int64 {
+func Strtoll(str *byte, endptr **byte, radix int) int64 {
 	x, xLen := atoll(str, radix)
 
 	// FIXME: This is actually creating new data for the returned pointer,
@@ -348,12 +348,12 @@ func Strtoll(str *byte, endptr **byte, radix int32) int64 {
 }
 
 // Strtoul works the same way as Strtol but returns a long unsigned int.
-func Strtoul(str *byte, endptr **byte, radix int32) uint32 {
+func Strtoul(str *byte, endptr **byte, radix int) uint32 {
 	return uint32(Strtoll(str, endptr, radix))
 }
 
 // Strtoull works the same way as Strtol but returns a long long unsigned int.
-func Strtoull(str *byte, endptr **byte, radix int32) uint64 {
+func Strtoull(str *byte, endptr **byte, radix int) uint64 {
 	return uint64(Strtoll(str, endptr, radix))
 }
 
@@ -370,7 +370,7 @@ func init() {
 //
 // To prevent the Go garbage collector from collecting this memory,
 // we store the whole block in a map.
-func Malloc(numBytes int32) unsafe.Pointer {
+func Malloc(numBytes int) unsafe.Pointer {
 	memBlock := make([]byte, numBytes)
 	addr := uint64(uintptr(unsafe.Pointer(&memBlock[0])))
 	memSync.Lock()
@@ -388,7 +388,7 @@ func Free(anything unsafe.Pointer) {
 	delete(memMgmt, addr)
 }
 
-func atof(str *byte) (float64, int32) {
+func atof(str *byte) (float64, int) {
 	// First start by removing any trailing whitespace. We have to record how
 	// much whitespace is trimmed off to correct for the final length.
 	cStr := CStringToString(str)
@@ -423,7 +423,7 @@ func atof(str *byte) (float64, int32) {
 				f *= math.Pow(2, float64(p))
 			}
 
-			return f, int32(whitespaceLength + len(match[0]))
+			return f, int(whitespaceLength + len(match[0]))
 		}
 
 		return 0, 0
@@ -435,17 +435,17 @@ func atof(str *byte) (float64, int32) {
 	if match != nil {
 		f, err := strconv.ParseFloat(match[0], 64)
 		if err == nil {
-			return f, int32(whitespaceLength + len(match[0]))
+			return f, int(whitespaceLength + len(match[0]))
 		}
 	}
 
 	// 3. Infinity?
 	if s == "infinity" || s == "+infinity" ||
 		s == "inf" || s == "+inf" {
-		return math.Inf(1), int32(len(s))
+		return math.Inf(1), int(len(s))
 	}
 	if s == "-infinity" || s == "-inf" {
-		return math.Inf(-1), int32(len(s))
+		return math.Inf(-1), int(len(s))
 	}
 
 	// 4. Not a number?

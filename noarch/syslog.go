@@ -10,9 +10,9 @@ import (
 // structure to hold information about an open logger.
 var logger struct {
 	ident    string
-	logopt   int32
+	logopt   int
 	facility syslog.Priority
-	mask     int32
+	mask     int
 	w        *syslog.Writer
 }
 
@@ -23,7 +23,7 @@ func Closelog() {
 
 // void    openlog(const char *, int, int);
 // TODO: handle option parameter
-func Openlog(ident *byte, logopt int32, facility int32) {
+func Openlog(ident *byte, logopt int, facility int) {
 	logger.ident = CStringToString(ident)
 	logger.logopt = logopt // not sure what to do with this yet if anything
 	logger.facility = syslog.Priority(facility)
@@ -32,14 +32,14 @@ func Openlog(ident *byte, logopt int32, facility int32) {
 
 // int     setlogmask(int);
 // TODO
-func Setlogmask(mask int32) int32 {
+func Setlogmask(mask int) int {
 	ret := logger.mask
 	logger.mask = mask
 	return ret
 }
 
 // void    syslog(int, const char *, ...);
-func Syslog(priority int32, format *byte, args ...interface{}) {
+func Syslog(priority int, format *byte, args ...interface{}) {
 	realArgs := []interface{}{}
 	realArgs = append(realArgs, convert(args)...)
 	msg := fmt.Sprintf(CStringToString(format), realArgs...)
@@ -47,14 +47,14 @@ func Syslog(priority int32, format *byte, args ...interface{}) {
 }
 
 // void    vsyslog(int, const char *, struct __va_list_tag *);
-func Vsyslog(priority int32, format *byte, args VaList) {
+func Vsyslog(priority int, format *byte, args VaList) {
 	realArgs := []interface{}{}
 	realArgs = append(realArgs, convert(args.Args)...)
 	msg := fmt.Sprintf(CStringToString(format), realArgs...)
 	internalSyslog(priority, msg)
 }
 
-func internalSyslog(priority int32, msg string) {
+func internalSyslog(priority int, msg string) {
 	// TODO: handle mask
 	switch syslog.Priority(priority) & 0x7 { // get severity
 	case syslog.LOG_EMERG:

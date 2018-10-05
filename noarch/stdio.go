@@ -47,7 +47,7 @@ type File struct {
 	// struct __sbuf _lb;
 	// int _blksize;
 	// fpos_t _offset;
-	_flags int32
+	_flags int
 }
 
 // Fopen handles fopen().
@@ -89,7 +89,7 @@ func Fopen(filePath, mode *byte) *File {
 		m = strings.Replace(m, "b", "", -1)
 		// no other action needed, we are always using binary mode
 	}
-	var flags int32
+	var flags int
 	switch m {
 	case "r":
 		flags |= io_NO_WRITES
@@ -140,7 +140,7 @@ func setFopenErrno(err error) {
 //
 // Even if the call fails, the stream passed as parameter will no longer be
 // associated with the file nor its buffers.
-func Fclose(f *File) int32 {
+func Fclose(f *File) int {
 	err := f.OsFile.Close()
 	if err != nil {
 		if err == os.ErrInvalid {
@@ -164,7 +164,7 @@ func Fclose(f *File) int32 {
 // No streams are involved in the operation.
 //
 // Proper file access shall be available.
-func Remove(filePath *byte) int32 {
+func Remove(filePath *byte) int {
 	if os.Remove(CStringToString(filePath)) != nil {
 		return -1
 	}
@@ -187,7 +187,7 @@ func Remove(filePath *byte) int32 {
 // implementation.
 //
 // Proper file access shall be available.
-func Rename(oldName, newName *byte) int32 {
+func Rename(oldName, newName *byte) int {
 	from := CStringToString(oldName)
 	to := CStringToString(newName)
 
@@ -209,7 +209,7 @@ func Rename(oldName, newName *byte) int32 {
 // Notice that fputs not only differs from puts in that the destination stream
 // can be specified, but also fputs does not write additional characters, while
 // puts appends a newline character at the end automatically.
-func Fputs(str *byte, stream *File) int32 {
+func Fputs(str *byte, stream *File) int {
 	goStr := CStringToString(str)
 
 	n, err := stream.OsFile.WriteString(goStr)
@@ -217,7 +217,7 @@ func Fputs(str *byte, stream *File) int32 {
 		panic(err)
 	}
 
-	return int32(n)
+	return int(n)
 }
 
 // Tmpfile handles tmpfile().
@@ -254,7 +254,7 @@ func Tmpfile() *File {
 // Notice that fgets is quite different from gets: not only fgets accepts a
 // stream argument, but also allows to specify the maximum size of str and
 // includes in the string any ending newline character.
-func Fgets(str *byte, num int32, stream *File) *byte {
+func Fgets(str *byte, num int, stream *File) *byte {
 	buf := make([]byte, num)
 	n, err := stream.OsFile.Read(buf[:num-1])
 	var newlinepos int
@@ -322,11 +322,11 @@ func Rewind(stream *File) {
 // This indicator is cleared by a call to clearerr, rewind, fseek, fsetpos or
 // freopen. Although if the position indicator is not repositioned by such a
 // call, the next i/o operation is likely to set the indicator again.
-func Feof(stream *File) int32 {
+func Feof(stream *File) int {
 	if stream._flags&io_EOF_SEEN != 0 {
 		return 1
 	}
-	return int32(0)
+	return int(0)
 }
 
 // Ferror handles ferror().
@@ -336,11 +336,11 @@ func Feof(stream *File) int32 {
 //
 // This indicator is generally set by a previous operation on the stream that
 // failed, and is cleared by a call to clearerr, rewind or freopen.
-func Ferror(stream *File) int32 {
+func Ferror(stream *File) int {
 	if stream._flags&io_ERR_SEEN != 0 {
 		return 1
 	}
-	return int32(0)
+	return int(0)
 }
 
 const (
@@ -403,7 +403,7 @@ func Tmpnam(str *byte) *byte {
 
 	f.Close()
 	if str != nil {
-		pStr := toByteSlice(str, int32(len(f.Name()))+1)
+		pStr := toByteSlice(str, int(len(f.Name()))+1)
 		copy(pStr, f.Name())
 		pStr[len(f.Name())] = 0
 	}
@@ -424,7 +424,7 @@ func Tmpnam(str *byte) *byte {
 // When a file is closed, either because of a call to fclose or because the
 // program terminates, all the buffers associated with it are automatically
 // flushed.
-func Fflush(stream *File) int32 {
+func Fflush(stream *File) int {
 	err := stream.OsFile.Sync()
 	if err != nil {
 		return 1
@@ -442,7 +442,7 @@ func Fflush(stream *File) int32 {
 //
 // After the format parameter, the function expects at least as many additional
 // arguments as specified by format.
-func Fprintf(f *File, format *byte, args ...interface{}) int32 {
+func Fprintf(f *File, format *byte, args ...interface{}) int {
 	realArgs := []interface{}{}
 
 	// Convert any C strings into Go strings.
@@ -460,7 +460,7 @@ func Fprintf(f *File, format *byte, args ...interface{}) int32 {
 		return -1
 	}
 
-	return int32(n)
+	return int(n)
 }
 
 // Fscanf handles fscanf().
@@ -471,7 +471,7 @@ func Fprintf(f *File, format *byte, args ...interface{}) int32 {
 // The additional arguments should point to already allocated objects of the
 // type specified by their corresponding format specifier within the format
 // string.
-func Fscanf(f *File, format *byte, args ...interface{}) int32 {
+func Fscanf(f *File, format *byte, args ...interface{}) int {
 	realArgs := prepareArgsForScanf(args)
 
 	// format is ignored
@@ -486,7 +486,7 @@ func Fscanf(f *File, format *byte, args ...interface{}) int32 {
 
 	finalizeArgsForScanf(realArgs, args)
 
-	return int32(n)
+	return int(n)
 }
 
 func finalizeArgsForScanf(realArgs []interface{}, args []interface{}) {
@@ -494,7 +494,7 @@ func finalizeArgsForScanf(realArgs []interface{}, args []interface{}) {
 	for i, arg := range realArgs {
 		if reflect.TypeOf(arg) == typeOfStringRef {
 			s := *arg.(*string)
-			byteSlice := toByteSlice(args[i].(*byte), int32(len(s)+1))
+			byteSlice := toByteSlice(args[i].(*byte), int(len(s)+1))
 			copy(byteSlice, []byte(s))
 			byteSlice[len(s)] = 0
 		}
@@ -516,16 +516,16 @@ func prepareArgsForScanf(args []interface{}) []interface{} {
 	return realArgs
 }
 
-const EOF = -int32(1)
+const EOF = -int(1)
 
-func getc(f *os.File) int32 {
+func getc(f *os.File) int {
 	buffer := make([]byte, 1)
 	_, err := f.Read(buffer)
 	if err != nil {
 		return EOF
 	}
 
-	return int32(buffer[0])
+	return int(buffer[0])
 }
 
 // Fgetc handles fgetc().
@@ -542,7 +542,7 @@ func getc(f *os.File) int32 {
 //
 // fgetc and getc are equivalent, except that getc may be implemented as a macro
 // in some libraries.
-func Fgetc(stream *File) (ret int32) {
+func Fgetc(stream *File) (ret int) {
 	ret = getc(stream.OsFile)
 	if ret == EOF {
 		stream._flags |= io_EOF_SEEN
@@ -556,13 +556,13 @@ func Fgetc(stream *File) (ret int32) {
 //
 // The character is written at the position indicated by the internal position
 // indicator of the stream, which is then automatically advanced by one.
-func Fputc(c int32, f *File) int32 {
+func Fputc(c int, f *File) int {
 	n, err := f.OsFile.Write([]byte{byte(c)})
 	if err != nil {
 		return 0
 	}
 
-	return int32(n)
+	return int(n)
 }
 
 // Getchar handles getchar().
@@ -570,7 +570,7 @@ func Fputc(c int32, f *File) int32 {
 // Returns the next character from the standard input (stdin).
 //
 // It is equivalent to calling getc with stdin as argument.
-func Getchar() int32 {
+func Getchar() int {
 	return getc(Stdin.OsFile)
 }
 
@@ -594,7 +594,7 @@ func Getchar() int32 {
 //
 // On streams open for update (read+write), a call to fseek allows to switch
 // between reading and writing.
-func Fseek(f *File, offset int32, origin int32) int32 {
+func Fseek(f *File, offset int, origin int) int {
 	n, err := f.OsFile.Seek(int64(offset), int(origin))
 	if err != nil {
 		f._flags |= io_EOF_SEEN
@@ -602,7 +602,7 @@ func Fseek(f *File, offset int32, origin int32) int32 {
 	}
 	Clearerr(f)
 
-	return int32(n)
+	return int(n)
 }
 
 // Ftell handles ftell().
@@ -616,8 +616,8 @@ func Fseek(f *File, offset int32, origin int32) int32 {
 // used to restore the position to the same position later using fseek (if there
 // are characters put back using ungetc still pending of being read, the
 // behavior is undefined).
-func Ftell(f *File) int32 {
-	return int32(Fseek(f, 0, 1))
+func Ftell(f *File) int {
+	return int(Fseek(f, 0, 1))
 }
 
 // Fread handles fread().
@@ -629,7 +629,7 @@ func Ftell(f *File) int32 {
 // read.
 //
 // The total amount of bytes read if successful is (size*count).
-func Fread(ptr unsafe.Pointer, size1, size2 int32, f *File) int32 {
+func Fread(ptr unsafe.Pointer, size1, size2 int, f *File) int {
 	// Create a new buffer so that we can ensure we read up to the correct
 	// number of bytes from the file.
 	newBuffer := make([]byte, size1*size2)
@@ -652,7 +652,7 @@ func Fread(ptr unsafe.Pointer, size1, size2 int32, f *File) int32 {
 		return EOF
 	}
 
-	return int32(n)
+	return int(n)
 }
 
 // Fwrite handles fwrite().
@@ -666,13 +666,13 @@ func Fread(ptr unsafe.Pointer, size1, size2 int32, f *File) int32 {
 // Internally, the function interprets the block pointed by ptr as if it was an
 // array of (size*count) elements of type unsigned char, and writes them
 // sequentially to stream as if fputc was called for each byte.
-func Fwrite(str *byte, size1, size2 int32, stream *File) int32 {
+func Fwrite(str *byte, size1, size2 int, stream *File) int {
 	n, err := stream.OsFile.Write(toByteSlice(str, size1*size2))
 	if err != nil {
 		return -1
 	}
 
-	return int32(n)
+	return int(n)
 }
 
 // Fgetpos handles fgetpos().
@@ -686,7 +686,7 @@ func Fwrite(str *byte, size1, size2 int32, stream *File) int32 {
 //
 // The ftell function can be used to retrieve the current position in the stream
 //as an integer value.
-func Fgetpos(f *File, pos *int32) int32 {
+func Fgetpos(f *File, pos *int) int {
 	absolutePos := Fseek(f, 0, 1)
 	if pos != nil {
 		*pos = absolutePos
@@ -712,8 +712,8 @@ func Fgetpos(f *File, pos *int32) int32 {
 //
 // A similar function, fseek, can be used to set arbitrary positions on streams
 // open in binary mode.
-func Fsetpos(stream *File, pos *int32) int32 {
-	return Fseek(stream, int32(*pos), 0)
+func Fsetpos(stream *File, pos *int) int {
+	return Fseek(stream, int(*pos), 0)
 }
 
 // Printf handles printf().
@@ -722,7 +722,7 @@ func Fsetpos(stream *File, pos *int32) int32 {
 // format includes format specifiers (subsequences beginning with %), the
 // additional arguments following format are formatted and inserted in the
 // resulting string replacing their respective specifiers.
-func Printf(format *byte, args ...interface{}) int32 {
+func Printf(format *byte, args ...interface{}) int {
 	realArgs := []interface{}{}
 
 	// Convert any C strings into Go strings.
@@ -737,7 +737,7 @@ func Printf(format *byte, args ...interface{}) int32 {
 
 	n, _ := fmt.Printf(CStringToString(format), realArgs...)
 
-	return int32(n)
+	return int(n)
 }
 
 // Puts handles puts().
@@ -752,10 +752,10 @@ func Printf(format *byte, args ...interface{}) int32 {
 // Notice that puts not only differs from fputs in that it uses stdout as
 // destination, but it also appends a newline character at the end automatically
 // (which fputs does not).
-func Puts(str *byte) int32 {
+func Puts(str *byte) int {
 	n, _ := fmt.Println(CStringToString(str))
 
-	return int32(n)
+	return int(n)
 }
 
 // Scanf handles scanf().
@@ -766,7 +766,7 @@ func Puts(str *byte) int32 {
 // The additional arguments should point to already allocated objects of the
 // type specified by their corresponding format specifier within the format
 // string.
-func Scanf(format *byte, args ...interface{}) int32 {
+func Scanf(format *byte, args ...interface{}) int {
 	realArgs := prepareArgsForScanf(args)
 
 	// We cannot use fmt.Scanf() here because that would use the real stdin
@@ -774,7 +774,7 @@ func Scanf(format *byte, args ...interface{}) int32 {
 	n, _ := fmt.Fscanf(Stdin.OsFile, CStringToString(format), realArgs...)
 	finalizeArgsForScanf(realArgs, args)
 
-	return int32(n)
+	return int(n)
 }
 
 // Putchar handles putchar().
@@ -782,7 +782,7 @@ func Scanf(format *byte, args ...interface{}) int32 {
 // Writes a character to the standard output (stdout).
 //
 // It is equivalent to calling putc with stdout as second argument.
-func Putchar(character int32) {
+func Putchar(character int) {
 	fmt.Printf("%c", character)
 }
 
@@ -792,7 +792,7 @@ func Putchar(character int32) {
 // format includes format specifiers (subsequences beginning with %), the
 // additional arguments following format are formatted and inserted in the
 // resulting string replacing their respective specifiers.
-func Sprintf(buffer, format *byte, args ...interface{}) int32 {
+func Sprintf(buffer, format *byte, args ...interface{}) int {
 	realArgs := []interface{}{}
 
 	realArgs = append(realArgs, convert(args)...)
@@ -807,7 +807,7 @@ func Sprintf(buffer, format *byte, args ...interface{}) int32 {
 	*pBuf = '\x00'
 
 	n := len(result)
-	return int32(n)
+	return int(n)
 }
 
 // Vsprintf handles vsprintf().
@@ -816,7 +816,7 @@ func Sprintf(buffer, format *byte, args ...interface{}) int32 {
 // format includes format specifiers (subsequences beginning with %), the
 // additional arguments following format are formatted and inserted in the
 // resulting string replacing their respective specifiers.
-func Vsprintf(buffer, format *byte, args VaList) int32 {
+func Vsprintf(buffer, format *byte, args VaList) int {
 	realArgs := []interface{}{}
 
 	realArgs = append(realArgs, convert(args.Args)...)
@@ -831,7 +831,7 @@ func Vsprintf(buffer, format *byte, args VaList) int32 {
 	*pBuf = '\x00'
 
 	n := len(result)
-	return int32(n)
+	return int(n)
 }
 
 // Snprintf handles snprintf().
@@ -840,7 +840,7 @@ func Vsprintf(buffer, format *byte, args VaList) int32 {
 // format includes format specifiers (subsequences beginning with %), the
 // additional arguments following format are formatted and inserted in the
 // resulting string replacing their respective specifiers.
-func Snprintf(buffer *byte, n int32, format *byte, args ...interface{}) int32 {
+func Snprintf(buffer *byte, n int, format *byte, args ...interface{}) int {
 	return internalVsnprintf(buffer, n, format, args)
 }
 
@@ -866,11 +866,11 @@ func convert(arg interface{}) (result []interface{}) {
 // format includes format specifiers (subsequences beginning with %), the
 // additional arguments following format are formatted and inserted in the
 // resulting string replacing their respective specifiers.
-func Vsnprintf(buffer *byte, n int32, format *byte, args VaList) int32 {
+func Vsnprintf(buffer *byte, n int, format *byte, args VaList) int {
 	return internalVsnprintf(buffer, n, format, args.Args)
 }
 
-func internalVsnprintf(buffer *byte, n int32, format *byte, args ...interface{}) int32 {
+func internalVsnprintf(buffer *byte, n int, format *byte, args ...interface{}) int {
 	realArgs := []interface{}{}
 
 	realArgs = append(realArgs, convert(args)...)
@@ -887,7 +887,7 @@ func internalVsnprintf(buffer *byte, n int32, format *byte, args ...interface{})
 	pBuf = (*byte)(unsafe.Pointer(uintptr(unsafe.Pointer(buffer)) + uintptr(len(result))))
 	*pBuf = '\x00'
 
-	return int32(len(result))
+	return int(len(result))
 }
 
 // Perror handles perror().

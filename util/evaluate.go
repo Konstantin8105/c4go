@@ -73,7 +73,7 @@ func (v *calcVisitor) Visit(node goast.Node) int64 {
 		}
 	}
 	if ce, ok := node.(*goast.CallExpr); ok {
-		if fn, ok2 := ce.Fun.(*goast.Ident); !ok2 || fn.Name != "int32" {
+		if fn, ok2 := ce.Fun.(*goast.Ident); !ok2 || fn.Name != "int" {
 			v.isConst = false
 			return 0
 		}

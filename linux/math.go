@@ -7,17 +7,17 @@ import (
 )
 
 // IsNanf ...
-func IsNanf(x float32) int32 {
+func IsNanf(x float32) int {
 	return noarch.BoolToInt(math.IsNaN(float64(x)))
 }
 
 // IsInff ...
-func IsInff(x float32) int32 {
+func IsInff(x float32) int {
 	return noarch.BoolToInt(math.IsInf(float64(x), 0))
 }
 
 // IsInf ...
-func IsInf(x float64) int32 {
+func IsInf(x float64) int {
 	return noarch.BoolToInt(math.IsInf(x, 0))
 }
 
