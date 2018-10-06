@@ -115,7 +115,7 @@ func NewPositionFromString(s string) Position {
 	}
 
 	// This must be below all of the others.
-	re = util.GetRegex(`^([^:]+):(\d+):(\d+), col:(\d+)$`)
+	re = util.GetRegex(`^((?:[a-zA-Z]\:)?[^:]+):(\d+):(\d+), col:(\d+)$`)
 	if groups := re.FindStringSubmatch(s); len(groups) > 0 {
 		return Position{
 			StringValue: s,
@@ -126,7 +126,7 @@ func NewPositionFromString(s string) Position {
 		}
 	}
 
-	re = util.GetRegex(`^([^:]+):(\d+):(\d+), line:(\d+):(\d+)$`)
+	re = util.GetRegex(`^((?:[a-zA-Z]\:)?[^:]+):(\d+):(\d+), line:(\d+):(\d+)$`)
 	if groups := re.FindStringSubmatch(s); len(groups) > 0 {
 		return Position{
 			StringValue: s,
@@ -138,7 +138,7 @@ func NewPositionFromString(s string) Position {
 		}
 	}
 
-	re = util.GetRegex(`^([^:]+):(\d+):(\d+)$`)
+	re = util.GetRegex(`^((?:[a-zA-Z]\:)?[^:]+):(\d+):(\d+)$`)
 	if groups := re.FindStringSubmatch(s); len(groups) > 0 {
 		return Position{
 			StringValue: s,
@@ -148,7 +148,7 @@ func NewPositionFromString(s string) Position {
 		}
 	}
 
-	re = util.GetRegex(`^([^:]+):(\d+):(\d+)$`)
+	re = util.GetRegex(`^((?:[a-zA-Z]\:)?[^:]+):(\d+):(\d+)$`)
 	if groups := re.FindStringSubmatch(s); len(groups) > 0 {
 		return Position{
 			StringValue: s,
@@ -158,7 +158,7 @@ func NewPositionFromString(s string) Position {
 		}
 	}
 
-	re = util.GetRegex(`^col:(\d+), ([^:]+):(\d+):(\d+)$`)
+	re = util.GetRegex(`^col:(\d+), ((?:[a-zA-Z]\:)?[^:]+):(\d+):(\d+)$`)
 	if groups := re.FindStringSubmatch(s); len(groups) > 0 {
 		return Position{
 			StringValue: s,
@@ -166,7 +166,7 @@ func NewPositionFromString(s string) Position {
 		}
 	}
 
-	re = util.GetRegex(`^([^:]+):(\d+):(\d+), ([^:]+):(\d+):(\d+)$`)
+	re = util.GetRegex(`^((?:[a-zA-Z]\:)?[^:]+):(\d+):(\d+), ((?:[a-zA-Z]\:)?[^:]+):(\d+):(\d+)$`)
 	if groups := re.FindStringSubmatch(s); len(groups) > 0 {
 		return Position{
 			StringValue: s,
@@ -251,6 +251,8 @@ func setPosition(node Node, position Position) {
 	case *BlockCommandComment:
 		n.Pos = position
 	case *BreakStmt:
+		n.Pos = position
+	case *C11NoReturnAttr:
 		n.Pos = position
 	case *CallExpr:
 		n.Pos = position
@@ -350,9 +352,13 @@ func setPosition(node Node, position Position) {
 		n.Pos = position
 	case *ModeAttr:
 		n.Pos = position
+	case *NoAliasAttr:
+		n.Pos = position
 	case *NoInlineAttr:
 		n.Pos = position
 	case *NoThrowAttr:
+		n.Pos = position
+	case *NotTailCalledAttr:
 		n.Pos = position
 	case *NonNullAttr:
 		n.Pos = position
@@ -422,7 +428,7 @@ func setPosition(node Node, position Position) {
 		*QualType, *PointerType, *ParenType, *IncompleteArrayType,
 		*FunctionProtoType, *EnumType, *Enum, *ElaboratedType,
 		*ConstantArrayType, *BuiltinType, *ArrayFiller, *Field,
-		*DecayedType, *CXXRecord:
+		*DecayedType, *CXXRecord, *AttributedType:
 		// These do not have positions so they can be ignored.
 	default:
 		panic(fmt.Sprintf("unknown node type: %+#v", node))
