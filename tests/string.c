@@ -3,7 +3,7 @@
 
 int main()
 {
-    plan(35);
+    plan(36);
 
     diag("TODO: __builtin_object_size");
     // https://github.com/Konstantin8105/c4go/issues/359
@@ -84,11 +84,22 @@ int main()
     {
         diag("strcat");
         char str[80];
+        for (int i = 0;i<80;i++) str[i] = 0;
         strcpy(str, "these ");
         strcat(str, "strings ");
         strcat(str, "are ");
         strcat(str, "concatenated.");
         is_streq(str, "these strings are concatenated.");
+    }
+    {
+        diag("strncat");
+        char str[80];
+        for (int i = 0;i<80;i++) str[i] = 0;
+        strncpy(str, "these", 3);
+        strncat(str, " strings", 7);
+        strncat(str, " is", 3);
+        strncat(str, " concatenated.", 14);
+        is_streq(str, "the string is concatenated.");
     }
     {
         diag("strcmp");

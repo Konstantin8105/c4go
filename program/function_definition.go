@@ -101,6 +101,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double fabs(double) -> math.Abs",
 		"double floor(double) -> math.Floor",
 		"double fmod(double, double) -> math.Mod",
+		"double remainder(double, double) -> math.Remainder",
 		"double ldexp(double, int) -> math.Ldexp",
 		"double log(double) -> math.Log",
 		"double log10(double) -> math.Log10",
@@ -178,6 +179,10 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double cbrt(double) -> math.Cbrt",
 		"float cbrtf(float) -> noarch.Cbrtf",
 		"long double cbrtl(long double) -> math.Cbrt",
+
+		"double hypot(double, double) -> math.Hypot",
+		"float hypotf(float) -> noarch.Hypotf",
+		"long double hypotl(long double, long double) -> math.Hypot",
 	},
 	"stdio.h": {
 
@@ -222,6 +227,7 @@ var builtInFunctionDefinitions = map[string][]string{
 	"string.h": {
 		// string.h
 		"char* strcat(char *, const char *) -> noarch.Strcat",
+		"char* strncat(char *, const char *, int) -> noarch.Strncat",
 		"int strcmp(const char *, const char *) -> noarch.Strcmp",
 		"char * strchr(char *, int) -> noarch.Strchr",
 
@@ -266,6 +272,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"long long strtoll(const char *, char **, int) -> noarch.Strtoll",
 		"long unsigned int strtoul(const char *, char **, int) -> noarch.Strtoul",
 		"long long unsigned int strtoull(const char *, char **, int) -> noarch.Strtoull",
+		"int system(const char *) -> noarch.System",
 		"void free(void*) -> _",
 	},
 	"time.h": {
