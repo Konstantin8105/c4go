@@ -140,6 +140,14 @@ var builtInFunctionDefinitions = map[string][]string{
 		"float expf(float) -> noarch.Expf",
 		"long double expl(long double) -> math.Exp",
 
+		"double erf(double) -> math.Erf",
+		"float erff(float) -> noarch.Erff",
+		"long double erfl(long double) -> math.Erf",
+
+		"double erfc(double) -> math.Erfc",
+		"float erfcf(float) -> noarch.Erfcf",
+		"long double erfcl(long double) -> math.Erfc",
+
 		"double log2(double) -> math.Log2",
 		"float log2f(float) -> noarch.Log2f",
 		"long double log2l(long double) -> math.Log2",

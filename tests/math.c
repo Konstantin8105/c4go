@@ -12,7 +12,7 @@ unsigned long long ullmax = 18446744073709551615ull;
 
 int main()
 {
-    plan(476);
+    plan(491);
 
 	double w1 = 100;
 	double w2 = 2;
@@ -228,6 +228,12 @@ int main()
     is_inf(exp(INFINITY), 1);
     is_eq(exp(-INFINITY), 0);
     is_nan(exp(NAN));
+    is_eq(expf(0.0f), 1.0f);
+    is_eq(expf(1.0f), 2.7182818284590450908f);
+    is_eq(expf(-1.0f), 0.36787944117144233402f);
+    is_eq(expl(0), 1);
+    is_eq(expl(1), 2.7182818284590450908);
+    is_eq(expl(-1), 0.36787944117144233402);
 
     diag("fabs");
     is_eq(fabs(0), 0);
@@ -754,5 +760,16 @@ int main()
     is_eq(hypotl(0, 0), 0);
     is_eq(hypotl(3, 4), 5);
 
+    diag("erf, erfc");
+    is_eq(erf(1.0), 0.84270079294971489414);
+    is_eq(erff(1.0f), 0.842700779438f);
+    is_eq(erfl(1.0), 0.84270079294971489414);
+    is_eq(erfc(1.0), 0.15729920705028513361);
+    is_eq(erfcf(1.0f), 0.157299205661f);
+    is_eq(erfcl(1.0), 0.15729920705028513361);
+    is_eq(erf(1.0), 1 - erfc(1.0));
+    is_eq(erff(1.0f), 1.0f - erfcf(1.0f));
+    is_eq(erfl(1.0), 1 - erfcl(1.0));
+    
     done_testing();
 }
