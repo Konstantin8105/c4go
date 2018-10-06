@@ -30,4 +30,4 @@ int main()
     done_testing();
 }
 
-void os(){}
+void os() {}

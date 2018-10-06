@@ -75,13 +75,13 @@ void union_inside_struct()
     is_eq(sha2.u2.d2, 4);
     is_eq(sha2.ff2, 12.444);
     pass("ok");
-    
-	union unknown data[2];
-	for (int i= 0;i<2;i++){
-		data[i].i2 = i+3;
-		is_true(data[i].d2 != 0);
-	}
-	(void)(data);
+
+    union unknown data[2];
+    for (int i = 0; i < 2; i++) {
+        data[i].i2 = i + 3;
+        is_true(data[i].d2 != 0);
+    }
+    (void)(data);
 }
 
 typedef union myunion myunion;

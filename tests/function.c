@@ -154,14 +154,16 @@ void test_string()
     is_streq(readline("rt", NULL, NULL), "rt");
 }
 
-int run_function(int a, void *v, char ** c,  void (*f)(void) ){
-	(void)(v);
-	(void)(c);
-	return a;
+int run_function(int a, void* v, char** c, void (*f)(void))
+{
+    (void)(v);
+    (void)(c);
+    return a;
 }
-void test_null_function(){
-	is_eq(run_function(5,NULL,NULL,NULL),5);
-	is_eq(run_function(5,   0,   0,   0),5);
+void test_null_function()
+{
+    is_eq(run_function(5, NULL, NULL, NULL), 5);
+    is_eq(run_function(5, 0, 0, 0), 5);
 }
 
 int main()
@@ -169,7 +171,7 @@ int main()
     plan(53);
 
     test_string();
-	test_null_function();
+    test_null_function();
 
     pass("%s", "Main function.");
 
@@ -285,20 +287,20 @@ int main()
         is_eq(toupper(34, 52), 86);
     }
 
-	diag("function argument from array to slice");
-	{
-		char input_str[20];
+    diag("function argument from array to slice");
+    {
+        char input_str[20];
         strncpy(input_str, "Hello", 20);
-		is_streq(input_str,"Hello");
-	}
-	{
-		struct s_inp{
-			char input_str[20];
-		};
-		struct s_inp s;
+        is_streq(input_str, "Hello");
+    }
+    {
+        struct s_inp {
+            char input_str[20];
+        };
+        struct s_inp s;
         strncpy(s.input_str, "Hello", 20);
-		is_streq(s.input_str,"Hello");
-	}
+        is_streq(s.input_str, "Hello");
+    }
 
     done_testing();
 }
