@@ -12,7 +12,7 @@
     test_##t();
 
 // size of that file
-int filesize = 11360;
+int filesize = 11394;
 
 void test_putchar()
 {
