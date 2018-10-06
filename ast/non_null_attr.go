@@ -27,6 +27,11 @@ func parseNonNullAttr(line string) *NonNullAttr {
 		line,
 	)
 
+	a := 0
+	if groups["a"] != "" {
+		a = util.Atoi(strings.TrimSpace(groups["a"]))
+	}
+
 	b := 0
 	if groups["b"] != "" {
 		b = util.Atoi(strings.TrimSpace(groups["b"]))
@@ -46,7 +51,7 @@ func parseNonNullAttr(line string) *NonNullAttr {
 		Addr:        ParseAddress(groups["address"]),
 		Pos:         NewPositionFromString(groups["position"]),
 		IsInherited: len(groups["inherited"]) > 0,
-		A:           util.Atoi(strings.TrimSpace(groups["a"])),
+		A:           a,
 		B:           b,
 		C:           c,
 		D:           d,
