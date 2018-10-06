@@ -1,7 +1,7 @@
 // +build ignore
 
 // The make_version program is run by go generate to compile a version stamp
-// to be compiled into the upspin binary.
+// to be compiled into the c4go binary.
 // It does nothing unless $COMMIT_SHA is set, which is true only during
 // the release process.
 package main

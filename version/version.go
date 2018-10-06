@@ -20,7 +20,7 @@ var (
 // version of the build.
 func Version() string {
 	if GitSHA == "" {
-		return "devel\n"
+		return "development\n"
 	}
 	str := fmt.Sprintf("Build time: %s\n", BuildTime.In(time.UTC).Format(time.Stamp+" 2006 UTC"))
 	str += fmt.Sprintf("Git hash:   %s\n", GitSHA)
