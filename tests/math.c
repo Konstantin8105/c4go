@@ -228,9 +228,9 @@ int main()
     is_inf(exp(INFINITY), 1);
     is_eq(exp(-INFINITY), 0);
     is_nan(exp(NAN));
-    is_eq(expf(0f), 1f);
-    is_eq(expf(1f), 2.7182818284590450908f);
-    is_eq(expf(-1f), 0.36787944117144233402f);
+    is_eq(expf(0.0f), 1.0f);
+    is_eq(expf(1.0f), 2.7182818284590450908f);
+    is_eq(expf(-1.0f), 0.36787944117144233402f);
     is_eq(expl(0), 1);
     is_eq(expl(1), 2.7182818284590450908);
     is_eq(expl(-1), 0.36787944117144233402);
@@ -762,7 +762,7 @@ int main()
 
     diag("erf, erfc");
     is_eq(erf(1.0), 1 - erfc(1.0));
-    is_eq(erff(1.0f), 1f - erfc(1.0f));
+    is_eq(erff(1.0f), 1.0f - erfc(1.0f));
     is_eq(erfl(1.0), 1 - erfc(1.0));
     
     done_testing();
