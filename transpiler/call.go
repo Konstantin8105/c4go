@@ -5,7 +5,6 @@ package transpiler
 import (
 	"bytes"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/Konstantin8105/c4go/ast"
@@ -107,6 +106,7 @@ func getNameOfFunctionFromCallExpr(p *program.Program, n *ast.CallExpr) (string,
 	return getName(p, firstChild.Children()[0])
 }
 
+// TODO : return back simplification printf
 // simplificationCallExprPrintf - minimaze Go code
 // transpile C code : printf("Hello")
 // to Go code       : fmt.Printf("Hello")
@@ -117,82 +117,82 @@ func getNameOfFunctionFromCallExpr(p *program.Program, n *ast.CallExpr) (string,
 // `-ImplicitCastExpr <> 'const char *' <BitCast>
 //   `-ImplicitCastExpr <> 'char *' <ArrayToPointerDecay>
 //     `-StringLiteral <> 'char [6]' lvalue "Hello"
-func simplificationCallExprPrintf(call *ast.CallExpr, p *program.Program) (
-	expr *goast.CallExpr, ok bool) {
-
-	var isPrintfCode bool
-	var printfText string
-	if call.Type == "int" && len(call.ChildNodes) == 2 {
-		var step1 bool
-		if impl, ok := call.ChildNodes[0].(*ast.ImplicitCastExpr); ok && len(impl.ChildNodes) == 1 {
-			if decl, ok := impl.ChildNodes[0].(*ast.DeclRefExpr); ok && decl.Name == "printf" {
-				if impl.Type == "int (*)(const char *, ...)" {
-					step1 = true
-				}
-			}
-		}
-		var step2 bool
-		if impl, ok := call.ChildNodes[1].(*ast.ImplicitCastExpr); ok {
-			if impl.Type == "const char *" && len(impl.ChildNodes) == 1 {
-				if impl2, ok := impl.ChildNodes[0].(*ast.ImplicitCastExpr); ok {
-					if impl2.Type == "char *" && len(impl2.ChildNodes) == 1 {
-						if str, ok := impl2.ChildNodes[0].(*ast.StringLiteral); ok {
-							step2 = true
-							printfText = str.Value
-						}
-					}
-				}
-			}
-		}
-		if step1 && step2 {
-			isPrintfCode = true
-		}
-	}
-
-	if !isPrintfCode {
-		return
-	}
-
-	// 0: *ast.ExprStmt {
-	// .  X: *ast.CallExpr {
-	// .  .  Fun: *ast.SelectorExpr {
-	// .  .  .  X: *ast.Ident {
-	// .  .  .  .  NamePos: 8:2
-	// .  .  .  .  Name: "fmt"
-	// .  .  .  }
-	// .  .  .  Sel: *ast.Ident {
-	// .  .  .  .  NamePos: 8:6
-	// .  .  .  .  Name: "Printf"
-	// .  .  .  }
-	// .  .  }
-	// .  .  Lparen: 8:12
-	// .  .  Args: []ast.Expr (len = 1) {
-	// .  .  .  0: *ast.BasicLit {
-	// .  .  .  .  ValuePos: 8:13
-	// .  .  .  .  Kind: STRING
-	// .  .  .  .  Value: "\"Hello, Golang\\n\""
-	// .  .  .  }
-	// .  .  }
-	// .  .  Ellipsis: -
-	// .  .  Rparen: 8:30
-	// .  }
-	// }
-	p.AddImport("fmt")
-	printfText = strconv.Quote(printfText)
-	return &goast.CallExpr{
-		Fun: &goast.SelectorExpr{
-			X:   goast.NewIdent("fmt"),
-			Sel: goast.NewIdent("Printf"),
-		},
-		Lparen: 1,
-		Args: []goast.Expr{
-			&goast.BasicLit{
-				Kind:  token.STRING,
-				Value: printfText,
-			},
-		},
-	}, true
-}
+// func simplificationCallExprPrintf(call *ast.CallExpr, p *program.Program) (
+// 	expr *goast.CallExpr, ok bool) {
+//
+// 	var isPrintfCode bool
+// 	var printfText string
+// 	if call.Type == "int" && len(call.ChildNodes) == 2 {
+// 		var step1 bool
+// 		if impl, ok := call.ChildNodes[0].(*ast.ImplicitCastExpr); ok && len(impl.ChildNodes) == 1 {
+// 			if decl, ok := impl.ChildNodes[0].(*ast.DeclRefExpr); ok && decl.Name == "printf" {
+// 				if impl.Type == "int (*)(const char *, ...)" {
+// 					step1 = true
+// 				}
+// 			}
+// 		}
+// 		var step2 bool
+// 		if impl, ok := call.ChildNodes[1].(*ast.ImplicitCastExpr); ok {
+// 			if impl.Type == "const char *" && len(impl.ChildNodes) == 1 {
+// 				if impl2, ok := impl.ChildNodes[0].(*ast.ImplicitCastExpr); ok {
+// 					if impl2.Type == "char *" && len(impl2.ChildNodes) == 1 {
+// 						if str, ok := impl2.ChildNodes[0].(*ast.StringLiteral); ok {
+// 							step2 = true
+// 							printfText = str.Value
+// 						}
+// 					}
+// 				}
+// 			}
+// 		}
+// 		if step1 && step2 {
+// 			isPrintfCode = true
+// 		}
+// 	}
+//
+// 	if !isPrintfCode {
+// 		return
+// 	}
+//
+// 	// 0: *ast.ExprStmt {
+// 	// .  X: *ast.CallExpr {
+// 	// .  .  Fun: *ast.SelectorExpr {
+// 	// .  .  .  X: *ast.Ident {
+// 	// .  .  .  .  NamePos: 8:2
+// 	// .  .  .  .  Name: "fmt"
+// 	// .  .  .  }
+// 	// .  .  .  Sel: *ast.Ident {
+// 	// .  .  .  .  NamePos: 8:6
+// 	// .  .  .  .  Name: "Printf"
+// 	// .  .  .  }
+// 	// .  .  }
+// 	// .  .  Lparen: 8:12
+// 	// .  .  Args: []ast.Expr (len = 1) {
+// 	// .  .  .  0: *ast.BasicLit {
+// 	// .  .  .  .  ValuePos: 8:13
+// 	// .  .  .  .  Kind: STRING
+// 	// .  .  .  .  Value: "\"Hello, Golang\\n\""
+// 	// .  .  .  }
+// 	// .  .  }
+// 	// .  .  Ellipsis: -
+// 	// .  .  Rparen: 8:30
+// 	// .  }
+// 	// }
+// 	p.AddImport("fmt")
+// 	printfText = strconv.Quote(printfText)
+// 	return &goast.CallExpr{
+// 		Fun: &goast.SelectorExpr{
+// 			X:   goast.NewIdent("fmt"),
+// 			Sel: goast.NewIdent("Printf"),
+// 		},
+// 		Lparen: 1,
+// 		Args: []goast.Expr{
+// 			&goast.BasicLit{
+// 				Kind:  token.STRING,
+// 				Value: printfText,
+// 			},
+// 		},
+// 	}, true
+// }
 
 // transpileCallExpr transpiles expressions that calls a function, for example:
 //
@@ -245,13 +245,14 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 	}
 
 	// function "printf" from stdio.h simplification
-	if p.IncludeHeaderIsExists("stdio.h") {
-		if functionName == "printf" && len(n.Children()) == 2 {
-			if e, ok := simplificationCallExprPrintf(n, p); ok {
-				return e, "int", nil, nil, nil
-			}
-		}
-	}
+	// TODO : return back simplification of printf
+	// if p.IncludeHeaderIsExists("stdio.h") {
+	// 	if functionName == "printf" && len(n.Children()) == 2 {
+	// 		if e, ok := simplificationCallExprPrintf(n, p); ok {
+	// 			return e, "int", nil, nil, nil
+	// 		}
+	// 	}
+	// }
 
 	// Get the function definition from it's name. The case where it is not
 	// defined is handled below (we haven't seen the prototype yet).

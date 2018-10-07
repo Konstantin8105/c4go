@@ -67,9 +67,9 @@ func IsCFloat(p *program.Program, cType string) bool {
 // Please keep them sorted by name.
 var simpleResolveTypes = map[string]string{
 	"bool":                   "bool",
-	"char *":                 "[]byte",
+	"char *":                 "*byte",
 	"char":                   "byte",
-	"char*":                  "[]byte",
+	"char*":                  "*byte",
 	"double":                 "float64",
 	"float":                  "float32",
 	"int":                    "int",

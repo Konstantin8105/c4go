@@ -57,6 +57,8 @@ func transpileStringLiteral(p *program.Program, n *ast.StringLiteral, arrayToArr
 	// Convert format flags
 	n.Value = ConvertToGoFlagFormat(n.Value)
 
+	fmt.Println("LIT : ", n.Value)
+
 	// Example:
 	// StringLiteral 0x280b918 <col:29> 'char [30]' lvalue "%0"
 	baseType := types.GetBaseType(n.Type)
@@ -69,8 +71,8 @@ func transpileStringLiteral(p *program.Program, n *ast.StringLiteral, arrayToArr
 	s, err = types.GetAmountArraySize(n.Type)
 	if !arrayToArray {
 		if err != nil {
-			expr = util.NewCallExpr("[]byte",
-				util.NewStringLit(strconv.Quote(n.Value+"\x00")))
+			expr = goast.NewIdent("&[]byte(" +
+				strconv.Quote(n.Value+"\x00") + ")[0]")
 			exprType = "const char *"
 			return
 		}
@@ -78,8 +80,8 @@ func transpileStringLiteral(p *program.Program, n *ast.StringLiteral, arrayToArr
 		if buf.Len() < s {
 			buf.Write(make([]byte, s-buf.Len()))
 		}
-		expr = util.NewCallExpr("[]byte",
-			util.NewStringLit(strconv.Quote(buf.String())))
+		expr = goast.NewIdent("&[]byte(" +
+			strconv.Quote(buf.String()) + ")[0]")
 		exprType = "const char *"
 		return
 	}
@@ -117,23 +119,30 @@ func transpilePredefinedExpr(n *ast.PredefinedExpr, p *program.Program) (goast.E
 	// TODO: Predefined expressions are not evaluated
 	// https://github.com/Konstantin8105/c4go/issues/81
 
-	switch n.Name {
-	case "__PRETTY_FUNCTION__":
-		return util.NewCallExpr(
-			"[]byte",
-			util.NewStringLit(`"void print_number(int *)"`),
-		), "const char*", nil
-
-	case "__func__":
-		return util.NewCallExpr(
-			"[]byte",
-			util.NewStringLit(strconv.Quote(p.Function.Name)),
-		), "const char*", nil
-
-	default:
-		// There are many more.
-		panic(fmt.Sprintf("unknown PredefinedExpr: %s", n.Name))
+	if len(n.Children()) > 0 {
+		expr, exprType, _, _, err := transpileToExpr(n.Children()[0], p, false)
+		return expr, exprType, err
 	}
+
+	panic(fmt.Errorf("unknown PredefinedExpr: %s", n.Name))
+
+	// switch n.Name {
+	// case "__PRETTY_FUNCTION__":
+	// 	return util.NewCallExpr(
+	// 		"[]byte",
+	// 		util.NewStringLit(`"void print_number(int *)"`),
+	// 	), "const char*", nil
+	//
+	// case "__func__":
+	// 	return util.NewCallExpr(
+	// 		"[]byte",
+	// 		util.NewStringLit(strconv.Quote(p.Function.Name)),
+	// 	), "const char*", nil
+	//
+	// default:
+	// 	// There are many more.
+	// 	panic(fmt.Sprintf("unknown PredefinedExpr: %s", n.Name))
+	// }
 }
 
 func transpileCompoundLiteralExpr(n *ast.CompoundLiteralExpr, p *program.Program) (goast.Expr, string, error) {
