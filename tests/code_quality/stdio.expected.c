@@ -1,9 +1,9 @@
-/*
-	Package main - transpiled by c4go
-
-	If you have found any issues, please raise an issue at:
-	https://github.com/Konstantin8105/c4go/
-*/
+//
+//	Package main - transpiled by c4go
+//
+//	If you have found any issues, please raise an issue at:
+//	https://github.com/Konstantin8105/c4go/
+//
 
 package code_quality
 
