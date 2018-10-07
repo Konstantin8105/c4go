@@ -17,19 +17,21 @@ type resolveTestCase struct {
 
 var resolveTestCases = []resolveTestCase{
 	{"int", "int"},
-	{"char *[13]", "[][]byte"},
+	{"bool", "bool"},
+	{"_Bool", "int8"},
+	{"char", "byte"},
+	{"char *[13]", "[]*byte"},
 	{"__uint16_t", "uint16"},
-	{"void *", "interface{}"},
+	{"void *", "unsafe.Pointer"},
 	{"unsigned short int", "uint16"},
 	{"div_t", "noarch.DivT"},
 	{"ldiv_t", "noarch.LdivT"},
 	{"lldiv_t", "noarch.LldivT"},
+	{"fpos_t", "int"},
 	{"int [2]", "[]int"},
 	{"int [2][3]", "[][]int"},
 	{"int [2][3][4]", "[][][]int"},
 	{"int [2][3][4][5]", "[][][][]int"},
-	{"int (*[2])(int, int)", "[2]func(int,int)(int)"},
-	{"int (*(*(*)))(int, int)", "[][]func(int,int)(int)"},
 }
 
 func TestResolve(t *testing.T) {

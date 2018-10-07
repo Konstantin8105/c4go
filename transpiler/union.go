@@ -92,8 +92,7 @@ func (unionVar * {{ $.Name }}) {{ .Name }}() (*{{ .TypeField }}){
 	var source bytes.Buffer
 	err = tmpl.Execute(&source, un)
 	if err != nil {
-		err = fmt.Errorf("cannot execute template \"%s\" for data %v : %v",
-			source.String(), un, err)
+		err = fmt.Errorf("cannot execute template \"%s\" for data %v : %v", source.String(), un, err)
 		return
 	}
 
@@ -101,8 +100,7 @@ func (unionVar * {{ $.Name }}) {{ .Name }}() (*{{ .TypeField }}){
 	fset := token.NewFileSet() // positions are relative to fset
 	f, err := parser.ParseFile(fset, "", source.String(), 0)
 	if err != nil {
-		err = fmt.Errorf("cannot parse source \"%s\" : %v",
-			source.String(), err)
+		err = fmt.Errorf("cannot parse source \"%s\" : %v", source.String(), err)
 		return
 	}
 
@@ -111,9 +109,20 @@ func (unionVar * {{ $.Name }}) {{ .Name }}() (*{{ .TypeField }}){
 
 func isUnionMemberExpr(p *program.Program, n *ast.MemberExpr) (IsUnion bool) {
 	if len(n.Children()) > 0 {
-		_, t, _, _, _ := transpileToExpr(n.Children()[0], p, false)
-		if p.IsUnion(t) {
-			IsUnion = true
+		if v, ok := n.Children()[0].(*ast.MemberExpr); ok {
+			if p.IsUnion(v.Type) {
+				IsUnion = true
+			}
+		}
+		if v, ok := n.Children()[0].(*ast.DeclRefExpr); ok {
+			if p.IsUnion(v.Type) {
+				IsUnion = true
+			}
+		}
+		if v, ok := n.Children()[0].(*ast.ImplicitCastExpr); ok {
+			if p.IsUnion(v.Type) {
+				IsUnion = true
+			}
 		}
 	}
 	return

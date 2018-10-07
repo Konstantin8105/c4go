@@ -9,6 +9,7 @@ import (
 	"github.com/Konstantin8105/c4go/program"
 	"github.com/Konstantin8105/c4go/types"
 	"github.com/Konstantin8105/c4go/util"
+	"go/token"
 )
 
 func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, exprIsStmt bool) (
@@ -37,9 +38,10 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 			return
 		}
 	}
-
-	expr, exprType, preStmts, postStmts, err = transpileToExpr(
-		n.Children()[0], p, exprIsStmt)
+	if isCastToUnsignedOfUnaryComplement(n, p) {
+		return swapCastAndComplement(n, p, exprIsStmt)
+	}
+	expr, exprType, preStmts, postStmts, err = transpileToExpr(n.Children()[0], p, exprIsStmt)
 	if err != nil {
 		return nil, "", nil, nil, err
 	}
@@ -48,15 +50,7 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		return
 	}
 
-	var cast bool = true
-	if in, ok := n.Children()[0].(*ast.IntegerLiteral); ok && in.Type == "int" {
-		if types.IsCInteger(p, n.Type) || types.IsCFloat(p, n.Type) {
-			cast = false
-			exprType = n.Type
-		}
-	}
-
-	if len(n.Type) != 0 && len(n.Type2) != 0 && n.Type != n.Type2 && cast {
+	if len(n.Type) != 0 && len(n.Type2) != 0 && n.Type != n.Type2 {
 		var tt string
 		tt, err = types.ResolveType(p, n.Type)
 		expr = &goast.CallExpr{
@@ -68,17 +62,7 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		return
 	}
 
-	if types.IsFunction(exprType) {
-		cast = false
-	}
-	if n.Kind == ast.ImplicitCastExprArrayToPointerDecay {
-		cast = false
-	}
-	if n.Kind == "PointerToIntegral" {
-		cast = false
-	}
-
-	if cast {
+	if !types.IsFunction(exprType) && !strings.ContainsAny(n.Type, "[]") {
 		expr, err = types.CastExpr(p, expr, exprType, n.Type)
 		if err != nil {
 			return nil, "", nil, nil, err
@@ -86,23 +70,36 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		exprType = n.Type
 	}
 
-	// Convert from struct member array to slice
-	// ImplicitCastExpr 0x3662e28 <col:17, col:19> 'char *' <ArrayToPointerDecay>
-	// `-MemberExpr 0x3662d18 <col:17, col:19> 'char [20]' lvalue .input_str 0x3662ba0
-	//   `-DeclRefExpr 0x3662cf0 <col:17> 'struct s_inp':'struct s_inp' lvalue Var 0x3662c50 's' 'struct s_inp':'struct s_inp'
-	if types.IsCPointer(n.Type) {
-		if len(n.Children()) > 0 {
-			if memb, ok := n.Children()[0].(*ast.MemberExpr); ok && types.IsCArray(memb.Type) {
-				expr = &goast.SliceExpr{
-					X:      expr,
-					Lbrack: 1,
-					Slice3: false,
-				}
-			}
-		}
-	}
-
 	return
+}
+
+func isCastToUnsignedOfUnaryComplement(n *ast.ImplicitCastExpr, p *program.Program) (ret bool) {
+	if !types.IsCInteger(p, n.Type) || !strings.Contains(n.Type, "unsigned ") {
+		return
+	}
+	cn, ok := n.Children()[0].(*ast.UnaryOperator)
+	if !ok || getTokenForOperator(cn.Operator) != token.XOR {
+		return
+	}
+	return types.IsCInteger(p, cn.Type) && !strings.Contains(cn.Type, "unsigned ")
+}
+
+func swapCastAndComplement(n *ast.ImplicitCastExpr, p *program.Program, exprIsStmt bool) (
+	expr goast.Expr,
+	exprType string,
+	preStmts []goast.Stmt,
+	postStmts []goast.Stmt,
+	err error) {
+	uo := n.Children()[0].(*ast.UnaryOperator)
+	copyUnary := &ast.UnaryOperator{}
+	copyImplicit := &ast.ImplicitCastExpr{}
+	*copyUnary = *uo
+	*copyImplicit = *n
+	unaryChildren := uo.ChildNodes
+	copyUnary.ChildNodes = []ast.Node{copyImplicit}
+	copyUnary.Type = copyImplicit.Type
+	copyImplicit.ChildNodes = unaryChildren
+	return transpileToExpr(copyUnary, p, exprIsStmt)
 }
 
 func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsStmt bool) (
@@ -155,9 +152,7 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 		exprType = types.NullPointer
 		return
 	}
-
-	expr, exprType, preStmts, postStmts, err = transpileToExpr(
-		n.Children()[0], p, exprIsStmt)
+	expr, exprType, preStmts, postStmts, err = transpileToExpr(n.Children()[0], p, exprIsStmt)
 	if err != nil {
 		return nil, "", nil, nil, err
 	}
@@ -184,9 +179,7 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 		return
 	}
 
-	if !types.IsFunction(exprType) &&
-		n.Kind != ast.ImplicitCastExprArrayToPointerDecay &&
-		n.Kind != "PointerToIntegral" {
+	if !types.IsFunction(exprType) && n.Kind != ast.ImplicitCastExprArrayToPointerDecay {
 		expr, err = types.CastExpr(p, expr, exprType, n.Type)
 		if err != nil {
 			return nil, "", nil, nil, err

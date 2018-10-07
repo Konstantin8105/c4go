@@ -80,7 +80,7 @@ func getName(p *program.Program, firstChild ast.Node) (name string, err error) {
 
 	case *ast.ArraySubscriptExpr:
 		var expr goast.Expr
-		expr, _, _, _, err = transpileArraySubscriptExpr(fc, p)
+		expr, _, _, _, err = transpileArraySubscriptExpr(fc, p, false)
 		if err != nil {
 			return
 		}
@@ -270,8 +270,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			Name: functionName,
 		}
 		if len(n.Children()) > 0 {
-			if v, ok := n.Children()[0].(*ast.ImplicitCastExpr); ok &&
-				(types.IsFunction(v.Type) || types.IsTypedefFunction(p, v.Type)) {
+			if v, ok := n.Children()[0].(*ast.ImplicitCastExpr); ok && (types.IsFunction(v.Type) || types.IsTypedefFunction(p, v.Type)) {
 				t := v.Type
 				if v, ok := p.TypedefType[t]; ok {
 					t = v
@@ -334,10 +333,37 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			return nil, "unknown2", nil, nil, err
 		}
 		argTypes = append(argTypes, eType)
-		preStmts, postStmts = combinePreAndPostStmts(
-			preStmts, postStmts, newPre, newPost)
+
+		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+
+		_, arraySize := types.GetArrayTypeAndSize(eType)
+
+		// If we are using varargs with Printf we need to make sure that certain
+		// types are cast correctly.
+		if functionName == "fmt.Printf" {
+			// Make sure that any string parameters (const char*) are truncated
+			// to the NULL byte.
+			if arraySize != -1 {
+				p.AddImport("github.com/elliotchance/c2go/noarch")
+				e = util.NewCallExpr(
+					"noarch.CStringToString",
+					&goast.SliceExpr{X: e},
+				)
+			}
+
+			// Byte slices (char*) must also be truncated to the NULL byte.
+			//
+			// TODO: This would also apply to other formatting functions like
+			// fprintf, etc.
+			if i > len(functionDef.ArgumentTypes)-1 &&
+				(eType == "char *" || eType == "char*") {
+				p.AddImport("github.com/elliotchance/c2go/noarch")
+				e = util.NewCallExpr("noarch.CStringToString", e)
+			}
+		}
 
 		args = append(args, e)
+
 		i++
 	}
 
@@ -396,31 +422,16 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		// [char *, char *, char *, int, double]
 		//
 		for i, a := range args {
-			realType := "unknownType"
-			if i < len(functionDef.ArgumentTypes) {
-				if len(functionDef.ArgumentTypes) > 1 &&
-					i >= len(functionDef.ArgumentTypes)-1 &&
-					functionDef.ArgumentTypes[len(functionDef.ArgumentTypes)-1] == "..." {
-					realType = functionDef.ArgumentTypes[len(functionDef.ArgumentTypes)-2]
-				} else {
-					if len(functionDef.ArgumentTypes) > 0 {
-						if len(functionDef.ArgumentTypes[i]) != 0 {
-							realType = functionDef.ArgumentTypes[i]
-							if strings.TrimSpace(realType) != "void" {
-								a, err = types.CastExpr(p, a, argTypes[i], realType)
+			if i > len(functionDef.ArgumentTypes)-1 {
+				// This means the argument is one of the varargs so we don't
+				// know what type it needs to be cast to.
+			} else {
+				a, err = types.CastExpr(p, a, argTypes[i],
+					functionDef.ArgumentTypes[i])
 
-								if p.AddMessage(p.GenerateWarningMessage(err, n)) {
-									a = util.NewNil()
-								}
-							}
-						}
-					}
+				if p.AddMessage(p.GenerateWarningMessage(err, n)) {
+					a = util.NewNil()
 				}
-			}
-
-			if strings.Contains(realType, "...") {
-				p.AddMessage(p.GenerateWarningMessage(
-					fmt.Errorf("not acceptable type '...'"), n))
 			}
 
 			if a == nil {
@@ -429,7 +440,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			}
 
 			if len(functionDef.ArgumentTypes) > i {
-				if !types.IsPointer(functionDef.ArgumentTypes[i]) {
+				if !types.IsPointer(p, functionDef.ArgumentTypes[i]) {
 					if strings.HasPrefix(functionDef.ArgumentTypes[i], "union ") {
 						a = &goast.CallExpr{
 							Fun: &goast.SelectorExpr{

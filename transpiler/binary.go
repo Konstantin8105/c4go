@@ -239,10 +239,35 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 		err = fmt.Errorf("cannot atomic for right part. %v", err)
 		return nil, "unknown53", nil, nil, err
 	}
-	if types.IsPointer(leftType) && types.IsPointer(rightType) && operator == token.SUB {
-		p.AddImport("unsafe")
-		left, leftType = util.GetUintptrForSlice(left)
-		right, rightType = util.GetUintptrForSlice(right)
+	var adjustPointerDiff int
+	if types.IsPointer(p, leftType) && types.IsPointer(p, rightType) &&
+		(operator == token.SUB ||
+			operator == token.LSS || operator == token.GTR ||
+			operator == token.LEQ || operator == token.GEQ) {
+		baseSize, err := types.SizeOf(p, types.GetBaseType(leftType))
+		if operator == token.SUB && err == nil && baseSize > 1 {
+			adjustPointerDiff = baseSize
+		}
+		left, leftType, err = GetUintptrForPointer(p, left, leftType)
+		if err != nil {
+			p.AddMessage(p.GenerateWarningMessage(err, n))
+		}
+		right, rightType, err = GetUintptrForPointer(p, right, rightType)
+		if err != nil {
+			p.AddMessage(p.GenerateWarningMessage(err, n))
+		}
+	}
+	if types.IsPointer(p, leftType) && types.IsPointer(p, rightType) &&
+		(operator == token.EQL || operator == token.NEQ) &&
+		leftType != "NullPointerType *" && rightType != "NullPointerType *" {
+		left, leftType, err = GetUintptrForPointer(p, left, leftType)
+		if err != nil {
+			p.AddMessage(p.GenerateWarningMessage(err, n))
+		}
+		right, rightType, err = GetUintptrForPointer(p, right, rightType)
+		if err != nil {
+			p.AddMessage(p.GenerateWarningMessage(err, n))
+		}
 	}
 
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
@@ -292,9 +317,9 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	}
 
 	// pointer arithmetic
-	if types.IsPointer(n.Type) {
+	if types.IsPointer(p, n.Type) {
 		if operator == token.ADD || operator == token.SUB {
-			if types.IsPointer(leftType) {
+			if types.IsPointer(p, leftType) {
 				expr, eType, newPre, newPost, err =
 					pointerArithmetic(p, left, leftType, right, rightType, operator)
 			} else {
@@ -377,29 +402,15 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 		} else {
 			right, err = types.CastExpr(p, right, rightType, returnType)
 
-			if _, ok := right.(*goast.UnaryExpr); ok && types.IsDereferenceType(rightType) {
-				deref, err := types.GetDereferenceType(rightType)
-
-				if !p.AddMessage(p.GenerateWarningMessage(err, n)) {
-					resolvedDeref, err := types.ResolveType(p, deref)
-
-					// FIXME: I'm not sure how this situation arises.
-					if resolvedDeref == "" {
-						resolvedDeref = "interface{}"
-					}
-
-					if !p.AddMessage(p.GenerateWarningMessage(err, n)) {
-						p.AddImport("unsafe")
-						right = util.CreateSliceFromReference(resolvedDeref, right)
-					}
-				}
-			}
-
 			if p.AddMessage(p.GenerateWarningMessage(err, n)) && right == nil {
 				right = util.NewNil()
 			}
 
 		}
+	}
+
+	if operator == token.ADD_ASSIGN || operator == token.SUB_ASSIGN {
+		right, err = types.CastExpr(p, right, rightType, returnType)
 	}
 
 	var resolvedLeftType = n.Type
@@ -438,6 +449,14 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 		err = fmt.Errorf("right part of binary operation is nil. right : %#v", n.Children()[1])
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 		return nil, "", nil, nil, err
+	}
+
+	if adjustPointerDiff > 0 {
+		expr := util.NewBinaryExpr(left, operator, right, resolvedLeftType, exprIsStmt)
+		returnType = types.ResolveTypeForBinaryOperator(p, n.Operator, leftType, rightType)
+		return util.NewBinaryExpr(expr, token.QUO, util.NewIntLit(adjustPointerDiff), returnType, exprIsStmt),
+			returnType,
+			preStmts, postStmts, nil
 	}
 
 	return util.NewBinaryExpr(left, operator, right, resolvedLeftType, exprIsStmt),

@@ -24,6 +24,12 @@ func IsNaN(x float64) int {
 	return BoolToInt(math.IsNaN(x))
 }
 
+// Ldexp is the inverse of Frexp.
+// Ldexp uses math.Ldexp to calculate the value.
+func Ldexp(frac float64, exp int) float64 {
+	return math.Ldexp(frac, int(exp))
+}
+
 // Fma returns x*y+z.
 func Fma(x, y, z float64) float64 {
 	return x*y + z

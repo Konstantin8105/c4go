@@ -148,11 +148,13 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 
 	switch n := node.(type) {
 	case *ast.StringLiteral:
-		expr, exprType, err = transpileStringLiteral(p, n, false)
-		return
+		expr = transpileStringLiteral(n)
+		exprType = "const char *"
 
 	case *ast.FloatingLiteral:
-		expr, exprType, err = transpileFloatingLiteral(n), "double", nil
+		expr = transpileFloatingLiteral(n)
+		exprType = "double"
+		err = nil
 
 	case *ast.PredefinedExpr:
 		expr, exprType, err = transpilePredefinedExpr(n, p)
@@ -161,7 +163,7 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 		expr, exprType, preStmts, postStmts, err = transpileConditionalOperator(n, p)
 
 	case *ast.ArraySubscriptExpr:
-		expr, exprType, preStmts, postStmts, err = transpileArraySubscriptExpr(n, p)
+		expr, exprType, preStmts, postStmts, err = transpileArraySubscriptExpr(n, p, exprIsStmt)
 
 	case *ast.BinaryOperator:
 		expr, exprType, preStmts, postStmts, err = transpileBinaryOperator(n, p, exprIsStmt)
@@ -259,7 +261,22 @@ func transpileToStmts(node ast.Node, p *program.Program) (
 			fmt.Errorf("Error in DeclStmt: %v", err), node))
 		err = nil // Error is ignored
 	}
-	return combineStmts(stmt, preStmts, postStmts), err
+	return stripParentheses(combineStmts(stmt, preStmts, postStmts)), err
+}
+
+func stripParentheses(stmts []goast.Stmt) []goast.Stmt {
+	for _, s := range stmts {
+		if es, ok := s.(*goast.ExprStmt); ok {
+			for {
+				if pe, ok2 := es.X.(*goast.ParenExpr); ok2 {
+					es.X = pe.X
+				} else {
+					break
+				}
+			}
+		}
+	}
+	return stmts
 }
 
 func transpileToStmt(node ast.Node, p *program.Program) (

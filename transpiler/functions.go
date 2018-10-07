@@ -342,7 +342,8 @@ func transpileReturnStmt(n *ast.ReturnStmt, p *program.Program) (
 		if !isLiteral || (isLiteral && litExpr.Value != "0") {
 			p.AddImport("os")
 			return util.NewExprStmt(&goast.CallExpr{
-				Fun:  goast.NewIdent("os.Exit"),
+				// Fun:  goast.NewIdent("os.Exit"),
+				Fun:  goast.NewIdent("noarch.Exit"),
 				Args: results,
 			}), preStmts, postStmts, nil
 		}
