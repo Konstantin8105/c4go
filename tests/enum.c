@@ -71,89 +71,89 @@ typedef struct StructWithEnum {
     enum {
         SWE_ENUM_ONE = 1
     };
-    enum EnumTwo{
+    enum EnumTwo {
         SWE_ENUM_TWO = 2
     };
     enum {
         SWE_ENUM_THREE = 3
     } EnumThree;
-    enum EnumFourBase{
+    enum EnumFourBase {
         SWE_ENUM_FOUR = 4
     } EnumFour;
-	struct StructFourBase{
-		int y;
-	} StructFour;
-	union UnionFourBase{
-		int y;
-	} UnionFour;
+    struct StructFourBase {
+        int y;
+    } StructFour;
+    union UnionFourBase {
+        int y;
+    } UnionFour;
 } SWE;
-void test_enum_inside_struct(){
-	is_eq(SWE_ENUM_ONE,1);
-	is_eq(SWE_ENUM_TWO,2);
-	is_eq(SWE_ENUM_THREE,3);
-	is_eq(SWE_ENUM_FOUR,4);
+void test_enum_inside_struct()
+{
+    is_eq(SWE_ENUM_ONE, 1);
+    is_eq(SWE_ENUM_TWO, 2);
+    is_eq(SWE_ENUM_THREE, 3);
+    is_eq(SWE_ENUM_FOUR, 4);
 }
 
-enum
-{
-	parent = (9),
-	usually = 10
+enum {
+    parent = (9),
+    usually = 10
 };
 enum nameParent {
-	parent2 = (9),
-	usually2 = 10,
-	unar = (-1)
+    parent2 = (9),
+    usually2 = 10,
+    unar = (-1)
 };
 void test_parent()
 {
-	is_eq(parent,9);
-	is_eq(usually,10);
-	enum nameParent p = parent2;
-	is_eq(p,parent2);
-	is_eq(p,9);
-	p = usually2;
-	is_eq(p,usually2);
-	is_eq(p,10);
-	p = unar;
-	is_eq(p,unar);
-	is_eq(p,-1);
+    is_eq(parent, 9);
+    is_eq(usually, 10);
+    enum nameParent p = parent2;
+    is_eq(p, parent2);
+    is_eq(p, 9);
+    p = usually2;
+    is_eq(p, usually2);
+    is_eq(p, 10);
+    p = unar;
+    is_eq(p, unar);
+    is_eq(p, -1);
 }
 
-typedef enum
-{
-  IEEE_ = -1,	/* According to IEEE 754/IEEE 854.  */
-  SVID_,	/* According to System V, release 4.  */
-  XOPEN_,	/* Nowadays also Unix98.  */
-  POSIX_,
-  ISOC_	/* Actually this is ISO C99.  */
+typedef enum {
+    IEEE_ = -1, /* According to IEEE 754/IEEE 854.  */
+    SVID_, /* According to System V, release 4.  */
+    XOPEN_, /* Nowadays also Unix98.  */
+    POSIX_,
+    ISOC_ /* Actually this is ISO C99.  */
 } LIB_VERSION_TYPE;
-void test_unary(){
-	is_eq(IEEE_,-1);
-	is_eq(XOPEN_,1);
+void test_unary()
+{
+    is_eq(IEEE_, -1);
+    is_eq(XOPEN_, 1);
 }
 
 // test of comments
 typedef enum {
-	PARG_NOARG,  /**< No argument */
-	PARG_REQARG, /**< Required argument */
-	PARG_OPTARG  /**< Optional argument */
+    PARG_NOARG, /**< No argument */
+    PARG_REQARG, /**< Required argument */
+    PARG_OPTARG /**< Optional argument */
 } parg_arg_num;
 
-
-enum { e1 = 1, e2 };
+enum { e1 = 1,
+    e2 };
 
 // main function
 int main()
 {
     plan(45);
 
-	test_unary();
-	test_parent();
-	test_enum_inside_struct();
+    test_unary();
+    test_parent();
+    test_enum_inside_struct();
 
-	// step 0
-	is_eq(e1 , 1);
-	is_eq(e2 , 2);
+    // step 0
+    is_eq(e1, 1);
+    is_eq(e2, 2);
 
     // step 1
     enum number n;

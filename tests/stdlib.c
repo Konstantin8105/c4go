@@ -201,7 +201,8 @@ int compare(const void* a, const void* b)
     return (*(int*)a - *(int*)b);
 }
 
-void test_system() {
+void test_system()
+{
     diag("system");
     is_eq(system("true"), 0);
     is_not_eq(system("false"), 0);
@@ -226,15 +227,15 @@ struct MyComplex {
 };
 void struct_with_define()
 {
-	COMPLEX a = {45,12};
-	is_eq(a.im,12);
+    COMPLEX a = { 45, 12 };
+    is_eq(a.im, 12);
 }
 
 int main()
 {
     plan(755);
 
-	struct_with_define();
+    struct_with_define();
 
     char* endptr;
 

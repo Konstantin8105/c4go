@@ -84,17 +84,18 @@ void test_strCh()
     is_eq(strlenChar(z), 11);
 }
 
-void test_bool_to_int(){
-	int d = 3;
-	int x = (d > 0)*2/2 + (d < 10)*10 + (d == 4)/2*2 + 0 * (d == d);
-	is_eq(x,11);
+void test_bool_to_int()
+{
+    int d = 3;
+    int x = (d > 0) * 2 / 2 + (d < 10) * 10 + (d == 4) / 2 * 2 + 0 * (d == d);
+    is_eq(x, 11);
 }
 
 int main()
 {
     plan(33);
 
-	START_TEST(bool_to_int);
+    START_TEST(bool_to_int);
     START_TEST(cast);
     START_TEST(castbool);
     START_TEST(vertex);
@@ -178,21 +179,21 @@ int main()
         void* ptr3 = &tLong;
         is_eq(*(long*)ptr3, 556);
     }
-	diag("uint16 to bool");
-	{
-		unsigned short d1 = 2;
-		if (!(!(d1))) {
-			pass("unsigned short to bool")
-		}
-		unsigned int d2 = 2;
-		if (!(!(d2))) {
-			pass("unsigned int to bool")
-		}
-		unsigned long d3 = 2;
-		if (!(!(d3))) {
-			pass("unsigned long to bool")
-		}
-	}
+    diag("uint16 to bool");
+    {
+        unsigned short d1 = 2;
+        if (!(!(d1))) {
+            pass("unsigned short to bool")
+        }
+        unsigned int d2 = 2;
+        if (!(!(d2))) {
+            pass("unsigned int to bool")
+        }
+        unsigned long d3 = 2;
+        if (!(!(d3))) {
+            pass("unsigned long to bool")
+        }
+    }
 
     char_overflow();
 

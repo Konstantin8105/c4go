@@ -56,37 +56,37 @@ int main()
         }
     }
 
-	diag("null");
-	{
-		char c = 'r';
-		char * ch = &c;
-		if ( ch != NULL) {
-			pass("null test 1")
-		}
-		if ( NULL != ch) {
-			pass("null test 2")
-		}
-		if ( NULL != NULL) {
-			fail("null test 3")
-		}
-		ch = NULL;
-		if ( ch == NULL ) {
-			pass("null test 4")
-		}
-		if ( NULL == ch ) {
-			pass("null test 5")
-		}
-		if ( NULL == NULL ) {
-			pass("null test 6")
-		}
-	}
+    diag("null");
+    {
+        char c = 'r';
+        char* ch = &c;
+        if (ch != NULL) {
+            pass("null test 1")
+        }
+        if (NULL != ch) {
+            pass("null test 2")
+        }
+        if (NULL != NULL) {
+            fail("null test 3")
+        }
+        ch = NULL;
+        if (ch == NULL) {
+            pass("null test 4")
+        }
+        if (NULL == ch) {
+            pass("null test 5")
+        }
+        if (NULL == NULL) {
+            pass("null test 6")
+        }
+    }
 
-	diag("Bool to int");
-	if ( (9 != 0) *2){
-		pass("ok");
-	}
+    diag("Bool to int");
+    if ((9 != 0) * 2) {
+        pass("ok");
+    }
 
-	/*
+    /*
 	 * TODO strange error for different gcc version
 	diag("pointer in if");
 	{
@@ -107,17 +107,17 @@ int main()
 	}
 	*/
 
-	diag("equal on if paren");
-	{
-		int p = 45;
-		int y = 12;
-		if (!(!(y = p, y))){
-			pass("case 1");
-		}
-		if (!(!(y = p))){
-			pass("case 2");
-		}
-	}
+    diag("equal on if paren");
+    {
+        int p = 45;
+        int y = 12;
+        if (!(!(y = p, y))) {
+            pass("case 1");
+        }
+        if (!(!(y = p))) {
+            pass("case 2");
+        }
+    }
 
     done_testing();
 }
