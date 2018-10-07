@@ -8,24 +8,25 @@ void f_empty()
 
 int ret_two(int a)
 {
-	return 2+a;
+    return 2 + a;
 }
 
-int ret_s(int a){
-	return a > 0;
+int ret_s(int a)
+{
+    return a > 0;
 }
 
 int ret_ter(int a)
 {
-	int (*v)(int);
-	v = ret_s;
-	return v ? 1 : ret_two(0);
+    int (*v)(int);
+    v = ret_s;
+    return v ? 1 : ret_two(0);
 }
 
 void test_return_ternary()
 {
-	is_eq(ret_ter(10),1);
-	is_eq(ret_ter(-1),1);
+    is_eq(ret_ter(10), 1);
+    is_eq(ret_ter(-1), 1);
 }
 
 int main()
@@ -76,7 +77,7 @@ int main()
     }
     pass("Ok - ToVoid");
 
-	test_return_ternary();
+    test_return_ternary();
 
     done_testing();
 }

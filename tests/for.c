@@ -173,12 +173,12 @@ int main()
     for (i = 3; i >= 1; i -= 3)
         pass("%d", i);
 
-
     diag("for with empty body");
-	int varI = 10;
-	int nCopy = 50;
-	for(; varI > 0 && varI<nCopy; varI++);
-	is_eq(varI,50);
+    int varI = 10;
+    int nCopy = 50;
+    for (; varI > 0 && varI < nCopy; varI++)
+        ;
+    is_eq(varI, 50);
 
     done_testing();
 }
