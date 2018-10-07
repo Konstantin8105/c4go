@@ -1,18 +1,22 @@
 package version
 
 import (
-	"reflect"
 	"testing"
 
-	"github.com/Konstantin8105/c4go/version"
+	"github.com/UtkarshGupta-CS/c4go/version"
 )
 
 func TestVersion(t *testing.T) {
+
 	tempVersion := version.Version()
 
-	versionDataType := reflect.TypeOf(tempVersion).Kind()
+	version.GitSHA = "test"
+	tempVersion2 := version.Version()
 
-	if versionDataType != reflect.String {
-		t.Errorf("Version computed is incorrect")
+	t.Log(tempVersion)
+	t.Log(tempVersion2)
+
+	if tempVersion == tempVersion2 {
+		t.Errorf("Version has not changed with different Git hash.")
 	}
 }
