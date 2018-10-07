@@ -12,7 +12,7 @@ var osExit func(int) = os.Exit
 // AssertFail handles __assert_fail().
 func AssertFail(
 	expression, filePath *byte,
-	lineNumber uint32,
+	lineNumber uint,
 	functionName *byte,
 ) bool {
 	fmt.Fprintf(
