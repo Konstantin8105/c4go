@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/UtkarshGupta-CS/c4go/version"
+	"github.com/Konstantin8105/c4go/version"
 )
 
 func TestVersion(t *testing.T) {

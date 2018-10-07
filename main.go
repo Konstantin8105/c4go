@@ -28,7 +28,7 @@ import (
 	"github.com/Konstantin8105/c4go/preprocessor"
 	"github.com/Konstantin8105/c4go/program"
 	"github.com/Konstantin8105/c4go/transpiler"
-	"github.com/UtkarshGupta-CS/c4go/version"
+	"github.com/Konstantin8105/c4go/version"
 )
 
 var stderr io.Writer = os.Stderr
