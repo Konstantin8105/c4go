@@ -57,8 +57,6 @@ func transpileStringLiteral(p *program.Program, n *ast.StringLiteral, arrayToArr
 	// Convert format flags
 	n.Value = ConvertToGoFlagFormat(n.Value)
 
-	fmt.Println("LIT : ", n.Value)
-
 	// Example:
 	// StringLiteral 0x280b918 <col:29> 'char [30]' lvalue "%0"
 	baseType := types.GetBaseType(n.Type)
