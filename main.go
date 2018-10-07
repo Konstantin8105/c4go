@@ -505,7 +505,7 @@ func runCommand() int {
 
 	case "version":
 		fmt.Fprint(os.Stdout, version.Version())
-		os.Exit(2)
+		return 0
 
 	default:
 		flag.Usage()
