@@ -147,6 +147,14 @@ int main()
         is_streq(str, "memmove can be very very useful.");
     }
     {
+      diag("memcmp");
+      char a1[] = { 'a', 'b', 'c' };
+      char a2[] = "abd";
+      is_true(memcmp(a1, a1, 3) == 0);
+      is_true(memcmp(a1, a2, 3) < 0);
+      is_true(memcmp(a2, a1, 3) > 0);
+    }
+    {
         diag("strstr");
         char str[] = "one two three";
         is_eq(strstr(str, "one") - str, 0);
