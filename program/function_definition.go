@@ -235,7 +235,7 @@ var builtInFunctionDefinitions = map[string][]string{
 	"string.h": {
 		// string.h
 		"char* strcat(char *, const char *) -> noarch.Strcat",
-		"char* strncat(char *, const char *, int) -> noarch.Strncat",
+		// TODO add implementation for : "char* strncat(char *, const char *, int) -> noarch.Strncat",
 		"int strcmp(const char *, const char *) -> noarch.Strcmp",
 		"char * strchr(char *, int) -> noarch.Strchr",
 

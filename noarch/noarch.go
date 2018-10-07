@@ -37,3 +37,25 @@ func NotUint32(x uint32) int {
 
 	return 0
 }
+
+// NotInt8 works the same as NotInt, but on a int8.
+func NotInt8(x int8) int8 {
+	if x == 0 {
+		return 1
+	}
+
+	return 0
+}
+
+// Ternary simulates the ternary (also known as the conditional operator). Go
+// does not have the equivalent of using if statements as expressions or inline
+// if statements. This function takes the true and false parts as closures to be
+// sure that only the true or false condition is evaulated - to prevent side
+// effects.
+func Ternary(a bool, b, c func() interface{}) interface{} {
+	if a {
+		return b()
+	}
+
+	return c()
+}
