@@ -50,12 +50,12 @@ func operators_equals() {
 	var z2 float32
 	var t1 float64
 	var t2 float32
-	var r1 []int
-	var r2 [][]int
-	var r3 [][][]int
-	var r4 [][][][]int
-	var r5 [][][][][]int
-	var r6 [][][][][][]int
+	var r1 *int
+	var r2 **int
+	var r3 ***int
+	var r4 ****int
+	var r5 *****int
+	var r6 ******int
 	f(42)
 	// zero value
 	// function
