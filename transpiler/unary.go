@@ -254,12 +254,14 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 	// value.
 	resolvedType, err := types.ResolveType(p, eType)
 	if err != nil {
-		p.AddMessage(p.GenerateWarningMessage(err, n))
+		p.AddMessage(p.GenerateWarningMessage(fmt.Errorf("UnaryOperatorAmpersant : %v %v", resolvedType, err), n))
 		return
 	}
 
-	p.AddImport("unsafe")
-	expr = util.CreateSliceFromReference(resolvedType, expr)
+	expr = &goast.UnaryExpr{
+		X:  expr,
+		Op: token.AND,
+	}
 
 	// We now have a pointer to the original type.
 	eType += " *"
@@ -488,6 +490,10 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 		}, eType, preStmts, postStmts, err
 
 	case *ast.DeclRefExpr:
+		if i, ok := e.(*goast.BasicLit); ok && i.Kind == token.INT && i.Value == "0" {
+			// Zero pointer
+			return goast.NewIdent("*" + v.Name), eType, preStmts, postStmts, err
+		}
 		return &goast.IndexExpr{
 			X:     util.NewIdent(v.Name),
 			Index: e,

@@ -350,35 +350,35 @@ func GetUintptrForSlice(expr goast.Expr) (goast.Expr, string) {
 
 // CreateSliceFromReference - create a slice, like :
 // (*[1]int)(unsafe.Pointer(&a))[:]
-func CreateSliceFromReference(goType string, expr goast.Expr) *goast.SliceExpr {
-	// If the Go type is blank it means that the C type is 'void'.
-	if goType == "" {
-		goType = "interface{}"
-	}
-
-	// This is a hack to convert a reference to a variable into a slice that
-	// points to the same location. It will look similar to:
-	//
-	//     (*[1]int)(unsafe.Pointer(&a))[:]
-	//
-	// You must always call this Go before using CreateSliceFromReference:
-	//
-	//     p.AddImport("unsafe")
-	//
-	return &goast.SliceExpr{
-		X: NewCallExpr(
-			fmt.Sprintf("(*[100000000]%s)", goType),
-			&goast.CallExpr{
-				Fun: goast.NewIdent("unsafe.Pointer"),
-				Args: []goast.Expr{
-					&goast.UnaryExpr{
-						X:  expr,
-						Op: token.AND,
-					},
-				},
-			}),
-	}
-}
+// func CreateSliceFromReference(goType string, expr goast.Expr) *goast.SliceExpr {
+// 	// If the Go type is blank it means that the C type is 'void'.
+// 	if goType == "" {
+// 		goType = "interface{}"
+// 	}
+//
+// 	// This is a hack to convert a reference to a variable into a slice that
+// 	// points to the same location. It will look similar to:
+// 	//
+// 	//     (*[1]int)(unsafe.Pointer(&a))[:]
+// 	//
+// 	// You must always call this Go before using CreateSliceFromReference:
+// 	//
+// 	//     p.AddImport("unsafe")
+// 	//
+// 	return &goast.SliceExpr{
+// 		X: NewCallExpr(
+// 			fmt.Sprintf("(*[100000000]%s)", goType),
+// 			&goast.CallExpr{
+// 				Fun: goast.NewIdent("unsafe.Pointer"),
+// 				Args: []goast.Expr{
+// 					&goast.UnaryExpr{
+// 						X:  expr,
+// 						Op: token.AND,
+// 					},
+// 				},
+// 			}),
+// 	}
+// }
 
 // NewFuncType - create a new function type, example:
 // func ...(fieldList)(returnType)
