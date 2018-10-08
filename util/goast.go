@@ -453,3 +453,18 @@ func NewAnonymousFunction(body, deferBody []goast.Stmt,
 		},
 	}}
 }
+
+// IsAddressable returns whether it's possible to obtain an address of expr
+// using the unary & operator.
+func IsAddressable(expr goast.Expr) bool {
+	if _, ok := expr.(*goast.Ident); ok {
+		return true
+	}
+	if ie, ok := expr.(*goast.IndexExpr); ok {
+		return IsAddressable(ie.X)
+	}
+	if pe, ok := expr.(*goast.ParenExpr); ok {
+		return IsAddressable(pe.X)
+	}
+	return false
+}

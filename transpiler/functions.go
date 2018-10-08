@@ -160,18 +160,29 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 					&goast.AssignStmt{
 						Lhs: []goast.Expr{fieldList.List[0].Names[0]},
 						Tok: token.DEFINE,
-						Rhs: []goast.Expr{util.NewCallExpr("len", goast.NewIdent("os.Args"))},
+						Rhs: []goast.Expr{util.NewCallExpr("int", util.NewCallExpr("len", goast.NewIdent("os.Args")))},
 					},
 				)
 			}
 
 			if len(fieldList.List) > 1 {
+				argvMultiArrayName := &goast.Ident{}
+				argvArrayName := &goast.Ident{}
+				*argvArrayName = *fieldList.List[1].Names[0]
+				*argvMultiArrayName = *argvArrayName
+				argvArrayName.Name += "__array"
+				argvMultiArrayName.Name += "__multiarray"
 				prependStmtsInMain = append(
 					prependStmtsInMain,
 					&goast.AssignStmt{
-						Lhs: []goast.Expr{fieldList.List[1].Names[0]},
+						Lhs: []goast.Expr{argvMultiArrayName},
 						Tok: token.DEFINE,
 						Rhs: []goast.Expr{&goast.CompositeLit{Type: util.NewTypeIdent("[][]byte")}},
+					},
+					&goast.AssignStmt{
+						Lhs: []goast.Expr{argvArrayName},
+						Tok: token.DEFINE,
+						Rhs: []goast.Expr{&goast.CompositeLit{Type: util.NewTypeIdent("[]*byte")}},
 					},
 					&goast.RangeStmt{
 						Key:   goast.NewIdent("_"),
@@ -181,13 +192,59 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 						Body: &goast.BlockStmt{
 							List: []goast.Stmt{
 								&goast.AssignStmt{
-									Lhs: []goast.Expr{fieldList.List[1].Names[0]},
+									Lhs: []goast.Expr{argvMultiArrayName},
 									Tok: token.ASSIGN,
 									Rhs: []goast.Expr{util.NewCallExpr(
 										"append",
-										fieldList.List[1].Names[0],
-										util.NewCallExpr("[]byte", util.NewIdent("argvSingle")),
+										argvMultiArrayName,
+										util.NewCallExpr("append",
+											util.NewCallExpr("[]byte", util.NewIdent("argvSingle")),
+											util.NewIntLit(0)),
 									)},
+								},
+							},
+						},
+					},
+					&goast.RangeStmt{
+						Key:   goast.NewIdent("_"),
+						Value: util.NewIdent("argvSingle"),
+						Tok:   token.DEFINE,
+						X:     argvMultiArrayName,
+						Body: &goast.BlockStmt{
+							List: []goast.Stmt{
+								&goast.AssignStmt{
+									Lhs: []goast.Expr{argvArrayName},
+									Tok: token.ASSIGN,
+									Rhs: []goast.Expr{util.NewCallExpr(
+										"append",
+										argvArrayName,
+										&goast.UnaryExpr{
+											Op: token.AND,
+											X: &goast.IndexExpr{
+												X:     util.NewIdent("argvSingle"),
+												Index: util.NewIntLit(0),
+											},
+										},
+									)},
+								},
+							},
+						},
+					},
+					&goast.AssignStmt{
+						Lhs: []goast.Expr{fieldList.List[1].Names[0]},
+						Tok: token.DEFINE,
+						Rhs: []goast.Expr{
+							&goast.StarExpr{
+								X: &goast.CallExpr{
+									Fun: &goast.ParenExpr{
+										X: util.NewTypeIdent("***byte"),
+									},
+									Args: []goast.Expr{
+										util.NewCallExpr("unsafe.Pointer", &goast.UnaryExpr{
+											Op: token.AND,
+											X:  argvArrayName,
+										}),
+									},
 								},
 							},
 						},

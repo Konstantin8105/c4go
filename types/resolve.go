@@ -445,6 +445,17 @@ func IsCPointer(s string) bool {
 	return false
 }
 
+// IsPurePointer - check type is pointer
+func IsPurePointer(p *program.Program, s string) bool {
+	if strings.ContainsAny(s, "*") {
+		return true
+	}
+	if v, ok := p.TypedefType[s]; ok {
+		return IsPurePointer(p, v)
+	}
+	return false
+}
+
 // IsCArray - check C type is array
 func IsCArray(s string) bool {
 	if len(s) == 0 {

@@ -29,15 +29,15 @@ var structFieldTranslations = map[string]map[string]string{
 		"rem":  "Rem",
 	},
 	"struct tm": {
-		"tm_sec":   "TmSec",
-		"tm_min":   "TmMin",
-		"tm_hour":  "TmHour",
-		"tm_mday":  "TmMday",
-		"tm_mon":   "TmMon",
-		"tm_year":  "TmYear",
-		"tm_wday":  "TmWday",
-		"tm_yday":  "TmYday",
-		"tm_isdst": "TmIsdst",
+		"tm_sec":   "Tm_sec",
+		"tm_min":   "Tm_min",
+		"tm_hour":  "Tm_hour",
+		"tm_mday":  "Tm_mday",
+		"tm_mon":   "Tm_mon",
+		"tm_year":  "Tm_year",
+		"tm_wday":  "Tm_wday",
+		"tm_yday":  "Tm_yday",
+		"tm_isdst": "Tm_isdst",
 	},
 }
 
@@ -322,8 +322,8 @@ func transpileDeclStmt(n *ast.DeclStmt, p *program.Program) (
 	return
 }
 
-func transpileArraySubscriptExpr(n *ast.ArraySubscriptExpr, p *program.Program) (
-	_ *goast.IndexExpr, theType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
+func transpileArraySubscriptExpr(n *ast.ArraySubscriptExpr, p *program.Program, exprIsStmt bool) (
+	_ goast.Expr, theType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("Cannot transpile ArraySubscriptExpr. err = %v", err)
@@ -333,17 +333,46 @@ func transpileArraySubscriptExpr(n *ast.ArraySubscriptExpr, p *program.Program) 
 
 	children := n.Children()
 
-	expression, _, newPre, newPost, err := transpileToExpr(children[0], p, false)
+	expression, leftType, newPre, newPost, err := transpileToExpr(children[0], p, exprIsStmt)
 	if err != nil {
 		return nil, "", nil, nil, err
 	}
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
-	index, _, newPre, newPost, err := atomicOperation(children[1], p)
+	index, indexType, newPre, newPost, err := atomicOperation(children[1], p)
 	if err != nil {
 		return nil, "", nil, nil, err
 	}
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+
+	if se, ok := expression.(*goast.SliceExpr); ok && se.High == nil && se.Low == nil && se.Max == nil {
+		// simplify the expression
+		expression = se.X
+	}
+
+	isConst, indexInt := util.EvaluateConstExpr(index)
+	if isConst && indexInt < 0 {
+		indexInt = -indexInt
+		expression, leftType, newPre, newPost, err =
+			pointerArithmetic(p, expression, leftType, util.NewIntLit(int(indexInt)), "int", token.SUB)
+		return &goast.StarExpr{
+			X: expression,
+		}, n.Type, newPre, newPost, err
+	} else {
+		resolvedLeftType, err := types.ResolveType(p, leftType)
+		if err != nil {
+			return nil, "", nil, nil, err
+		}
+		if types.IsPurePointer(p, resolvedLeftType) {
+			if !isConst || indexInt != 0 {
+				expression, leftType, newPre, newPost, err =
+					pointerArithmetic(p, expression, leftType, index, indexType, token.ADD)
+			}
+			return &goast.StarExpr{
+				X: expression,
+			}, n.Type, newPre, newPost, err
+		}
+	}
 
 	return &goast.IndexExpr{
 		X:     expression,

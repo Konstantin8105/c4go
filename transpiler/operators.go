@@ -226,31 +226,12 @@ func pointerArithmetic(p *program.Program,
 			err = fmt.Errorf("Cannot transpile pointerArithmetic. err = %v", err)
 		}
 	}()
-
-	if bl, ok := right.(*goast.BasicLit); ok && operator == token.ADD {
-		if bl.Value == "1" && bl.Kind == token.INT {
-			return &goast.SliceExpr{
-				X:      left,
-				Lbrack: 1,
-				Low: &goast.BasicLit{
-					Kind:  token.INT,
-					Value: "1",
-				},
-				Slice3: false,
-			}, leftType, preStmts, postStmts, nil
-		}
-	}
-
-	if !(types.IsCInteger(p, rightType) || rightType == "bool") {
-		err = fmt.Errorf("right type is not C integer type : '%s'", rightType)
+	right, err = types.CastExpr(p, right, rightType, "int")
+	if err != nil {
 		return
 	}
 	if !types.IsPointer(leftType) {
 		err = fmt.Errorf("left type is not a pointer : '%s'", leftType)
-		return
-	}
-	right, err = types.CastExpr(p, right, rightType, "int")
-	if err != nil {
 		return
 	}
 
@@ -278,19 +259,28 @@ func pointerArithmetic(p *program.Program,
 		_ = printer.Fprint(&buf, token.NewFileSet(), right)
 		s.Condition = buf.String()
 	}
-	s.Type = resolvedLeftType[2:]
+	s.Type = resolvedLeftType
 
 	s.Operator = "+"
 	if operator == token.SUB {
 		s.Operator = "-"
 	}
 
-	src := `package main
+	var src string
+	if util.IsAddressable(left) {
+		src = `package main
 func main(){
-	a := (*(*[1000000000]{{ .Type }})(unsafe.Pointer(uintptr(
-			unsafe.Pointer(&{{ .Name }}[0])) {{ .Operator }}
-			(uintptr)({{ .Condition }})*unsafe.Sizeof({{ .Name }}[0]))))[:]
+	a := (({{ .Type }})(unsafe.Pointer(uintptr(unsafe.Pointer({{ .Name }})) {{ .Operator }} (uintptr)({{ .Condition }})*unsafe.Sizeof(*{{ .Name }}))))
 }`
+	} else {
+		src = `package main
+func main(){
+	a := (({{ .Type }})(func()unsafe.Pointer{
+		tempVar := {{ .Name }}
+		return unsafe.Pointer(uintptr(unsafe.Pointer(tempVar)) {{ .Operator }} (uintptr)({{ .Condition }})*unsafe.Sizeof(*tempVar))
+	}()))
+}`
+	}
 	tmpl := template.Must(template.New("").Parse(src))
 	var source bytes.Buffer
 	err = tmpl.Execute(&source, s)
@@ -302,7 +292,11 @@ func main(){
 	// Create the AST by parsing src.
 	fset := token.NewFileSet() // positions are relative to fset
 	body := strings.Replace(source.String(), "&#43;", "+", -1)
+	body = strings.Replace(body, "&#34;", "\"", -1)
+	body = strings.Replace(body, "&#39;", "'", -1)
 	body = strings.Replace(body, "&amp;", "&", -1)
+	body = strings.Replace(body, "&lt;", "<", -1)
+	body = strings.Replace(body, "&gt;", ">", -1)
 	f, err := parser.ParseFile(fset, "", body, 0)
 	if err != nil {
 		err = fmt.Errorf("Cannot parse file. err = %v", err)
