@@ -161,8 +161,6 @@ int main()
         is_eq(strstr(str, "two") - str, 4);
         is_eq(strstr(str, "three") - str, 8);
         is_eq(strstr(str, "four") - str, 0);
-        is_streq(strstr(str, ""), str);
-        is_streq(strstr(str, NULL), str);
     }
 
     done_testing();
