@@ -71,9 +71,9 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 	if types.IsFunction(exprType) {
 		cast = false
 	}
-	if n.Kind == ast.ImplicitCastExprArrayToPointerDecay {
-		cast = false
-	}
+	// if n.Kind == ast.ImplicitCastExprArrayToPointerDecay {
+	// 	cast = false
+	// }
 	if n.Kind == "PointerToIntegral" {
 		cast = false
 	}

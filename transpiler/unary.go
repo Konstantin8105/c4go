@@ -542,42 +542,32 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 		}, eType, preStmts, postStmts, err
 
 	case *ast.UnaryOperator:
-		arr, _, newPre, newPost, err2 := atomicOperation(v, p)
+		arr, arrType, newPre, newPost, err2 := atomicOperation(v, p)
 		if err2 != nil {
 			return
 		}
 		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 		if memberName, ok := getMemberName(n.Children()[0]); ok {
-			return &goast.IndexExpr{
+			return &goast.StarExpr{
 				X: &goast.SelectorExpr{
 					X:   arr,
 					Sel: util.NewIdent(memberName),
 				},
-				Index: &goast.BasicLit{
-					Kind:  token.INT,
-					Value: "0",
-				},
 			}, eType, preStmts, postStmts, err
 		}
-		return &goast.IndexExpr{
-			X: &goast.ParenExpr{
-				Lparen: 1,
-				X:      arr,
-			},
-			Index: e,
-		}, eType, preStmts, postStmts, err
-	case *ast.VAArgExpr:
-		arr, _, newPre, newPost, err2 := transpileToExpr(v, p, false)
-		if err2 != nil {
-			return
+		isConst, indexInt := util.EvaluateConstExpr(e)
+		if isConst && indexInt == 0 {
+			// nop
+		} else if isConst && indexInt < 0 {
+			indexInt = -indexInt
+			arr, _, newPre, newPost, err =
+				pointerArithmetic(p, arr, arrType, util.NewIntLit(int(indexInt)), "int", token.SUB)
+		} else {
+			arr, _, newPre, newPost, err =
+				pointerArithmetic(p, arr, arrType, e, eType, token.ADD)
 		}
-		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
-		return &goast.IndexExpr{
-			X: &goast.ParenExpr{
-				Lparen: 1,
-				X:      arr,
-			},
-			Index: e,
+		return &goast.StarExpr{
+			X: arr,
 		}, eType, preStmts, postStmts, err
 
 	}
