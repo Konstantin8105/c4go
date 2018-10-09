@@ -504,7 +504,7 @@ func runCommand() int {
 		args.cppCode = *cppFlag
 
 	case "version":
-		fmt.Fprint(os.Stdout, version.Version())
+		fmt.Fprint(stderr, version.Version())
 		return 0
 
 	default:
