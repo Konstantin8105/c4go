@@ -1,17 +1,13 @@
 package version
 
-import (
-	"testing"
-
-	"github.com/Konstantin8105/c4go/version"
-)
+import "testing"
 
 func TestVersion(t *testing.T) {
 
-	tempVersion := version.Version()
+	tempVersion := Version()
 
-	version.GitSHA = "test"
-	tempVersion2 := version.Version()
+	GitSHA = "test"
+	tempVersion2 := Version()
 
 	t.Log(tempVersion)
 	t.Log(tempVersion2)
