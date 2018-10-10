@@ -373,7 +373,7 @@ func TestCSTD(t *testing.T) {
 	}
 
 	// calculation
-	testFiles, err := filepath.Glob("tests/*.c")
+	testFiles, err := filepath.Glob("tests/" + "*.c")
 	if err != nil {
 		t.Fatal(err)
 	}

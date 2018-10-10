@@ -44,17 +44,17 @@ type programOut struct {
 //     go test -v -tags=integration -run=TestIntegrationScripts/tests/ctype.c
 //
 func TestIntegrationScripts(t *testing.T) {
-	testFiles, err := filepath.Glob("tests/*.c")
+	testFiles, err := filepath.Glob("tests/" + "*.c")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	testCppFiles, err := filepath.Glob("tests/*.cpp")
+	testCppFiles, err := filepath.Glob("tests/" + "*.cpp")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	exampleFiles, err := filepath.Glob("examples/*.c")
+	exampleFiles, err := filepath.Glob("examples/" + "*.c")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -528,7 +528,7 @@ func TestComments(t *testing.T) {
 }
 
 func TestCodeQuality(t *testing.T) {
-	files, err := filepath.Glob("tests/code_quality/*.c")
+	files, err := filepath.Glob("tests/code_quality/" + "*.c")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -754,9 +754,6 @@ func getGoCode(dir string) (files []string, err error) {
 		if !strings.HasSuffix(ent.Name(), ".go") {
 			continue
 		}
-		if strings.Contains(ent.Name(), "_test.go") {
-			continue
-		}
 		files = append(files, dir+"/"+ent.Name())
 	}
 
@@ -772,15 +769,31 @@ func TestTodoComments(t *testing.T) {
 
 	var amount int
 
+	// except files
+	except := []string{
+		"preprocessor/parse_comments_test.go",
+	}
+
 	for i := range source {
 		t.Run(source[i], func(t *testing.T) {
+			found := false
+			for _, e := range except {
+				if strings.Contains(source[i], e) {
+					found = true
+					break
+				}
+			}
+			if found {
+				return
+			}
+
 			file, err := os.Open(source[i])
 			if err != nil {
 				t.Fatal(err)
 			}
 			defer file.Close()
 
-			pos := 1
+			pos := 0
 			scanner := bufio.NewScanner(file)
 			for scanner.Scan() {
 				line := scanner.Text()
@@ -801,7 +814,7 @@ func TestTodoComments(t *testing.T) {
 	t.Logf("Amount comments: %d", amount)
 }
 
-func TestDarwin(t *testing.T) {
+func TestOS(t *testing.T) {
 	// Show all todos in code
 	source, err := getGoCode("./")
 	if err != nil {
@@ -823,7 +836,8 @@ func TestDarwin(t *testing.T) {
 			for scanner.Scan() {
 				line := scanner.Text()
 				pos++
-				if !strings.Contains(strings.ToUpper(line), "DAR"+"WIN") {
+				if !(strings.Contains(strings.ToUpper(line), "DAR"+"WIN") ||
+					strings.Contains(strings.ToUpper(line), "MAC"+"OS")) {
 					continue
 				}
 				t.Errorf("%d %s", pos, line)
