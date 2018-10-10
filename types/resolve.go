@@ -76,12 +76,12 @@ var simpleResolveTypes = map[string]string{
 	"float":                  "float32",
 	"int":                    "int",
 	"long double":            "float64",
-	"long int":               "int32",
+	"long int":               "int",
 	"long long":              "int64",
 	"long long int":          "int64",
 	"long long unsigned int": "uint64",
 	"long unsigned int":      "uint32",
-	"long":                   "int32",
+	"long":                   "int",
 	"short":                  "int16",
 	"signed char":            "int8",
 	"unsigned char":          "uint8",
@@ -136,6 +136,9 @@ var CStdStructType = map[string]string{
 	"time_t":    "github.com/Konstantin8105/c4go/noarch.TimeT",
 
 	"fpos_t": "int",
+
+	// stdarg.h
+	"struct __va_list_tag *": "github.com/Konstantin8105/c4go/noarch.VaList",
 }
 
 // NullPointer - is look : (double *)(nil) or (FILE *)(nil)
@@ -205,19 +208,6 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 		s = strings.Replace(s, "__sFILEX", "int", -1)
 	}
 
-	// The simple resolve types are the types that we know there is an exact Go
-	// equivalent. For example float, int, etc.
-	for k, v := range simpleResolveTypes {
-		if k == s {
-			return p.ImportType(v), nil
-		}
-	}
-
-	if t, ok := p.GetBaseTypeOfTypedef(s); ok {
-		if strings.HasPrefix(t, "union ") {
-			return t[len("union "):], nil
-		}
-	}
 
 	// function type is pointer in Go by default
 	if len(s) > 2 {
@@ -245,10 +235,32 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 		return ii, nil
 	}
 
+	// Try resolving correct type (covers anonymous structs/unions)
+	correctType := GenerateCorrectType(s)
+	if correctType != s {
+		if res, err := ResolveType(p, correctType); err == nil {
+			return res, nil
+		}
+	}
+
 	// For function
 	if IsFunction(s) {
 		g, e := resolveFunction(p, s)
 		return g, e
+	}
+
+	// The simple resolve types are the types that we know there is an exact Go
+	// equivalent. For example float, int, etc.
+	for k, v := range simpleResolveTypes {
+		if k == s {
+			return p.ImportType(v), nil
+		}
+	}
+
+	if t, ok := p.GetBaseTypeOfTypedef(s); ok {
+		if strings.HasPrefix(t, "union ") {
+			return t[len("union "):], nil
+		}
 	}
 
 	// Check is it typedef enum
@@ -278,6 +290,7 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 		return p.ImportType(s), nil
 	}
 
+/*
 	// It may be a pointer of a simple type. For example, float *, int *,
 	// etc.
 	if strings.HasSuffix(s, "*") {
@@ -287,22 +300,7 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 		t, err := ResolveType(p, strings.TrimSpace(s[:len(s)-1]))
 		return "*" + t, err
 	}
-
-	// It could be an array of fixed length. These needs to be converted to
-	// slices.
-	// int [2][3] -> [][]int
-	// int [2][3][4] -> [][][]int
-	st := strings.Replace(s, "(", "", -1)
-	st = strings.Replace(st, ")", "", -1)
-	search2 := util.GetRegex(`([\w\* ]+)((\[\d+\])+)`).FindStringSubmatch(st)
-	if len(search2) > 2 {
-		t, err := ResolveType(p, search2[1])
-
-		var re = util.GetRegex(`[0-9]+`)
-		arraysNoSize := re.ReplaceAllString(search2[2], "")
-
-		return fmt.Sprintf("%s%s", arraysNoSize, t), err
-	}
+*/
 
 	// Structures are by name.
 	if strings.HasPrefix(s, "struct ") || strings.HasPrefix(s, "union ") {
@@ -324,7 +322,21 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 
 	// I have no idea how to handle this yet.
 	if strings.Contains(s, "anonymous union") {
-		return "interface{}", errors.New("probably an incorrect type translation 3")
+		return "unsafe.Pointer", errors.New("probably an incorrect type translation 3")
+	}
+
+	// It may be a pointer of a simple type. For example, float *, int *,
+	// etc.
+	if util.GetRegex("[\\w ]+\\*+$").MatchString(s) {
+		// The "-1" is important because there may or may not be a space between
+		// the name and the "*". If there is an extra space it will be trimmed
+		// off.
+		t, err := ResolveType(p, strings.TrimSpace(s[:len(s)-1]))
+		// Pointers are always converted into slices, except with some specific
+		// entities that are shared in the Go libraries.
+		prefix := "*"
+
+		return prefix + t, err
 	}
 
 	// Function pointers are not yet supported. In the mean time they will be
@@ -342,19 +354,23 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 			fmt.Errorf("function pointers are not supported [2] : '%s'", s)
 	}
 
-	// for case : "int []"
-	if strings.HasSuffix(s, " []") {
-		var r string
-		r, err = ResolveType(p, s[:len(s)-len(" []")])
-		if err != nil {
-			return
-		}
-		return "[]" + r, nil
+	// It could be an array of fixed length. These needs to be converted to
+	// slices.
+	// int [2][3] -> [][]int
+	// int [2][3][4] -> [][][]int
+	search2 := util.GetRegex(`([\w\* ]+)((\[\d+\])+)`).FindStringSubmatch(s)
+	if len(search2) > 2 {
+		t, err := ResolveType(p, search2[1])
+
+		var re = util.GetRegex(`[0-9]+`)
+		arraysNoSize := re.ReplaceAllString(search2[2], "")
+
+		return fmt.Sprintf("%s%s", arraysNoSize, t), err
 	}
 
 	errMsg := fmt.Sprintf(
 		"I couldn't find an appropriate Go type for the C type '%s'.", s)
-	return "interface{}", errors.New(errMsg)
+	return "unsafe.Pointer", errors.New(errMsg)
 }
 
 // resolveType determines the Go type from a C type.

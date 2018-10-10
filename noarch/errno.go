@@ -292,7 +292,7 @@ func init() {
 }
 
 // Strerror translates an errno error code into an error message.
-func Strerror(errno int32) *byte {
+func Strerror(errno int) *byte {
 	b, ok := err2bytes[int(errno)]
 	if ok {
 		return &b[0]
@@ -300,7 +300,7 @@ func Strerror(errno int32) *byte {
 	return &err2bytes[0][0]
 }
 
-var currentErrno int32
+var currentErrno int
 
 func setCurrentErrnoErr(err error) {
 	if err == nil {
@@ -308,18 +308,18 @@ func setCurrentErrnoErr(err error) {
 	} else {
 		errStr := strings.ToLower(err.Error())
 		if i, ok := errInverse[errStr]; ok {
-			currentErrno = int32(i)
+			currentErrno = int(i)
 		} else {
 			currentErrno = ENODATA
 		}
 	}
 }
 
-func setCurrentErrno(errno int32) {
+func setCurrentErrno(errno int) {
 	currentErrno = errno
 }
 
 // Errno returns a pointer to the current errno.
-func Errno() *int32 {
+func Errno() *int {
 	return &currentErrno
 }

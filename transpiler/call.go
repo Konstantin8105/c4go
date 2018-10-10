@@ -365,10 +365,10 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			if byReference {
 				// We have to create a temporary variable to pass by reference.
 				// Then we can assign the real variable from it.
-				realArg = &goast.UnaryExpr{
-					Op: token.AND,
-					X:  args[i],
-				}
+				// realArg = &goast.UnaryExpr{
+				// 	Op: token.AND,
+				// 	X:  args[i],
+				// }
 			} else {
 				realArg, err = types.CastExpr(p, realArg, argTypes[i],
 					functionDef.ArgumentTypes[i])

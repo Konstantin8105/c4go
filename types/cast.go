@@ -63,7 +63,7 @@ func GetArrayTypeAndSize(s string) (string, int) {
 //    FILE where those function probably exist (or should exist) in the noarch
 //    package.
 func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
-	_ goast.Expr, err2 error) {
+	E goast.Expr, err2 error) {
 
 	defer func() {
 		if err2 != nil {
@@ -147,6 +147,14 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	}
 	if fromType == "struct _IO_FILE *" && toType == "FILE *" {
 		return expr, nil
+	}
+
+	// Exception for va_list:
+	// A pointer to struct __va_list_tag is always a variable called
+	// "c2goVaList" in go.
+	if fromType == "va_list" && toType == "struct __va_list_tag *" {
+		ret := &goast.BasicLit{Kind: token.STRING, Value: "c4goVaList"}
+		return ret, nil
 	}
 
 	// casting
@@ -289,9 +297,9 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	}
 
 	// Let's assume that anything can be converted to a void pointer.
-	if toType == "void *" {
-		return expr, nil
-	}
+	// if toType == "void *" {
+	// 	return expr, nil
+	// }
 
 	fromType, err := ResolveType(p, fromType)
 	if err != nil {
@@ -301,6 +309,10 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	toType, err = ResolveType(p, toType)
 	if err != nil {
 		return expr, err
+	}
+
+	if toType == fromType {
+		return expr, nil
 	}
 
 	// Let's assume that anything can be converted to a void pointer.
@@ -321,9 +333,11 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return util.NewNil(), nil
 	}
 
+/*
 	if fromType == "null" && toType == "**byte" {
 		return util.NewNil(), nil
 	}
+*/
 
 	if fromType == "null" && toType == "float64" {
 		return util.NewFloatLit(0.0), nil
@@ -360,10 +374,6 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 				},
 			}, nil
 		}
-		return expr, nil
-	}
-
-	if fromType == toType {
 		return expr, nil
 	}
 

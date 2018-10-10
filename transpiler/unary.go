@@ -245,6 +245,13 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 		} else {
 			eType = eType[:f] + "*" + eType[e+1:]
 		}
+		expr = &goast.UnaryExpr{
+			X: &goast.IndexExpr{
+				X:     expr,
+				Index: util.NewIntLit(0),
+			},
+			Op: token.AND,
+		}
 		return
 	}
 
@@ -252,12 +259,13 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 	// Out: eType = 'int *'
 	// FIXME: This will need to use a real slice to reference the original
 	// value.
-	resolvedType, err := types.ResolveType(p, eType)
+	_, err = types.ResolveType(p, eType)
 	if err != nil {
-		p.AddMessage(p.GenerateWarningMessage(fmt.Errorf("UnaryOperatorAmpersant : %v %v", resolvedType, err), n))
+		p.AddMessage(p.GenerateWarningMessage(fmt.Errorf("UnaryOperatorAmpersant : %v", err), n))
 		return
 	}
 
+	p.AddImport("unsafe")
 	expr = &goast.UnaryExpr{
 		X:  expr,
 		Op: token.AND,
@@ -268,7 +276,7 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 	return
 }
 
-// transpilePointerArith - transpile pointer aripthmetic
+// transpilePointerArith - transpile pointer arithmetic
 // Example of using:
 // *(t + 1) = ...
 func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
@@ -523,7 +531,7 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 			X: ident,
 		}, eType, preStmts, postStmts, err
 
-	case *ast.ArraySubscriptExpr, *ast.CallExpr, *ast.CStyleCastExpr:
+	case *ast.ArraySubscriptExpr, *ast.CallExpr, *ast.CStyleCastExpr, *ast.VAArgExpr:
 		arr, arrType, newPre, newPost, err2 := transpileToExpr(v.(ast.Node), p, false)
 		if err2 != nil {
 			return
@@ -590,7 +598,7 @@ func transpileUnaryOperator(n *ast.UnaryOperator, p *program.Program) (
 	switch operator {
 	case token.MUL: // *
 		// Prefix "*" is not a multiplication.
-		// Prefix "*" used for pointer ariphmetic
+		// Prefix "*" used for pointer arithmetic
 		// Example of using:
 		// *(t + 1) = ...
 		return transpilePointerArith(n, p)
