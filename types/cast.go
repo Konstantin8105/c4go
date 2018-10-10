@@ -293,12 +293,12 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		}
 		return CastExpr(p, &in, toType, toType)
 	}
-
+/*
 	// Let's assume that anything can be converted to a void pointer.
 	if toType == "void *" {
 		return expr, nil
 	}
-
+*/
 	fromType, err := ResolveType(p, fromType)
 	if err != nil {
 		return expr, err

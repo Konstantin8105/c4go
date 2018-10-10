@@ -11,6 +11,7 @@ import (
 
 	"github.com/Konstantin8105/c4go/util"
 	"math/rand"
+	"sync"
 	"unsafe"
 )
 
@@ -404,6 +405,28 @@ func System(str []byte) int {
 	} else {
 		return 0
 	}
+}
+
+var (
+	memMgmt map[uint64]interface{}
+	memSync sync.Mutex
+)
+
+func init() {
+	memMgmt = make(map[uint64]interface{})
+}
+
+// Malloc returns a pointer to a memory block of the given length.
+//
+// To prevent the Go garbage collector from collecting this memory,
+// we store the whole block in a map.
+func Malloc(numBytes int) unsafe.Pointer {
+	memBlock := make([]byte, numBytes)
+	addr := uint64(uintptr(unsafe.Pointer(&memBlock[0])))
+	memSync.Lock()
+	defer memSync.Unlock()
+	memMgmt[addr] = memBlock
+	return unsafe.Pointer(&memBlock[0])
 }
 
 // Free doesn't do anything since memory is managed by the Go garbage collector.

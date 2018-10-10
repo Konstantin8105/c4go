@@ -92,8 +92,8 @@ var simpleResolveTypes = map[string]string{
 	"_Bool":                  "int",
 
 	// void*
-	"void*":  "interface{}",
-	"void *": "interface{}",
+	"void*":  "unsafe.Pointer",
+	"void *": "unsafe.Pointer",
 
 	// null is a special case (it should probably have a less ambiguos name)
 	// when using the NULL macro.

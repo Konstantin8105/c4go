@@ -98,6 +98,9 @@ func internalTypeToExpr(goType string) goast.Expr {
 
 	// Checking
 	for i := range lines {
+		if i == 0 && IsGoPackage(string(lines[i])) {
+			continue
+		}
 		if IsGoKeyword(string(lines[i])) {
 			lines[i] = []byte(string(lines[i]) + "_")
 		}
