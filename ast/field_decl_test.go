@@ -39,12 +39,12 @@ func TestFieldDecl(t *testing.T) {
 			IsReferenced: false,
 			ChildNodes:   []Node{},
 		},
-		`0x7fef51073a60 <line:105:2, col:40> col:40 __cleanup_stack 'struct __darwin_pthread_handler_rec *'`: &FieldDecl{
+		`0x7fef51073a60 <line:105:2, col:40> col:40 __cleanup_stack 'struct ____pthread_handler_rec *'`: &FieldDecl{
 			Addr:         0x7fef51073a60,
 			Pos:          NewPositionFromString("line:105:2, col:40"),
 			Position2:    "col:40",
 			Name:         "__cleanup_stack",
-			Type:         "struct __darwin_pthread_handler_rec *",
+			Type:         "struct ____pthread_handler_rec *",
 			Type2:        "",
 			IsImplicit:   false,
 			IsReferenced: false,
