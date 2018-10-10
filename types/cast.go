@@ -100,17 +100,12 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	// Only for "stddef.h"
 	if p.IncludeHeaderIsExists("stddef.h") {
 		if cFromType == "long" && cToType == "ptrdiff_t" {
-			size, err := SizeOf(p, cToType)
-			if err != nil {
-				err2 = fmt.Errorf("%v,%v", err, err2)
-				return
-			}
 			expr = &goast.BinaryExpr{
 				X:  expr,
 				Op: token.QUO,
 				Y: &goast.BasicLit{
 					Kind:  token.INT,
-					Value: fmt.Sprintf("%v", size),
+					Value: "8",
 				},
 			}
 		}
@@ -367,6 +362,22 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 			// Swap replaceme with the current expression
 			e.(*goast.IndexExpr).Index = expr
 			return CastExpr(p, e, "int", cToType)
+		}
+	}
+
+	// cast size_t to int
+	{
+		_, fok := simpleResolveTypes[cFromType]
+		t, tok := simpleResolveTypes[cToType]
+		if fok && tok {
+			if strings.Contains(t, "noarch") {
+				p.AddImport("github.com/Konstantin8105/c4go/noarch")
+				t = t[len("github.com/Konstantin8105/c4go/"):]
+			}
+			return &goast.CallExpr{
+				Fun:  goast.NewIdent(t),
+				Args: []goast.Expr{expr},
+			}, nil
 		}
 	}
 

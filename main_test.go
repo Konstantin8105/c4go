@@ -463,6 +463,7 @@ func TestExternalInclude(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	t.Log(dir)
 	defer os.RemoveAll(dir) // clean up
 	args.outputFile = path.Join(dir, "multi.go")
 	args.clangFlags = []string{"-I./tests/externalHeader/include/"}
@@ -708,7 +709,7 @@ func TestWrongAST(t *testing.T) {
 	var i int
 	defer func() {
 		if r := recover(); r != nil {
-			t.Errorf("Panic is not acceptable for position: %v\n%v", i, r)
+			t.Errorf("Panic is not acceptable for position: %v\n%+v", i, r)
 		}
 	}()
 
