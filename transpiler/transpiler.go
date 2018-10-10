@@ -434,8 +434,14 @@ func transpileToNode(node ast.Node, p *program.Program) (
 
 	switch n := node.(type) {
 	case *ast.TranslationUnitDecl:
-		decls, err = transpileTranslationUnitDecl(p, n)
+		return transpileTranslationUnitDecl(p, n)
+	}
 
+	if !p.PreprocessorFile.IsUserSource(node.Position().File) {
+		return
+	}
+
+	switch n := node.(type) {
 	case *ast.FunctionDecl:
 		com := p.GetComments(node.Position())
 		decls, err = transpileFunctionDecl(n, p)
