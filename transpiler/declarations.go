@@ -925,13 +925,26 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 				len(preStmts), len(postStmts)), n))
 	}
 
+	names := map[string]string{
+		"ptrdiff_t": "noarch.PtrdiffT",
+	}
+
+	var typeResult goast.Expr
+
+	if n, ok := names[n.Type]; ok {
+		typeResult = util.NewTypeIdent(n)
+		goto ignoreType
+	}
+
 	theType, err = types.ResolveType(p, n.Type)
 	if err != nil {
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 		err = nil // Error is ignored
 		theType = "UnknownType"
 	}
-	typeResult := util.NewTypeIdent(theType)
+	typeResult = util.NewTypeIdent(theType)
+
+ignoreType:
 
 	return []goast.Decl{&goast.GenDecl{
 		Tok: token.VAR,

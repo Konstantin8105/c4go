@@ -92,6 +92,7 @@ var simpleResolveTypes = map[string]string{
 	"void":                   "",
 	"_Bool":                  "int",
 	"size_t":                 "uint",
+	"ptrdiff_t":              "uint64",
 
 	// void*
 	"void*":  "interface{}",
