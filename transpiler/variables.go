@@ -53,6 +53,44 @@ func transpileDeclRefExpr(n *ast.DeclRefExpr, p *program.Program) (
 		}
 	}
 
+	{
+		names := []string{
+			"_ISupper",
+			"_ISlower",
+			"_ISalpha",
+			"_ISdigit",
+			"_ISxdigit",
+			"_ISspace",
+			"_ISprint",
+			"_ISgraph",
+			"_ISblank",
+			"_IScntrl",
+			"_ISpunct",
+			"_ISalnum",
+		}
+		for i := range names {
+			if n.Name == names[i] {
+				p.AddImport("github.com/Konstantin8105/c4go/noarch")
+				n.Name = "noarch." + n.Name[1:]
+				return util.NewIdent(n.Name), n.Type, nil
+			}
+		}
+	}
+	{
+		names := []string{
+			"stdin",
+			"stdout",
+			"stderr",
+		}
+		for i := range names {
+			if n.Name == names[i] {
+				p.AddImport("github.com/Konstantin8105/c4go/noarch")
+				n.Name = "noarch." + util.Ucfirst(n.Name)
+				return util.NewIdent(n.Name), n.Type, nil
+			}
+		}
+	}
+
 	if n.For == "Function" {
 		var includeFile string
 		includeFile, err = p.GetIncludeFileNameByFunctionSignature(n.Name, n.Type)
@@ -67,11 +105,6 @@ func transpileDeclRefExpr(n *ast.DeclRefExpr, p *program.Program) (
 	}
 
 	theType := n.Type
-
-	// FIXME: This is for linux to make sure the globals have the right type.
-	if n.Name == "stdout" || n.Name == "stdin" || n.Name == "stderr" {
-		theType = "FILE *"
-	}
 
 	return util.NewIdent(n.Name), theType, nil
 }

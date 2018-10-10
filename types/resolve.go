@@ -25,6 +25,8 @@ var cIntegerType = []string{
 	"unsigned long",
 	"unsigned short",
 	"unsigned short int",
+	"size_t",
+	"ptrdiff_t",
 }
 
 // IsCInteger - return true is C type integer
@@ -90,6 +92,9 @@ var simpleResolveTypes = map[string]string{
 	"unsigned short int":     "uint16",
 	"void":                   "",
 	"_Bool":                  "int",
+	"size_t":                 "uint",
+	"ptrdiff_t":              "github.com/Konstantin8105/c4go/noarch.PtrdiffT",
+	"time_t":                 "github.com/Konstantin8105/c4go/noarch.TimeT",
 
 	// void*
 	"void*":  "unsafe.Pointer",

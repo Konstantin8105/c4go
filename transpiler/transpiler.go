@@ -43,6 +43,7 @@ func TranspileAST(fileName, packageName string, p *program.Program, root ast.Nod
 		p.AddImport("testing")
 		p.AddImport("io/ioutil")
 		p.AddImport("os")
+		p.AddImport("github.com/Konstantin8105/c4go/noarch")
 
 		// TODO: There should be a cleaner way to add a function to the program.
 		// This code was taken from the end of transpileFunctionDecl.
@@ -437,8 +438,10 @@ func transpileToNode(node ast.Node, p *program.Program) (
 		return transpileTranslationUnitDecl(p, n)
 	}
 
-	if !p.PreprocessorFile.IsUserSource(node.Position().File) {
-		return
+	if node != nil {
+		if !p.PreprocessorFile.IsUserSource(node.Position().File) {
+			return
+		}
 	}
 
 	switch n := node.(type) {

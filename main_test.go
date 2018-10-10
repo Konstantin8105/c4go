@@ -463,6 +463,7 @@ func TestExternalInclude(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	t.Log(dir)
 	defer os.RemoveAll(dir) // clean up
 	args.outputFile = path.Join(dir, "multi.go")
 	args.clangFlags = []string{"-I./tests/externalHeader/include/"}
@@ -708,7 +709,7 @@ func TestWrongAST(t *testing.T) {
 	var i int
 	defer func() {
 		if r := recover(); r != nil {
-			t.Errorf("Panic is not acceptable for position: %v\n%v", i, r)
+			t.Errorf("Panic is not acceptable for position: %v\n%+v", i, r)
 		}
 	}()
 
@@ -789,6 +790,43 @@ func TestTodoComments(t *testing.T) {
 				}
 				index := strings.Index(line, "/"+"*")
 				t.Errorf("%d %s", pos, line[index:])
+				amount++
+			}
+
+			if err := scanner.Err(); err != nil {
+				log.Fatal(err)
+			}
+		})
+	}
+	t.Logf("Amount comments: %d", amount)
+}
+
+func TestDarwin(t *testing.T) {
+	// Show all todos in code
+	source, err := getGoCode("./")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var amount int
+
+	for i := range source {
+		t.Run(source[i], func(t *testing.T) {
+			file, err := os.Open(source[i])
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer file.Close()
+
+			pos := 1
+			scanner := bufio.NewScanner(file)
+			for scanner.Scan() {
+				line := scanner.Text()
+				pos++
+				if !strings.Contains(strings.ToUpper(line), "DAR"+"WIN") {
+					continue
+				}
+				t.Errorf("%d %s", pos, line)
 				amount++
 			}
 
