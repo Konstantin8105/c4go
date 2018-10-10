@@ -760,60 +760,6 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 	n.Type = types.GenerateCorrectType(n.Type)
 	n.Type2 = types.GenerateCorrectType(n.Type2)
 
-	// There may be some startup code for this global variable.
-	if p.Function == nil {
-		name := n.Name
-		switch name {
-		// Below are for macOS.
-		case "__stdinp", "__stdoutp", "__stderrp":
-			theType = "*noarch.File"
-			p.AddImport("github.com/Konstantin8105/c4go/noarch")
-			p.AppendStartupExpr(
-				util.NewBinaryExpr(
-					goast.NewIdent(name),
-					token.ASSIGN,
-					util.NewTypeIdent(
-						"noarch."+util.Ucfirst(name[2:len(name)-1])),
-					"*noarch.File",
-					true,
-				),
-			)
-			return []goast.Decl{&goast.GenDecl{
-				Tok: token.VAR,
-				Specs: []goast.Spec{&goast.ValueSpec{
-					Names: []*goast.Ident{{Name: name}},
-					Type:  util.NewTypeIdent(theType),
-					Doc:   p.GetMessageComments(),
-				}},
-			}}, "", nil
-
-		// Below are for linux.
-		case "stdout", "stdin", "stderr":
-			theType = "*noarch.File"
-			p.AddImport("github.com/Konstantin8105/c4go/noarch")
-			p.AppendStartupExpr(
-				util.NewBinaryExpr(
-					goast.NewIdent(name),
-					token.ASSIGN,
-					util.NewTypeIdent("noarch."+util.Ucfirst(name)),
-					theType,
-					true,
-				),
-			)
-			return []goast.Decl{&goast.GenDecl{
-				Tok: token.VAR,
-				Specs: []goast.Spec{&goast.ValueSpec{
-					Names: []*goast.Ident{{Name: name}},
-					Type:  util.NewTypeIdent(theType),
-				}},
-				Doc: p.GetMessageComments(),
-			}}, "", nil
-
-		default:
-			// No init needed.
-		}
-	}
-
 	// Ignore extern as there is no analogy for Go right now.
 	if n.IsExtern && len(n.ChildNodes) == 0 {
 		return
