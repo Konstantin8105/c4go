@@ -768,6 +768,6 @@ int main()
     is_eq(erf(1.0), 1 - erfc(1.0));
     is_eq(erff(1.0f), 1.0f - erfcf(1.0f));
     is_eq(erfl(1.0), 1 - erfcl(1.0));
-    
+
     done_testing();
 }

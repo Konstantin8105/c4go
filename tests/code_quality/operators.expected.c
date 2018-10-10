@@ -1,9 +1,9 @@
-/*
-	Package main - transpiled by c4go
-
-	If you have found any issues, please raise an issue at:
-	https://github.com/Konstantin8105/c4go/
-*/
+//
+//	Package main - transpiled by c4go
+//
+//	If you have found any issues, please raise an issue at:
+//	https://github.com/Konstantin8105/c4go/
+//
 
 package code_quality
 
@@ -13,10 +13,6 @@ func f(d uint32) {
 }
 
 // operators_equals - transpiled function from  $GOPATH/src/github.com/Konstantin8105/c4go/tests/code_quality/operators.c:7
-// zero value
-// function
-// array
-//
 func operators_equals() {
 	var a int
 	var b int
@@ -61,7 +57,12 @@ func operators_equals() {
 	var r5 [][][][][]int
 	var r6 [][][][][][]int
 	f(42)
+	// zero value
+	// function
+	//
 	var arr []float32 = make([]float32, 500)
 }
 func init() {
 }
+
+// array
