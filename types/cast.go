@@ -135,7 +135,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	// cToType    : double (*)(int, float, double)
 	if IsFunction(cFromType) {
 		if cToType == "void *" {
-			p.AddImport("github.com/Konstantin8105/c2go/noarch")
+			p.AddImport("github.com/Konstantin8105/c4go/noarch")
 			return util.NewCallExpr("noarch.CastInterfaceToPointer", expr), nil
 		}
 		return expr, nil
@@ -333,11 +333,11 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return util.NewNil(), nil
 	}
 
-/*
-	if fromType == "null" && toType == "**byte" {
-		return util.NewNil(), nil
-	}
-*/
+	/*
+		if fromType == "null" && toType == "**byte" {
+			return util.NewNil(), nil
+		}
+	*/
 
 	if fromType == "null" && toType == "float64" {
 		return util.NewFloatLit(0.0), nil

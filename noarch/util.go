@@ -162,7 +162,7 @@ func init() {
 }
 
 // InterfaceWrapper is used for those case where we cannot use unsafe.Pointer
-// the default catch all data type for c2go.
+// the default catch all data type for c4go.
 // For the moment this is the case for function pointers.
 type InterfaceWrapper struct {
 	X interface{}

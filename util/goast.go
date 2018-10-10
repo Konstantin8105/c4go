@@ -258,7 +258,7 @@ func NewVaListTag() goast.Expr {
 	elts[1] = &goast.KeyValueExpr{
 		Key:   &goast.BasicLit{Kind: token.STRING, Value: "Args"},
 		Colon: p,
-		Value: &goast.BasicLit{Kind: token.STRING, Value: "c2goArgs"},
+		Value: &goast.BasicLit{Kind: token.STRING, Value: "c4goArgs"},
 	}
 
 	return &goast.CompositeLit{
