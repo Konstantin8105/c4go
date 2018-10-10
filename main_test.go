@@ -753,9 +753,6 @@ func getGoCode(dir string) (files []string, err error) {
 		if !strings.HasSuffix(ent.Name(), ".go") {
 			continue
 		}
-		if strings.Contains(ent.Name(), "_test.go") {
-			continue
-		}
 		files = append(files, dir+"/"+ent.Name())
 	}
 
@@ -800,7 +797,7 @@ func TestTodoComments(t *testing.T) {
 	t.Logf("Amount comments: %d", amount)
 }
 
-func TestDarwin(t *testing.T) {
+func TestOS(t *testing.T) {
 	// Show all todos in code
 	source, err := getGoCode("./")
 	if err != nil {
@@ -822,7 +819,8 @@ func TestDarwin(t *testing.T) {
 			for scanner.Scan() {
 				line := scanner.Text()
 				pos++
-				if !strings.Contains(strings.ToUpper(line), "DAR"+"WIN") {
+				if !(strings.Contains(strings.ToUpper(line), "DAR"+"WIN") ||
+					strings.Contains(strings.ToUpper(line), "MAC"+"OS")) {
 					continue
 				}
 				t.Errorf("%d %s", pos, line)

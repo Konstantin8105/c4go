@@ -768,7 +768,6 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 	if p.Function == nil {
 		name := n.Name
 		switch name {
-		// Below are for macOS.
 		case "__stdinp", "__stdoutp", "__stderrp":
 			theType = "*noarch.File"
 			p.AddImport("github.com/Konstantin8105/c4go/noarch")
