@@ -72,8 +72,6 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		}
 	}()
 
-	fmt.Println("> ", cFromType, cToType)
-
 	if cFromType == "" {
 		err2 = fmt.Errorf("cFromType is empty")
 		return
