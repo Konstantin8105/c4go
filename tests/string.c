@@ -157,9 +157,9 @@ int main()
     {
         diag("strstr");
         char str[] = "one two three";
-        is_eq(strstr(str, "one") - str, 0);
-        is_eq(strstr(str, "two") - str, 4);
-        is_eq(strstr(str, "three") - str, 8);
+        is_streq(strstr(str, "one") - str, 0);
+        is_streq(strstr(str, "two") - str, 4);
+        is_streq(strstr(str, "three") - str, 8);
         //TODO: NULL check in is_eq(strstr(str, "four") - str, 0);
     }
 
