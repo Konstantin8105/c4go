@@ -54,8 +54,9 @@ func generateCharacterTable() {
 
 		// FIXME: Blank is not implemented.
 		// if unicode.IsBlank(rune(i)) {
-		// 	c |= ((1 << (8)) >> 8)
-		// }
+		if i == int(' ') {
+			c |= ((1 << (8)) >> 8)
+		}
 
 		if unicode.IsControl(rune(i)) {
 			c |= ((1 << (9)) >> 8)

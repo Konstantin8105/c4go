@@ -53,6 +53,9 @@ func GetExportedName(field string) string {
 	for len(field) > 2 && field[:2] == "[]" {
 		field = field[2:] + "Slice"
 	}
+	for len(field) > 1 && field[:1] == "*" {
+		field = field[1:] + "Slice"
+	}
 
 	// NotFunc(int)()
 	field = strings.Replace(field, "(", "_", -1)

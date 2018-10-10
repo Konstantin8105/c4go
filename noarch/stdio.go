@@ -209,7 +209,7 @@ func Rename(oldName, newName *byte) int {
 // Notice that fputs not only differs from puts in that the destination stream
 // can be specified, but also fputs does not write additional characters, while
 // puts appends a newline character at the end automatically.
-func Fputs(str []byte, stream *File) int {
+func Fputs(str *byte, stream *File) int {
 	if stream == nil {
 		return -1
 	}
