@@ -94,6 +94,7 @@ var simpleResolveTypes = map[string]string{
 	"_Bool":                  "int",
 	"size_t":                 "uint",
 	"ptrdiff_t":              "github.com/Konstantin8105/c4go/noarch.PtrdiffT",
+	"time_t":                 "github.com/Konstantin8105/c4go/noarch.TimeT",
 
 	// void*
 	"void*":  "interface{}",

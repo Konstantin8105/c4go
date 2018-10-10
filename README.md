@@ -79,60 +79,46 @@ int main()
 Go code of file `prime.go`:
 ```golang
 //
-//	Package main - transpiled by c4go
+//      Package main - transpiled by c4go
 //
-//	If you have found any issues, please raise an issue at:
-//	https://github.com/Konstantin8105/c4go/
+//      If you have found any issues, please raise an issue at:
+//      https://github.com/Konstantin8105/c4go/
 //
 
 package main
 
 import "unsafe"
-import "fmt"
 import "github.com/Konstantin8105/c4go/noarch"
-
-type size_t uint32
-type __time_t int32
-type va_list int64
-type __gnuc_va_list int64
-
-var stdin *noarch.File
-
-var stdout *noarch.File
-
-var stderr *noarch.File
+import "fmt"
 
 // main - transpiled function from  $GOPATH/src/github.com/Konstantin8105/c4go/examples/prime.c:3
 func main() {
-	var n int
-	var c int
-	fmt.Printf("Enter a number\n")
-	noarch.Scanf([]byte("%d\x00"), (*[100000000]int)(unsafe.Pointer(&n))[:])
-	// get value
-	//
-	noarch.Printf([]byte("The number is: %d\n\x00"), n)
-	if n == 2 {
-		fmt.Printf("Prime number.\n")
-		// -------
-		//
-	} else {
-		for c = 2; c <= n-1; c++ {
-			if n%c == 0 {
-				break
-			}
-		}
-		if c != n {
-			fmt.Printf("Not prime.\n")
-		} else {
-			fmt.Printf("Prime number.\n")
-		}
-	}
-	return
+       var n int
+       var c int
+       fmt.Printf("Enter a number\n")
+       noarch.Scanf([]byte("%d\x00"), (*[100000000]int)(unsafe.Pointer(&n))[:])
+       // get value
+       //
+       noarch.Printf([]byte("The number is: %d\n\x00"), n)
+       if n == 2 {
+               fmt.Printf("Prime number.\n")
+               // -------
+               //
+       } else {
+               for c = 2; c <= n-1; c++ {
+                       if n%c == 0 {
+                               break
+                       }
+               }
+               if c != n {
+                       fmt.Printf("Not prime.\n")
+               } else {
+                       fmt.Printf("Prime number.\n")
+               }
+       }
+       return
 }
 func init() {
-	 stdin = noarch.Stdin
-	 stdout = noarch.Stdout
-	 stderr = noarch.Stderr
 }
 ```
 
