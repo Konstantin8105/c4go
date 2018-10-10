@@ -79,10 +79,10 @@ int main()
 Go code of file `prime.go`:
 ```golang
 //
-//      Package main - transpiled by c4go
+//	Package main - transpiled by c4go
 //
-//      If you have found any issues, please raise an issue at:
-//      https://github.com/Konstantin8105/c4go/
+//	If you have found any issues, please raise an issue at:
+//	https://github.com/Konstantin8105/c4go/
 //
 
 package main
@@ -93,30 +93,30 @@ import "fmt"
 
 // main - transpiled function from  $GOPATH/src/github.com/Konstantin8105/c4go/examples/prime.c:3
 func main() {
-       var n int
-       var c int
-       fmt.Printf("Enter a number\n")
-       noarch.Scanf([]byte("%d\x00"), (*[100000000]int)(unsafe.Pointer(&n))[:])
-       // get value
-       //
-       noarch.Printf([]byte("The number is: %d\n\x00"), n)
-       if n == 2 {
-               fmt.Printf("Prime number.\n")
-               // -------
-               //
-       } else {
-               for c = 2; c <= n-1; c++ {
-                       if n%c == 0 {
-                               break
-                       }
-               }
-               if c != n {
-                       fmt.Printf("Not prime.\n")
-               } else {
-                       fmt.Printf("Prime number.\n")
-               }
-       }
-       return
+	var n int
+	var c int
+	fmt.Printf("Enter a number\n")
+	noarch.Scanf([]byte("%d\x00"), (*[100000000]int)(unsafe.Pointer(&n))[:])
+	// get value
+	//
+	noarch.Printf([]byte("The number is: %d\n\x00"), n)
+	if n == 2 {
+		fmt.Printf("Prime number.\n")
+		// -------
+		//
+	} else {
+		for c = 2; c <= n-1; c++ {
+			if n%c == 0 {
+				break
+			}
+		}
+		if c != n {
+			fmt.Printf("Not prime.\n")
+		} else {
+			fmt.Printf("Prime number.\n")
+		}
+	}
+	return
 }
 func init() {
 }
