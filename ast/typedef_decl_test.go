@@ -50,11 +50,11 @@ func TestTypedefDecl(t *testing.T) {
 			IsReferenced: false,
 			ChildNodes:   []Node{},
 		},
-		`0x7ffb9f8dbf50 <line:98:1, col:27> col:27 referenced __darwin_va_list '__builtin_va_list':'struct __va_list_tag [1]'`: &TypedefDecl{
+		`0x7ffb9f8dbf50 <line:98:1, col:27> col:27 referenced ____va_list '__builtin_va_list':'struct __va_list_tag [1]'`: &TypedefDecl{
 			Addr:         0x7ffb9f8dbf50,
 			Pos:          NewPositionFromString("line:98:1, col:27"),
 			Position2:    "col:27",
-			Name:         "__darwin_va_list",
+			Name:         "____va_list",
 			Type:         "__builtin_va_list",
 			Type2:        "struct __va_list_tag [1]",
 			IsImplicit:   false,
