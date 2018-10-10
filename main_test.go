@@ -44,17 +44,17 @@ type programOut struct {
 //     go test -v -tags=integration -run=TestIntegrationScripts/tests/ctype.c
 //
 func TestIntegrationScripts(t *testing.T) {
-	testFiles, err := filepath.Glob("tests/*.c")
+	testFiles, err := filepath.Glob("tests/" + "*.c")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	testCppFiles, err := filepath.Glob("tests/*.cpp")
+	testCppFiles, err := filepath.Glob("tests/" + "*.cpp")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	exampleFiles, err := filepath.Glob("examples/*.c")
+	exampleFiles, err := filepath.Glob("examples/" + "*.c")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -463,6 +463,7 @@ func TestExternalInclude(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	t.Log(dir)
 	defer os.RemoveAll(dir) // clean up
 	args.outputFile = path.Join(dir, "multi.go")
 	args.clangFlags = []string{"-I./tests/externalHeader/include/"}
@@ -527,7 +528,7 @@ func TestComments(t *testing.T) {
 }
 
 func TestCodeQuality(t *testing.T) {
-	files, err := filepath.Glob("tests/code_quality/*.c")
+	files, err := filepath.Glob("tests/code_quality/" + "*.c")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -708,7 +709,7 @@ func TestWrongAST(t *testing.T) {
 	var i int
 	defer func() {
 		if r := recover(); r != nil {
-			t.Errorf("Panic is not acceptable for position: %v\n%v", i, r)
+			t.Errorf("Panic is not acceptable for position: %v\n%+v", i, r)
 		}
 	}()
 
@@ -768,15 +769,31 @@ func TestTodoComments(t *testing.T) {
 
 	var amount int
 
+	// except files
+	except := []string{
+		"preprocessor/parse_comments_test.go",
+	}
+
 	for i := range source {
 		t.Run(source[i], func(t *testing.T) {
+			found := false
+			for _, e := range except {
+				if strings.Contains(source[i], e) {
+					found = true
+					break
+				}
+			}
+			if found {
+				return
+			}
+
 			file, err := os.Open(source[i])
 			if err != nil {
 				t.Fatal(err)
 			}
 			defer file.Close()
 
-			pos := 1
+			pos := 0
 			scanner := bufio.NewScanner(file)
 			for scanner.Scan() {
 				line := scanner.Text()

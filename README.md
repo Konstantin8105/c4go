@@ -88,19 +88,8 @@ Go code of file `prime.go`:
 package main
 
 import "unsafe"
-import "fmt"
 import "github.com/Konstantin8105/c4go/noarch"
-
-type size_t uint32
-type __time_t int32
-type va_list int64
-type __gnuc_va_list int64
-
-var stdin *noarch.File
-
-var stdout *noarch.File
-
-var stderr *noarch.File
+import "fmt"
 
 // main - transpiled function from  $GOPATH/src/github.com/Konstantin8105/c4go/examples/prime.c:3
 func main() {
@@ -130,9 +119,6 @@ func main() {
 	return
 }
 func init() {
-	 stdin = noarch.Stdin
-	 stdout = noarch.Stdout
-	 stderr = noarch.Stderr
 }
 ```
 
