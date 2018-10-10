@@ -6,10 +6,10 @@ import (
 
 func TestAvailabilityAttr(t *testing.T) {
 	nodes := map[string]Node{
-		`0x7fc5ff8e5d18 </usr/include/AvailabilityInternal.h:21697:88, col:124> macos 10.10 0 0 "" ""`: &AvailabilityAttr{
+		`0x7fc5ff8e5d18 </usr/include/AvailabilityInternal.h:21697:88, col:124> os 10.10 0 0 "" ""`: &AvailabilityAttr{
 			Addr:          0x7fc5ff8e5d18,
 			Pos:           NewPositionFromString("/usr/include/AvailabilityInternal.h:21697:88, col:124"),
-			OS:            "macos",
+			OS:            "os",
 			Version:       "10.10",
 			Unknown1:      0,
 			Unknown2:      0,
@@ -84,10 +84,10 @@ func TestAvailabilityAttr(t *testing.T) {
 			IsInherited:   false,
 			ChildNodes:    []Node{},
 		},
-		`0x104035438 </usr/include/AvailabilityInternal.h:14571:88, col:124> macosx 10.10 0 0 ""`: &AvailabilityAttr{
+		`0x104035438 </usr/include/AvailabilityInternal.h:14571:88, col:124> osx 10.10 0 0 ""`: &AvailabilityAttr{
 			Addr:          0x104035438,
 			Pos:           NewPositionFromString("/usr/include/AvailabilityInternal.h:14571:88, col:124"),
-			OS:            "macosx",
+			OS:            "osx",
 			Version:       "10.10",
 			Unknown1:      0,
 			Unknown2:      0,
@@ -97,10 +97,10 @@ func TestAvailabilityAttr(t *testing.T) {
 			IsInherited:   false,
 			ChildNodes:    []Node{},
 		},
-		`0x7f9bd588b1a8 </usr/include/gethostuuid.h:39:65, col:100> Inherited macos 10.5 0 0 "" ""`: &AvailabilityAttr{
+		`0x7f9bd588b1a8 </usr/include/gethostuuid.h:39:65, col:100> Inherited os 10.5 0 0 "" ""`: &AvailabilityAttr{
 			Addr:          0x7f9bd588b1a8,
 			Pos:           NewPositionFromString("/usr/include/gethostuuid.h:39:65, col:100"),
-			OS:            "macos",
+			OS:            "os",
 			Version:       "10.5",
 			Unknown1:      0,
 			Unknown2:      0,
