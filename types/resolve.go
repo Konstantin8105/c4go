@@ -25,6 +25,7 @@ var cIntegerType = []string{
 	"unsigned long",
 	"unsigned short",
 	"unsigned short int",
+	"size_t",
 }
 
 // IsCInteger - return true is C type integer
@@ -90,6 +91,7 @@ var simpleResolveTypes = map[string]string{
 	"unsigned short int":     "uint16",
 	"void":                   "",
 	"_Bool":                  "int",
+	"size_t":                 "uint",
 
 	// void*
 	"void*":  "interface{}",

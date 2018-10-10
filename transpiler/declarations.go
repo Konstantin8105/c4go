@@ -118,10 +118,6 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		}
 	}()
 
-	if !p.PreprocessorFile.IsUserSource(n.Pos.File) {
-		return
-	}
-
 	// ignore if haven`t definition
 	if !n.IsDefinition {
 		return
