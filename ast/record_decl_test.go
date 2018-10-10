@@ -16,13 +16,13 @@ func TestRecordDecl(t *testing.T) {
 			IsDefinition: true,
 			ChildNodes:   []Node{},
 		},
-		`0x7f85360285c8 </usr/include/sys/_pthread/_pthread_types.h:57:1, line:61:1> line:57:8 struct __darwin_pthread_handler_rec definition`: &RecordDecl{
+		`0x7f85360285c8 </usr/include/sys/_pthread/_pthread_types.h:57:1, line:61:1> line:57:8 struct ____pthread_handler_rec definition`: &RecordDecl{
 			Addr:         0x7f85360285c8,
 			Pos:          NewPositionFromString("/usr/include/sys/_pthread/_pthread_types.h:57:1, line:61:1"),
 			Prev:         "",
 			Position2:    "line:57:8",
 			Kind:         "struct",
-			Name:         "__darwin_pthread_handler_rec",
+			Name:         "____pthread_handler_rec",
 			IsDefinition: true,
 			ChildNodes:   []Node{},
 		},

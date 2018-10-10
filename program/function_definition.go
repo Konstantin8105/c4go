@@ -34,13 +34,13 @@ type FunctionDefinition struct {
 // Each of the predefined function have a syntax that allows them to be easy to
 // read (and maintain). For example:
 //
-//     double __builtin_fabs(double) -> darwin.Fabs
+//     double __builtin_fabs(double) -> noarch.Fabs
 //
 // Declares the prototype of __builtin_fabs (a low level function implemented
 // only on Mac) with a specific substitution provided. This means that it should
 // replace any instance of __builtin_fabs with:
 //
-//     github.com/Konstantin8105/c4go/darwin.Fabs
+//     github.com/Konstantin8105/c4go/noarch.Fabs
 //
 // The substitution is optional.
 //
@@ -85,7 +85,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double __builtin_nanf(const char*) -> linux.NaN",
 		"float __builtin_inff() -> linux.Inff",
 
-		// darwin/math.h
+		// math.h
 		"int __inline_signbitf(float) -> noarch.Signbitf",
 		"int __inline_signbitd(double) -> noarch.Signbitd",
 		"int __inline_signbitl(long double) -> noarch.Signbitl",
