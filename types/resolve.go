@@ -99,6 +99,7 @@ var ToVoid = "ToVoid"
 //    until a more suitable solution is found for those cases.
 func ResolveType(p *program.Program, s string) (resolveResult string, err error) {
 	defer func() {
+		resolveResult = strings.TrimSpace(resolveResult)
 		if err != nil {
 			err = fmt.Errorf("Cannot resolve type '%s' : %v", s, err)
 		}
@@ -130,16 +131,8 @@ func ResolveType(p *program.Program, s string) (resolveResult string, err error)
 
 	// The simple resolve types are the types that we know there is an exact Go
 	// equivalent. For example float, int, etc.
-	for k, v := range program.CStdStructType {
-		if k == s {
-			return p.ImportType(v), nil
-		}
-	}
-
-	if t, ok := p.GetBaseTypeOfTypedef(s); ok {
-		if strings.HasPrefix(t, "union ") {
-			return t[len("union "):], nil
-		}
+	if v, ok := program.CStdStructType[s]; ok {
+		return p.ImportType(v), nil
 	}
 
 	// function type is pointer in Go by default
@@ -152,26 +145,56 @@ func ResolveType(p *program.Program, s string) (resolveResult string, err error)
 		}
 	}
 
-	// // No need resolve typedef types
-	// if _, ok := p.TypedefType[s]; ok {
-	// 	if tt, ok := program.CStdStructType[s]; ok {
-	// 		// "div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
-	// 		ii := p.ImportType(tt)
-	// 		return ii, nil
-	// 	}
-	// 	return s, nil
-	// }
-	//
-	// if tt, ok := program.CStdStructType[s]; ok {
-	// 	// "div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
-	// 	ii := p.ImportType(tt)
-	// 	return ii, nil
-	// }
+	// No need resolve typedef types
+	if _, ok := p.TypedefType[s]; ok {
+		if tt, ok := program.CStdStructType[s]; ok {
+			// "div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
+			ii := p.ImportType(tt)
+			return ii, nil
+		}
+		return s, nil
+	}
+	if tt, ok := program.CStdStructType[s]; ok {
+		// "div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
+		ii := p.ImportType(tt)
+		return ii, nil
+	}
 
 	// For function
 	if IsFunction(s) {
 		g, e := resolveFunction(p, s)
 		return g, e
+	}
+
+	// Example of cases:
+	// "int []"
+	// "int [6]"
+	// "struct s [2]"
+	// "int [2][3]"
+	// "unsigned short [512]"
+	//
+	// Example of resolving:
+	// int [2][3] -> [][]int
+	// int [2][3][4] -> [][][]int
+	if s[len(s)-1] == ']' {
+		index := strings.LastIndex(s, "[")
+		if index < 0 {
+			err = fmt.Errorf("Cannot found [ in type : %v", s)
+			return
+		}
+		r := strings.TrimSpace(s[:index])
+		r, err = ResolveType(p, r)
+		if err != nil {
+			err = fmt.Errorf("Cannot []: %v", err)
+			return
+		}
+		return "[]" + r, nil
+	}
+
+	// Example :
+	// "int (*)"
+	if strings.Contains(s, "(*)") {
+		return ResolveType(p, strings.Replace(s, "(*)", "*", -1))
 	}
 
 	// Check is it typedef enum
@@ -198,61 +221,57 @@ func ResolveType(p *program.Program, s string) (resolveResult string, err error)
 		if strings.HasPrefix(s, "class ") {
 			s = s[len("class "):]
 		}
+		// TODO : Why here ImportType???
 		return p.ImportType(s), nil
 	}
 
 	// It may be a pointer of a simple type. For example, float *, int *,
 	// etc.
-	if strings.HasSuffix(s, "*") {
-		// The "-1" is important because there may or may not be a space between
-		// the name and the "*". If there is an extra space it will be trimmed
-		// off.
-		t, err := ResolveType(p, strings.TrimSpace(s[:len(s)-1]))
+	if s[len(s)-1] == '*' {
+		r := strings.TrimSpace(s[:len(s)-1])
+		r, err = ResolveType(p, r)
+		if err != nil {
+			err = fmt.Errorf("Cannot resolve star `*` : %v", s)
+			return
+		}
 		prefix := "[]"
-		if strings.Contains(t, "noarch.File") {
+		if strings.Contains(r, "noarch.File") {
 			prefix = "*"
 		}
-		return prefix + t, err
-	}
-
-	// It could be an array of fixed length. These needs to be converted to
-	// slices.
-	// int [2][3] -> [][]int
-	// int [2][3][4] -> [][][]int
-	st := strings.Replace(s, "(", "", -1)
-	st = strings.Replace(st, ")", "", -1)
-	search2 := util.GetRegex(`([\w\* ]+)((\[\d+\])+)`).FindStringSubmatch(st)
-	if len(search2) > 2 {
-		t, err := ResolveType(p, search2[1])
-
-		var re = util.GetRegex(`[0-9]+`)
-		arraysNoSize := re.ReplaceAllString(search2[2], "")
-
-		return fmt.Sprintf("%s%s", arraysNoSize, t), err
+		return prefix + r, err
 	}
 
 	// Structures are by name.
-	if strings.HasPrefix(s, "struct ") || strings.HasPrefix(s, "union ") {
-		lhsType := strings.TrimSpace(s)
-		if lhsType[len(lhsType)-1] == '*' {
-			lhsType = lhsType[:len(lhsType)-len(" *")]
+	var isUnion bool
+	{
+		isUnion = strings.HasPrefix(s, "struct ") ||
+			strings.HasPrefix(s, "class ") ||
+			strings.HasPrefix(s, "union ")
+		if str := p.GetStruct(s); str != nil {
+			isUnion = true
 		}
-		if str := p.GetStruct("c4go_" + lhsType); str != nil {
+	}
+	if isUnion {
+		if str := p.GetStruct("c4go_" + s); str != nil {
 			s = str.Name
 		} else {
-			s = strings.TrimLeft(s, "struct")
-			s = strings.TrimLeft(s, "union")
+			if strings.HasPrefix(s, "struct ") {
+				s = s[len("struct "):]
+			}
+			if strings.HasPrefix(s, "union ") {
+				s = s[len("union "):]
+			}
+			if strings.HasPrefix(s, "class ") {
+				s = s[len("class "):]
+			}
 		}
 		return p.ImportType(s), nil
 	}
 
 	// Enums are by name.
 	if strings.HasPrefix(s, "enum ") {
-		if s[len(s)-1] == '*' {
-			return "*" + s[5:len(s)-2], nil
-		}
-
-		return s[5:], nil
+		s = s[len("enum "):]
+		return s, nil
 	}
 
 	// I have no idea how to handle this yet.
@@ -273,16 +292,6 @@ func ResolveType(p *program.Program, s string) (resolveResult string, err error)
 	if search {
 		return "interface{}",
 			fmt.Errorf("function pointers are not supported [2] : '%s'", s)
-	}
-
-	// for case : "int []"
-	if strings.HasSuffix(s, " []") {
-		var r string
-		r, err = ResolveType(p, s[:len(s)-len(" []")])
-		if err != nil {
-			return
-		}
-		return "[]" + r, nil
 	}
 
 	errMsg := fmt.Sprintf(
