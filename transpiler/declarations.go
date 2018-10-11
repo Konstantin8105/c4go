@@ -136,15 +136,6 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		}
 	}()
 
-	// TODO: Some platform structs are ignored.
-	// https://github.com/Konstantin8105/c4go/issues/85
-	if name == "__locale_struct" ||
-		name == "__sigaction" ||
-		name == "sigaction" {
-		err = nil
-		return
-	}
-
 	var fields []*goast.Field
 
 	// repair name for anonymous RecordDecl
@@ -672,21 +663,8 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 
 	p.GlobalVariables[n.Name] = theType
 
-	name := n.Name
 	preStmts := []goast.Stmt{}
 	postStmts := []goast.Stmt{}
-
-	// TODO: Some platform structs are ignored.
-	// https://github.com/Konstantin8105/c4go/issues/85
-	if name == "_LIB_VERSION" ||
-		name == "_IO_2_1_stdin_" ||
-		name == "_IO_2_1_stdout_" ||
-		name == "_IO_2_1_stderr_" ||
-		name == "_DefaultRuneLocale" ||
-		name == "_CurrentRuneLocale" {
-		theType = "unknown10"
-		return
-	}
 
 	defaultValue, _, newPre, newPost, err := getDefaultValueForVar(p, n)
 	if err != nil {
