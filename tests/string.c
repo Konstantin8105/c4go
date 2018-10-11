@@ -159,7 +159,7 @@ int main()
         char str[] = "one two three";
         is_streq(strstr(str, "one"  ), "o");
         is_streq(strstr(str, "two"  ), "t");
-        is_streq(strstr(str, "three"), "h");
+        is_streq(strstr(str, "three"), "t");
         //TODO: NULL check in is_eq(strstr(str, "four") - str, 0);
     }
 
