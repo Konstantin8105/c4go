@@ -94,7 +94,6 @@ var simpleResolveTypes = map[string]string{
 	"_Bool":                  "int",
 	"size_t":                 "uint",
 	"ptrdiff_t":              "github.com/Konstantin8105/c4go/noarch.PtrdiffT",
-	"time_t":                 "github.com/Konstantin8105/c4go/noarch.TimeT",
 
 	// void*
 	"void*":  "interface{}",
@@ -121,21 +120,6 @@ var simpleResolveTypes = map[string]string{
 	"__sbuf":            "int64",
 	"__sFILEX":          "interface{}",
 	"FILE":              "github.com/Konstantin8105/c4go/noarch.File",
-}
-
-// CStdStructType - conversion map from C standart library structures to
-// c4go structures
-var CStdStructType = map[string]string{
-	"div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
-	"ldiv_t":  "github.com/Konstantin8105/c4go/noarch.LdivT",
-	"lldiv_t": "github.com/Konstantin8105/c4go/noarch.LldivT",
-
-	// time.h
-	"tm":        "github.com/Konstantin8105/c4go/noarch.Tm",
-	"struct tm": "github.com/Konstantin8105/c4go/noarch.Tm",
-	"time_t":    "github.com/Konstantin8105/c4go/noarch.TimeT",
-
-	"fpos_t": "int",
 }
 
 // NullPointer - is look : (double *)(nil) or (FILE *)(nil)
@@ -231,7 +215,7 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 
 	// No need resolve typedef types
 	if _, ok := p.TypedefType[s]; ok {
-		if tt, ok := CStdStructType[s]; ok {
+		if tt, ok := program.CStdStructType[s]; ok {
 			// "div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
 			ii := p.ImportType(tt)
 			return ii, nil
@@ -239,7 +223,7 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 		return s, nil
 	}
 
-	if tt, ok := CStdStructType[s]; ok {
+	if tt, ok := program.CStdStructType[s]; ok {
 		// "div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
 		ii := p.ImportType(tt)
 		return ii, nil

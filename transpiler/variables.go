@@ -14,33 +14,6 @@ import (
 	"go/token"
 )
 
-// This map is used to rename struct member names.
-var structFieldTranslations = map[string]map[string]string{
-	"div_t": {
-		"quot": "Quot",
-		"rem":  "Rem",
-	},
-	"ldiv_t": {
-		"quot": "Quot",
-		"rem":  "Rem",
-	},
-	"lldiv_t": {
-		"quot": "Quot",
-		"rem":  "Rem",
-	},
-	"struct tm": {
-		"tm_sec":   "TmSec",
-		"tm_min":   "TmMin",
-		"tm_hour":  "TmHour",
-		"tm_mday":  "TmMday",
-		"tm_mon":   "TmMon",
-		"tm_year":  "TmYear",
-		"tm_wday":  "TmWday",
-		"tm_yday":  "TmYday",
-		"tm_isdst": "TmIsdst",
-	},
-}
-
 func transpileDeclRefExpr(n *ast.DeclRefExpr, p *program.Program) (
 	expr *goast.Ident, exprType string, err error) {
 
@@ -494,7 +467,7 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 	if lhsType[len(lhsType)-1] == '*' {
 		lhsType = lhsType[:len(lhsType)-len(" *")]
 	}
-	if member, ok := structFieldTranslations[lhsType]; ok {
+	if member, ok := program.StructFieldTranslations[lhsType]; ok {
 		if alias, ok := member[rhs]; ok {
 			rhs = alias
 		}
