@@ -239,6 +239,9 @@ func ResolveType(p *program.Program, s string) (resolveResult string, err error)
 		}
 		if str := p.GetStruct("c4go_" + lhsType); str != nil {
 			s = str.Name
+		} else {
+			s = strings.TrimLeft(s, "struct")
+			s = strings.TrimLeft(s, "union")
 		}
 		return p.ImportType(s), nil
 	}
