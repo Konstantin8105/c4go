@@ -367,15 +367,11 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 
 	// cast size_t to int
 	{
-		_, fok := simpleResolveTypes[cFromType]
-		t, tok := simpleResolveTypes[cToType]
+		_, fok := program.CStdStructType[cFromType]
+		t, tok := program.CStdStructType[cToType]
 		if fok && tok {
-			if strings.Contains(t, "noarch") {
-				p.AddImport("github.com/Konstantin8105/c4go/noarch")
-				t = t[len("github.com/Konstantin8105/c4go/"):]
-			}
 			return &goast.CallExpr{
-				Fun:  goast.NewIdent(t),
+				Fun:  goast.NewIdent(p.ImportType(t)),
 				Args: []goast.Expr{expr},
 			}, nil
 		}
