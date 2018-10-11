@@ -305,6 +305,15 @@ func TestIntegrationScripts(t *testing.T) {
 				fmt.Printf("TAP: # %s: %s tests\n", file, matches[1])
 				totalTapTests += util.Atoi(matches[1])
 			}
+
+			// Logs
+			logs, err := getLogs(programArgs.outputFile)
+			if err != nil {
+				t.Fatalf("Cannot read logs: %v", err)
+			}
+			for _, l := range logs {
+				t.Log(l)
+			}
 		})
 	}
 
