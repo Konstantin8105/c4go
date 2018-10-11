@@ -59,6 +59,40 @@ func transpileStringLiteral(p *program.Program, n *ast.StringLiteral, arrayToArr
 
 	// Example:
 	// StringLiteral 0x280b918 <col:29> 'char [30]' lvalue "%0"
+	s, err := types.GetAmountArraySize(n.Type)
+	if err != nil {
+		return toBytePointer(util.NewCallExpr("[]byte",
+			util.NewStringLit(strconv.Quote(n.Value+"\x00")))), "const char *", nil
+	}
+	buf := bytes.NewBufferString(n.Value + "\x00")
+	if buf.Len() < s {
+		buf.Write(make([]byte, s-buf.Len()))
+	}
+	return toBytePointer(util.NewCallExpr("[]byte",
+		util.NewStringLit(strconv.Quote(buf.String())))), "const char *", nil
+}
+
+func toBytePointer(expr goast.Expr) goast.Expr {
+	return &goast.ParenExpr{
+		X: &goast.UnaryExpr{
+			Op: token.AND,
+			X: &goast.IndexExpr{
+				X:     expr,
+				Index: util.NewIntLit(0),
+			},
+		},
+	}
+}
+
+/*
+func transpileStringLiteral(p *program.Program, n *ast.StringLiteral, arrayToArray bool) (
+	expr goast.Expr, exprType string, err error) {
+
+	// Convert format flags
+	n.Value = ConvertToGoFlagFormat(n.Value)
+
+	// Example:
+	// StringLiteral 0x280b918 <col:29> 'char [30]' lvalue "%0"
 	baseType := types.GetBaseType(n.Type)
 	if baseType != "char" {
 		err = fmt.Errorf("Type is not `char` : %v", n.Type)
@@ -95,6 +129,7 @@ func transpileStringLiteral(p *program.Program, n *ast.StringLiteral, arrayToArr
 	exprType = n.Type
 	return
 }
+*/
 
 func transpileIntegerLiteral(n *ast.IntegerLiteral) *goast.BasicLit {
 	return &goast.BasicLit{
