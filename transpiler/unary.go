@@ -40,7 +40,6 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 		if p, ok := n.Children()[0].(*ast.ParenExpr); ok {
 			n.Children()[0] = p.Children()[0]
 			goto remove_paren
-			return
 		}
 
 		var left goast.Expr
@@ -135,6 +134,26 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 	if err != nil {
 		return nil, "", nil, nil, err
 	}
+
+	// specific case:
+	//
+	// UnaryOperator 'int' prefix '!'
+	// `-ParenExpr 'int'
+	//   `-BinaryOperator 'int' '='
+	//     |-DeclRefExpr 'int' lvalue Var 0x3329b60 'y' 'int'
+	//     `-ImplicitCastExpr 'int' <LValueToRValue>
+	//       `-DeclRefExpr 'int' lvalue Var 0x3329ab8 'p' 'int'
+	if par, ok := e.(*goast.ParenExpr); ok {
+		if bi, ok := par.X.(*goast.BinaryExpr); ok {
+			if bi.Op == token.ASSIGN { // =
+				preStmts = append(preStmts, &goast.ExprStmt{
+					X: bi,
+				})
+				e = bi.X
+			}
+		}
+	}
+
 	// null in C is zero
 	if eType == types.NullPointer {
 		e = &goast.BasicLit{
@@ -317,11 +336,11 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 					switch vv := a.Children()[0].(type) {
 					case *ast.MemberExpr, *ast.DeclRefExpr:
 						var typeVV string
-						if vvv, ok := vv.(*ast.MemberExpr); ok {
-							typeVV = vvv.Type
-						}
-						if vvv, ok := vv.(*ast.DeclRefExpr); ok {
-							typeVV = vvv.Type
+						switch vt := vv.(type) {
+						case *ast.MemberExpr:
+							typeVV = vt.Type
+						case *ast.DeclRefExpr:
+							typeVV = vt.Type
 						}
 						typeVV = types.GetBaseType(typeVV)
 
@@ -339,7 +358,8 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 						}
 						a = vv
 						continue
-					case *ast.ImplicitCastExpr, *ast.CStyleCastExpr:
+					case *ast.ImplicitCastExpr, *ast.CStyleCastExpr,
+						*ast.ArraySubscriptExpr:
 						a = vv
 						continue
 					}

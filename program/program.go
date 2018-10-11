@@ -123,20 +123,20 @@ func NewProgram() (p *Program) {
 			// &ast.TypedefDecl{ ... Type:"struct __locale_struct *" ... }
 
 			"struct __va_list_tag [1]": {
-				Name:    "struct __va_list_tag [1]",
-				IsUnion: false,
+				Name: "struct __va_list_tag [1]",
+				Type: StructType,
 			},
 
 			// Pos:ast.Position{File:"/usr/include/xlocale.h", Line:27
 			"struct __locale_struct *": {
-				Name:    "struct __locale_struct *",
-				IsUnion: false,
+				Name: "struct __locale_struct *",
+				Type: StructType,
 			},
 
 			// Pos:ast.Position{File:"/usr/include/x86_64-linux-gnu/sys/time.h", Line:61
 			"struct timezone *__restrict": {
-				Name:    "struct timezone *__restrict",
-				IsUnion: false,
+				Name: "struct timezone *__restrict",
+				Type: StructType,
 			},
 		}),
 		Unions:                                   make(StructRegistry),
@@ -208,20 +208,28 @@ func (p *Program) GetMessageComments() (_ *goast.CommentGroup) {
 // GetComments - return comments
 func (p *Program) GetComments(n ast.Position) (out []*goast.Comment) {
 	beginLine := p.commentLine[n.File]
-	lastLine := n.LineEnd
+	lastLine := n.Line
+	if lastLine < beginLine {
+		return
+	}
 	for i := range p.PreprocessorFile.GetComments() {
-		if p.PreprocessorFile.GetComments()[i].File == n.File {
-			if beginLine < p.PreprocessorFile.GetComments()[i].Line &&
-				p.PreprocessorFile.GetComments()[i].Line <= lastLine {
-				out = append(out, &goast.Comment{
-					Text: p.PreprocessorFile.GetComments()[i].Comment,
-				})
-				if p.PreprocessorFile.GetComments()[i].Comment[0:2] == "/*" {
-					out = append(out, &goast.Comment{
-						Text: "// ",
-					})
-				}
-			}
+		if p.PreprocessorFile.GetComments()[i].File != n.File {
+			continue
+		}
+		if beginLine >= p.PreprocessorFile.GetComments()[i].Line {
+			continue
+		}
+		if p.PreprocessorFile.GetComments()[i].Line > lastLine {
+			continue
+		}
+		// add comment
+		out = append(out, &goast.Comment{
+			Text: p.PreprocessorFile.GetComments()[i].Comment,
+		})
+		if p.PreprocessorFile.GetComments()[i].Comment[1] == '*' {
+			out = append(out, &goast.Comment{
+				Text: "// ",
+			})
 		}
 	}
 	if len(out) > 0 {
@@ -321,19 +329,48 @@ func (p *Program) GetNextIdentifier(prefix string) string {
 	return identifierName
 }
 
+type nilWalker struct {
+}
+
+func (n nilWalker) Visit(node goast.Node) (w goast.Visitor) {
+	fmt.Println("---------")
+	switch v := node.(type) {
+	case *goast.GenDecl:
+		fmt.Printf("%#v\n", v)
+		for i, s := range v.Specs {
+			fmt.Printf("Spec%d:   %#v\n", i, s)
+			if vs, ok := s.(*goast.ValueSpec); ok {
+				for j := range vs.Names {
+					fmt.Printf("IDS : %#v\n", vs.Names[j])
+				}
+			}
+		}
+	case *goast.ValueSpec:
+		fmt.Printf("%#v\n", v)
+		for _, id := range v.Names {
+			fmt.Printf("ID: %#v\n", id)
+		}
+		fmt.Printf("Type: %#v\n", v.Type)
+	}
+	return n
+}
+
 // String generates the whole output Go file as a string. This will include the
 // messages at the top of the file and all the rendered Go code.
 func (p *Program) String() string {
 	var buf bytes.Buffer
 
-	buf.WriteString(fmt.Sprintf(`/*
-	Package main - transpiled by c4go
-
-	If you have found any issues, please raise an issue at:
-	https://github.com/Konstantin8105/c4go/
-*/
+	buf.WriteString(fmt.Sprintf(`//
+//	Package main - transpiled by c4go
+//
+//	If you have found any issues, please raise an issue at:
+//	https://github.com/Konstantin8105/c4go/
+//
 
 `))
+
+	// Only for debugging
+	// goast.Walk(new(nilWalker), p.File)
 
 	// First write all the messages. The double newline afterwards is important
 	// so that the package statement has a newline above it so that the warnings
@@ -401,7 +438,9 @@ func (p *Program) String() string {
 		for i := range p.PreprocessorFile.GetComments() {
 			if p.PreprocessorFile.GetComments()[i].File == file {
 				if beginLine < p.PreprocessorFile.GetComments()[i].Line {
-					buf.WriteString(fmt.Sprintln(p.PreprocessorFile.GetComments()[i].Comment))
+					buf.WriteString(
+						fmt.Sprintln(
+							p.PreprocessorFile.GetComments()[i].Comment))
 				}
 			}
 		}
@@ -415,11 +454,22 @@ func (p *Program) String() string {
 	// After :
 	// func compare(a interface {}, b interface {}) (c4goDefaultReturn int) {
 	reg := util.GetRegex("interface( )?{(\r*)\n(\t*)}")
+	s := string(reg.ReplaceAll(buf.Bytes(), []byte("interface {}")))
 
-	return string(reg.ReplaceAll(buf.Bytes(), []byte("interface {}")))
+	sp := strings.Split(s, "\n")
+	for i := range sp {
+		if strings.HasSuffix(sp[i], "-= 1") {
+			sp[i] = strings.TrimSuffix(sp[i], "-= 1") + "--"
+		}
+		if strings.HasSuffix(sp[i], "+= 1") {
+			sp[i] = strings.TrimSuffix(sp[i], "+= 1") + "++"
+		}
+	}
+
+	return strings.Join(sp, "\n")
 }
 
-// IncudeHeaderIsExists - return true if C #include header is inside list
+// IncludeHeaderIsExists return true if C #include header is inside list
 func (p *Program) IncludeHeaderIsExists(includeHeader string) bool {
 	for _, inc := range p.PreprocessorFile.GetIncludeFiles() {
 		if strings.HasSuffix(inc.HeaderName, includeHeader) {

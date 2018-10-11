@@ -52,29 +52,6 @@ func (n *MemberExpr) AddChild(node Node) {
 	n.ChildNodes = append(n.ChildNodes, node)
 }
 
-// GetDeclRefExpr gets DeclRefExpr from MemberExpr, or nil if there is no
-// DeclRefExpr
-func (n *MemberExpr) GetDeclRefExpr() *DeclRefExpr {
-	for _, child := range n.ChildNodes {
-		res, ok := child.(*DeclRefExpr)
-		if ok {
-			return res
-		}
-
-		cast, ok := child.(*ImplicitCastExpr)
-		if ok {
-			res, ok = cast.ChildNodes[0].(*DeclRefExpr)
-			if ok {
-				return res
-			}
-
-		}
-	}
-
-	// There is no DeclRefExpr
-	return nil
-}
-
 // Address returns the numeric address of the node. See the documentation for
 // the Address type for more information.
 func (n *MemberExpr) Address() Address {

@@ -9,14 +9,14 @@ import (
 // NonNullAttr is a type of attribute that is optionally attached to a variable
 // or struct field definition.
 type NonNullAttr struct {
-	Addr       Address
-	Pos        Position
-	Inherited  bool
-	A          int
-	B          int
-	C          int
-	D          int
-	ChildNodes []Node
+	Addr        Address
+	Pos         Position
+	IsInherited bool
+	A           int
+	B           int
+	C           int
+	D           int
+	ChildNodes  []Node
 }
 
 func parseNonNullAttr(line string) *NonNullAttr {
@@ -26,6 +26,11 @@ func parseNonNullAttr(line string) *NonNullAttr {
 		(?P<a> \d+)(?P<b> \d+)?(?P<c> \d+)?(?P<d> \d+)?`,
 		line,
 	)
+
+	a := 0
+	if groups["a"] != "" {
+		a = util.Atoi(strings.TrimSpace(groups["a"]))
+	}
 
 	b := 0
 	if groups["b"] != "" {
@@ -43,14 +48,14 @@ func parseNonNullAttr(line string) *NonNullAttr {
 	}
 
 	return &NonNullAttr{
-		Addr:       ParseAddress(groups["address"]),
-		Pos:        NewPositionFromString(groups["position"]),
-		Inherited:  len(groups["inherited"]) > 0,
-		A:          util.Atoi(strings.TrimSpace(groups["a"])),
-		B:          b,
-		C:          c,
-		D:          d,
-		ChildNodes: []Node{},
+		Addr:        ParseAddress(groups["address"]),
+		Pos:         NewPositionFromString(groups["position"]),
+		IsInherited: len(groups["inherited"]) > 0,
+		A:           a,
+		B:           b,
+		C:           c,
+		D:           d,
+		ChildNodes:  []Node{},
 	}
 }
 

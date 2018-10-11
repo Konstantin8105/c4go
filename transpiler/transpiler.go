@@ -8,6 +8,8 @@ import (
 	goast "go/ast"
 	"go/parser"
 	"go/token"
+	"os"
+	"strings"
 
 	"github.com/Konstantin8105/c4go/ast"
 	"github.com/Konstantin8105/c4go/program"
@@ -41,6 +43,7 @@ func TranspileAST(fileName, packageName string, p *program.Program, root ast.Nod
 		p.AddImport("testing")
 		p.AddImport("io/ioutil")
 		p.AddImport("os")
+		p.AddImport("github.com/Konstantin8105/c4go/noarch")
 
 		// TODO: There should be a cleaner way to add a function to the program.
 		// This code was taken from the end of transpileFunctionDecl.
@@ -51,7 +54,7 @@ func TranspileAST(fileName, packageName string, p *program.Program, root ast.Nod
 					List: []*goast.Field{
 						{
 							Names: []*goast.Ident{util.NewIdent("t")},
-							Type:  util.NewTypeIdent("*testing.T"),
+							Type:  goast.NewIdent("*testing.T"),
 						},
 					},
 				},
@@ -150,9 +153,7 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 		return
 
 	case *ast.FloatingLiteral:
-		expr = transpileFloatingLiteral(n)
-		exprType = "double"
-		err = nil
+		expr, exprType, err = transpileFloatingLiteral(n), "double", nil
 
 	case *ast.PredefinedExpr:
 		expr, exprType, err = transpilePredefinedExpr(n, p)
@@ -209,33 +210,7 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 		return transpileStmtExpr(n, p)
 
 	case *ast.ImplicitValueInitExpr:
-		var t string
-		t = n.Type1
-		t, err = types.ResolveType(p, t)
-		p.AddMessage(p.GenerateWarningMessage(err, n))
-		var isStruct bool
-		if _, ok := p.Structs[t]; ok {
-			isStruct = true
-		}
-		if _, ok := p.Structs["struct "+t]; ok {
-			isStruct = true
-		}
-		if isStruct {
-			expr = &goast.CompositeLit{
-				Type:   util.NewIdent(t),
-				Lbrace: 1,
-			}
-			return
-		}
-		expr = &goast.CallExpr{
-			Fun:    goast.NewIdent(t),
-			Lparen: 1,
-			Args: []goast.Expr{&goast.BasicLit{
-				Kind:  token.INT,
-				Value: "0",
-			}},
-		}
-		return
+		return transpileImplicitValueInitExpr(n, p)
 
 	case *ast.OffsetOfExpr:
 		expr, exprType, err = transpileOffsetOfExpr(n, p)
@@ -245,7 +220,7 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 
 	default:
 		p.AddMessage(p.GenerateWarningMessage(
-			fmt.Errorf("cannot transpile to expr : %T", node), node))
+			fmt.Errorf("cannot transpile to expr in transpileToExpr : %T", node), node))
 		expr = util.NewNil()
 	}
 
@@ -296,6 +271,7 @@ func transpileToStmt(node ast.Node, p *program.Program) (
 
 	defer func() {
 		if err != nil {
+			err = fmt.Errorf("Cannot transpileToStmt : %v", err)
 			p.AddMessage(p.GenerateWarningMessage(err, node))
 			err = nil // Error is ignored
 		}
@@ -304,17 +280,31 @@ func transpileToStmt(node ast.Node, p *program.Program) (
 		preStmts = nilFilterStmts(preStmts)
 		postStmts = nilFilterStmts(postStmts)
 	}()
+	defer func() {
+		com := p.GetComments(node.Position())
+		for i := range com {
+			postStmts = append(postStmts, &goast.ExprStmt{
+				X: goast.NewIdent(com[i].Text),
+			})
+		}
+		cg := p.GetMessageComments()
+		for i := range cg.List {
+			postStmts = append(postStmts, &goast.ExprStmt{
+				X: goast.NewIdent(cg.List[i].Text),
+			})
+		}
+	}()
 
 	var expr goast.Expr
 
 	switch n := node.(type) {
-	case *ast.DefaultStmt:
-		stmt, err = transpileDefaultStmt(n, p)
-		return
-
-	case *ast.CaseStmt:
-		stmt, preStmts, postStmts, err = transpileCaseStmt(n, p)
-		return
+	// case *ast.DefaultStmt:
+	// 	stmt, err = transpileDefaultStmt(n, p)
+	// 	return
+	//
+	// case *ast.CaseStmt:
+	// 	stmt, preStmts, postStmts, err = transpileCaseStmt(n, p)
+	// 	return
 
 	case *ast.SwitchStmt:
 		stmt, preStmts, postStmts, err = transpileSwitchStmt(n, p)
@@ -407,7 +397,8 @@ func transpileToStmt(node ast.Node, p *program.Program) (
 		foundToVoid = true
 	}
 	if len(node.Children()) > 0 {
-		if v, ok := node.Children()[0].(*ast.CStyleCastExpr); ok && v.Kind == ast.CStyleCastExprToVoid {
+		if v, ok := node.Children()[0].(*ast.CStyleCastExpr); ok &&
+			v.Kind == ast.CStyleCastExprToVoid {
 			foundToVoid = true
 		}
 	}
@@ -444,23 +435,43 @@ func transpileToNode(node ast.Node, p *program.Program) (
 
 	switch n := node.(type) {
 	case *ast.TranslationUnitDecl:
-		decls, err = transpileTranslationUnitDecl(p, n)
+		return transpileTranslationUnitDecl(p, n)
+	}
 
+	if node != nil {
+		if !p.PreprocessorFile.IsUserSource(node.Position().File) {
+			return
+		}
+	}
+
+	switch n := node.(type) {
 	case *ast.FunctionDecl:
+		com := p.GetComments(node.Position())
 		decls, err = transpileFunctionDecl(n, p)
 		if len(decls) > 0 {
 			if _, ok := decls[0].(*goast.FuncDecl); ok {
 				decls[0].(*goast.FuncDecl).Doc = p.GetMessageComments()
 				decls[0].(*goast.FuncDecl).Doc.List =
 					append(decls[0].(*goast.FuncDecl).Doc.List,
-						p.GetComments(node.Position())...)
+						com...)
+
+				// location of file
+				location := node.Position().GetSimpleLocation()
+				location = strings.Replace(location, os.Getenv("GOPATH"), "$GOPATH", -1)
 				decls[0].(*goast.FuncDecl).Doc.List =
-					append([]*goast.Comment{&goast.Comment{
+					append([]*goast.Comment{{
 						Text: fmt.Sprintf("// %s - transpiled function from %s",
 							decls[0].(*goast.FuncDecl).Name.Name,
-							node.Position().GetSimpleLocation()),
+							location),
 					}}, decls[0].(*goast.FuncDecl).Doc.List...)
 			}
+		}
+
+	case *ast.CXXRecordDecl:
+		if !strings.Contains(n.RecordDecl.Kind, "class") {
+			decls, err = transpileToNode(n.RecordDecl, p)
+		} else {
+			decls, err = transpileCXXRecordDecl(p, n.RecordDecl)
 		}
 
 	case *ast.TypedefDecl:
@@ -474,6 +485,9 @@ func transpileToNode(node ast.Node, p *program.Program) (
 
 	case *ast.EnumDecl:
 		decls, err = transpileEnumDecl(p, n)
+
+	case *ast.LinkageSpecDecl:
+		// ignore
 
 	case *ast.EmptyDecl:
 		if len(n.Children()) == 0 {

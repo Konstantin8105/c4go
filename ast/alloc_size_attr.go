@@ -9,12 +9,12 @@ import (
 // AllocSizeAttr is a type of attribute that is optionally attached to a variable
 // or struct field definition.
 type AllocSizeAttr struct {
-	Addr       Address
-	Pos        Position
-	Inherited  bool
-	A          int
-	B          int
-	ChildNodes []Node
+	Addr        Address
+	Pos         Position
+	IsInherited bool
+	A           int
+	B           int
+	ChildNodes  []Node
 }
 
 func parseAllocSizeAttr(line string) *AllocSizeAttr {
@@ -24,12 +24,12 @@ func parseAllocSizeAttr(line string) *AllocSizeAttr {
 	)
 
 	return &AllocSizeAttr{
-		Addr:       ParseAddress(groups["address"]),
-		Pos:        NewPositionFromString(groups["position"]),
-		Inherited:  len(groups["inherited"]) > 0,
-		A:          util.Atoi(strings.TrimSpace(groups["a"])),
-		B:          util.Atoi(strings.TrimSpace(groups["b"])),
-		ChildNodes: []Node{},
+		Addr:        ParseAddress(groups["address"]),
+		Pos:         NewPositionFromString(groups["position"]),
+		IsInherited: len(groups["inherited"]) > 0,
+		A:           util.Atoi(strings.TrimSpace(groups["a"])),
+		B:           util.Atoi(strings.TrimSpace(groups["b"])),
+		ChildNodes:  []Node{},
 	}
 }
 

@@ -115,10 +115,13 @@ func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (
 		}
 	}()
 
-	n.Name = types.GenerateCorrectType(n.Name)
-	if strings.HasPrefix(n.Name, "enum ") {
-		n.Name = n.Name[len("enum "):]
+	if !p.PreprocessorFile.IsUserSource(n.Pos.File) &&
+		!strings.Contains(n.Pos.File, "ctype.h") {
+		return
 	}
+
+	n.Name = types.GenerateCorrectType(n.Name)
+	n.Name = strings.TrimPrefix(n.Name, "enum ")
 
 	// For case `enum` without name
 	if n.Name == "" {
@@ -173,19 +176,11 @@ func transpileEnumDeclWithType(p *program.Program, n *ast.EnumDecl, enumType str
 	var i int
 	for _, child := range n.Children() {
 		switch child.(type) {
-		case *ast.FullComment, *ast.BlockCommandComment,
-			*ast.HTMLStartTagComment, *ast.HTMLEndTagComment,
-			*ast.InlineCommandComment, *ast.ParagraphComment,
-			*ast.ParamCommandComment, *ast.TextComment,
-			*ast.VerbatimLineComment, *ast.VerbatimBlockComment,
-			*ast.VerbatimBlockLineComment:
-			// comments are ignored
-			continue
 		case *ast.EnumConstantDecl:
 			// go to next
 		default:
 			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("Unsupported type `%T` in enum.", child), child))
+				fmt.Errorf("unsupported type `%T` in enum", child), child))
 			return
 		}
 		child := child.(*ast.EnumConstantDecl)
@@ -212,7 +207,7 @@ func transpileEnumDeclWithType(p *program.Program, n *ast.EnumDecl, enumType str
 			goto remove_parent_expr
 		}
 
-		var sign int = 1
+		sign := 1
 		if unary, ok := val.Values[0].(*goast.UnaryExpr); ok {
 			if unary.Op == token.SUB {
 				sign = -1

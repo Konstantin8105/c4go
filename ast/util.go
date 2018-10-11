@@ -19,7 +19,7 @@ func removeQuotes(s string) string {
 	}
 
 	if len(s) >= 2 && s[0] == '"' && s[len(s)-1] == '"' {
-		return s[1 : len(s)-2]
+		return s[1 : len(s)-1]
 	}
 	if len(s) >= 2 && s[0] == '\'' && s[len(s)-1] == '\'' {
 		return s[1 : len(s)-1]
@@ -33,8 +33,15 @@ func atof(s string) float64 {
 	if err != nil {
 		panic(err)
 	}
-
 	return f
+}
+
+func unquote(s string) string {
+	r, err := strconv.Unquote(s)
+	if err != nil {
+		return s
+	}
+	return r
 }
 
 // Atos - ASTree to string

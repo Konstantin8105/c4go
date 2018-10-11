@@ -34,6 +34,9 @@ var cliTests = map[string][]string{
 
 	// Test that help is printed if help flag is set, even if file is given
 	"AstHelpFlag": {"test", "ast", "-h", "foo.c"},
+
+	// Test that version is printed
+	"Version": {"test", "version"},
 }
 
 func TestCLI(t *testing.T) {

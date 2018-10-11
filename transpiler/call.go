@@ -5,6 +5,7 @@ package transpiler
 import (
 	"bytes"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/Konstantin8105/c4go/ast"
@@ -106,6 +107,93 @@ func getNameOfFunctionFromCallExpr(p *program.Program, n *ast.CallExpr) (string,
 	return getName(p, firstChild.Children()[0])
 }
 
+// simplificationCallExprPrintf - minimaze Go code
+// transpile C code : printf("Hello")
+// to Go code       : fmt.Printf("Hello")
+// AST example :
+// CallExpr <> 'int'
+// |-ImplicitCastExpr <> 'int (*)(const char *, ...)' <FunctionToPointerDecay>
+// | `-DeclRefExpr <> 'int (const char *, ...)' Function 0x2fec178 'printf' 'int (const char *, ...)'
+// `-ImplicitCastExpr <> 'const char *' <BitCast>
+//   `-ImplicitCastExpr <> 'char *' <ArrayToPointerDecay>
+//     `-StringLiteral <> 'char [6]' lvalue "Hello"
+func simplificationCallExprPrintf(call *ast.CallExpr, p *program.Program) (
+	expr *goast.CallExpr, ok bool) {
+
+	var isPrintfCode bool
+	var printfText string
+	if call.Type == "int" && len(call.ChildNodes) == 2 {
+		var step1 bool
+		if impl, ok := call.ChildNodes[0].(*ast.ImplicitCastExpr); ok && len(impl.ChildNodes) == 1 {
+			if decl, ok := impl.ChildNodes[0].(*ast.DeclRefExpr); ok && decl.Name == "printf" {
+				if impl.Type == "int (*)(const char *, ...)" {
+					step1 = true
+				}
+			}
+		}
+		var step2 bool
+		if impl, ok := call.ChildNodes[1].(*ast.ImplicitCastExpr); ok {
+			if impl.Type == "const char *" && len(impl.ChildNodes) == 1 {
+				if impl2, ok := impl.ChildNodes[0].(*ast.ImplicitCastExpr); ok {
+					if impl2.Type == "char *" && len(impl2.ChildNodes) == 1 {
+						if str, ok := impl2.ChildNodes[0].(*ast.StringLiteral); ok {
+							step2 = true
+							printfText = str.Value
+						}
+					}
+				}
+			}
+		}
+		if step1 && step2 {
+			isPrintfCode = true
+		}
+	}
+
+	if !isPrintfCode {
+		return
+	}
+
+	// 0: *ast.ExprStmt {
+	// .  X: *ast.CallExpr {
+	// .  .  Fun: *ast.SelectorExpr {
+	// .  .  .  X: *ast.Ident {
+	// .  .  .  .  NamePos: 8:2
+	// .  .  .  .  Name: "fmt"
+	// .  .  .  }
+	// .  .  .  Sel: *ast.Ident {
+	// .  .  .  .  NamePos: 8:6
+	// .  .  .  .  Name: "Printf"
+	// .  .  .  }
+	// .  .  }
+	// .  .  Lparen: 8:12
+	// .  .  Args: []ast.Expr (len = 1) {
+	// .  .  .  0: *ast.BasicLit {
+	// .  .  .  .  ValuePos: 8:13
+	// .  .  .  .  Kind: STRING
+	// .  .  .  .  Value: "\"Hello, Golang\\n\""
+	// .  .  .  }
+	// .  .  }
+	// .  .  Ellipsis: -
+	// .  .  Rparen: 8:30
+	// .  }
+	// }
+	p.AddImport("fmt")
+	printfText = strconv.Quote(printfText)
+	return &goast.CallExpr{
+		Fun: &goast.SelectorExpr{
+			X:   goast.NewIdent("fmt"),
+			Sel: goast.NewIdent("Printf"),
+		},
+		Lparen: 1,
+		Args: []goast.Expr{
+			&goast.BasicLit{
+				Kind:  token.STRING,
+				Value: printfText,
+			},
+		},
+	}, true
+}
+
 // transpileCallExpr transpiles expressions that calls a function, for example:
 //
 //     foo("bar")
@@ -121,18 +209,6 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			err = fmt.Errorf("Error in transpileCallExpr : %v", err)
 		}
 	}()
-
-	if insideCall, ok := n.Children()[0].(*ast.CallExpr); ok {
-		// TODO :
-		// expr, resultType, preStmts, postStmts, err = transpileCallExpr(insideCall, p)
-		// return &goast.CallExpr{
-		// 	Fun:    expr,
-		// 	Lparen: 1,
-		// }, n.Type, preStmts, postStmts, err
-		_ = insideCall
-		err = fmt.Errorf("Call of call node is not implemented")
-		return
-	}
 
 	functionName, err := getNameOfFunctionFromCallExpr(p, n)
 	if err != nil {
@@ -168,6 +244,15 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		}
 	}
 
+	// function "printf" from stdio.h simplification
+	if p.IncludeHeaderIsExists("stdio.h") {
+		if functionName == "printf" && len(n.Children()) == 2 {
+			if e, ok := simplificationCallExprPrintf(n, p); ok {
+				return e, "int", nil, nil, nil
+			}
+		}
+	}
+
 	// Get the function definition from it's name. The case where it is not
 	// defined is handled below (we haven't seen the prototype yet).
 	functionDef := p.GetFunctionDefinition(functionName)
@@ -185,7 +270,8 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			Name: functionName,
 		}
 		if len(n.Children()) > 0 {
-			if v, ok := n.Children()[0].(*ast.ImplicitCastExpr); ok && (types.IsFunction(v.Type) || types.IsTypedefFunction(p, v.Type)) {
+			if v, ok := n.Children()[0].(*ast.ImplicitCastExpr); ok &&
+				(types.IsFunction(v.Type) || types.IsTypedefFunction(p, v.Type)) {
 				t := v.Type
 				if v, ok := p.TypedefType[t]; ok {
 					t = v
@@ -239,44 +325,19 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 	args := []goast.Expr{}
 	argTypes := []string{}
 	i := 0
+
 	for _, arg := range n.Children()[1:] {
 		e, eType, newPre, newPost, err := transpileToExpr(arg, p, false)
 		if err != nil {
 			err = fmt.Errorf("argument position is %d. %v", i, err)
+			p.AddMessage(p.GenerateWarningMessage(err, arg))
 			return nil, "unknown2", nil, nil, err
 		}
 		argTypes = append(argTypes, eType)
-
-		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
-
-		_, arraySize := types.GetArrayTypeAndSize(eType)
-
-		// If we are using varargs with Printf we need to make sure that certain
-		// types are cast correctly.
-		if functionName == "fmt.Printf" {
-			// Make sure that any string parameters (const char*) are truncated
-			// to the NULL byte.
-			if arraySize != -1 {
-				p.AddImport("github.com/Konstantin8105/c4go/noarch")
-				e = util.NewCallExpr(
-					"noarch.CStringToString",
-					&goast.SliceExpr{X: e},
-				)
-			}
-
-			// Byte slices (char*) must also be truncated to the NULL byte.
-			//
-			// TODO: This would also apply to other formatting functions like
-			// fprintf, etc.
-			if i > len(functionDef.ArgumentTypes)-1 &&
-				(eType == "char *" || eType == "char*") {
-				p.AddImport("github.com/Konstantin8105/c4go/noarch")
-				e = util.NewCallExpr("noarch.CStringToString", e)
-			}
-		}
+		preStmts, postStmts = combinePreAndPostStmts(
+			preStmts, postStmts, newPre, newPost)
 
 		args = append(args, e)
-
 		i++
 	}
 
@@ -360,7 +421,6 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			if strings.Contains(realType, "...") {
 				p.AddMessage(p.GenerateWarningMessage(
 					fmt.Errorf("not acceptable type '...'"), n))
-				realType = "unknownType2"
 			}
 
 			if a == nil {
@@ -418,12 +478,31 @@ func transpileCallExprCalloc(n *ast.CallExpr, p *program.Program) (
 	if err != nil {
 		return nil, "", nil, nil, err
 	}
+
+	//
+	// -UnaryExprOrTypeTraitExpr 0x24e0498 <col:27, col:39> 'unsigned long' sizeof 'float'
+	//
+	// OR
+	//
+	// t.w = (float*) calloc(t.nw, sizeof(*t.w));
+	// -UnaryExprOrTypeTraitExpr <> 'unsigned long' sizeof
+	//  `-ParenExpr <> 'float' lvalue
+	//    `-UnaryOperator <> 'float' lvalue prefix '*'
+	//      `-ImplicitCastExpr <> 'float *' <LValueToRValue>
+	//        `-MemberExpr <> 'float *' lvalue .w 0x2548b38
+	//          `-DeclRefExpr <> 'struct cws':'struct cws' lvalue Var 0x2548c40 't' 'struct cws': 'struct cws'
 	if v, ok := n.Children()[2].(*ast.UnaryExprOrTypeTraitExpr); ok {
-		allocType = v.Type2
+		if v.Type2 == "" {
+			_, t, _, _, _ := transpileToExpr(v.Children()[0], p, false)
+			allocType = t
+		} else {
+			allocType = v.Type2
+		}
 	} else {
 		return nil, "", nil, nil,
 			fmt.Errorf("Unsupport type '%T' in function calloc", n.Children()[2])
 	}
+
 	goType, err := types.ResolveType(p, allocType)
 	if err != nil {
 		return nil, "", nil, nil, err
@@ -444,19 +523,18 @@ func transpileCallExprQsort(n *ast.CallExpr, p *program.Program) (
 			err = fmt.Errorf("Function: qsort. err = %v", err)
 		}
 	}()
-	/*
-		CallExpr <> 'void'
-		|-ImplicitCastExpr <> 'void (*)(void *, size_t, size_t, __compar_fn_t)' <FunctionToPointerDecay>
-		| `-DeclRefExpr <> 'void (void *, size_t, size_t, __compar_fn_t)' Function 0x2bec110 'qsort' 'void (void *, size_t, size_t, __compar_fn_t)'
-		|-ImplicitCastExpr <> 'void *' <BitCast>
-		| `-ImplicitCastExpr <> 'int *' <ArrayToPointerDecay>
-		|   `-DeclRefExpr <> 'int [6]' lvalue Var 0x2c6a6c0 'values' 'int [6]'
-		|-ImplicitCastExpr <> 'size_t':'unsigned long' <IntegralCast>
-		| `-IntegerLiteral <> 'int' 6
-		|-UnaryExprOrTypeTraitExpr <> 'unsigned long' sizeof 'int'
-		`-ImplicitCastExpr <> 'int (*)(const void *, const void *)' <FunctionToPointerDecay>
-		  `-DeclRefExpr <> 'int (const void *, const void *)' Function 0x2c6aa70 'compare' 'int (const void *, const void *)'
-	*/
+
+	// CallExpr 0x2c6b1b0 <line:182:2, col:40> 'void'
+	// |-ImplicitCastExpr 0x2c6b198 <col:2> 'void (*)(void *, size_t, size_t, __compar_fn_t)' <FunctionToPointerDecay>
+	// | `-DeclRefExpr 0x2c6b070 <col:2> 'void (void *, size_t, size_t, __compar_fn_t)' Function 0x2bec110 'qsort' 'void (void *, size_t, size_t, __compar_fn_t)'
+	// |-ImplicitCastExpr 0x2c6b210 <col:9> 'void *' <BitCast>
+	// | `-ImplicitCastExpr 0x2c6b1f8 <col:9> 'int *' <ArrayToPointerDecay>
+	// |   `-DeclRefExpr 0x2c6b098 <col:9> 'int [6]' lvalue Var 0x2c6a6c0 'values' 'int [6]'
+	// |-ImplicitCastExpr 0x2c6b228 <col:17> 'size_t':'unsigned long' <IntegralCast>
+	// | `-IntegerLiteral 0x2c6b0c0 <col:17> 'int' 6
+	// |-UnaryExprOrTypeTraitExpr 0x2c6b0f8 <col:20, col:30> 'unsigned long' sizeof 'int'
+	// `-ImplicitCastExpr 0x2c6b240 <col:33> 'int (*)(const void *, const void *)' <FunctionToPointerDecay>
+	//   `-DeclRefExpr 0x2c6b118 <col:33> 'int (const void *, const void *)' Function 0x2c6aa70 'compare' 'int (const void *, const void *)'
 	var element [4]goast.Expr
 	for i := 1; i < 5; i++ {
 		el, _, newPre, newPost, err := transpileToExpr(n.Children()[i], p, false)

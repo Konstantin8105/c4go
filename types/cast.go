@@ -72,19 +72,44 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		}
 	}()
 
+	if cFromType == "" {
+		err2 = fmt.Errorf("cFromType is empty")
+		return
+	}
+
+	if cToType == "" {
+		err2 = fmt.Errorf("cToType is empty")
+		return
+	}
+
 	// Uncomment only for debugging
-	// if strings.Contains(cFromType, ":") {
-	// 	panic(fmt.Errorf("Found mistake `cFromType` `%v` C type : %#v",
-	// 		cFromType, expr))
-	// }
-	// if strings.Contains(cToType, ":") {
-	// 	panic(fmt.Errorf("Found mistake `cToType` `%v` C type: %#v",
-	// 		cToType, expr))
-	// }
+	if strings.Contains(cFromType, ":") {
+		err2 = fmt.Errorf("Found mistake `cFromType` `%v` C type : %#v",
+			cFromType, expr)
+		return
+	}
+	if strings.Contains(cToType, ":") {
+		err2 = fmt.Errorf("Found mistake `cToType` `%v` C type: %#v",
+			cToType, expr)
+		return
+	}
 
 	cFromType = CleanCType(cFromType)
 	cToType = CleanCType(cToType)
 
+	// Only for "stddef.h"
+	if p.IncludeHeaderIsExists("stddef.h") {
+		if cFromType == "long" && cToType == "ptrdiff_t" {
+			expr = &goast.BinaryExpr{
+				X:  expr,
+				Op: token.QUO,
+				Y: &goast.BasicLit{
+					Kind:  token.INT,
+					Value: "8",
+				},
+			}
+		}
+	}
 	fromType := cFromType
 	toType := cToType
 
@@ -218,8 +243,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return goast.NewIdent("nil"), nil
 	}
 
-	// Replace for specific case of fromType for darwin:
-	// Fo : union (anonymous union at sqlite3.c:619241696:3)
+	// For : union (anonymous union at sqlite3.c:619241696:3)
 	if strings.Contains(fromType, "anonymous union") {
 		// I don't understood - How to change correctly
 		// Try change to : `union` , but it is FAIL with that
@@ -320,9 +344,6 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 
 		// Known aliases
 		"__uint16_t", "size_t",
-
-		// Darwin specific
-		"__darwin_ct_rune_t", "darwin.CtRuneT",
 	}
 	for _, v := range types {
 		if fromType == v && toType == "bool" {
@@ -341,6 +362,22 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 			// Swap replaceme with the current expression
 			e.(*goast.IndexExpr).Index = expr
 			return CastExpr(p, e, "int", cToType)
+		}
+	}
+
+	// cast size_t to int
+	{
+		_, fok := simpleResolveTypes[cFromType]
+		t, tok := simpleResolveTypes[cToType]
+		if fok && tok {
+			if strings.Contains(t, "noarch") {
+				p.AddImport("github.com/Konstantin8105/c4go/noarch")
+				t = t[len("github.com/Konstantin8105/c4go/"):]
+			}
+			return &goast.CallExpr{
+				Fun:  goast.NewIdent(t),
+				Args: []goast.Expr{expr},
+			}, nil
 		}
 	}
 
@@ -384,7 +421,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	match1 = util.GetRegex(`\[(\d+)\]byte`).FindStringSubmatch(fromType)
 	match2 = util.GetRegex(`char \*\[(\d+)\]`).FindStringSubmatch(fromType)
 	if (len(match1) > 0 || len(match2) > 0) && toType == "string" {
-		size := 0
+		var size int
 		if len(match1) > 0 {
 			size = util.Atoi(match1[1])
 		} else {

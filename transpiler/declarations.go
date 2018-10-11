@@ -16,20 +16,18 @@ import (
 	"github.com/Konstantin8105/c4go/util"
 )
 
-/*
-Example of AST for union without name inside struct:
--RecordDecl 0x40d41b0 <...> line:453:8 struct EmptyName definition
- |-RecordDecl 0x40d4260 <...> line:454:2 union definition
- | |-FieldDecl 0x40d4328 <...> col:8 referenced l1 'long'
- | `-FieldDecl 0x40d4388 <...> col:8 referenced l2 'long'
- |-FieldDecl 0x40d4420 <...> col:2 implicit referenced 'union EmptyName::(anonymous at struct.c:454:2)'
- |-IndirectFieldDecl 0x40d4478 <...> col:8 implicit l1 'long'
- | |-Field 0x40d4420 '' 'union EmptyName::(anonymous at /struct.c:454:2)'
- | `-Field 0x40d4328 'l1' 'long'
- `-IndirectFieldDecl 0x40d44c8 <...> col:8 implicit l2 'long'
-   |-Field 0x40d4420 '' 'union EmptyName::(anonymous at /struct.c:454:2)'
-   `-Field 0x40d4388 'l2' 'long'
-*/
+// Example of AST for union without name inside struct:
+// -RecordDecl 0x40d41b0 <...> line:453:8 struct EmptyName definition
+//  |-RecordDecl 0x40d4260 <...> line:454:2 union definition
+//  | |-FieldDecl 0x40d4328 <...> col:8 referenced l1 'long'
+//  | `-FieldDecl 0x40d4388 <...> col:8 referenced l2 'long'
+//  |-FieldDecl 0x40d4420 <...> col:2 implicit referenced 'union EmptyName::(anonymous at struct.c:454:2)'
+//  |-IndirectFieldDecl 0x40d4478 <...> col:8 implicit l1 'long'
+//  | |-Field 0x40d4420 '' 'union EmptyName::(anonymous at /struct.c:454:2)'
+//  | `-Field 0x40d4328 'l1' 'long'
+//  `-IndirectFieldDecl 0x40d44c8 <...> col:8 implicit l2 'long'
+//    |-Field 0x40d4420 '' 'union EmptyName::(anonymous at /struct.c:454:2)'
+//    `-Field 0x40d4388 'l2' 'long'
 
 func newFunctionField(p *program.Program, name, cType string) (
 	_ *goast.Field, err error) {
@@ -42,7 +40,8 @@ func newFunctionField(p *program.Program, name, cType string) (
 		return
 	}
 
-	fieldType, err := types.ResolveType(p, cType)
+	// TODO : add err handling
+	fieldType, _ := types.ResolveType(p, cType)
 
 	return &goast.Field{
 		Names: []*goast.Ident{util.NewIdent(name)},
@@ -85,34 +84,12 @@ func transpileFieldDecl(p *program.Program, n *ast.FieldDecl) (
 		fieldType, err = types.ResolveType(p, arrayType)
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 		fieldType = fmt.Sprintf("[%d]%s", arraySize, fieldType)
-		err = nil
 	}
 
 	return &goast.Field{
 		Names: []*goast.Ident{util.NewIdent(name)},
 		Type:  util.NewTypeIdent(fieldType),
 	}, nil
-}
-
-var ignoreRecordDecl map[string]string = map[string]string{
-	"struct __fsid_t":                             "/usr/include/x86_64-linux-gnu/bits/types.h",
-	"union __union_at__usr_include_wchar_h_85_3_": "/usr/include/wchar.h",
-	"struct __mbstate_t":                          "/usr/include/wchar.h",
-	"struct _G_fpos_t":                            "/usr/include/_G_config.h",
-	"struct _G_fpos64_t":                          "/usr/include/_G_config.h",
-	"_IO_jump_t":                                  "/usr/include/libio.h",
-	"_IO_marker":                                  "/usr/include/libio.h",
-	"_IO_FILE":                                    "/usr/include/libio.h",
-	"_IO_FILE_plus":                               "/usr/include/libio.h",
-	"struct _IO_cookie_io_functions_t":            "/usr/include/libio.h",
-	"_IO_cookie_file":                             "/usr/include/libio.h",
-	"obstack":                                     "/usr/include/stdio.h",
-	"timeval":                                     "/usr/include/x86_64-linux-gnu/bits/time.h",
-	"timespec":                                    "/usr/include/time.h",
-	"itimerspec":                                  "/usr/include/time.h",
-	"sigevent":                                    "/usr/include/time.h",
-	"__locale_struct":                             "/usr/include/xlocale.h",
-	"exception":                                   "/usr/include/math.h",
 }
 
 func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
@@ -127,36 +104,22 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			err = fmt.Errorf("cannot transpileRecordDecl `%v`. %v",
 				n.Name, err)
 		} else {
-			if _, ok := types.CStdStructType[name]; ok {
-				// no need add struct for registrated C standart library
-				decls = nil
-				return
-			}
-			if !p.IncludeHeaderIsExists(n.Pos.File) {
-				// no need add struct from C STD
-				decls = nil
-				return
-			}
-			if h, ok := ignoreRecordDecl[n.Name]; ok && p.IncludeHeaderIsExists(h) {
-				decls = nil
-				return
-			}
 			if addPackageUnsafe {
 				p.AddImports("unsafe")
 			}
 			// Only for adding to ignore list
-			// fmt.Printf("%20s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
+			// fmt.Printf("%40s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
 		}
 	}()
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("error - panic")
+			err = fmt.Errorf("error - panic : %#v", r)
 		}
 	}()
 
 	// ignore if haven`t definition
-	if !n.Definition {
+	if !n.IsDefinition {
 		return
 	}
 
@@ -172,15 +135,6 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			p.UndefineType(name)
 		}
 	}()
-
-	// TODO: Some platform structs are ignored.
-	// https://github.com/Konstantin8105/c4go/issues/85
-	if name == "__locale_struct" ||
-		name == "__sigaction" ||
-		name == "sigaction" {
-		err = nil
-		return
-	}
 
 	var fields []*goast.Field
 
@@ -244,21 +198,6 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		case *ast.IndirectFieldDecl:
 			// ignore
 
-		case *ast.AlignedAttr:
-			// ignore
-
-		case *ast.PackedAttr:
-			// ignore
-
-		case *ast.MaxFieldAlignmentAttr:
-			// ignore
-
-		case *ast.FullComment:
-			// We haven't Go ast struct for easy inject a comments.
-			// All comments are added like CommentsGroup.
-			// So, we can ignore that comment, because all comments
-			// will be added by another way.
-
 		case *ast.TransparentUnionAttr:
 			// Don't do anythink
 			// Example of AST:
@@ -291,15 +230,20 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			declsIn, err = transpileToNode(field, p)
 			if err != nil {
 				err = fmt.Errorf("Cannot transpile %T", field)
+				// p.AddMessage(p.GenerateWarningMessage(err, field))
 				return
-			} else {
-				decls = append(decls, declsIn...)
 			}
+			decls = append(decls, declsIn...)
 		}
 	}
 
-	s := program.NewStruct(n)
-	if s.IsUnion {
+	s, err := program.NewStruct(n)
+	if err != nil {
+		p.AddMessage(p.GenerateWarningMessage(err, n))
+		return
+	}
+	switch s.Type {
+	case program.UnionType:
 		if strings.HasPrefix(s.Name, "union ") {
 			p.Structs[s.Name] = s
 			defer func() {
@@ -317,7 +261,8 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 				}
 			}()
 		}
-	} else {
+
+	case program.StructType:
 		if strings.HasPrefix(s.Name, "struct ") {
 			p.Structs[s.Name] = s
 			defer func() {
@@ -335,17 +280,18 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 				}
 			}()
 		}
+
+	default:
+		err = fmt.Errorf("Undefine type of struct : %v", s.Type)
+		return
 	}
 
-	if strings.HasPrefix(name, "struct ") {
-		name = name[len("struct "):]
-	}
-	if strings.HasPrefix(name, "union ") {
-		name = name[len("union "):]
-	}
+	name = strings.TrimPrefix(name, "struct ")
+	name = strings.TrimPrefix(name, "union ")
 
 	var d []goast.Decl
-	if s.IsUnion {
+	switch s.Type {
+	case program.UnionType:
 		// Union size
 		var size int
 		size, err = types.SizeOf(p, "union "+name)
@@ -356,18 +302,18 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			err = fmt.Errorf("could not determine the size of type `union %s`"+
 				" for that reason: %s", name, err)
 			return
-		} else {
-			// So, we got size, then
-			// Add imports needed
-			addPackageUnsafe = true
-
-			// Declaration for implementing union type
-			d, err = transpileUnion(name, size, fields)
-			if err != nil {
-				return nil, err
-			}
 		}
-	} else {
+		// So, we got size, then
+		// Add imports needed
+		addPackageUnsafe = true
+
+		// Declaration for implementing union type
+		d, err = transpileUnion(name, size, fields)
+		if err != nil {
+			return nil, err
+		}
+
+	case program.StructType:
 		d = append(d, &goast.GenDecl{
 			Tok: token.TYPE,
 			Specs: []goast.Spec{
@@ -381,6 +327,10 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 				},
 			},
 		})
+
+	default:
+		err = fmt.Errorf("Undefine type of struct : %v", s.Type)
+		return
 	}
 
 	decls = append(decls, d...)
@@ -388,128 +338,76 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 	return
 }
 
-var ignoreTypedef map[string]string = map[string]string{
-	"__u_char":   "bits/types.h",
-	"__u_short":  "bits/types.h",
-	"__u_int":    "bits/types.h",
-	"__u_long":   "bits/types.h",
-	"__int8_t":   "bits/types.h",
-	"__uint8_t":  "bits/types.h",
-	"__int16_t":  "bits/types.h",
-	"__uint16_t": "bits/types.h",
-	"__int32_t":  "bits/types.h",
-	"__uint32_t": "bits/types.h",
-	"__int64_t":  "bits/types.h",
-	"__uint64_t": "bits/types.h",
-	"__quad_t":   "bits/types.h",
-	"__u_quad_t": "bits/types.h",
-	"__dev_t":    "bits/types.h",
-	"__uid_t":    "bits/types.h",
-	"__gid_t":    "bits/types.h",
-	"__ino_t":    "bits/types.h",
-	"__ino64_t":  "bits/types.h",
-	"__mode_t":   "bits/types.h",
-	"__nlink_t":  "bits/types.h",
-	"__off_t":    "bits/types.h",
-	"__off64_t":  "bits/types.h",
-	"__pid_t":    "bits/types.h",
-	"__fsid_t":   "bits/types.h",
-	"__clock_t":  "bits/types.h",
-	"__rlim_t":   "bits/types.h",
-	"__rlim64_t": "bits/types.h",
-	"__id_t":     "bits/types.h",
-	// "__time_t":          "bits/types.h", // need for test time.c
-	"__useconds_t":      "bits/types.h",
-	"__suseconds_t":     "bits/types.h",
-	"__daddr_t":         "bits/types.h",
-	"__key_t":           "bits/types.h",
-	"__clockid_t":       "bits/types.h",
-	"__timer_t":         "bits/types.h",
-	"__blksize_t":       "bits/types.h",
-	"__blkcnt_t":        "bits/types.h",
-	"__blkcnt64_t":      "bits/types.h",
-	"__fsblkcnt_t":      "bits/types.h",
-	"__fsblkcnt64_t":    "bits/types.h",
-	"__fsfilcnt_t":      "bits/types.h",
-	"__fsfilcnt64_t":    "bits/types.h",
-	"__fsword_t":        "bits/types.h",
-	"__ssize_t":         "bits/types.h",
-	"__syscall_slong_t": "bits/types.h",
-	"__syscall_ulong_t": "bits/types.h",
-	"__loff_t":          "bits/types.h",
-	"__qaddr_t":         "bits/types.h",
-	"__caddr_t":         "bits/types.h",
-	"__intptr_t":        "bits/types.h",
-	"__socklen_t":       "bits/types.h",
+func transpileCXXRecordDecl(p *program.Program, n *ast.RecordDecl) (
+	decls []goast.Decl, err error) {
 
-	"u_char":      "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"u_short":     "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"u_int":       "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"u_long":      "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"quad_t":      "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"u_quad_t":    "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"fsid_t":      "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"loff_t":      "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"ino_t":       "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"ino64_t":     "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"dev_t":       "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"gid_t":       "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"mode_t":      "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"nlink_t":     "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"uid_t":       "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"id_t":        "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"daddr_t":     "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"caddr_t":     "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"key_t":       "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"useconds_t":  "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"suseconds_t": "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"ulong":       "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"ushort":      "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"uint":        "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"int8_t":      "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"int16_t":     "/usr/include/x86_64-linux-gnu/sys/types.h",
-	// "int32_t":     "/usr/include/x86_64-linux-gnu/sys/types.h",// need for struct
-	"int64_t":    "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"u_int8_t":   "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"u_int16_t":  "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"u_int32_t":  "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"u_int64_t":  "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"register_t": "/usr/include/x86_64-linux-gnu/sys/types.h",
+	n.Name = types.GenerateCorrectType(n.Name)
+	name := n.Name
 
-	"blksize_t":    "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"blkcnt_t":     "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"fsblkcnt_t":   "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"fsfilcnt_t":   "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"blkcnt64_t":   "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"fsblkcnt64_t": "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"fsfilcnt64_t": "/usr/include/x86_64-linux-gnu/sys/types.h",
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("cannot transpileCXXRecordDecl : `%v`. %v",
+				n.Name, err)
+			p.AddMessage(p.GenerateWarningMessage(err, n))
+		}
+	}()
 
-	"clock_t":   "include/time.h",
-	"time_t":    "include/time.h",
-	"clockid_t": "include/time.h",
-	"timer_t":   "include/time.h",
-	"pid_t":     "include/time.h",
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("error - panic : %#v", r)
+		}
+	}()
 
-	"FILE":     "/usr/include/stdio.h",
-	"__FILE":   "/usr/include/stdio.h",
-	"off_t":    "/usr/include/stdio.h",
-	"off64_t":  "/usr/include/stdio.h",
-	"ssize_t":  "/usr/include/stdio.h",
-	"fpos_t":   "/usr/include/stdio.h",
-	"fpos64_t": "/usr/include/stdio.h",
+	// ignore if haven`t definition
+	if !n.IsDefinition {
+		return
+	}
 
-	"_IO_lock_t":                "/usr/include/libio.h",
-	"_IO_FILE":                  "/usr/include/libio.h",
-	"__io_read_fn":              "/usr/include/libio.h",
-	"__io_write_fn":             "/usr/include/libio.h",
-	"__io_seek_fn":              "/usr/include/libio.h",
-	"__io_close_fn":             "/usr/include/libio.h",
-	"cookie_read_function_t":    "/usr/include/libio.h",
-	"cookie_write_function_t":   "/usr/include/libio.h",
-	"cookie_seek_function_t":    "/usr/include/libio.h",
-	"cookie_close_function_t":   "/usr/include/libio.h",
-	"_IO_cookie_io_functions_t": "/usr/include/libio.h",
-	"cookie_io_functions_t":     "/usr/include/libio.h",
+	if name == "" || p.IsTypeAlreadyDefined(name) {
+		err = nil
+		return
+	}
+
+	p.DefineType(n.Kind + " " + name)
+	defer func() {
+		if err != nil {
+			p.UndefineType(n.Kind + " " + name)
+		}
+	}()
+
+	var fields []*goast.Field
+	for _, v := range n.Children() {
+		switch v := v.(type) {
+		case *ast.CXXRecordDecl:
+			// ignore
+
+		case *ast.FieldDecl:
+			var f *goast.Field
+			f, err = transpileFieldDecl(p, v)
+			if err != nil {
+				return
+			}
+			fields = append(fields, f)
+
+		default:
+			p.AddMessage(p.GenerateWarningMessage(
+				fmt.Errorf("Cannot transpilation field in CXXRecordDecl : %T", v), n))
+		}
+	}
+
+	return []goast.Decl{&goast.GenDecl{
+		Tok: token.TYPE,
+		Specs: []goast.Spec{
+			&goast.TypeSpec{
+				Name: util.NewIdent(name),
+				Type: &goast.StructType{
+					Fields: &goast.FieldList{
+						List: fields,
+					},
+				},
+			},
+		},
+	}}, nil
 }
 
 func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
@@ -528,12 +426,8 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 				decls = nil
 				return
 			}
-			if h, ok := ignoreTypedef[n.Name]; ok && p.IncludeHeaderIsExists(h) {
-				decls = nil
-				return
-			}
 			// Only for adding to ignore list
-			// fmt.Printf("%20s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
+			// fmt.Printf("%40s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
 		}
 	}()
 	n.Name = types.CleanCType(types.GenerateCorrectType(n.Name))
@@ -623,10 +517,6 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 		return
 	}
 
-	if name == "__darwin_ct_rune_t" {
-		resolvedType = p.ImportType("github.com/Konstantin8105/c4go/darwin.CtRuneT")
-	}
-
 	if name == "div_t" || name == "ldiv_t" || name == "lldiv_t" {
 		intType := "int"
 		if name == "ldiv_t" {
@@ -642,8 +532,8 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 		// The name of the struct is not prefixed with "struct " because it is a
 		// typedef.
 		p.Structs[name] = &program.Struct{
-			Name:    name,
-			IsUnion: false,
+			Name: name,
+			Type: program.StructType,
 			Fields: map[string]interface{}{
 				"quot": intType,
 				"rem":  intType,
@@ -692,60 +582,6 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 	n.Type = types.GenerateCorrectType(n.Type)
 	n.Type2 = types.GenerateCorrectType(n.Type2)
 
-	// There may be some startup code for this global variable.
-	if p.Function == nil {
-		name := n.Name
-		switch name {
-		// Below are for macOS.
-		case "__stdinp", "__stdoutp":
-			theType = "*noarch.File"
-			p.AddImport("github.com/Konstantin8105/c4go/noarch")
-			p.AppendStartupExpr(
-				util.NewBinaryExpr(
-					goast.NewIdent(name),
-					token.ASSIGN,
-					util.NewTypeIdent(
-						"noarch."+util.Ucfirst(name[2:len(name)-1])),
-					"*noarch.File",
-					true,
-				),
-			)
-			return []goast.Decl{&goast.GenDecl{
-				Tok: token.VAR,
-				Specs: []goast.Spec{&goast.ValueSpec{
-					Names: []*goast.Ident{{Name: name}},
-					Type:  util.NewTypeIdent(theType),
-					Doc:   p.GetMessageComments(),
-				}},
-			}}, "", nil
-
-		// Below are for linux.
-		case "stdout", "stdin", "stderr":
-			theType = "*noarch.File"
-			p.AddImport("github.com/Konstantin8105/c4go/noarch")
-			p.AppendStartupExpr(
-				util.NewBinaryExpr(
-					goast.NewIdent(name),
-					token.ASSIGN,
-					util.NewTypeIdent("noarch."+util.Ucfirst(name)),
-					theType,
-					true,
-				),
-			)
-			return []goast.Decl{&goast.GenDecl{
-				Tok: token.VAR,
-				Specs: []goast.Spec{&goast.ValueSpec{
-					Names: []*goast.Ident{{Name: name}},
-					Type:  util.NewTypeIdent(theType),
-				}},
-				Doc: p.GetMessageComments(),
-			}}, "", nil
-
-		default:
-			// No init needed.
-		}
-	}
-
 	// Ignore extern as there is no analogy for Go right now.
 	if n.IsExtern && len(n.ChildNodes) == 0 {
 		return
@@ -772,16 +608,14 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 		}}, "", nil
 	}
 
-	/*
-		Example of DeclStmt for C code:
-		void * a = NULL;
-		void(*t)(void) = a;
-		Example of AST:
-		`-VarDecl 0x365fea8 <col:3, col:20> col:9 used t 'void (*)(void)' cinit
-		  `-ImplicitCastExpr 0x365ff48 <col:20> 'void (*)(void)' <BitCast>
-		    `-ImplicitCastExpr 0x365ff30 <col:20> 'void *' <LValueToRValue>
-		      `-DeclRefExpr 0x365ff08 <col:20> 'void *' lvalue Var 0x365f8c8 'r' 'void *'
-	*/
+	// Example of DeclStmt for C code:
+	// void * a = NULL;
+	// void(*t)(void) = a;
+	// Example of AST:
+	// `-VarDecl 0x365fea8 <col:3, col:20> col:9 used t 'void (*)(void)' cinit
+	//   `-ImplicitCastExpr 0x365ff48 <col:20> 'void (*)(void)' <BitCast>
+	//     `-ImplicitCastExpr 0x365ff30 <col:20> 'void *' <LValueToRValue>
+	//       `-DeclRefExpr 0x365ff08 <col:20> 'void *' lvalue Var 0x365f8c8 'r' 'void *'
 
 	if len(n.Children()) > 0 {
 		if v, ok := (n.Children()[0]).(*ast.ImplicitCastExpr); ok {
@@ -829,27 +663,44 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 
 	p.GlobalVariables[n.Name] = theType
 
-	name := n.Name
 	preStmts := []goast.Stmt{}
 	postStmts := []goast.Stmt{}
-
-	// TODO: Some platform structs are ignored.
-	// https://github.com/Konstantin8105/c4go/issues/85
-	if name == "_LIB_VERSION" ||
-		name == "_IO_2_1_stdin_" ||
-		name == "_IO_2_1_stdout_" ||
-		name == "_IO_2_1_stderr_" ||
-		name == "_DefaultRuneLocale" ||
-		name == "_CurrentRuneLocale" {
-		theType = "unknown10"
-		return
-	}
 
 	defaultValue, _, newPre, newPost, err := getDefaultValueForVar(p, n)
 	if err != nil {
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 		err = nil // Error is ignored
 	}
+	// for ignore zero value. example:
+	// int i = 0;
+	// tranpile to:
+	// var i int // but not "var i int = 0"
+	if len(defaultValue) == 1 && defaultValue[0] != nil {
+		if bl, ok := defaultValue[0].(*goast.BasicLit); ok {
+			if bl.Kind == token.INT && bl.Value == "0" {
+				defaultValue = nil
+			}
+			if bl.Kind == token.FLOAT && bl.Value == "0" {
+				defaultValue = nil
+			}
+		} else if call, ok := defaultValue[0].(*goast.CallExpr); ok {
+			if len(call.Args) == 1 {
+				if bl, ok := call.Args[0].(*goast.BasicLit); ok {
+					if bl.Kind == token.INT && bl.Value == "0" {
+						defaultValue = nil
+					}
+					if bl.Kind == token.FLOAT && bl.Value == "0" {
+						defaultValue = nil
+					}
+				}
+			}
+		} else if ind, ok := defaultValue[0].(*goast.Ident); ok {
+			if ind.Name == "nil" {
+				defaultValue = nil
+			}
+		}
+	}
+
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
 	// Allocate slice so that it operates like a fixed size array.
@@ -878,13 +729,26 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 				len(preStmts), len(postStmts)), n))
 	}
 
+	names := map[string]string{
+		"ptrdiff_t": "noarch.PtrdiffT",
+	}
+
+	var typeResult goast.Expr
+
+	if n, ok := names[n.Type]; ok {
+		typeResult = util.NewTypeIdent(n)
+		goto ignoreType
+	}
+
 	theType, err = types.ResolveType(p, n.Type)
 	if err != nil {
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 		err = nil // Error is ignored
 		theType = "UnknownType"
 	}
-	typeResult := util.NewTypeIdent(theType)
+	typeResult = util.NewTypeIdent(theType)
+
+ignoreType:
 
 	return []goast.Decl{&goast.GenDecl{
 		Tok: token.VAR,

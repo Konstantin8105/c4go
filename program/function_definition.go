@@ -34,13 +34,13 @@ type FunctionDefinition struct {
 // Each of the predefined function have a syntax that allows them to be easy to
 // read (and maintain). For example:
 //
-//     double __builtin_fabs(double) -> darwin.Fabs
+//     double __builtin_fabs(double) -> noarch.Fabs
 //
 // Declares the prototype of __builtin_fabs (a low level function implemented
 // only on Mac) with a specific substitution provided. This means that it should
 // replace any instance of __builtin_fabs with:
 //
-//     github.com/Konstantin8105/c4go/darwin.Fabs
+//     github.com/Konstantin8105/c4go/noarch.Fabs
 //
 // The substitution is optional.
 //
@@ -58,28 +58,17 @@ type FunctionDefinition struct {
 //     size_t fread(void*, size_t, size_t, FILE*) -> $0 = noarch.Fread(&1, $2, $3, $4)
 //
 var builtInFunctionDefinitions = map[string][]string{
-	"assert.h": []string{
-		// darwin/assert.h
-		"int __builtin_expect(int, int) -> darwin.BuiltinExpect",
-		"bool __assert_rtn(const char*, const char*, int, const char*) -> darwin.AssertRtn",
-
+	"assert.h": {
 		// linux/assert.h
 		"bool __assert_fail(const char*, const char*, unsigned int, const char*) -> linux.AssertFail",
 	},
-	"ctype.h": []string{
-		// darwin/ctype.h
-		"uint32 __istype(__darwin_ct_rune_t, uint32) -> darwin.IsType",
-		"__darwin_ct_rune_t __isctype(__darwin_ct_rune_t, uint32) -> darwin.IsCType",
-		"__darwin_ct_rune_t __tolower(__darwin_ct_rune_t) -> darwin.ToLower",
-		"__darwin_ct_rune_t __toupper(__darwin_ct_rune_t) -> darwin.ToUpper",
-		"uint32 __maskrune(__darwin_ct_rune_t, uint32) -> darwin.MaskRune",
-
+	"ctype.h": {
 		// linux/ctype.h
 		"const unsigned short int** __ctype_b_loc() -> linux.CtypeLoc",
 		"int tolower(int) -> linux.ToLower",
 		"int toupper(int) -> linux.ToUpper",
 	},
-	"math.h": []string{
+	"math.h": {
 		// linux/math.h
 		"int __signbitf(float) -> noarch.Signbitf",
 		"int __signbit(double) -> noarch.Signbitd",
@@ -93,23 +82,13 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int __isinff(float) -> linux.IsInff",
 		"int __isinf(double) -> linux.IsInf",
 		"int __isinfl(long double) -> linux.IsInf",
+		"double __builtin_nanf(const char*) -> linux.NaN",
+		"float __builtin_inff() -> linux.Inff",
 
-		// darwin/math.h
-		"double __builtin_fabs(double) -> darwin.Fabs",
-		"float __builtin_fabsf(float) -> darwin.Fabsf",
-		"double __builtin_fabsl(double) -> darwin.Fabsl",
-		"double __builtin_inf() -> darwin.Inf",
-		"float __builtin_inff() -> darwin.Inff",
-		"double __builtin_infl() -> darwin.Infl",
-		"Double2 __sincospi_stret(double) -> darwin.SincospiStret",
-		"Float2 __sincospif_stret(float) -> darwin.SincospifStret",
-		"Double2 __sincos_stret(double) -> darwin.SincosStret",
-		"Float2 __sincosf_stret(float) -> darwin.SincosfStret",
-		"float __builtin_huge_valf() -> darwin.Inff",
+		// math.h
 		"int __inline_signbitf(float) -> noarch.Signbitf",
 		"int __inline_signbitd(double) -> noarch.Signbitd",
 		"int __inline_signbitl(long double) -> noarch.Signbitl",
-		"double __builtin_nanf(const char*) -> darwin.NaN",
 
 		// math.h
 		"double acos(double) -> math.Acos",
@@ -119,10 +98,10 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double ceil(double) -> math.Ceil",
 		"double cos(double) -> math.Cos",
 		"double cosh(double) -> math.Cosh",
-		"double exp(double) -> math.Exp",
 		"double fabs(double) -> math.Abs",
 		"double floor(double) -> math.Floor",
 		"double fmod(double, double) -> math.Mod",
+		"double remainder(double, double) -> math.Remainder",
 		"double ldexp(double, int) -> math.Ldexp",
 		"double log(double) -> math.Log",
 		"double log10(double) -> math.Log10",
@@ -132,8 +111,88 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double sqrt(double) -> math.Sqrt",
 		"double tan(double) -> math.Tan",
 		"double tanh(double) -> math.Tanh",
+
+		"double copysign(double, double) -> math.Copysign",
+		"float copysignf(float, float) -> noarch.Copysignf",
+		"long double copysignl(long double, long double) -> math.Copysign",
+
+		"double fma(double, double, double) -> noarch.Fma",
+		"float fmaf(float, float, float) -> noarch.Fmaf",
+		"long double fmal(long double, long double, long double) -> noarch.Fma",
+
+		"double fmin(double , double ) -> noarch.Fmin",
+		"float fminf(float , float ) -> noarch.Fminf",
+		"long double fminl(long double , long double ) -> noarch.Fmin",
+
+		"double fmax(double , double ) -> noarch.Fmax",
+		"float fmaxf(float , float ) -> noarch.Fmaxf",
+		"long double fmaxl(long double , long double ) -> noarch.Fmax",
+
+		"double expm1(double) -> math.Expm1",
+		"float expm1f(float) -> noarch.Expm1f",
+		"long double expm1l(long double) -> math.Expm1",
+
+		"double exp2(double) -> math.Exp2",
+		"float exp2f(float) -> noarch.Exp2f",
+		"long double exp2l(long double) -> math.Exp2",
+
+		"double exp(double) -> math.Exp",
+		"float expf(float) -> noarch.Expf",
+		"long double expl(long double) -> math.Exp",
+
+		"double erf(double) -> math.Erf",
+		"float erff(float) -> noarch.Erff",
+		"long double erfl(long double) -> math.Erf",
+
+		"double erfc(double) -> math.Erfc",
+		"float erfcf(float) -> noarch.Erfcf",
+		"long double erfcl(long double) -> math.Erfc",
+
+		"double log2(double) -> math.Log2",
+		"float log2f(float) -> noarch.Log2f",
+		"long double log2l(long double) -> math.Log2",
+
+		"double log1p(double) -> math.Log1p",
+		"float log1pf(float) -> noarch.Log1pf",
+		"long double log1pl(long double) -> math.Log1p",
+
+		"double fdim(double, double) -> noarch.Fdim",
+		"float fdimf(float, float) -> noarch.Fdimf",
+		"long double fdiml(long double, long double) -> noarch.Fdim",
+
+		"double asinh(double) -> math.Asinh",
+		"float asinhf(float) -> noarch.Asinhf",
+		"long double asinhl(long double) -> math.Asinh",
+
+		"double acosh(double) -> math.Acosh",
+		"float acoshf(float) -> noarch.Acoshf",
+		"long double acoshl(long double) -> math.Acosh",
+
+		"double atanh(double) -> math.Atanh",
+		"float atanhf(float) -> noarch.Atanhf",
+		"long double atanhl(long double) -> math.Atanh",
+
+		"double sinh(double) -> math.Sinh",
+		"float sinhf(float) -> noarch.Sinhf",
+		"long double sinhl(long double) -> math.Sinh",
+
+		"double cosh(double) -> math.Cosh",
+		"float coshf(float) -> noarch.Coshf",
+		"long double coshl(long double) -> math.Cosh",
+
+		"double tanh(double) -> math.Tanh",
+		"float tanhf(float) -> noarch.Tanhf",
+		"long double tanhl(long double) -> math.Tanh",
+
+		"double cbrt(double) -> math.Cbrt",
+		"float cbrtf(float) -> noarch.Cbrtf",
+		"long double cbrtl(long double) -> math.Cbrt",
+
+		"double hypot(double, double) -> math.Hypot",
+		"float hypotf(float) -> noarch.Hypotf",
+		"long double hypotl(long double, long double) -> math.Hypot",
 	},
-	"stdio.h": []string{
+	"stdio.h": {
 
 		// linux/stdio.h
 		"int _IO_getc(FILE*) -> noarch.Fgetc",
@@ -172,18 +231,14 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int snprintf(char*, int, const char *, ...) -> noarch.Snprintf",
 		"int vsprintf(char*, const char *, ...) -> noarch.Vsprintf",
 		"int vsnprintf(char*, int, const char *, ...) -> noarch.Vsnprintf",
-
-		// darwin/stdio.h
-		"int __builtin___sprintf_chk(char*, int, int, char*) -> darwin.BuiltinSprintfChk",
-		"int __builtin___snprintf_chk(char*, int, int, int, char*) -> darwin.BuiltinSnprintfChk",
-		"int __builtin___vsprintf_chk(char*, int, int, char*) -> darwin.BuiltinVsprintfChk",
-		"int __builtin___vsnprintf_chk(char*, int, int, int, char*) -> darwin.BuiltinVsnprintfChk",
 	},
-	"string.h": []string{
+	"string.h": {
 		// string.h
 		"char* strcat(char *, const char *) -> noarch.Strcat",
+		"char* strncat(char *, const char *, int) -> noarch.Strncat",
 		"int strcmp(const char *, const char *) -> noarch.Strcmp",
 		"char * strchr(char *, int) -> noarch.Strchr",
+		"char * strstr(const char *, const char *) -> noarch.Strstr",
 
 		"char* strcpy(const char*, char*) -> noarch.Strcpy",
 		// should be: "char* strncpy(const char*, char*, size_t) -> noarch.Strncpy",
@@ -193,20 +248,13 @@ var builtInFunctionDefinitions = map[string][]string{
 		// in according to noarch.Strlen
 		"int strlen(const char*) -> noarch.Strlen",
 
-		// darwin/string.h
-		// should be: const char*, char*, size_t
-		"char* __builtin___strcpy_chk(const char*, char*, int) -> darwin.BuiltinStrcpy",
-		// should be: const char*, char*, size_t, size_t
-		"char* __builtin___strncpy_chk(const char*, char*, int, int) -> darwin.BuiltinStrncpy",
-
-		// should be: size_t __builtin_object_size(const void*, int)
-		"int __builtin_object_size(const char*, int) -> darwin.BuiltinObjectSize",
-
-		// see https://opensource.apple.com/source/Libc/Libc-763.12/include/secure/_string.h.auto.html
-		"char* __builtin___strcat_chk(char *, const char *, int) -> darwin.BuiltinStrcat",
 		"char* __inline_strcat_chk(char *, const char *) -> noarch.Strcat",
+
+		"char * memset(char *, char, unsigned int) -> noarch.Memset",
+		"char * memmove(char *, char *, unsigned int) -> noarch.Memmove",
+		"int memcmp(const char *, const char *, unsigned int) -> noarch.Memcmp",
 	},
-	"stdlib.h": []string{
+	"stdlib.h": {
 		// stdlib.h
 		"int abs(int) -> noarch.Abs",
 		"double atof(const char *) -> noarch.Atof",
@@ -233,9 +281,10 @@ var builtInFunctionDefinitions = map[string][]string{
 		"long long strtoll(const char *, char **, int) -> noarch.Strtoll",
 		"long unsigned int strtoul(const char *, char **, int) -> noarch.Strtoul",
 		"long long unsigned int strtoull(const char *, char **, int) -> noarch.Strtoull",
+		"int system(const char *) -> noarch.System",
 		"void free(void*) -> _",
 	},
-	"time.h": []string{
+	"time.h": {
 		// time.h
 		"time_t time(time_t *) -> noarch.Time",
 		"char* ctime(const time_t *) -> noarch.Ctime",
@@ -244,13 +293,10 @@ var builtInFunctionDefinitions = map[string][]string{
 		"time_t mktime(struct tm *) -> noarch.Mktime",
 		"char * asctime(struct tm *) -> noarch.Asctime",
 	},
-	"endian.h": []string{
-		// I'm not sure which header file these comes from?
-		"uint32 __builtin_bswap32(uint32) -> darwin.BSwap32",
-		"uint64 __builtin_bswap64(uint64) -> darwin.BSwap64",
-	},
 }
 
+// GetIncludeFileNameByFunctionSignature - return name of C include header
+// in according to function name and type signature
 func (p *Program) GetIncludeFileNameByFunctionSignature(
 	functionName, cType string) (includeFileName string, err error) {
 
@@ -389,8 +435,7 @@ func (p *Program) loadFunctionDefinitions() {
 				}
 			}
 
-			if strings.HasPrefix(substitution, "darwin.") ||
-				strings.HasPrefix(substitution, "linux.") ||
+			if strings.HasPrefix(substitution, "linux.") ||
 				strings.HasPrefix(substitution, "noarch.") {
 				substitution = "github.com/Konstantin8105/c4go/" + substitution
 			}

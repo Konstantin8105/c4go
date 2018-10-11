@@ -240,6 +240,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 		return nil, "unknown53", nil, nil, err
 	}
 	if types.IsPointer(leftType) && types.IsPointer(rightType) && operator == token.SUB {
+		p.AddImport("unsafe")
 		left, leftType = util.GetUintptrForSlice(left)
 		right, rightType = util.GetUintptrForSlice(right)
 	}
@@ -330,7 +331,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			right = goast.NewIdent("1")
 			rightType = "int"
 			left = goast.NewIdent("1")
-			rightType = "int"
+			leftType = "int"
 
 		} else if rightType != types.NullPointer && leftType != types.NullPointer {
 			// We may have to cast the right side to the same type as the left

@@ -159,8 +159,7 @@ func TestBookSources(t *testing.T) {
 						t.Errorf("Error in `%v`: %v", goFile, err)
 					}
 					for _, log := range logs {
-						t.Log(log)
-						fmt.Println(log)
+						fmt.Printf("`%v`:%v\n", file, log)
 					}
 
 					// go build testing
@@ -173,7 +172,9 @@ func TestBookSources(t *testing.T) {
 						cmd.Stderr = cmdErr
 						err = cmd.Run()
 						if err != nil {
-							fmt.Println("Go build test : ", err, cmdErr.String())
+							fmt.Printf(
+								"Go build test `%v` : err = %v\n%v",
+								file, err, cmdErr.String())
 							atomic.AddInt32(&amountWarnings, 1)
 						}
 					}
@@ -229,14 +230,159 @@ func getLogs(goFile string) (logs []string, err error) {
 			continue
 		}
 
-		if strings.Contains(line, "//") && strings.Contains(line, "AST") {
+		if strings.Contains(line, "/"+"/") && strings.Contains(line, "AST") {
 			logs = append(logs, line)
 		}
-		if strings.HasPrefix(line, "// Warning") {
+		if strings.HasPrefix(line, "/"+"/ Warning") {
 			logs = append(logs, line)
 		}
 	}
 
 	err = scanner.Err()
 	return
+}
+
+func TestFrame3dd(t *testing.T) {
+	folder := "./build/git-source/frame3dd/"
+
+	// Create build folder
+	if _, err := os.Stat(folder); os.IsNotExist(err) {
+		err = os.MkdirAll(folder, os.ModePerm)
+		if err != nil {
+			t.Fatalf("Cannot create folder %v . %v", folder, err)
+		}
+
+		// clone git repository
+
+		args := []string{"clone", "-b", "Debug2", "https://github.com/Konstantin8105/History_frame3DD.git", folder}
+		err = exec.Command("git", args...).Run()
+		if err != nil {
+			t.Fatalf("Cannot clone git repository with args `%v`: %v", args, err)
+		}
+	}
+
+	args := DefaultProgramArgs()
+	args.inputFiles = []string{
+		folder + "src/main.c",
+		folder + "src/frame3dd.c",
+		folder + "src/frame3dd_io.c",
+		folder + "src/coordtrans.c",
+		folder + "src/eig.c",
+		folder + "src/HPGmatrix.c",
+		folder + "src/HPGutil.c",
+		folder + "src/NRutil.c",
+	}
+	args.clangFlags = []string{
+		"-I" + folder + "viewer",
+		"-I" + folder + "microstran",
+	}
+	args.outputFile = folder + "src/main.go"
+	args.ast = false
+	args.verbose = false
+
+	if err := Start(args); err != nil {
+		t.Fatalf("Cannot transpile `%v`: %v", args, err)
+	}
+
+	cmd := exec.Command("go", "build", "-o", folder+"src/frame3dd",
+		args.outputFile)
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if err != nil {
+		t.Fatalf("cmd.Run() failed with %s : %v\n", err, stderr.String())
+	}
+
+}
+
+func TestMultifiles(t *testing.T) {
+	type fs struct {
+		input  []string
+		clang  []string
+		output string
+	}
+	tcs := []struct {
+		prefix    string
+		gitSource string
+		files     []fs
+	}{
+		{
+			prefix:    "parg",
+			gitSource: "https://github.com/jibsen/parg.git",
+			files: []fs{
+				{
+					input: []string{"build/git-source/parg/parg.c"},
+					clang: []string{
+						"-Ibuild/git-source/parg/",
+					},
+					output: "build/git-source/parg/parg.go",
+				},
+				{
+					input: []string{
+						"build/git-source/parg/test/test_parg.c",
+					},
+					clang: []string{
+						"-Ibuild/git-source/parg/",
+					},
+					output: "build/git-source/parg/test/test.go",
+				},
+			},
+		},
+		{
+			prefix:    "stmr.c",
+			gitSource: "https://github.com/wooorm/stmr.c",
+			files: []fs{
+				{
+					input:  []string{"build/git-source/stmr.c/stmr.c"},
+					output: "build/git-source/stmr.c/stmr.go",
+				},
+			},
+		},
+		{
+			prefix:    "tinyexpr",
+			gitSource: "https://github.com/codeplea/tinyexpr.git",
+			files: []fs{
+				{
+					input:  []string{"build/git-source/tinyexpr/tinyexpr.c"},
+					output: "build/git-source/tinyexpr/tinyexpr.go",
+				},
+			},
+		},
+	}
+
+	for _, tc := range tcs {
+		fileList, err := getFileList(tc.prefix, tc.gitSource)
+		if err != nil {
+			t.Fatal(err)
+		}
+		fmt.Println(">", fileList)
+
+		for _, f := range tc.files {
+			t.Run(fmt.Sprintf("%v", f), func(t *testing.T) {
+				args := DefaultProgramArgs()
+				args.inputFiles = f.input
+				args.clangFlags = f.clang
+				args.outputFile = f.output
+				args.ast = false
+				args.verbose = false
+
+				if err := Start(args); err != nil {
+					t.Fatalf("Cannot transpile `%v`: %v", args, err)
+				}
+
+				// logging warnings
+				var err error
+				var logs []string
+				logs, err = getLogs(f.output)
+				if err != nil {
+					t.Errorf("Error in `%v`: %v", f.output, err)
+				}
+				for _, log := range logs {
+					fmt.Printf("`%v`:%v\n", f.output, log)
+				}
+
+			})
+		}
+	}
 }

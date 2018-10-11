@@ -118,6 +118,15 @@ func NewCallExpr(functionName string, args ...goast.Expr) *goast.CallExpr {
 	for i := range args {
 		PanicIfNil(args[i], "Argument of function is cannot be nil")
 	}
+	index := strings.Index(functionName, ".")
+	if index > 0 {
+		if IsGoPackage(functionName[:index]) {
+			return &goast.CallExpr{
+				Fun:  goast.NewIdent(functionName),
+				Args: args,
+			}
+		}
+	}
 	return &goast.CallExpr{
 		Fun:  typeToExpr(functionName),
 		Args: args,
@@ -266,7 +275,19 @@ func IsGoKeyword(w string) bool {
 		"import", "return", "var", "_", "init":
 		return true
 	}
+	if IsGoPackage(w) {
+		return true
+	}
 
+	return false
+}
+
+// IsGoPackage Go packages
+func IsGoPackage(w string) bool {
+	switch w {
+	case "fmt", "os", "math", "testing", "unsafe", "ioutil":
+		return true
+	}
 	return false
 }
 
@@ -347,11 +368,15 @@ func CreateSliceFromReference(goType string, expr goast.Expr) *goast.SliceExpr {
 	return &goast.SliceExpr{
 		X: NewCallExpr(
 			fmt.Sprintf("(*[100000000]%s)", goType),
-			NewCallExpr("unsafe.Pointer", &goast.UnaryExpr{
-				X:  expr,
-				Op: token.AND,
+			&goast.CallExpr{
+				Fun: goast.NewIdent("unsafe.Pointer"),
+				Args: []goast.Expr{
+					&goast.UnaryExpr{
+						X:  expr,
+						Op: token.AND,
+					},
+				},
 			}),
-		),
 	}
 }
 
@@ -418,7 +443,7 @@ func NewAnonymousFunction(body, deferBody []goast.Stmt,
 	return &goast.CallExpr{Fun: &goast.FuncLit{
 		Type: &goast.FuncType{
 			Results: &goast.FieldList{List: []*goast.Field{
-				&goast.Field{Type: goast.NewIdent(returnType)},
+				{Type: goast.NewIdent(returnType)},
 			}},
 		},
 		Body: &goast.BlockStmt{

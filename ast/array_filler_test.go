@@ -20,4 +20,15 @@ func TestArrayFiller(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error parsing")
 	}
+
+	if uint64(actual.Address()) != 0 {
+		t.Fatal("Address is not zero")
+	}
+	var v ArrayFiller
+	actual.AddChild(&v)
+	if len(actual.Children()) == 0 {
+		t.Fatal("Childrens is not correct")
+	}
+
+	_ = actual.Position()
 }

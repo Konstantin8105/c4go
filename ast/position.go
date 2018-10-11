@@ -3,6 +3,7 @@ package ast
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/Konstantin8105/c4go/util"
 )
@@ -32,8 +33,9 @@ func (p Position) GetSimpleLocation() (loc string) {
 	return fmt.Sprintf(" %s:%d ", file, p.Line)
 }
 
+// NewPositionFromString create a Position from string line
 func NewPositionFromString(s string) Position {
-	if s == "<invalid sloc>" || s == "" {
+	if strings.Contains(s, "<invalid sloc>") || s == "" {
 		return Position{}
 	}
 
@@ -113,7 +115,7 @@ func NewPositionFromString(s string) Position {
 	}
 
 	// This must be below all of the others.
-	re = util.GetRegex(`^([^:]+):(\d+):(\d+), col:(\d+)$`)
+	re = util.GetRegex(`^((?:[a-zA-Z]\:)?[^:]+):(\d+):(\d+), col:(\d+)$`)
 	if groups := re.FindStringSubmatch(s); len(groups) > 0 {
 		return Position{
 			StringValue: s,
@@ -124,7 +126,7 @@ func NewPositionFromString(s string) Position {
 		}
 	}
 
-	re = util.GetRegex(`^([^:]+):(\d+):(\d+), line:(\d+):(\d+)$`)
+	re = util.GetRegex(`^((?:[a-zA-Z]\:)?[^:]+):(\d+):(\d+), line:(\d+):(\d+)$`)
 	if groups := re.FindStringSubmatch(s); len(groups) > 0 {
 		return Position{
 			StringValue: s,
@@ -136,7 +138,7 @@ func NewPositionFromString(s string) Position {
 		}
 	}
 
-	re = util.GetRegex(`^([^:]+):(\d+):(\d+)$`)
+	re = util.GetRegex(`^((?:[a-zA-Z]\:)?[^:]+):(\d+):(\d+)$`)
 	if groups := re.FindStringSubmatch(s); len(groups) > 0 {
 		return Position{
 			StringValue: s,
@@ -146,7 +148,7 @@ func NewPositionFromString(s string) Position {
 		}
 	}
 
-	re = util.GetRegex(`^([^:]+):(\d+):(\d+)$`)
+	re = util.GetRegex(`^((?:[a-zA-Z]\:)?[^:]+):(\d+):(\d+)$`)
 	if groups := re.FindStringSubmatch(s); len(groups) > 0 {
 		return Position{
 			StringValue: s,
@@ -156,7 +158,7 @@ func NewPositionFromString(s string) Position {
 		}
 	}
 
-	re = util.GetRegex(`^col:(\d+), ([^:]+):(\d+):(\d+)$`)
+	re = util.GetRegex(`^col:(\d+), ((?:[a-zA-Z]\:)?[^:]+):(\d+):(\d+)$`)
 	if groups := re.FindStringSubmatch(s); len(groups) > 0 {
 		return Position{
 			StringValue: s,
@@ -164,7 +166,7 @@ func NewPositionFromString(s string) Position {
 		}
 	}
 
-	re = util.GetRegex(`^([^:]+):(\d+):(\d+), ([^:]+):(\d+):(\d+)$`)
+	re = util.GetRegex(`^((?:[a-zA-Z]\:)?[^:]+):(\d+):(\d+), ((?:[a-zA-Z]\:)?[^:]+):(\d+):(\d+)$`)
 	if groups := re.FindStringSubmatch(s); len(groups) > 0 {
 		return Position{
 			StringValue: s,
@@ -212,6 +214,7 @@ func mergePositions(p1, p2 Position) Position {
 // PositionBuiltIn - default value for fix position
 var PositionBuiltIn = "<built-in>"
 
+// FixPositions is fix positions of Nodes
 func FixPositions(nodes []Node) {
 	pos := Position{File: PositionBuiltIn}
 	fixPositions(nodes, pos)
@@ -229,6 +232,8 @@ func fixPositions(nodes []Node, pos Position) {
 
 func setPosition(node Node, position Position) {
 	switch n := node.(type) {
+	case *AccessSpecDecl:
+		n.Pos = position
 	case *AlignedAttr:
 		n.Pos = position
 	case *AllocSizeAttr:
@@ -246,6 +251,8 @@ func setPosition(node Node, position Position) {
 	case *BlockCommandComment:
 		n.Pos = position
 	case *BreakStmt:
+		n.Pos = position
+	case *C11NoReturnAttr:
 		n.Pos = position
 	case *CallExpr:
 		n.Pos = position
@@ -266,6 +273,18 @@ func setPosition(node Node, position Position) {
 	case *CompoundLiteralExpr:
 		n.Pos = position
 	case *CStyleCastExpr:
+		n.Pos = position
+	case *CXXConstructorDecl:
+		n.Pos = position
+	case *CXXConstructExpr:
+		n.Pos = position
+	case *CXXMethodDecl:
+		n.Pos = position
+	case *CXXMemberCallExpr:
+		n.Pos = position
+	case *CXXRecordDecl:
+		n.Pos = position
+	case *CXXThisExpr:
 		n.Pos = position
 	case *DeclRefExpr:
 		n.Pos = position
@@ -290,6 +309,8 @@ func setPosition(node Node, position Position) {
 	case *FloatingLiteral:
 		n.Pos = position
 	case *FormatAttr:
+		n.Pos = position
+	case *FormatArgAttr:
 		n.Pos = position
 	case *FullComment:
 		n.Pos = position
@@ -321,6 +342,8 @@ func setPosition(node Node, position Position) {
 		n.Pos = position
 	case *LabelStmt:
 		n.Pos = position
+	case *LinkageSpecDecl:
+		n.Pos = position
 	case *MallocAttr:
 		n.Pos = position
 	case *MaxFieldAlignmentAttr:
@@ -329,9 +352,13 @@ func setPosition(node Node, position Position) {
 		n.Pos = position
 	case *ModeAttr:
 		n.Pos = position
+	case *NoAliasAttr:
+		n.Pos = position
 	case *NoInlineAttr:
 		n.Pos = position
 	case *NoThrowAttr:
+		n.Pos = position
+	case *NotTailCalledAttr:
 		n.Pos = position
 	case *NonNullAttr:
 		n.Pos = position
@@ -401,7 +428,7 @@ func setPosition(node Node, position Position) {
 		*QualType, *PointerType, *ParenType, *IncompleteArrayType,
 		*FunctionProtoType, *EnumType, *Enum, *ElaboratedType,
 		*ConstantArrayType, *BuiltinType, *ArrayFiller, *Field,
-		*DecayedType:
+		*DecayedType, *CXXRecord, *AttributedType:
 		// These do not have positions so they can be ignored.
 	default:
 		panic(fmt.Sprintf("unknown node type: %+#v", node))

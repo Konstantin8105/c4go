@@ -59,6 +59,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 	}
 
 	switch nodeName {
+	case "AccessSpecDecl":
+		return parseAccessSpecDecl(line), nil
 	case "AlignedAttr":
 		return parseAlignedAttr(line), nil
 	case "AllocSizeAttr":
@@ -69,6 +71,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseArraySubscriptExpr(line), nil
 	case "AsmLabelAttr":
 		return parseAsmLabelAttr(line), nil
+	case "AttributedType":
+		return parseAttributedType(line), nil
 	case "AvailabilityAttr":
 		return parseAvailabilityAttr(line), nil
 	case "BinaryOperator":
@@ -79,6 +83,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseBreakStmt(line), nil
 	case "BuiltinType":
 		return parseBuiltinType(line), nil
+	case "C11NoReturnAttr":
+		return parseC11NoReturnAttr(line), nil
 	case "CallExpr":
 		return parseCallExpr(line), nil
 	case "CaseStmt":
@@ -101,6 +107,20 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseCompoundAssignOperator(line), nil
 	case "CStyleCastExpr":
 		return parseCStyleCastExpr(line), nil
+	case "CXXConstructExpr":
+		return parseCXXConstructExpr(line), nil
+	case "CXXConstructorDecl":
+		return parseCXXConstructorDecl(line), nil
+	case "CXXMethodDecl":
+		return parseCXXMethodDecl(line), nil
+	case "CXXMemberCallExpr":
+		return parseCXXMemberCallExpr(line), nil
+	case "CXXRecord":
+		return parseCXXRecord(line), nil
+	case "CXXRecordDecl":
+		return parseCXXRecordDecl(line), nil
+	case "CXXThisExpr":
+		return parseCXXThisExpr(line), nil
 	case "DecayedType":
 		return parseDecayedType(line), nil
 	case "DeclRefExpr":
@@ -133,6 +153,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseFieldDecl(line), nil
 	case "FloatingLiteral":
 		return parseFloatingLiteral(line), nil
+	case "FormatArgAttr":
+		return parseFormatArgAttr(line), nil
 	case "FormatAttr":
 		return parseFormatAttr(line), nil
 	case "FunctionDecl":
@@ -169,6 +191,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseIntegerLiteral(line), nil
 	case "LabelStmt":
 		return parseLabelStmt(line), nil
+	case "LinkageSpecDecl":
+		return parseLinkageSpecDecl(line), nil
 	case "MallocAttr":
 		return parseMallocAttr(line), nil
 	case "MaxFieldAlignmentAttr":
@@ -177,12 +201,16 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseMemberExpr(line), nil
 	case "ModeAttr":
 		return parseModeAttr(line), nil
+	case "NoAliasAttr":
+		return parseNoAliasAttr(line), nil
 	case "NoInlineAttr":
 		return parseNoInlineAttr(line), nil
 	case "NoThrowAttr":
 		return parseNoThrowAttr(line), nil
 	case "NonNullAttr":
 		return parseNonNullAttr(line), nil
+	case "NotTailCalledAttr":
+		return parseNotTailCalledAttr(line), nil
 	case "OffsetOfExpr":
 		return parseOffsetOfExpr(line), nil
 	case "PackedAttr":

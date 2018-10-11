@@ -25,7 +25,7 @@ int i = 9;
 }//comment25
 
 
-void /* comment26 */ main ()
+int /* comment26 */ main ()
 {
 	int i = 0;
 	for ( i = 0 ; i < 5 ; i++)
@@ -40,6 +40,7 @@ void /* comment26 */ main ()
 			b();
 		}
 	}
+	return 0;
 }
 /*
  * comment29

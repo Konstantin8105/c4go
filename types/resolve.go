@@ -25,6 +25,8 @@ var cIntegerType = []string{
 	"unsigned long",
 	"unsigned short",
 	"unsigned short int",
+	"size_t",
+	"ptrdiff_t",
 }
 
 // IsCInteger - return true is C type integer
@@ -36,6 +38,25 @@ func IsCInteger(p *program.Program, cType string) bool {
 	}
 	if rt, ok := p.TypedefType[cType]; ok {
 		return IsCInteger(p, rt)
+	}
+	return false
+}
+
+var cFloatType = []string{
+	"double",
+	"float",
+	"long double",
+}
+
+// IsCInteger - return true is C type integer
+func IsCFloat(p *program.Program, cType string) bool {
+	for i := range cFloatType {
+		if cType == cFloatType[i] {
+			return true
+		}
+	}
+	if rt, ok := p.TypedefType[cType]; ok {
+		return IsCFloat(p, rt)
 	}
 	return false
 }
@@ -71,6 +92,9 @@ var simpleResolveTypes = map[string]string{
 	"unsigned short int":     "uint16",
 	"void":                   "",
 	"_Bool":                  "int",
+	"size_t":                 "uint",
+	"ptrdiff_t":              "github.com/Konstantin8105/c4go/noarch.PtrdiffT",
+	"time_t":                 "github.com/Konstantin8105/c4go/noarch.TimeT",
 
 	// void*
 	"void*":  "interface{}",
@@ -90,16 +114,17 @@ var simpleResolveTypes = map[string]string{
 	// These are special cases that almost certainly don't work. I've put
 	// them here because for whatever reason there is no suitable type or we
 	// don't need these platform specific things to be implemented yet.
-	"__builtin_va_list":            "int64",
-	"__darwin_pthread_handler_rec": "int64",
-	"unsigned __int128":            "uint64",
-	"__int128":                     "int64",
-	"__mbstate_t":                  "int64",
-	"__sbuf":                       "int64",
-	"__sFILEX":                     "interface{}",
-	"FILE":                         "github.com/Konstantin8105/c4go/noarch.File",
+	"__builtin_va_list": "int64",
+	"unsigned __int128": "uint64",
+	"__int128":          "int64",
+	"__mbstate_t":       "int64",
+	"__sbuf":            "int64",
+	"__sFILEX":          "interface{}",
+	"FILE":              "github.com/Konstantin8105/c4go/noarch.File",
 }
 
+// CStdStructType - conversion map from C standart library structures to
+// c4go structures
 var CStdStructType = map[string]string{
 	"div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
 	"ldiv_t":  "github.com/Konstantin8105/c4go/noarch.LdivT",
@@ -110,13 +135,7 @@ var CStdStructType = map[string]string{
 	"struct tm": "github.com/Konstantin8105/c4go/noarch.Tm",
 	"time_t":    "github.com/Konstantin8105/c4go/noarch.TimeT",
 
-	// Darwin specific
-	"__darwin_ct_rune_t": "github.com/Konstantin8105/c4go/darwin.CtRuneT",
-	"fpos_t":             "int",
-	"struct __float2":    "github.com/Konstantin8105/c4go/darwin.Float2",
-	"struct __double2":   "github.com/Konstantin8105/c4go/darwin.Double2",
-	"Float2":             "github.com/Konstantin8105/c4go/darwin.Float2",
-	"Double2":            "github.com/Konstantin8105/c4go/darwin.Double2",
+	"fpos_t": "int",
 }
 
 // NullPointer - is look : (double *)(nil) or (FILE *)(nil)
@@ -162,29 +181,15 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 		}
 	}()
 
-	// Uncomment only for debugging
-	// if strings.Contains(s, ":") {
-	// 	panic(fmt.Errorf("Found mistake resolve `%v` C type", s))
-	// }
+	if strings.Contains(s, ":") {
+		return "interface{}", errors.New("probably an incorrect type translation 0")
+	}
 
 	s = CleanCType(s)
 
 	// FIXME: This is a hack to avoid casting in some situations.
 	if s == "" {
 		return "interface{}", errors.New("probably an incorrect type translation 1")
-	}
-
-	// FIXME: I have no idea what this is.
-	if s == "const" {
-		return "interface{}", errors.New("probably an incorrect type translation 4")
-	}
-
-	if s == "char *[]" {
-		return "interface{}", errors.New("probably an incorrect type translation 2")
-	}
-
-	if s == "fpos_t" {
-		return "int", nil
 	}
 
 	// FIXME: I have no idea, how to solve.
@@ -230,9 +235,8 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 			// "div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
 			ii := p.ImportType(tt)
 			return ii, nil
-		} else {
-			return s, nil
 		}
+		return s, nil
 	}
 
 	if tt, ok := CStdStructType[s]; ok {
@@ -267,6 +271,9 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 		}
 		if strings.HasPrefix(s, "union ") {
 			s = s[len("union "):]
+		}
+		if strings.HasPrefix(s, "class ") {
+			s = s[len("class "):]
 		}
 		return p.ImportType(s), nil
 	}
@@ -597,7 +604,7 @@ func ParseFunction(s string) (prefix string, f []string, r []string, err error) 
 	}
 	// separate fields of arguments
 	{
-		var pos int = 1
+		pos := 1
 		counter := 0
 		for i := 1; i < len(arguments)-1; i++ {
 			if arguments[i] == '(' {
