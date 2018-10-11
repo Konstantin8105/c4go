@@ -832,7 +832,6 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 
 	p.GlobalVariables[n.Name] = theType
 
-	name := n.Name
 	preStmts := []goast.Stmt{}
 	postStmts := []goast.Stmt{}
 
