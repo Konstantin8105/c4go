@@ -26,6 +26,11 @@ func (p *Program) AddImport(importPath string) {
 		}
 	}
 
+	// only for debugging
+	// if quotedImportPath == "\"unsafe\"" {
+	// 	panic(quotedImportPath)
+	// }
+
 	p.imports = append(p.imports, quotedImportPath)
 }
 

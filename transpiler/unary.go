@@ -265,7 +265,6 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 		return
 	}
 
-	p.AddImport("unsafe")
 	expr = &goast.UnaryExpr{
 		X:  expr,
 		Op: token.AND,
