@@ -106,6 +106,38 @@ func Strchr(str []byte, ch int) []byte {
 	return nil
 }
 
+// Strstr finds the first occurrence of the null-terminated byte string
+// pointed to by substr in the null-terminated byte string pointed to by str.
+//The terminating null characters are not compared.
+func Strstr(str, subStr []byte) []byte {
+	if subStr == nil {
+		return str
+	}
+	if subStr[0] == '\x00' {
+		return str
+	}
+	i, j, k := 0, 0, 0
+	j++
+	for ; subStr[j] != '\x00'; j++ {
+		k++
+	}
+
+	for str[k] != '\x00' {
+		j, l := 0, i
+
+		for str[i] != '\x00' && subStr[j] != '\x00' && str[i] == subStr[j] {
+			i++
+			j++
+		}
+		if subStr[j] == '\x00' {
+			return str[l:]
+		}
+		i = l + 1
+		k++
+	}
+	return nil
+}
+
 // Memset sets the first num bytes of the block of memory pointed by ptr to
 // the specified value (interpreted as an unsigned char)
 func Memset(ptr []byte, value byte, num uint32) []byte {
