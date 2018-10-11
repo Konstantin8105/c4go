@@ -347,12 +347,23 @@ func (n nilWalker) Visit(node goast.Node) (w goast.Visitor) {
 				}
 			}
 		}
+
 	case *goast.ValueSpec:
 		fmt.Printf("%#v\n", v)
 		for _, id := range v.Names {
 			fmt.Printf("ID: %#v\n", id)
 		}
 		fmt.Printf("Type: %#v\n", v.Type)
+
+	case *goast.StructType:
+		fmt.Printf("%#v\n", v)
+		fmt.Printf("Fields : %#v\n", v.Fields)
+		fmt.Printf("Struct : %#v\n", v.Struct)
+
+	case *goast.TypeSpec:
+		fmt.Printf("%#v\n", v)
+		fmt.Printf("Type : %#v\n", v.Type)
+
 	}
 	return n
 }
