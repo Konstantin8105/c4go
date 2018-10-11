@@ -230,10 +230,10 @@ func getLogs(goFile string) (logs []string, err error) {
 			continue
 		}
 
-		if strings.Contains(line, "//") && strings.Contains(line, "AST") {
+		if strings.Contains(line, "/"+"/") && strings.Contains(line, "AST") {
 			logs = append(logs, line)
 		}
-		if strings.HasPrefix(line, "// Warning") {
+		if strings.HasPrefix(line, "/"+"/ Warning") {
 			logs = append(logs, line)
 		}
 	}
