@@ -97,7 +97,7 @@ var ToVoid = "ToVoid"
 //    certainly incorrect) "interface{}" is also returned. This is to allow the
 //    transpiler to step over type errors and put something as a placeholder
 //    until a more suitable solution is found for those cases.
-func ResolveType(p *program.Program, s string) (_ string, err error) {
+func ResolveType(p *program.Program, s string) (resolveResult string, err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("Cannot resolve type '%s' : %v", s, err)
@@ -152,21 +152,21 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 		}
 	}
 
-	// No need resolve typedef types
-	if _, ok := p.TypedefType[s]; ok {
-		if tt, ok := program.CStdStructType[s]; ok {
-			// "div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
-			ii := p.ImportType(tt)
-			return ii, nil
-		}
-		return s, nil
-	}
-
-	if tt, ok := program.CStdStructType[s]; ok {
-		// "div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
-		ii := p.ImportType(tt)
-		return ii, nil
-	}
+	// // No need resolve typedef types
+	// if _, ok := p.TypedefType[s]; ok {
+	// 	if tt, ok := program.CStdStructType[s]; ok {
+	// 		// "div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
+	// 		ii := p.ImportType(tt)
+	// 		return ii, nil
+	// 	}
+	// 	return s, nil
+	// }
+	//
+	// if tt, ok := program.CStdStructType[s]; ok {
+	// 	// "div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
+	// 	ii := p.ImportType(tt)
+	// 	return ii, nil
+	// }
 
 	// For function
 	if IsFunction(s) {
@@ -233,11 +233,14 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 
 	// Structures are by name.
 	if strings.HasPrefix(s, "struct ") || strings.HasPrefix(s, "union ") {
-		start := 6
-		if s[0] == 's' {
-			start++
+		lhsType := strings.TrimSpace(s)
+		if lhsType[len(lhsType)-1] == '*' {
+			lhsType = lhsType[:len(lhsType)-len(" *")]
 		}
-		return s[start:], nil
+		if str := p.GetStruct("c4go_" + lhsType); str != nil {
+			s = str.Name
+		}
+		return p.ImportType(s), nil
 	}
 
 	// Enums are by name.

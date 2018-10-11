@@ -467,9 +467,10 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 	if lhsType[len(lhsType)-1] == '*' {
 		lhsType = lhsType[:len(lhsType)-len(" *")]
 	}
-	if member, ok := program.StructFieldTranslations[lhsType]; ok {
-		if alias, ok := member[rhs]; ok {
-			rhs = alias
+	if str := p.GetStruct("c4go_" + lhsType); str != nil {
+		if alias, ok := str.Fields[rhs]; ok {
+			rhs = alias.(string)
+			goto Selector
 		}
 	}
 
@@ -494,6 +495,7 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 		}, n.Type, preStmts, postStmts, nil
 	}
 
+Selector:
 	_ = rhsType
 
 	return &goast.SelectorExpr{

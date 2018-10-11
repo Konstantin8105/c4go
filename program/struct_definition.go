@@ -3,15 +3,8 @@ package program
 // CStdStructType - conversion map from C standart library structures to
 // c4go structures
 var CStdStructType = map[string]string{
-	// stdlib.h
-	"div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
-	"ldiv_t":  "github.com/Konstantin8105/c4go/noarch.LdivT",
-	"lldiv_t": "github.com/Konstantin8105/c4go/noarch.LldivT",
-
 	// time.h
-	"tm":        "github.com/Konstantin8105/c4go/noarch.Tm",
-	"struct tm": "github.com/Konstantin8105/c4go/noarch.Tm",
-	"time_t":    "github.com/Konstantin8105/c4go/noarch.TimeT",
+	"time_t": "github.com/Konstantin8105/c4go/noarch.TimeT",
 
 	"fpos_t": "int",
 
@@ -70,32 +63,90 @@ var CStdStructType = map[string]string{
 	"FILE":              "github.com/Konstantin8105/c4go/noarch.File",
 }
 
-// This map is used to rename struct member names.
-var StructFieldTranslations = map[string]map[string]string{
+func (p *Program) initializationStructs() {
 	// stdlib.h
-	"div_t": {
-		"quot": "Quot",
-		"rem":  "Rem",
-	},
-	"ldiv_t": {
-		"quot": "Quot",
-		"rem":  "Rem",
-	},
-	"lldiv_t": {
-		"quot": "Quot",
-		"rem":  "Rem",
-	},
+	p.Unions["div_t"] = &Struct{
+		Name: "div_t",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"quot": "int",
+			"rem":  "int",
+		},
+	}
+	p.Unions["c4go_div_t"] = &Struct{
+		Name: "github.com/Konstantin8105/c4go/noarch.DivT",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"quot": "Quot",
+			"rem":  "Rem",
+		},
+	}
+
+	// stdlib.h
+	p.Unions["ldiv_t"] = &Struct{
+		Name: "ldiv_t",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"quot": "long int",
+			"rem":  "long int",
+		},
+	}
+	p.Unions["c4go_ldiv_t"] = &Struct{
+		Name: "github.com/Konstantin8105/c4go/noarch.LdivT",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"quot": "Quot",
+			"rem":  "Rem",
+		},
+	}
+
+	// stdlib.h
+	p.Unions["lldiv_t"] = &Struct{
+		Name: "lldiv_t",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"quot": "long long",
+			"rem":  "long long",
+		},
+	}
+	p.Unions["c4go_lldiv_t"] = &Struct{
+		Name: "github.com/Konstantin8105/c4go/noarch.LldivT",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"quot": "Quot",
+			"rem":  "Rem",
+		},
+	}
 
 	// time.h
-	"struct tm": {
-		"tm_sec":   "TmSec",
-		"tm_min":   "TmMin",
-		"tm_hour":  "TmHour",
-		"tm_mday":  "TmMday",
-		"tm_mon":   "TmMon",
-		"tm_year":  "TmYear",
-		"tm_wday":  "TmWday",
-		"tm_yday":  "TmYday",
-		"tm_isdst": "TmIsdst",
-	},
+	p.Unions["struct tm"] = &Struct{
+		Name: "struct tm",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"tm_sec":   "int",
+			"tm_min":   "int",
+			"tm_hour":  "int",
+			"tm_mday":  "int",
+			"tm_mon":   "int",
+			"tm_year":  "int",
+			"tm_wday":  "int",
+			"tm_yday":  "int",
+			"tm_isdst": "int",
+		},
+	}
+	p.Unions["c4go_struct tm"] = &Struct{
+		Name: "github.com/Konstantin8105/c4go/noarch.Tm",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"tm_sec":   "TmSec",
+			"tm_min":   "TmMin",
+			"tm_hour":  "TmHour",
+			"tm_mday":  "TmMday",
+			"tm_mon":   "TmMon",
+			"tm_year":  "TmYear",
+			"tm_wday":  "TmWday",
+			"tm_yday":  "TmYday",
+			"tm_isdst": "TmIsdst",
+		},
+	}
 }

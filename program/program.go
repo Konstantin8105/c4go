@@ -112,6 +112,8 @@ func NewProgram() (p *Program) {
 	defer func() {
 		// Need for "stdbool.h"
 		p.TypedefType["_Bool"] = "int"
+		// Initialization c4go implementation of CSTD structs
+		p.initializationStructs()
 	}()
 	return &Program{
 		imports:             []string{},
