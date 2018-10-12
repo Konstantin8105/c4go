@@ -150,22 +150,6 @@ func TestIntegrationScripts(t *testing.T) {
 				programArgs.outputFile,
 				"-v",
 			}
-			if strings.Index(file, "examples/") == -1 {
-				testName := strings.Split(file, ".")[0][6:]
-				args = append(
-					args,
-					// Flag `race` is no need, because we are check in
-					// integration test
-					// "-race",
-					"-covermode=atomic",
-				)
-				if os.Getenv("TRAVIS") == "true" {
-					args = append(args,
-						"-coverprofile="+testName+".coverprofile",
-						"-coverpkg=./noarch,./linux",
-					)
-				}
-			}
 			if os.Getenv("TRAVIS") != "true" { // for local testing
 				args = append(args, "-args", "-test.v")
 			}

@@ -10,11 +10,22 @@ export PKGS=$(go list ./... | grep -v c4go/build | grep -v c4go/examples | grep 
 # Make comma-separated.
 export PKGS_DELIM=$(echo "$PKGS" | tr ' ' ',')
 
-
 echo "PKGS       : $PKGS"
 echo "PKGS_DELIM : $PKGS_DELIM"
 
-go test -v -cover -tags integration -covermode atomic -coverpkg=$PKGS_DELIM -coverprofile coverage.txt $PKGS
+go test -v -cover -tags integration -coverpkg=$PKGS_DELIM -coverprofile=coverage.txt $PKGS
+
+export BUILD=$(ls -d ./build/tests/* | tr '\n' ' ')
+
+echo "Go transpiled tests: $BUILD"
+go test    -cover -coverprofile=profile.out -coverpkg=./noarch,./linux  ./noarch ./linux $BUILD
+if [ -f profile.out ]; then
+    cat profile.out >> coverage.txt
+    rm profile.out
+fi
+
+echo "End of coverage"
+
 
 # check race
 go test -tags=integration -run=TestIntegrationScripts/tests/ctype.c -race -v
