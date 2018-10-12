@@ -1,36 +1,16 @@
 #!/bin/bash
 
+# See that example from https://github.com/codecov/example-go
 set -e
-
 echo "" > coverage.txt
 
-# The code below was copied from:
-# https://github.com/golang/go/issues/6909#issuecomment-232878416
-#
-# As in @rodrigocorsi2 comment above (using full path to grep due to 'grep -n'
-# alias).
-export PKGS=$(go list ./... | grep -v c4go/build | grep -v /vendor/)
-
-# Make comma-separated.
-export PKGS_DELIM=$(echo "$PKGS" | paste -sd "," -)
-
-# Run tests and append all output to out.txt. It's important we have "-v" so
-# that all the test names are printed. It's also important that the covermode be
-# set to "count" so that the coverage profiles can be merged correctly together
-# with gocovmerge.
-#
-# Exit code 123 will be returned if any of the tests fail.
-go list -f 'go test -v -tags integration -covermode atomic -coverprofile {{.Name}}.coverprofile -coverpkg $PKGS_DELIM {{.ImportPath}}' $PKGS | xargs -I{} bash -c "{}"
-
-# Merge coverage profiles.
-COVERAGE_FILES=`ls -1 *.coverprofile 2>/dev/null | wc -l`
-if [ $COVERAGE_FILES != 0 ]; then
-	# check program `gocovmerge` is exist
-	if which gocovmerge >/dev/null 2>&1; then
-		gocovmerge `ls *.coverprofile` > coverage.txt
-		rm *.coverprofile
-	fi
-fi
+for d in $(go list ./... | grep -v vendor); do
+    go test -v -tags=integration -coverprofile=profile.out -covermode=atomic $d
+    if [ -f profile.out ]; then
+        cat profile.out >> coverage.txt
+        rm profile.out
+    fi
+done
 
 # check race
 go test -tags=integration -run=TestIntegrationScripts/tests/ctype.c -race -v
