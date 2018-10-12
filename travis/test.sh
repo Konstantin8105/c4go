@@ -10,7 +10,7 @@ echo "$PKGS"
 
 # Make comma-separated.
 export PKGS_DELIM=$(echo "$PKGS" | paste -sd "," -)
-go test -cover -tags integration -covermode atomic -coverpkg=all -coverprofile coverage.txt $PKGS
+go test -cover -tags integration -covermode atomic -coverpkg=$PKGS_DELIM -coverprofile coverage.txt $PKGS
 
 # check race
 go test -tags=integration -run=TestIntegrationScripts/tests/ctype.c -race -v
