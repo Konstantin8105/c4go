@@ -6,9 +6,11 @@ echo "" > coverage.txt
 
 export PKGS=$(go list ./... 2>/dev/null | grep -v c4go/build | grep -v c4go/examples | grep -v c4go/tests | grep -v /vendor/)
 
+echo "$PKGS"
+
 # Make comma-separated.
 export PKGS_DELIM=$(echo "$PKGS" | paste -sd "," -)
-go test -race -coverpkg=$PKGS_DELIM -coverprofile coverage.txt $PKGS
+go test -cover -tags integration -coverpkg=$PKGS_DELIM -coverprofile coverage.txt $PKGS
 
 # check race
 go test -tags=integration -run=TestIntegrationScripts/tests/ctype.c -race -v
