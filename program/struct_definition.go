@@ -65,7 +65,7 @@ var CStdStructType = map[string]string{
 
 func (p *Program) initializationStructs() {
 	// stdlib.h
-	p.Unions["div_t"] = &Struct{
+	p.Structs["div_t"] = &Struct{
 		Name: "div_t",
 		Type: StructType,
 		Fields: map[string]interface{}{
@@ -73,7 +73,7 @@ func (p *Program) initializationStructs() {
 			"rem":  "int",
 		},
 	}
-	p.Unions["c4go_div_t"] = &Struct{
+	p.Structs["c4go_div_t"] = &Struct{
 		Name: "github.com/Konstantin8105/c4go/noarch.DivT",
 		Type: StructType,
 		Fields: map[string]interface{}{
@@ -83,7 +83,7 @@ func (p *Program) initializationStructs() {
 	}
 
 	// stdlib.h
-	p.Unions["ldiv_t"] = &Struct{
+	p.Structs["ldiv_t"] = &Struct{
 		Name: "ldiv_t",
 		Type: StructType,
 		Fields: map[string]interface{}{
@@ -91,7 +91,7 @@ func (p *Program) initializationStructs() {
 			"rem":  "long int",
 		},
 	}
-	p.Unions["c4go_ldiv_t"] = &Struct{
+	p.Structs["c4go_ldiv_t"] = &Struct{
 		Name: "github.com/Konstantin8105/c4go/noarch.LdivT",
 		Type: StructType,
 		Fields: map[string]interface{}{
@@ -101,7 +101,7 @@ func (p *Program) initializationStructs() {
 	}
 
 	// stdlib.h
-	p.Unions["lldiv_t"] = &Struct{
+	p.Structs["lldiv_t"] = &Struct{
 		Name: "lldiv_t",
 		Type: StructType,
 		Fields: map[string]interface{}{
@@ -109,7 +109,7 @@ func (p *Program) initializationStructs() {
 			"rem":  "long long",
 		},
 	}
-	p.Unions["c4go_lldiv_t"] = &Struct{
+	p.Structs["c4go_lldiv_t"] = &Struct{
 		Name: "github.com/Konstantin8105/c4go/noarch.LldivT",
 		Type: StructType,
 		Fields: map[string]interface{}{
@@ -119,7 +119,7 @@ func (p *Program) initializationStructs() {
 	}
 
 	// time.h
-	p.Unions["struct tm"] = &Struct{
+	p.Structs["struct tm"] = &Struct{
 		Name: "struct tm",
 		Type: StructType,
 		Fields: map[string]interface{}{
@@ -134,7 +134,7 @@ func (p *Program) initializationStructs() {
 			"tm_isdst": "int",
 		},
 	}
-	p.Unions["c4go_struct tm"] = &Struct{
+	p.Structs["c4go_struct tm"] = &Struct{
 		Name: "github.com/Konstantin8105/c4go/noarch.Tm",
 		Type: StructType,
 		Fields: map[string]interface{}{
