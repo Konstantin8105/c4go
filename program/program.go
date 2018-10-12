@@ -112,6 +112,8 @@ func NewProgram() (p *Program) {
 	defer func() {
 		// Need for "stdbool.h"
 		p.TypedefType["_Bool"] = "int"
+		// Initialization c4go implementation of CSTD structs
+		p.initializationStructs()
 	}()
 	return &Program{
 		imports:             []string{},
@@ -334,6 +336,7 @@ type nilWalker struct {
 
 func (n nilWalker) Visit(node goast.Node) (w goast.Visitor) {
 	fmt.Println("---------")
+	fmt.Printf("Node: %#v", node)
 	switch v := node.(type) {
 	case *goast.GenDecl:
 		fmt.Printf("%#v\n", v)
@@ -345,12 +348,23 @@ func (n nilWalker) Visit(node goast.Node) (w goast.Visitor) {
 				}
 			}
 		}
+
 	case *goast.ValueSpec:
 		fmt.Printf("%#v\n", v)
 		for _, id := range v.Names {
 			fmt.Printf("ID: %#v\n", id)
 		}
 		fmt.Printf("Type: %#v\n", v.Type)
+
+	case *goast.StructType:
+		fmt.Printf("%#v\n", v)
+		fmt.Printf("Fields : %#v\n", v.Fields)
+		fmt.Printf("Struct : %#v\n", v.Struct)
+
+	case *goast.TypeSpec:
+		fmt.Printf("%#v\n", v)
+		fmt.Printf("Type : %#v\n", v.Type)
+
 	}
 	return n
 }

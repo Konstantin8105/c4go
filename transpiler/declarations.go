@@ -55,6 +55,15 @@ func generateNameFieldDecl(t string) string {
 
 func transpileFieldDecl(p *program.Program, n *ast.FieldDecl) (
 	field *goast.Field, err error) {
+	defer func() {
+		if field != nil {
+			if field.Type == nil {
+				err = fmt.Errorf("Found nil transpileFieldDecl in field Type %v , %v : %v",
+					n, field, err)
+				field = nil
+			}
+		}
+	}()
 	if types.IsFunction(n.Type) {
 		field, err = newFunctionField(p, n.Name, n.Type)
 		if err == nil {
@@ -517,30 +526,6 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 		return
 	}
 
-	if name == "div_t" || name == "ldiv_t" || name == "lldiv_t" {
-		intType := "int"
-		if name == "ldiv_t" {
-			intType = "long int"
-		} else if name == "lldiv_t" {
-			intType = "long long int"
-		}
-
-		// I don't know to extract the correct fields from the typedef to create
-		// the internal definition. This is used in the noarch package
-		// (stdio.go).
-		//
-		// The name of the struct is not prefixed with "struct " because it is a
-		// typedef.
-		p.Structs[name] = &program.Struct{
-			Name: name,
-			Type: program.StructType,
-			Fields: map[string]interface{}{
-				"quot": intType,
-				"rem":  intType,
-			},
-		}
-	}
-
 	err = nil
 	if resolvedType == "" {
 		resolvedType = "interface{}"
@@ -557,12 +542,27 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 		p.TypedefType[n.Name] = n.Type
 	}
 
+	// 0: *ast.GenDecl {
+	// .  Tok: type
+	// .  Specs: []ast.Spec (len = 1) {
+	// .  .  0: *ast.TypeSpec {
+	// .  .  .  Name: *ast.Ident {
+	// .  .  .  .  Name: "R"
+	// .  .  .  }
+	// .  .  .  Assign: 3:8        // <- This is important
+	// .  .  .  Type: *ast.Ident {
+	// .  .  .  .  Name: "int"
+	// .  .  .  }
+	// .  .  }
+	// .  }
+	// }
 	decls = append(decls, &goast.GenDecl{
 		Tok: token.TYPE,
 		Specs: []goast.Spec{
 			&goast.TypeSpec{
-				Name: util.NewIdent(name),
-				Type: util.NewTypeIdent(resolvedType),
+				Name:   util.NewIdent(name),
+				Assign: 1,
+				Type:   util.NewTypeIdent(resolvedType),
 			},
 		},
 	})
