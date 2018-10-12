@@ -231,7 +231,7 @@ func ResolveType(p *program.Program, s string) (resolveResult string, err error)
 		r := strings.TrimSpace(s[:len(s)-1])
 		r, err = ResolveType(p, r)
 		if err != nil {
-			err = fmt.Errorf("Cannot resolve star `*` : %v", s)
+			err = fmt.Errorf("Cannot resolve star `*` for %v : %v", s, err)
 			return
 		}
 		prefix := "[]"

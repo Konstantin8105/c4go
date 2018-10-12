@@ -55,6 +55,15 @@ func generateNameFieldDecl(t string) string {
 
 func transpileFieldDecl(p *program.Program, n *ast.FieldDecl) (
 	field *goast.Field, err error) {
+	defer func() {
+		if field != nil {
+			if field.Type == nil {
+				err = fmt.Errorf("Found nil transpileFieldDecl in field Type %v , %v : %v",
+					n, field, err)
+				field = nil
+			}
+		}
+	}()
 	if types.IsFunction(n.Type) {
 		field, err = newFunctionField(p, n.Name, n.Type)
 		if err == nil {

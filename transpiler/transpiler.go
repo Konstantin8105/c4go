@@ -433,6 +433,10 @@ func transpileToNode(node ast.Node, p *program.Program) (
 		}
 	}()
 
+	defer func() {
+		decls = nilFilterDecl(decls)
+	}()
+
 	switch n := node.(type) {
 	case *ast.TranslationUnitDecl:
 		return transpileTranslationUnitDecl(p, n)

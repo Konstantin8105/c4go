@@ -336,6 +336,7 @@ type nilWalker struct {
 
 func (n nilWalker) Visit(node goast.Node) (w goast.Visitor) {
 	fmt.Println("---------")
+	fmt.Printf("Node: %#v", node)
 	switch v := node.(type) {
 	case *goast.GenDecl:
 		fmt.Printf("%#v\n", v)
