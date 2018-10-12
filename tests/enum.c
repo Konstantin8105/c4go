@@ -10,11 +10,6 @@ enum number { zero,
 /**
  * Text
  */
-enum {
-    _ISupper = ((0) < 8 ? ((1 << (0)) << 8) : ((1 << (0)) >> 8)),
-    _ISalnum = ((11) < 8 ? ((1 << (11)) << 8) : ((1 << (11)) >> 8))
-};
-
 /** <b> Text </b> */
 enum year { Jan,
     Feb,
@@ -145,7 +140,7 @@ enum { e1 = 1,
 // main function
 int main()
 {
-    plan(45);
+    plan(43);
 
     test_unary();
     test_parent();
@@ -160,10 +155,6 @@ int main()
     n = two;
     is_eq(two, 2);
     is_eq(n, 2);
-
-    // step 2
-    is_eq(_ISupper, 256);
-    is_eq(_ISalnum, 8);
 
     // step 3
     for (int i = Jan; i < Feb; i++) {
