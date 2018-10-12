@@ -1,21 +1,19 @@
 #include "tests.h"
-#include <stdio.h>
 #include <assert.h>
 #include <ctype.h>
+#include <stdio.h>
 
 typedef float* triangle;
 
-int getNumberToken(char a[], int *cursor)
+int getNumberToken(char a[], int* cursor)
 {
-  int value = 0;
-  assert((*cursor) >= 0 && (*cursor) < strlen(a));
-  do
-    {
-	value = value*10 + (int)(a[*cursor]) - (int)('0');
-	(*cursor)++;
-    }
-  while (isdigit(a[*cursor]));
-  return value;
+    int value = 0;
+    assert((*cursor) >= 0 && (*cursor) < strlen(a));
+    do {
+        value = value * 10 + (int)(a[*cursor]) - (int)('0');
+        (*cursor)++;
+    } while (isdigit(a[*cursor]));
+    return value;
 }
 
 int main()
@@ -101,9 +99,9 @@ int main()
         is_eq(counter, 1);
     }
 
-	int v = 3;
-	int res = getNumberToken("my test string",&v);
-	is_eq(res, 68);
+    int v = 3;
+    int res = getNumberToken("my test string", &v);
+    is_eq(res, 68);
 
     done_testing();
 }

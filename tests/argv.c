@@ -26,10 +26,10 @@ int main(int argc, const char** argv)
     is_streq(argv[1 + offset], "some");
     is_streq(argv[2 + offset], "args");
 
-	int os = 9;
-	(void)(os);
+    int os = 9;
+    (void)(os);
 
     done_testing();
 }
 
-void os(){}
+void os() {}

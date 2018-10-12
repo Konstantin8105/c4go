@@ -36,10 +36,5 @@ echo "In file $TRIANGLE_FILE summary : $TRIANGLE_WARNINGS warnings."
 TRIANGLE_WARNINGS_GO=`go build $TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.go 2>&1 | wc -l`
 echo "In file $TRIANGLE_FILE summary : $TRIANGLE_WARNINGS_GO warnings in go build."
 
-# Amount warning from gometalinter
-echo "Calculation warnings by gometalinter"
-TRIANGLE_GOMETALINTER_WARNINGS=`$GOPATH/bin/gometalinter $TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.go 2>&1 | wc -l`
-echo "Amount found warnings by gometalinter at 30 second : $TRIANGLE_GOMETALINTER_WARNINGS warnings."
-
 TRIANGLE_UNSAFE=`cat $TRIANGLE_TEMP_FOLDER/$TRIANGLE_FILE.go | grep unsafe | wc -l`
 echo "Amount unsafe package using: $TRIANGLE_UNSAFE"

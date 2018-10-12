@@ -137,3 +137,13 @@ func Copysignf(x float32, y float32) float32 {
 func Expf(x float32) float32 {
 	return float32(math.Exp(float64(x)))
 }
+
+// Erff : finds error function value of x
+func Erff(x float32) float32 {
+	return float32(math.Erf(float64(x)))
+}
+
+// Erfcf : finds error function value of x
+func Erfcf(x float32) float32 {
+	return float32(math.Erfc(float64(x)))
+}

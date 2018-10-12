@@ -44,17 +44,17 @@ type programOut struct {
 //     go test -v -tags=integration -run=TestIntegrationScripts/tests/ctype.c
 //
 func TestIntegrationScripts(t *testing.T) {
-	testFiles, err := filepath.Glob("tests/*.c")
+	testFiles, err := filepath.Glob("tests/" + "*.c")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	testCppFiles, err := filepath.Glob("tests/*.cpp")
+	testCppFiles, err := filepath.Glob("tests/" + "*.cpp")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	exampleFiles, err := filepath.Glob("examples/*.c")
+	exampleFiles, err := filepath.Glob("examples/" + "*.c")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -178,19 +178,46 @@ func TestIntegrationScripts(t *testing.T) {
 			err = cmd.Run()
 			goProgram.isZero = err == nil
 
-			// Check stderr. "go test" will produce warnings when packages are
-			// not referenced as dependencies. We need to strip out these
-			// warnings so it doesn't effect the comparison.
-			var (
-				cProgramStderr  = cProgram.stderr.String()
-				goProgramStderr = goProgram.stderr.String()
+			// Combine outputs
+			cCombine := cProgram.stdout.String() + cProgram.stderr.String()
+			goCombine := goProgram.stdout.String() + goProgram.stderr.String()
 
-				cProgramStdout  = cProgram.stdout.String()
-				goProgramStdout = goProgram.stdout.String()
-			)
-
-			r := util.GetRegex("warning: no packages being tested depend on .+\n")
-			goProgramStderr = r.ReplaceAllString(goProgramStderr, "")
+			// Remove Go test specific lines
+			{
+				lines := strings.Split(goCombine, "\n")
+				goCombine = ""
+				for i := 0; i < len(lines); i++ {
+					if strings.HasPrefix(lines[i], "warning: no packages being tested") {
+						continue
+					}
+					if strings.HasPrefix(lines[i], "=== RUN   TestApp") {
+						continue
+					}
+					if strings.HasPrefix(lines[i], "FAIL\t") {
+						continue
+					}
+					if strings.HasPrefix(lines[i], "exit status") {
+						continue
+					}
+					if lines[i] == "PASS" {
+						continue
+					}
+					if strings.HasPrefix(lines[i], "coverage:") {
+						continue
+					}
+					if strings.HasPrefix(lines[i], "--- PASS: TestApp") {
+						continue
+					}
+					if strings.HasPrefix(lines[i], "ok  \tcommand-line-arguments") {
+						continue
+					}
+					goCombine += lines[i]
+					if i == len(lines)-1 {
+						continue
+					}
+					goCombine += "\n"
+				}
+			}
 
 			// It is need only for "tests/assert.c"
 			// for change absolute path to local path
@@ -198,14 +225,14 @@ func TestIntegrationScripts(t *testing.T) {
 			if err != nil {
 				t.Fatal("Cannot get currently dir")
 			}
-			goProgramStderr = strings.Replace(goProgramStderr, currentDir+"/", "", -1)
+			goCombine = strings.Replace(goCombine, currentDir+"/", "", -1)
 
-			if cProgramStderr != goProgramStderr {
+			if cCombine != goCombine {
 				// Add addition debug information for lines like:
 				// build/tests/cast/main_test.go:195:1: expected '}', found 'type'
 				buildPrefix := "build/tests/"
 				var output string
-				lines := strings.Split(goProgramStderr, "\n")
+				lines := strings.Split(goCombine, "\n")
 				for _, line := range lines {
 					line = strings.TrimSpace(line)
 					if !strings.HasPrefix(line, buildPrefix) {
@@ -250,107 +277,23 @@ func TestIntegrationScripts(t *testing.T) {
 							i+1, indicator, fileLines[i])
 					}
 				}
-				t.Fatalf("\n%10s%s\n%10s%s\n\n%10s%s\n%10s%s\nParts of code:\n%s",
-					"Stderr Expect:", cProgramStderr,
-					"Stderr Got   :", goProgramStderr,
-					"Stdout Expect:", cProgramStdout,
-					"Stdout Got   :", goProgramStdout,
-					output)
+				t.Fatalf("\n%10s`%s`\n%10s`%s`\nParts of code:\n%s\n%s",
+					"Expect:\n", cCombine,
+					"Actial:\n", goCombine,
+					output,
+					util.ShowDiff(cCombine, goCombine))
 			}
-
-			// Check stdout
-			cOut := cProgram.stdout.String()
-			goOutLines := strings.Split(goProgram.stdout.String(), "\n")
-
-			// An out put should look like this:
-			//
-			//     === RUN   TestApp
-			//     1..3
-			//     1 ok - argc == 3 + offset
-			//     2 ok - argv[1 + offset] == "some"
-			//     3 ok - argv[2 + offset] == "args"
-			//     --- PASS: TestApp (0.03s)
-			//     PASS
-			//     coverage: 0.0% of statements
-			//     ok  	command-line-arguments	1.050s
-			//
-			// The first line and 4 of the last lines can be ignored as they are
-			// part of the "go test" runner and not part of the program output.
-			//
-			// Note: There is a blank line at the end of the output so when we
-			// say the last line we are really talking about the second last
-			// line. Rather than trimming the whitespace off the C and Go output
-			// we will just make note of the different line index.
-			//
-			// Some tests are designed to fail, like assert.c. In this case the
-			// result output is slightly different:
-			//
-			//     === RUN   TestApp
-			//     1..0
-			//     10
-			//     # FAILED: There was 1 failed tests.
-			//     exit status 101
-			//     FAIL	command-line-arguments	0.041s
-			//
-			// The last three lines need to be removed.
-			//
-			// Before we proceed comparing the raw output we should check that
-			// the header and footer of the output fits one of the two formats
-			// in the examples above.
-			if goOutLines[0] != "=== RUN   TestApp" {
-				t.Fatalf("The header of the output cannot be understood:\n%s",
-					strings.Join(goOutLines, "\n"))
-			}
-			if !strings.HasPrefix(goOutLines[len(goOutLines)-2], "ok  \tcommand-line-arguments") &&
-				!strings.HasPrefix(goOutLines[len(goOutLines)-2], "FAIL\tcommand-line-arguments") {
-				t.Fatalf("The footer of the output cannot be understood:\n%v",
-					strings.Join(goOutLines, "\n"))
-			}
-
-			// A failure will cause (always?) "go test" to output the exit code
-			// before the final line. We should also ignore this as its not part
-			// of our output.
-			//
-			// There is a separate check to see that both the C and Go programs
-			// return the same exit code.
-			removeLinesFromEnd := 5
-			if strings.Index(file, "examples/") >= 0 {
-				removeLinesFromEnd = 4
-			} else if strings.HasPrefix(goOutLines[len(goOutLines)-3], "exit status") {
-				removeLinesFromEnd = 3
-			}
-
-			if len(goOutLines)-removeLinesFromEnd < 0 {
-				fmt.Println("> ", file)
-				fmt.Println("> ", goOutLines)
-				fmt.Println("> ", len(goOutLines))
-				fmt.Println("> ", removeLinesFromEnd)
-				if len(goOutLines) <= removeLinesFromEnd {
-					t.Logf("Ignored")
-					return
-				}
-			}
-
-			goOut := strings.Join(goOutLines[1:len(goOutLines)-removeLinesFromEnd], "\n") + "\n"
 
 			// Check if both exit codes are zero (or non-zero)
 			if cProgram.isZero != goProgram.isZero {
 				t.Fatalf("Exit statuses did not match.\n%s",
-					util.ShowDiff(cOut, goOut))
-			}
-
-			if cOut != goOut {
-				if cProgramStderr != goProgramStderr {
-					t.Errorf("Expected %s\nGot: %s\n",
-						cProgramStderr, goProgramStderr)
-				}
-				t.Fatalf(util.ShowDiff(cOut, goOut))
+					util.ShowDiff(cCombine, goCombine))
 			}
 
 			// If this is not an example we will extract the number of tests
 			// run.
 			if strings.Index(file, "examples/") == -1 && isVerbose {
-				firstLine := strings.Split(goOut, "\n")[0]
+				firstLine := strings.Split(goCombine, "\n")[0]
 
 				matches := util.GetRegex(`1\.\.(\d+)`).
 					FindStringSubmatch(firstLine)
@@ -361,6 +304,15 @@ func TestIntegrationScripts(t *testing.T) {
 
 				fmt.Printf("TAP: # %s: %s tests\n", file, matches[1])
 				totalTapTests += util.Atoi(matches[1])
+			}
+
+			// Logs
+			logs, err := getLogs(programArgs.outputFile)
+			if err != nil {
+				t.Fatalf("Cannot read logs: %v", err)
+			}
+			for _, l := range logs {
+				t.Log(l)
 			}
 		})
 	}
@@ -520,6 +472,7 @@ func TestExternalInclude(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	t.Log(dir)
 	defer os.RemoveAll(dir) // clean up
 	args.outputFile = path.Join(dir, "multi.go")
 	args.clangFlags = []string{"-I./tests/externalHeader/include/"}
@@ -584,7 +537,7 @@ func TestComments(t *testing.T) {
 }
 
 func TestCodeQuality(t *testing.T) {
-	files, err := filepath.Glob("tests/code_quality/*.c")
+	files, err := filepath.Glob("tests/code_quality/" + "*.c")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -765,7 +718,7 @@ func TestWrongAST(t *testing.T) {
 	var i int
 	defer func() {
 		if r := recover(); r != nil {
-			t.Errorf("Panic is not acceptable for position: %v\n%v", i, r)
+			t.Errorf("Panic is not acceptable for position: %v\n%+v", i, r)
 		}
 	}()
 
@@ -810,9 +763,6 @@ func getGoCode(dir string) (files []string, err error) {
 		if !strings.HasSuffix(ent.Name(), ".go") {
 			continue
 		}
-		if strings.Contains(ent.Name(), "_test.go") {
-			continue
-		}
 		files = append(files, dir+"/"+ent.Name())
 	}
 
@@ -820,6 +770,60 @@ func getGoCode(dir string) (files []string, err error) {
 }
 
 func TestTodoComments(t *testing.T) {
+	// Show all todos in code
+	source, err := getGoCode("./")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var amount int
+
+	// except files
+	except := []string{
+		"preprocessor/parse_comments_test.go",
+	}
+
+	for i := range source {
+		t.Run(source[i], func(t *testing.T) {
+			found := false
+			for _, e := range except {
+				if strings.Contains(source[i], e) {
+					found = true
+					break
+				}
+			}
+			if found {
+				return
+			}
+
+			file, err := os.Open(source[i])
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer file.Close()
+
+			pos := 0
+			scanner := bufio.NewScanner(file)
+			for scanner.Scan() {
+				line := scanner.Text()
+				pos++
+				if !strings.Contains(line, "/"+"*") {
+					continue
+				}
+				index := strings.Index(line, "/"+"*")
+				t.Errorf("%d %s", pos, line[index:])
+				amount++
+			}
+
+			if err := scanner.Err(); err != nil {
+				log.Fatal(err)
+			}
+		})
+	}
+	t.Logf("Amount comments: %d", amount)
+}
+
+func TestOS(t *testing.T) {
 	// Show all todos in code
 	source, err := getGoCode("./")
 	if err != nil {
@@ -841,11 +845,11 @@ func TestTodoComments(t *testing.T) {
 			for scanner.Scan() {
 				line := scanner.Text()
 				pos++
-				if !strings.Contains(line, "/"+"*") {
+				if !(strings.Contains(strings.ToUpper(line), "DAR"+"WIN") ||
+					strings.Contains(strings.ToUpper(line), "MAC"+"OS")) {
 					continue
 				}
-				index := strings.Index(line, "/"+"*")
-				t.Errorf("%d %s", pos, line[index:])
+				t.Errorf("%d %s", pos, line)
 				amount++
 			}
 

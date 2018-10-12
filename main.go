@@ -28,6 +28,7 @@ import (
 	"github.com/Konstantin8105/c4go/preprocessor"
 	"github.com/Konstantin8105/c4go/program"
 	"github.com/Konstantin8105/c4go/transpiler"
+	"github.com/Konstantin8105/c4go/version"
 )
 
 var stderr io.Writer = os.Stderr
@@ -443,6 +444,7 @@ func runCommand() int {
 		usage += "Commands:\n"
 		usage += "  transpile\ttranspile an input C source file or files to Go\n"
 		usage += "  ast\t\tprint AST before translated Go code\n"
+		usage += "  version\tprint version of c4go\n"
 		usage += "\n"
 		fmt.Fprintf(stderr, usage, os.Args[0])
 
@@ -500,6 +502,11 @@ func runCommand() int {
 		args.verbose = *verboseFlag
 		args.clangFlags = clangFlags
 		args.cppCode = *cppFlag
+
+	case "version":
+		fmt.Fprint(stderr, version.Version())
+		return 0
+
 	default:
 		flag.Usage()
 		return 6

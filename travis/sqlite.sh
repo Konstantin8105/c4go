@@ -11,7 +11,7 @@ export C4GO=$C4GO_DIR/c4go
 
 # This will have to be updated every so often to the latest version. You can
 # find the latest version here: https://sqlite.org/download.html
-export SQLITE3_FILE=sqlite-amalgamation-3220000
+export SQLITE3_FILE=sqlite-amalgamation-3250200
 
 # Variable for location of temp sqlite files
 SQLITE_TEMP_FOLDER="/tmp/SQLITE"
@@ -48,11 +48,6 @@ echo "After transpiling shell.c and sqlite3.c together, have summary: $SQLITE_WA
 # Show amount error from `go build`:
 SQLITE_WARNINGS_GO=`go build $SQLITE_TEMP_FOLDER/sqlite.go 2>&1 | wc -l`
 echo "In file sqlite.go summary : $SQLITE_WARNINGS_GO warnings in go build."
-
-# Amount warning from gometalinter
-echo "Calculation warnings by gometalinter"
-GOMETALINTER_WARNINGS=`$GOPATH/bin/gometalinter $SQLITE_TEMP_FOLDER/sqlite.go 2>&1 | wc -l`
-echo "Amount found warnings by gometalinter at 30 second : $GOMETALINTER_WARNINGS warnings."
 
 SQLITE_UNSAFE=`cat $SQLITE_TEMP_FOLDER/sqlite.go | grep unsafe | wc -l`
 echo "Amount unsafe package using: $SQLITE_UNSAFE"

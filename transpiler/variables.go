@@ -14,33 +14,6 @@ import (
 	"go/token"
 )
 
-// This map is used to rename struct member names.
-var structFieldTranslations = map[string]map[string]string{
-	"div_t": {
-		"quot": "Quot",
-		"rem":  "Rem",
-	},
-	"ldiv_t": {
-		"quot": "Quot",
-		"rem":  "Rem",
-	},
-	"lldiv_t": {
-		"quot": "Quot",
-		"rem":  "Rem",
-	},
-	"struct tm": {
-		"tm_sec":   "TmSec",
-		"tm_min":   "TmMin",
-		"tm_hour":  "TmHour",
-		"tm_mday":  "TmMday",
-		"tm_mon":   "TmMon",
-		"tm_year":  "TmYear",
-		"tm_wday":  "TmWday",
-		"tm_yday":  "TmYday",
-		"tm_isdst": "TmIsdst",
-	},
-}
-
 func transpileDeclRefExpr(n *ast.DeclRefExpr, p *program.Program) (
 	expr *goast.Ident, exprType string, err error) {
 
@@ -51,6 +24,11 @@ func transpileDeclRefExpr(n *ast.DeclRefExpr, p *program.Program) (
 			expr, exprType, err = util.NewIdent(n.Name), v, nil
 			return
 		}
+	}
+
+	if name, ok := program.CVariables[n.Name]; ok {
+		name = p.ImportType(name)
+		return util.NewIdent(name), n.Type, nil
 	}
 
 	if n.For == "Function" {
@@ -67,11 +45,6 @@ func transpileDeclRefExpr(n *ast.DeclRefExpr, p *program.Program) (
 	}
 
 	theType := n.Type
-
-	// FIXME: This is for linux to make sure the globals have the right type.
-	if n.Name == "stdout" || n.Name == "stdin" || n.Name == "stderr" {
-		theType = "FILE *"
-	}
 
 	return util.NewIdent(n.Name), theType, nil
 }
@@ -461,9 +434,10 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 	if lhsType[len(lhsType)-1] == '*' {
 		lhsType = lhsType[:len(lhsType)-len(" *")]
 	}
-	if member, ok := structFieldTranslations[lhsType]; ok {
-		if alias, ok := member[rhs]; ok {
-			rhs = alias
+	if str := p.GetStruct("c4go_" + lhsType); str != nil {
+		if alias, ok := str.Fields[rhs]; ok {
+			rhs = alias.(string)
+			goto Selector
 		}
 	}
 
@@ -488,6 +462,7 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 		}, n.Type, preStmts, postStmts, nil
 	}
 
+Selector:
 	_ = rhsType
 
 	return &goast.SelectorExpr{

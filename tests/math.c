@@ -1,9 +1,9 @@
 // Test for math.h.
 
 #include "tests.h"
+#include <float.h>
 #include <math.h>
 #include <stdio.h>
-#include <float.h>
 
 #define PI 3.14159265
 #define IS_NAN -2147483648
@@ -12,34 +12,33 @@ unsigned long long ullmax = 18446744073709551615ull;
 
 int main()
 {
-    plan(421);
+    plan(491);
 
-	double w1 = 100;
-	double w2 = 2;
-	double x1 = 3;
-	double x2 = 4;
-	double Ln = 2;
-	double R1o;
-	R1o = ( (2.0*w1+w2)*x1*x1 - (w1+2.0*w2)*x2*x2 + 
-			 3.0*(w1+w2)*Ln*(x2-x1) - (w1-w2)*x1*x2 ) / (6.0*Ln);
-	is_eq(R1o,-34.16666666666666429819088);
+    double w1 = 100;
+    double w2 = 2;
+    double x1 = 3;
+    double x2 = 4;
+    double Ln = 2;
+    double R1o;
+    R1o = ((2.0 * w1 + w2) * x1 * x1 - (w1 + 2.0 * w2) * x2 * x2 + 3.0 * (w1 + w2) * Ln * (x2 - x1) - (w1 - w2) * x1 * x2) / (6.0 * Ln);
+    is_eq(R1o, -34.16666666666666429819088);
 
-	double f01;
-		f01 = (  3.0*(w2+4.0*w1)*x1*x1*x1*x1 -  3.0*(w1+4.0*w2)*x2*x2*x2*x2
-		      - 15.0*(w2+3.0*w1)*Ln*x1*x1*x1 + 15.0*(w1+3.0*w2)*Ln*x2*x2*x2
-		      -  3.0*(w1-w2)*x1*x2*(x1*x1 + x2*x2)
-		      + 20.0*(w2+2.0*w1)*Ln*Ln*x1*x1 - 20.0*(w1+2.0*w2)*Ln*Ln*x2*x2
-		      + 15.0*(w1-w2)*Ln*x1*x2*(x1+x2)
-		      -  3.0*(w1-w2)*x1*x1*x2*x2 - 20.0*(w1-w2)*Ln*Ln*x1*x2 ) / 360.0;
-		is_eq(f01,23.07222222222222285381577);
+    double f01;
+    f01 = (3.0 * (w2 + 4.0 * w1) * x1 * x1 * x1 * x1 - 3.0 * (w1 + 4.0 * w2) * x2 * x2 * x2 * x2
+              - 15.0 * (w2 + 3.0 * w1) * Ln * x1 * x1 * x1 + 15.0 * (w1 + 3.0 * w2) * Ln * x2 * x2 * x2
+              - 3.0 * (w1 - w2) * x1 * x2 * (x1 * x1 + x2 * x2)
+              + 20.0 * (w2 + 2.0 * w1) * Ln * Ln * x1 * x1 - 20.0 * (w1 + 2.0 * w2) * Ln * Ln * x2 * x2
+              + 15.0 * (w1 - w2) * Ln * x1 * x2 * (x1 + x2)
+              - 3.0 * (w1 - w2) * x1 * x1 * x2 * x2 - 20.0 * (w1 - w2) * Ln * Ln * x1 * x2)
+        / 360.0;
+    is_eq(f01, 23.07222222222222285381577);
 
-
-	diag("Sqrt function");
-	double (*f)(double) = sqrt;
-	f = sqrt;
-	is_eq(f(4),sqrt(4));
-	double (*f2)(double) = sqrt;
-	is_eq(f2(4),sqrt(4));
+    diag("Sqrt function");
+    double (*f)(double) = sqrt;
+    f = sqrt;
+    is_eq(f(4), sqrt(4));
+    double (*f2)(double) = sqrt;
+    is_eq(f2(4), sqrt(4));
 
     // Note: There are some tests that must be disabled because they return
     // different values under different compilers. See the comment surrounding the
@@ -228,6 +227,12 @@ int main()
     is_inf(exp(INFINITY), 1);
     is_eq(exp(-INFINITY), 0);
     is_nan(exp(NAN));
+    is_eq(expf(0.0f), 1.0f);
+    is_eq(expf(1.0f), 2.7182818284590450908f);
+    is_eq(expf(-1.0f), 0.36787944117144233402f);
+    is_eq(expl(0), 1);
+    is_eq(expl(1), 2.7182818284590450908);
+    is_eq(expl(-1), 0.36787944117144233402);
 
     diag("fabs");
     is_eq(fabs(0), 0);
@@ -322,6 +327,73 @@ int main()
     is_nan(fmod(-INFINITY, NAN));
     is_nan(fmod(NAN, NAN));
 
+    diag("remainder")
+
+        // remainder(x, 0)
+        is_nan(remainder(0, 0));
+    is_nan(remainder(1, 0));
+    is_nan(remainder(-1, 0));
+    is_nan(remainder(0.5, 0));
+    is_nan(remainder(1.23e300, 0));
+    is_nan(remainder(-1.23e-300, 0));
+    is_nan(remainder(M_PI, 0));
+    is_nan(remainder(M_E, 0));
+    is_nan(remainder(INFINITY, 0));
+    is_nan(remainder(-INFINITY, 0));
+    is_nan(remainder(NAN, 0));
+
+    // remainder(x, 0.5)
+    is_eq(remainder(0, 0.5), 0);
+    is_eq(remainder(1, 0.5), 0);
+    is_negzero(remainder(-1, 0.5));
+    is_eq(remainder(0.5, 0.5), 0);
+    is_eq(remainder(1.23e300, 0.5), 0);
+    is_negzero(remainder(-1.23e-300, 0.5));
+    is_eq(remainder(M_PI, 0.5), M_PI - 3);
+    is_eq(remainder(M_E, 0.5), M_E - 2.5);
+    is_nan(remainder(INFINITY, 0.5));
+    is_nan(remainder(-INFINITY, 0.5));
+    is_nan(remainder(NAN, 0.5));
+
+    // remainder(x, INFINITY)
+    is_eq(remainder(0, INFINITY), 0);
+    is_eq(remainder(1, INFINITY), 1);
+    is_negzero(remainder(-1, INFINITY));
+    is_eq(remainder(0.5, INFINITY), 0.5);
+    is_eq(remainder(1.23e300, INFINITY), 1.23e300);
+    is_negzero(remainder(-1.23e-300, INFINITY));
+    is_eq(remainder(M_PI, INFINITY), M_PI);
+    is_eq(remainder(M_E, INFINITY), M_E);
+    is_nan(remainder(INFINITY, INFINITY));
+    is_nan(remainder(-INFINITY, INFINITY));
+    is_nan(remainder(NAN, INFINITY));
+
+    // remainder(x, -INFINITY)
+    is_eq(remainder(0, -INFINITY), 0);
+    is_eq(remainder(1, -INFINITY), 1);
+    is_negzero(remainder(-1, -INFINITY));
+    is_eq(remainder(0.5, -INFINITY), 0.5);
+    is_eq(remainder(1.23e300, -INFINITY), 1.23e300);
+    is_negzero(remainder(-1.23e-300, -INFINITY));
+    is_eq(remainder(M_PI, -INFINITY), M_PI);
+    is_eq(remainder(M_E, -INFINITY), M_E);
+    is_nan(remainder(INFINITY, -INFINITY));
+    is_nan(remainder(-INFINITY, -INFINITY));
+    is_nan(remainder(NAN, -INFINITY));
+
+    // remainder(x, NAN)
+    is_nan(remainder(0, NAN));
+    is_nan(remainder(1, NAN));
+    is_nan(remainder(-1, NAN));
+    is_nan(remainder(0.5, NAN));
+    is_nan(remainder(1.23e300, NAN));
+    is_nan(remainder(-1.23e-300, NAN));
+    is_nan(remainder(M_PI, NAN));
+    is_nan(remainder(M_E, NAN));
+    is_nan(remainder(INFINITY, NAN));
+    is_nan(remainder(-INFINITY, NAN));
+    is_nan(remainder(NAN, NAN));
+
     diag("ldexp");
     is_eq(ldexp(0, 2), 0);
     is_eq(ldexp(1, 2), 4);
@@ -360,7 +432,7 @@ int main()
     is_inf(log10(INFINITY), 1);
     is_nan(log10(-INFINITY));
     is_nan(log10(NAN));
-	
+
     diag("log1p");
     is_inf(log1p(-1), -1);
     is_eq(log1p(0), 0);
@@ -513,157 +585,156 @@ int main()
     is_inf(copysign(INFINITY, -2.0), -1);
     is_nan(copysign(NAN, -2.0));
 
-	diag("fma");
-	{
-		double x,y,z;
-		x = 10, y = 20, z = 30;
-		is_eq(fma(x,y,z),x*y+z);
-	}
-	{
-		float x,y,z;
-		x = 10, y = 20, z = 30;
-		is_eq(fmaf(x,y,z),x*y+z);
-	}
-	{
-		long double x,y,z;
-		x = 10, y = 20, z = 30;
-		is_eq(fmal(x,y,z),x*y+z);
-	}
+    diag("fma");
+    {
+        double x, y, z;
+        x = 10, y = 20, z = 30;
+        is_eq(fma(x, y, z), x * y + z);
+    }
+    {
+        float x, y, z;
+        x = 10, y = 20, z = 30;
+        is_eq(fmaf(x, y, z), x * y + z);
+    }
+    {
+        long double x, y, z;
+        x = 10, y = 20, z = 30;
+        is_eq(fmal(x, y, z), x * y + z);
+    }
 
-	diag("fmin");
-	{
-		double x = 100;
-		double y = 1;
-		is_eq(fmin( x, y),  y);
-		is_eq(fmin(-x,-y), -x);
-	}
-	{
-		float x = 100;
-		float y = 1;
-		is_eq(fminf( x, y),  y);
-		is_eq(fminf(-x,-y), -x);
-	}
-	{
-		long double x = 100;
-		long double y = 1;
-		is_eq(fminl( x, y),  y);
-		is_eq(fminl(-x,-y), -x);
-	}
+    diag("fmin");
+    {
+        double x = 100;
+        double y = 1;
+        is_eq(fmin(x, y), y);
+        is_eq(fmin(-x, -y), -x);
+    }
+    {
+        float x = 100;
+        float y = 1;
+        is_eq(fminf(x, y), y);
+        is_eq(fminf(-x, -y), -x);
+    }
+    {
+        long double x = 100;
+        long double y = 1;
+        is_eq(fminl(x, y), y);
+        is_eq(fminl(-x, -y), -x);
+    }
 
+    diag("fmax");
+    {
+        double x = 100;
+        double y = 1;
+        is_eq(fmax(x, y), x);
+        is_eq(fmax(-x, -y), -y);
+    }
+    {
+        float x = 100;
+        float y = 1;
+        is_eq(fmaxf(x, y), x);
+        is_eq(fmaxf(-x, -y), -y);
+    }
+    {
+        long double x = 100;
+        long double y = 1;
+        is_eq(fmaxl(x, y), x);
+        is_eq(fmaxl(-x, -y), -y);
+    }
 
-	diag("fmax");
-	{
-		double x = 100;
-		double y = 1;
-		is_eq(fmax( x, y),  x);
-		is_eq(fmax(-x,-y), -y);
-	}
-	{
-		float x = 100;
-		float y = 1;
-		is_eq(fmaxf( x, y),  x);
-		is_eq(fmaxf(-x,-y), -y);
-	}
-	{
-		long double x = 100;
-		long double y = 1;
-		is_eq(fmaxl( x, y),  x);
-		is_eq(fmaxl(-x,-y), -y);
-	}
+    diag("expm1");
+    {
+        double x = 2.7;
+        double res = exp(x) - 1.0;
+        is_eq(expm1(x), res);
+    }
+    {
+        float x = 2.7;
+        float res = exp(x) - 1.0;
+        is_eq(expm1f(x), res);
+    }
+    {
+        long double x = 2.7;
+        long double res = exp(x) - 1.0;
+        is_eq(expm1l(x), res);
+    }
 
-	diag("expm1");
-	{
-		double x   = 2.7;
-		double res = exp(x)-1.0;
-		is_eq(expm1(x),res);
-	}
-	{
-		float x   = 2.7;
-		float res = exp(x)-1.0;
-		is_eq(expm1f(x),res);
-	}
-	{
-		long double x   = 2.7;
-		long double res = exp(x)-1.0;
-		is_eq(expm1l(x),res);
-	}
+    diag("exp2");
+    {
+        double x = 2.7;
+        double res = pow(2.0, x);
+        is_eq(exp2(x), res);
+    }
+    {
+        float x = 2.7;
+        float res = pow(2.0, x);
+        is_eq(exp2f(x), res);
+    }
+    {
+        long double x = 2.7;
+        long double res = pow(2.0, x);
+        is_eq(exp2l(x), res);
+    }
 
-	diag("exp2");
-	{
-		double x   = 2.7;
-		double res = pow(2.0,x);
-		is_eq(exp2(x),res);
-	}
-	{
-		float x   = 2.7;
-		float res = pow(2.0,x);
-		is_eq(exp2f(x),res);
-	}
-	{
-		long double x   = 2.7;
-		long double res = pow(2.0,x);
-		is_eq(exp2l(x),res);
-	}
+    diag("fdim");
+    {
+        double x = 2.7, y = 0.2;
+        is_eq(fdim(x, y), x - y);
+        is_eq(fdim(-x, y), 0);
+    }
+    {
+        float x = 2.7, y = 0.2;
+        is_eq(fdimf(x, y), x - y);
+        is_eq(fdimf(-x, y), 0);
+    }
+    {
+        long double x = 2.7, y = 0.2;
+        is_eq(fdiml(x, y), x - y);
+        is_eq(fdiml(-x, y), 0);
+    }
 
-	diag("fdim");
-	{
-		double x   = 2.7 , y = 0.2;
-		is_eq(fdim( x,y),x-y);
-		is_eq(fdim(-x,y),0);
-	}
-	{
-		float x   = 2.7 , y = 0.2;
-		is_eq(fdimf( x,y),x-y);
-		is_eq(fdimf(-x,y),0);
-	}
-	{
-		long double x   = 2.7 , y = 0.2;
-		is_eq(fdiml( x,y),x-y);
-		is_eq(fdiml(-x,y),0);
-	}
-	
-	diag("log2");
-	{
-		double x = 1024;
-		double res = log2(x);
-		is_eq(exp2(res),x);
-	}
-	{
-		float x = 1024;
-		float res = log2f(x);
-		is_eq(exp2f(res),x);
-	}
-	{
-		long double x = 1024;
-		long double res = log2l(x);
-		is_eq(exp2l(res),x);
-	}
+    diag("log2");
+    {
+        double x = 1024;
+        double res = log2(x);
+        is_eq(exp2(res), x);
+    }
+    {
+        float x = 1024;
+        float res = log2f(x);
+        is_eq(exp2f(res), x);
+    }
+    {
+        long double x = 1024;
+        long double res = log2l(x);
+        is_eq(exp2l(res), x);
+    }
 
-	diag("sinh, cosh, tanh");
-	{
-		double angle = 2.0;
-		is_eq(sinh(angle)/cosh(angle),tanh(angle));
-	}
-	{
-		float angle = 2.0;
-		is_eq(sinhf(angle)/coshf(angle),tanh(angle));
-	}
-	{
-		long double angle = 2.0;
-		is_eq(sinhl(angle)/coshl(angle),tanhl(angle));
-	}
-	{
-		double angle = 2.0;
-		is_eq(asinh(sinh(angle)),angle);
-	}
-	{
-		double angle = 2.0;
-		is_eq(acosh(cosh(angle)),angle);
-	}
-	{
-		double angle = 2.0;
-		is_eq(atanh(tanh(angle)),angle);
-	}
+    diag("sinh, cosh, tanh");
+    {
+        double angle = 2.0;
+        is_eq(sinh(angle) / cosh(angle), tanh(angle));
+    }
+    {
+        float angle = 2.0;
+        is_eq(sinhf(angle) / coshf(angle), tanh(angle));
+    }
+    {
+        long double angle = 2.0;
+        is_eq(sinhl(angle) / coshl(angle), tanhl(angle));
+    }
+    {
+        double angle = 2.0;
+        is_eq(asinh(sinh(angle)), angle);
+    }
+    {
+        double angle = 2.0;
+        is_eq(acosh(cosh(angle)), angle);
+    }
+    {
+        double angle = 2.0;
+        is_eq(atanh(tanh(angle)), angle);
+    }
 
     diag("cbrt, cbrtf, cbrtl");
     {
@@ -686,6 +757,17 @@ int main()
     is_eq(hypotf(3, 4), 5);
     is_eq(hypotl(0, 0), 0);
     is_eq(hypotl(3, 4), 5);
+
+    diag("erf, erfc");
+    is_eq(erf(1.0), 0.84270079294971489414);
+    is_eq(erff(1.0f), 0.842700779438f);
+    is_eq(erfl(1.0), 0.84270079294971489414);
+    is_eq(erfc(1.0), 0.15729920705028513361);
+    is_eq(erfcf(1.0f), 0.157299205661f);
+    is_eq(erfcl(1.0), 0.15729920705028513361);
+    is_eq(erf(1.0), 1 - erfc(1.0));
+    is_eq(erff(1.0f), 1.0f - erfcf(1.0f));
+    is_eq(erfl(1.0), 1 - erfcl(1.0));
 
     done_testing();
 }

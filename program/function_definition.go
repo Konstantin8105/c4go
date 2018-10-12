@@ -34,13 +34,13 @@ type FunctionDefinition struct {
 // Each of the predefined function have a syntax that allows them to be easy to
 // read (and maintain). For example:
 //
-//     double __builtin_fabs(double) -> darwin.Fabs
+//     double __builtin_fabs(double) -> noarch.Fabs
 //
 // Declares the prototype of __builtin_fabs (a low level function implemented
 // only on Mac) with a specific substitution provided. This means that it should
 // replace any instance of __builtin_fabs with:
 //
-//     github.com/Konstantin8105/c4go/darwin.Fabs
+//     github.com/Konstantin8105/c4go/noarch.Fabs
 //
 // The substitution is optional.
 //
@@ -85,7 +85,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double __builtin_nanf(const char*) -> linux.NaN",
 		"float __builtin_inff() -> linux.Inff",
 
-		// darwin/math.h
+		// math.h
 		"int __inline_signbitf(float) -> noarch.Signbitf",
 		"int __inline_signbitd(double) -> noarch.Signbitd",
 		"int __inline_signbitl(long double) -> noarch.Signbitl",
@@ -101,6 +101,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double fabs(double) -> math.Abs",
 		"double floor(double) -> math.Floor",
 		"double fmod(double, double) -> math.Mod",
+		"double remainder(double, double) -> math.Remainder",
 		"double ldexp(double, int) -> math.Ldexp",
 		"double log(double) -> math.Log",
 		"double log10(double) -> math.Log10",
@@ -138,6 +139,14 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double exp(double) -> math.Exp",
 		"float expf(float) -> noarch.Expf",
 		"long double expl(long double) -> math.Exp",
+
+		"double erf(double) -> math.Erf",
+		"float erff(float) -> noarch.Erff",
+		"long double erfl(long double) -> math.Erf",
+
+		"double erfc(double) -> math.Erfc",
+		"float erfcf(float) -> noarch.Erfcf",
+		"long double erfcl(long double) -> math.Erfc",
 
 		"double log2(double) -> math.Log2",
 		"float log2f(float) -> noarch.Log2f",
@@ -229,6 +238,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"char* strncat(char *, const char *, int) -> noarch.Strncat",
 		"int strcmp(const char *, const char *) -> noarch.Strcmp",
 		"char * strchr(char *, int) -> noarch.Strchr",
+		"char * strstr(const char *, const char *) -> noarch.Strstr",
 
 		"char* strcpy(const char*, char*) -> noarch.Strcpy",
 		// should be: "char* strncpy(const char*, char*, size_t) -> noarch.Strncpy",
@@ -271,6 +281,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"long long strtoll(const char *, char **, int) -> noarch.Strtoll",
 		"long unsigned int strtoul(const char *, char **, int) -> noarch.Strtoul",
 		"long long unsigned int strtoull(const char *, char **, int) -> noarch.Strtoull",
+		"int system(const char *) -> noarch.System",
 		"void free(void*) -> _",
 	},
 	"time.h": {

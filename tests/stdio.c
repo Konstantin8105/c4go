@@ -12,7 +12,7 @@
     test_##t();
 
 // size of that file
-int filesize = 11360;
+int filesize = 11394;
 
 void test_putchar()
 {
@@ -22,7 +22,7 @@ void test_putchar()
         putchar(c);
     putchar('\n');
 
-    pass("%s", "putchar"); 
+    pass("%s", "putchar");
 }
 
 void test_puts()
@@ -46,17 +46,17 @@ void test_printf()
     printf("# Width trick: %*d \n", 5, 10);
     printf("# %s \n", "A string");
 
-	// Type printf
-	unsigned long long ull = 42;
-	printf("Long long : %u\n",ull);
-	unsigned int ui = 42;
-	printf("uint : %u\n",ui);
-	double d = 42.42;
-	printf("double : %f\n",d);
-	printf("double : %lf\n",d);
-	printf("double : %2.2f\n",d);
+    // Type printf
+    unsigned long long ull = 42;
+    printf("Long long : %u\n", ull);
+    unsigned int ui = 42;
+    printf("uint : %u\n", ui);
+    double d = 42.42;
+    printf("double : %f\n", d);
+    printf("double : %lf\n", d);
+    printf("double : %2.2f\n", d);
 
-	// Literal error
+    // Literal error
     printf("Символьный литерал \'A\':\t%d\n", sizeof('A'));
 
     int magnitude = 4;

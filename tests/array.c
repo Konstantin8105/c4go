@@ -194,6 +194,7 @@ double* dvector(long nl, long nh)
     return v - nl + 1;
 }
 
+typedef struct s structs;
 void test_pointer_arith_size_t()
 {
     size_t size = 1;
@@ -208,6 +209,24 @@ void test_pointer_arith_size_t()
     is_eq(*left_ptr, arr[1]);
     left_ptr += size;
     is_eq(*left_ptr, arr[2]);
+
+    // tests for pointer to struct with size > 1
+    structs a[] = { { 1, 'a' }, { 2, 'b' }, { 3, 'c' } };
+    is_eq(a[0].i, 1);
+    is_eq(a[0].c, 'a');
+    is_eq(a[1].i, 2);
+    is_eq(a[1].c, 'b');
+    is_eq(a[2].i, 3);
+    is_eq(a[2].c, 'c');
+    structs* ps = &a;
+    structs* ps2;
+    is_eq(ps->i, 1);
+    ps2 = ps + size;
+    is_eq(ps2->i, 2);
+    ps2 += size;
+    is_eq(ps2->i, 3);
+    ps2 -= size;
+    is_eq(ps2->i, 2);
 }
 
 void test_pointer_minus_pointer()
@@ -221,117 +240,127 @@ void test_pointer_minus_pointer()
     is_eq(right_ptr - left_ptr, 20);
 }
 
+typedef unsigned char pcre_uchar;
+typedef unsigned char pcre_uint8;
+typedef unsigned short pcre_uint16;
+typedef unsigned int pcre_uint32;
+
+#define PT_ANY 0 /* Any property - matches all chars */
+#define PT_SC 4 /* Script (e.g. Han) */
+
+#define CHAR_B 'b'
+
 void test_array_to_value_int()
 {
-	int aqq[1][1] = { { 5 } };
-	int **pz;
-	int c;
-	///////////////
-	pz = aqq;
-	c = 99999;
-	c = *pz;
-	is_eq(c , 5.0);
-	///////////////
-	(void) pz;
-	(void) c;
-	///////////////
+    int aqq[1][1] = { { 5 } };
+    int** pz;
+    int c;
+    ///////////////
+    pz = aqq;
+    c = 99999;
+    c = *pz;
+    is_eq(c, 5.0);
+    ///////////////
+    (void)pz;
+    (void)c;
+    ///////////////
 }
 
 void test_array_to_value_unsigned()
 {
-	unsigned aqq[1][1] = { { 5 } };
-	unsigned **pz;
-	unsigned c;
-	///////////////
-	pz = aqq;
-	c = 99999;
-	c = *pz;
-	is_eq(c , 5.0);
-	///////////////
-	(void) pz;
-	(void) c;
-	///////////////
+    unsigned aqq[1][1] = { { 5 } };
+    unsigned** pz;
+    unsigned c;
+    ///////////////
+    pz = aqq;
+    c = 99999;
+    c = *pz;
+    is_eq(c, 5.0);
+    ///////////////
+    (void)pz;
+    (void)c;
+    ///////////////
 }
 
 void test_array_to_value_long()
 {
-	long aqq[1][1] = { { 5 } };
-	long **pz;
-	long c;
-	///////////////
-	pz = aqq;
-	c = 99999;
-	c = *pz;
-	is_eq(c , 5.0);
-	///////////////
-	(void) pz;
-	(void) c;
-	///////////////
+    long aqq[1][1] = { { 5 } };
+    long** pz;
+    long c;
+    ///////////////
+    pz = aqq;
+    c = 99999;
+    c = *pz;
+    is_eq(c, 5.0);
+    ///////////////
+    (void)pz;
+    (void)c;
+    ///////////////
 }
 
 void test_array_to_value_char()
 {
-	long aqq[1][1] = { { 5 } };
-	long **pz;
-	long c;
-	///////////////
-	pz = aqq;
-	c = 99;
-	c = *pz;
-	is_eq(c , 5.0);
-	///////////////
-	(void) pz;
-	(void) c;
-	///////////////
+    long aqq[1][1] = { { 5 } };
+    long** pz;
+    long c;
+    ///////////////
+    pz = aqq;
+    c = 99;
+    c = *pz;
+    is_eq(c, 5.0);
+    ///////////////
+    (void)pz;
+    (void)c;
+    ///////////////
 }
 
 void test_array_to_value_double()
 {
-	long aqq[1][1] = { { 5 } };
-	long **pz;
-	long c;
-	///////////////
-	pz = aqq;
-	c = 99999;
-	c = *pz;
-	is_eq(c , 5.0);
-	///////////////
-	(void) pz;
-	(void) c;
-	///////////////
+    long aqq[1][1] = { { 5 } };
+    long** pz;
+    long c;
+    ///////////////
+    pz = aqq;
+    c = 99999;
+    c = *pz;
+    is_eq(c, 5.0);
+    ///////////////
+    (void)pz;
+    (void)c;
+    ///////////////
 }
 
 #define SIZE 3
 void test_size_pointer()
 {
-    int A[2][SIZE] = {{10, 20, 30}, {40, 50, 60}};
-    int B[4][SIZE] = {{0, 1, 2}, {3, 0, 4}, {5, 6, 0}, {7, 8, 9}};
-    int (*pnt)[SIZE];
+    int A[2][SIZE] = { { 10, 20, 30 }, { 40, 50, 60 } };
+    int B[4][SIZE] = { { 0, 1, 2 }, { 3, 0, 4 }, { 5, 6, 0 }, { 7, 8, 9 } };
+    int(*pnt)[SIZE];
     pnt = A;
-	is_eq(pnt[1][2],A[1][2]);
-	is_eq(pnt[0][2],A[0][2]);
+    is_eq(pnt[1][2], A[1][2]);
+    is_eq(pnt[0][2], A[0][2]);
     pnt = B;
-	is_eq(pnt[1][2],B[1][2]);
-	is_eq(pnt[0][2],B[0][2]);
+    is_eq(pnt[1][2], B[1][2]);
+    is_eq(pnt[0][2], B[0][2]);
 }
 
-#define STACK_SIZE      512
-#define STACK_PUSH(A)   (STACK[SP++] = A)
+#define STACK_SIZE 512
+#define STACK_PUSH(A) (STACK[SP++] = A)
 static unsigned short STACK[STACK_SIZE];
 static unsigned int SP = 0;
 void test_array_increment()
 {
-	double a[10];
-	for (int i = 0;i < 10;i++)
-		a[i] = i;
-	is_eq(a[4],4);
-	int pc = 4;
-	is_eq(pc,4);
-	is_eq(a[pc++],4);
-	is_eq(pc,5);
+    double a[10];
+    for (int i = 0; i < 10; i++)
+        a[i] = i;
+    is_eq(a[4], 4);
+    int pc = 4;
+    is_eq(pc, 4);
+    is_eq(a[pc++], 4);
+    is_eq(pc, 5);
     unsigned short pc2 = 0;
     STACK_PUSH(pc2);
-	is_eq(SP,1);
+    is_eq(SP, 1);
 }
 
 struct MyStruct {
@@ -340,49 +369,49 @@ struct MyStruct {
 };
 void test_struct_init()
 {
-    struct MyStruct objA = {.symbol = 'A', .number = 100};
-    struct MyStruct objB = {.number = 200};
-	is_eq(objA.symbol, 'A');
-	is_eq(objA.number,100);
-	is_eq(objB.number,200);
+    struct MyStruct objA = {.symbol = 'A', .number = 100 };
+    struct MyStruct objB = {.number = 200 };
+    is_eq(objA.symbol, 'A');
+    is_eq(objA.number, 100);
+    is_eq(objB.number, 200);
 }
 
 struct parg_option {
-	const char *name;
-	int has_arg;     
-	int *flag;     
-	int val;      
+    const char* name;
+    int has_arg;
+    int* flag;
+    int val;
 };
 
 static const struct parg_option po_def[] = {
-	{ "noarg"  , 1 , NULL, 'n' },
-	{ "optarg" , 2 , NULL, 'o' },
-	{ "reqarg" , 3 , NULL, 'r' },
-	{ "foo"    , 4 , NULL, 'f' },
-	{ "foobar" , 5 , NULL, 'b' },
-	{ 0        , 6 , 0   ,  0  }
+    { "noarg", 1, NULL, 'n' },
+    { "optarg", 2, NULL, 'o' },
+    { "reqarg", 3, NULL, 'r' },
+    { "foo", 4, NULL, 'f' },
+    { "foobar", 5, NULL, 'b' },
+    { 0, 6, 0, 0 }
 };
 
-void test_parg_struct(){
-	is_eq(po_def[0].has_arg, 1);
-	is_eq(po_def[5].has_arg, 6);
-	is_streq(po_def[1].name, "optarg");
+void test_parg_struct()
+{
+    is_eq(po_def[0].has_arg, 1);
+    is_eq(po_def[5].has_arg, 6);
+    is_streq(po_def[1].name, "optarg");
 }
-
 
 int main()
 {
-    plan(157);
+    plan(167);
 
-	test_parg_struct();
-	START_TEST(struct_init);
-	START_TEST(array_increment);
-	START_TEST(array_to_value_int);
-	START_TEST(array_to_value_unsigned);
-	START_TEST(array_to_value_long);
-	START_TEST(array_to_value_char);
-	START_TEST(array_to_value_double);
-	START_TEST(size_pointer);
+    test_parg_struct();
+    START_TEST(struct_init);
+    START_TEST(array_increment);
+    START_TEST(array_to_value_int);
+    START_TEST(array_to_value_unsigned);
+    START_TEST(array_to_value_long);
+    START_TEST(array_to_value_char);
+    START_TEST(array_to_value_double);
+    START_TEST(size_pointer);
     START_TEST(intarr);
     START_TEST(doublearr);
     START_TEST(intarr_init);
@@ -842,18 +871,18 @@ int main()
     test_pointer_arith_size_t();
     test_pointer_minus_pointer();
 
-	diag("calloc with struct");
-	{
-		struct cws {
-			float *w;
-			int   nw;
-		};
-		struct cws t;
-		t.nw = 5;
-    	t.w = (float*) calloc(t.nw, sizeof(*t.w));
-		is_not_null(t.w);
-		(void)(t);
-	}
+    diag("calloc with struct");
+    {
+        struct cws {
+            float* w;
+            int nw;
+        };
+        struct cws t;
+        t.nw = 5;
+        t.w = (float*)calloc(t.nw, sizeof(*t.w));
+        is_not_null(t.w);
+        (void)(t);
+    }
 
     done_testing();
 }

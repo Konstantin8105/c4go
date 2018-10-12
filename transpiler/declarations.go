@@ -55,6 +55,15 @@ func generateNameFieldDecl(t string) string {
 
 func transpileFieldDecl(p *program.Program, n *ast.FieldDecl) (
 	field *goast.Field, err error) {
+	defer func() {
+		if field != nil {
+			if field.Type == nil {
+				err = fmt.Errorf("Found nil transpileFieldDecl in field Type %v , %v : %v",
+					n, field, err)
+				field.Type = util.NewIdent(n.Type)
+			}
+		}
+	}()
 	if types.IsFunction(n.Type) {
 		field, err = newFunctionField(p, n.Name, n.Type)
 		if err == nil {
@@ -107,8 +116,6 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			if addPackageUnsafe {
 				p.AddImports("unsafe")
 			}
-			// Only for adding to ignore list
-			// fmt.Printf("%40s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
 		}
 	}()
 
@@ -117,10 +124,6 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			err = fmt.Errorf("error - panic : %#v", r)
 		}
 	}()
-
-	if !p.PreprocessorFile.IsUserSource(n.Pos.File) {
-		return
-	}
 
 	// ignore if haven`t definition
 	if !n.IsDefinition {
@@ -139,15 +142,6 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			p.UndefineType(name)
 		}
 	}()
-
-	// TODO: Some platform structs are ignored.
-	// https://github.com/Konstantin8105/c4go/issues/85
-	if name == "__locale_struct" ||
-		name == "__sigaction" ||
-		name == "sigaction" {
-		err = nil
-		return
-	}
 
 	var fields []*goast.Field
 
@@ -423,171 +417,6 @@ func transpileCXXRecordDecl(p *program.Program, n *ast.RecordDecl) (
 	}}, nil
 }
 
-var ignoreTypedef = map[string]string{
-	"__u_char":   "bits/types.h",
-	"__u_short":  "bits/types.h",
-	"__u_int":    "bits/types.h",
-	"__u_long":   "bits/types.h",
-	"__int8_t":   "bits/types.h",
-	"__uint8_t":  "bits/types.h",
-	"__int16_t":  "bits/types.h",
-	"__uint16_t": "bits/types.h",
-	"__int32_t":  "bits/types.h",
-	"__uint32_t": "bits/types.h",
-	"__int64_t":  "bits/types.h",
-	"__uint64_t": "bits/types.h",
-	"__quad_t":   "bits/types.h",
-	"__u_quad_t": "bits/types.h",
-	"__dev_t":    "bits/types.h",
-	"__uid_t":    "bits/types.h",
-	"__gid_t":    "bits/types.h",
-	"__ino_t":    "bits/types.h",
-	"__ino64_t":  "bits/types.h",
-	"__mode_t":   "bits/types.h",
-	"__nlink_t":  "bits/types.h",
-	"__off_t":    "bits/types.h",
-	"__off64_t":  "bits/types.h",
-	"__pid_t":    "bits/types.h",
-	"__fsid_t":   "bits/types.h",
-	"__clock_t":  "bits/types.h",
-	"__rlim_t":   "bits/types.h",
-	"__rlim64_t": "bits/types.h",
-	"__id_t":     "bits/types.h",
-	// "__time_t":          "bits/types.h", // need for test time.c
-	"__useconds_t":      "bits/types.h",
-	"__suseconds_t":     "bits/types.h",
-	"__daddr_t":         "bits/types.h",
-	"__key_t":           "bits/types.h",
-	"__clockid_t":       "bits/types.h",
-	"__timer_t":         "bits/types.h",
-	"__blksize_t":       "bits/types.h",
-	"__blkcnt_t":        "bits/types.h",
-	"__blkcnt64_t":      "bits/types.h",
-	"__fsblkcnt_t":      "bits/types.h",
-	"__fsblkcnt64_t":    "bits/types.h",
-	"__fsfilcnt_t":      "bits/types.h",
-	"__fsfilcnt64_t":    "bits/types.h",
-	"__fsword_t":        "bits/types.h",
-	"__ssize_t":         "bits/types.h",
-	"__syscall_slong_t": "bits/types.h",
-	"__syscall_ulong_t": "bits/types.h",
-	"__loff_t":          "bits/types.h",
-	"__qaddr_t":         "bits/types.h",
-	"__caddr_t":         "bits/types.h",
-	"__intptr_t":        "bits/types.h",
-	"__socklen_t":       "bits/types.h",
-
-	"u_char":      "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"u_short":     "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"u_int":       "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"u_long":      "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"quad_t":      "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"u_quad_t":    "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"fsid_t":      "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"loff_t":      "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"ino_t":       "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"ino64_t":     "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"dev_t":       "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"gid_t":       "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"mode_t":      "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"nlink_t":     "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"uid_t":       "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"id_t":        "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"daddr_t":     "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"caddr_t":     "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"key_t":       "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"useconds_t":  "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"suseconds_t": "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"ulong":       "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"ushort":      "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"uint":        "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"int8_t":      "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"int16_t":     "/usr/include/x86_64-linux-gnu/sys/types.h",
-	// "int32_t":     "/usr/include/x86_64-linux-gnu/sys/types.h",// need for struct
-	"int64_t":    "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"u_int8_t":   "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"u_int16_t":  "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"u_int32_t":  "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"u_int64_t":  "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"register_t": "/usr/include/x86_64-linux-gnu/sys/types.h",
-
-	"blksize_t":    "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"blkcnt_t":     "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"fsblkcnt_t":   "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"fsfilcnt_t":   "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"blkcnt64_t":   "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"fsblkcnt64_t": "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"fsfilcnt64_t": "/usr/include/x86_64-linux-gnu/sys/types.h",
-
-	"clock_t":   "include/time.h",
-	"time_t":    "include/time.h",
-	"clockid_t": "include/time.h",
-	"timer_t":   "include/time.h",
-	"pid_t":     "include/time.h",
-
-	"FILE":     "/usr/include/stdio.h",
-	"__FILE":   "/usr/include/stdio.h",
-	"off_t":    "/usr/include/stdio.h",
-	"off64_t":  "/usr/include/stdio.h",
-	"ssize_t":  "/usr/include/stdio.h",
-	"fpos_t":   "/usr/include/stdio.h",
-	"fpos64_t": "/usr/include/stdio.h",
-
-	"_IO_lock_t":                "/usr/include/libio.h",
-	"_IO_FILE":                  "/usr/include/libio.h",
-	"__io_read_fn":              "/usr/include/libio.h",
-	"__io_write_fn":             "/usr/include/libio.h",
-	"__io_seek_fn":              "/usr/include/libio.h",
-	"__io_close_fn":             "/usr/include/libio.h",
-	"cookie_read_function_t":    "/usr/include/libio.h",
-	"cookie_write_function_t":   "/usr/include/libio.h",
-	"cookie_seek_function_t":    "/usr/include/libio.h",
-	"cookie_close_function_t":   "/usr/include/libio.h",
-	"_IO_cookie_io_functions_t": "/usr/include/libio.h",
-	"cookie_io_functions_t":     "/usr/include/libio.h",
-
-	"__mbstate_t":           "/usr/include/wchar.h",
-	"_G_fpos_t":             "/usr/include/_G_config.h",
-	"_G_fpos64_t":           "/usr/include/_G_config.h",
-	"va_list":               "/usr/lib/llvm-4.0/bin/../lib/clang/4.0.0/include/stdarg.h",
-	"__gnuc_va_list":        "/usr/lib/llvm-4.0/bin/../lib/clang/4.0.0/include/stdarg.h",
-	"wchar_t":               "/usr/lib/llvm-4.0/bin/../lib/clang/4.0.0/include/stddef.h",
-	"idtype_t":              "/usr/include/x86_64-linux-gnu/bits/waitflags.h",
-	"__WAIT_STATUS":         "/usr/include/stdlib.h",
-	"int32_t":               "/usr/include/x86_64-linux-gnu/sys/types.h",
-	"__sig_atomic_t":        "/usr/include/x86_64-linux-gnu/bits/sigset.h",
-	"__sigset_t":            "/usr/include/x86_64-linux-gnu/bits/sigset.h",
-	"sigset_t":              "/usr/include/x86_64-linux-gnu/sys/select.h",
-	"__fd_mask":             "/usr/include/x86_64-linux-gnu/sys/select.h",
-	"fd_set":                "/usr/include/x86_64-linux-gnu/sys/select.h",
-	"fd_mask":               "/usr/include/x86_64-linux-gnu/sys/select.h",
-	"pthread_t":             "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"pthread_attr_t":        "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"__pthread_list_t":      "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"pthread_mutex_t":       "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"pthread_mutexattr_t":   "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"pthread_cond_t":        "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"pthread_condattr_t":    "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"pthread_key_t":         "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"pthread_once_t":        "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"pthread_rwlock_t":      "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"pthread_rwlockattr_t":  "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"pthread_spinlock_t":    "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"pthread_barrier_t":     "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"pthread_barrierattr_t": "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h",
-	"__compar_fn_t":         "/usr/include/stdlib.h",
-	"comparison_fn_t":       "/usr/include/stdlib.h",
-	"__compar_d_fn_t":       "/usr/include/stdlib.h",
-	"float_t":               "/usr/include/x86_64-linux-gnu/bits/mathdef.h",
-	"double_t":              "/usr/include/x86_64-linux-gnu/bits/mathdef.h",
-	"_LIB_VERSION_TYPE":     "/usr/include/math.h",
-
-	"intptr_t":  "/usr/include/unistd.h",
-	"socklen_t": "/usr/include/unistd.h",
-
-	"siginfo_t": "/usr/include/sys/signal.h",
-}
-
 func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 	decls []goast.Decl, err error) {
 
@@ -601,10 +430,6 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 		} else {
 			if !p.IncludeHeaderIsExists(n.Pos.File) {
 				// no need add struct from C STD
-				decls = nil
-				return
-			}
-			if h, ok := ignoreTypedef[n.Name]; ok && p.IncludeHeaderIsExists(h) {
 				decls = nil
 				return
 			}
@@ -699,30 +524,6 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 		return
 	}
 
-	if name == "div_t" || name == "ldiv_t" || name == "lldiv_t" {
-		intType := "int"
-		if name == "ldiv_t" {
-			intType = "long int"
-		} else if name == "lldiv_t" {
-			intType = "long long int"
-		}
-
-		// I don't know to extract the correct fields from the typedef to create
-		// the internal definition. This is used in the noarch package
-		// (stdio.go).
-		//
-		// The name of the struct is not prefixed with "struct " because it is a
-		// typedef.
-		p.Structs[name] = &program.Struct{
-			Name: name,
-			Type: program.StructType,
-			Fields: map[string]interface{}{
-				"quot": intType,
-				"rem":  intType,
-			},
-		}
-	}
-
 	err = nil
 	if resolvedType == "" {
 		resolvedType = "interface{}"
@@ -739,12 +540,27 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 		p.TypedefType[n.Name] = n.Type
 	}
 
+	// 0: *ast.GenDecl {
+	// .  Tok: type
+	// .  Specs: []ast.Spec (len = 1) {
+	// .  .  0: *ast.TypeSpec {
+	// .  .  .  Name: *ast.Ident {
+	// .  .  .  .  Name: "R"
+	// .  .  .  }
+	// .  .  .  Assign: 3:8        // <- This is important
+	// .  .  .  Type: *ast.Ident {
+	// .  .  .  .  Name: "int"
+	// .  .  .  }
+	// .  .  }
+	// .  }
+	// }
 	decls = append(decls, &goast.GenDecl{
 		Tok: token.TYPE,
 		Specs: []goast.Spec{
 			&goast.TypeSpec{
-				Name: util.NewIdent(name),
-				Type: util.NewTypeIdent(resolvedType),
+				Name:   util.NewIdent(name),
+				Assign: 1,
+				Type:   util.NewTypeIdent(resolvedType),
 			},
 		},
 	})
@@ -763,60 +579,6 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 	n.Name = types.GenerateCorrectType(n.Name)
 	n.Type = types.GenerateCorrectType(n.Type)
 	n.Type2 = types.GenerateCorrectType(n.Type2)
-
-	// There may be some startup code for this global variable.
-	if p.Function == nil {
-		name := n.Name
-		switch name {
-		// Below are for macOS.
-		case "__stdinp", "__stdoutp", "__stderrp":
-			theType = "*noarch.File"
-			p.AddImport("github.com/Konstantin8105/c4go/noarch")
-			p.AppendStartupExpr(
-				util.NewBinaryExpr(
-					goast.NewIdent(name),
-					token.ASSIGN,
-					util.NewTypeIdent(
-						"noarch."+util.Ucfirst(name[2:len(name)-1])),
-					"*noarch.File",
-					true,
-				),
-			)
-			return []goast.Decl{&goast.GenDecl{
-				Tok: token.VAR,
-				Specs: []goast.Spec{&goast.ValueSpec{
-					Names: []*goast.Ident{{Name: name}},
-					Type:  util.NewTypeIdent(theType),
-					Doc:   p.GetMessageComments(),
-				}},
-			}}, "", nil
-
-		// Below are for linux.
-		case "stdout", "stdin", "stderr":
-			theType = "*noarch.File"
-			p.AddImport("github.com/Konstantin8105/c4go/noarch")
-			p.AppendStartupExpr(
-				util.NewBinaryExpr(
-					goast.NewIdent(name),
-					token.ASSIGN,
-					util.NewTypeIdent("noarch."+util.Ucfirst(name)),
-					theType,
-					true,
-				),
-			)
-			return []goast.Decl{&goast.GenDecl{
-				Tok: token.VAR,
-				Specs: []goast.Spec{&goast.ValueSpec{
-					Names: []*goast.Ident{{Name: name}},
-					Type:  util.NewTypeIdent(theType),
-				}},
-				Doc: p.GetMessageComments(),
-			}}, "", nil
-
-		default:
-			// No init needed.
-		}
-	}
 
 	// Ignore extern as there is no analogy for Go right now.
 	if n.IsExtern && len(n.ChildNodes) == 0 {
@@ -899,21 +661,8 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 
 	p.GlobalVariables[n.Name] = theType
 
-	name := n.Name
 	preStmts := []goast.Stmt{}
 	postStmts := []goast.Stmt{}
-
-	// TODO: Some platform structs are ignored.
-	// https://github.com/Konstantin8105/c4go/issues/85
-	if name == "_LIB_VERSION" ||
-		name == "_IO_2_1_stdin_" ||
-		name == "_IO_2_1_stdout_" ||
-		name == "_IO_2_1_stderr_" ||
-		name == "_DefaultRuneLocale" ||
-		name == "_CurrentRuneLocale" {
-		theType = "unknown10"
-		return
-	}
 
 	defaultValue, _, newPre, newPost, err := getDefaultValueForVar(p, n)
 	if err != nil {
@@ -983,13 +732,26 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 				len(preStmts), len(postStmts)), n))
 	}
 
+	names := map[string]string{
+		"ptrdiff_t": "noarch.PtrdiffT",
+	}
+
+	var typeResult goast.Expr
+
+	if n, ok := names[n.Type]; ok {
+		typeResult = util.NewTypeIdent(n)
+		goto ignoreType
+	}
+
 	theType, err = types.ResolveType(p, n.Type)
 	if err != nil {
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 		err = nil // Error is ignored
 		theType = "UnknownType"
 	}
-	typeResult := util.NewTypeIdent(theType)
+	typeResult = util.NewTypeIdent(theType)
+
+ignoreType:
 
 	return []goast.Decl{&goast.GenDecl{
 		Tok: token.VAR,

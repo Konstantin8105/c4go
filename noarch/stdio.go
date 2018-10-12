@@ -165,16 +165,13 @@ func Rename(oldName, newName []byte) int {
 // can be specified, but also fputs does not write additional characters, while
 // puts appends a newline character at the end automatically.
 func Fputs(str []byte, stream *File) int {
-	length := 0
-	for _, b := range []byte(str) {
-		if b == 0 {
-			break
-		}
-
-		length++
+	if stream == nil {
+		return -1
 	}
 
-	n, err := stream.OsFile.WriteString(string(str[:length]))
+	s := CStringToString(str)
+
+	n, err := stream.OsFile.WriteString(s)
 	if err != nil {
 		panic(err)
 	}
@@ -473,6 +470,9 @@ func Fgetc(stream *File) int {
 // The character is written at the position indicated by the internal position
 // indicator of the stream, which is then automatically advanced by one.
 func Fputc(c int, f *File) int {
+	if f == nil {
+		return -1
+	}
 	n, err := f.OsFile.Write([]byte{byte(c)})
 	if err != nil {
 		return 0

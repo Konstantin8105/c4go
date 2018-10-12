@@ -50,3 +50,11 @@ func (n *CharacterLiteral) Children() []Node {
 func (n *CharacterLiteral) Position() Position {
 	return n.Pos
 }
+
+// CharacterLiteralError represents one instance of an error where the exact
+// character value of a CharacterLiteral could not be determined from the
+// original source. See RepairCharacterLiteralsFromSource for a full explanation.
+type CharacterLiteralError struct {
+	Node *CharacterLiteral
+	Err  error
+}

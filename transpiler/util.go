@@ -7,7 +7,7 @@ import (
 	"reflect"
 )
 
-func isNil(stmt goast.Stmt) bool {
+func isNil(stmt goast.Node) bool {
 	if stmt == nil {
 		return true
 	}
@@ -34,15 +34,24 @@ func combinePreAndPostStmts(
 	return pre, post
 }
 
-// nilFilterStmts - remove nil stmt from slice
-func nilFilterStmts(stmts []goast.Stmt) (out []goast.Stmt) {
-	out = make([]goast.Stmt, 0, len(stmts))
-	for _, stmt := range stmts {
-		if !isNil(stmt) {
-			out = append(out, stmt)
+// nilFilterDecl - remove nil decls from slice
+func nilFilterDecl(decls []goast.Decl) (out []goast.Decl) {
+	for _, decl := range decls {
+		if isNil(decl) {
+			panic("Found nil decl")
 		}
 	}
-	return
+	return decls
+}
+
+// nilFilterStmts - remove nil stmt from slice
+func nilFilterStmts(stmts []goast.Stmt) (out []goast.Stmt) {
+	for _, stmt := range stmts {
+		if isNil(stmt) {
+			panic("Found nil stmt")
+		}
+	}
+	return stmts
 }
 
 // combineStmts - combine elements to slice

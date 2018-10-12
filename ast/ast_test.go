@@ -156,17 +156,15 @@ func TestAstNodes(t *testing.T) {
 	var fr Founder
 	ast.Walk(fr, f.Decls[4])
 
-	/*
-		108: *ast.CaseClause {
-		.  Case: -
-		.  List: []ast.Expr (len = 1) {
-		.  .  0: *ast.BasicLit {
-		.  .  .  ValuePos: -
-		.  .  .  Kind: STRING
-		.  .  .  Value: "\"WhileStmt\""
-		.  .  }
-		.  }
-	*/
+	// 108: *ast.CaseClause {
+	// .  Case: -
+	// .  List: []ast.Expr (len = 1) {
+	// .  .  0: *ast.BasicLit {
+	// .  .  .  ValuePos: -
+	// .  .  .  Kind: STRING
+	// .  .  .  Value: "\"WhileStmt\""
+	// .  .  }
+	// .  }
 
 	nodesFromAst = append(nodesFromAst, "")
 

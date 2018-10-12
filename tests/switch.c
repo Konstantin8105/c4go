@@ -277,75 +277,73 @@ void switch_without_input()
 
 void test_switch()
 {
-	int val = 1;
-	switch (0){
-		case -1000:
-		default:
-			// ignored
-			val += 3;
-		case -1:
-			val += 1;
-		case 2:
-		{
-			val *= 2;
-		}
-		case 3: 
-		{
-			val *= 4;
-		}
-		case 4:
-		case 5:
-			val += 5;
-		case 6:
-		case 7:
-			val *= 6;
-			break;
-		case 8:;
-		case 9:;
-		case 10:;
-	}
-	is_eq(val, 270);
+    int val = 1;
+    switch (0) {
+    case -1000:
+    default:
+        // ignored
+        val += 3;
+    case -1:
+        val += 1;
+    case 2: {
+        val *= 2;
+    }
+    case 3: {
+        val *= 4;
+    }
+    case 4:
+    case 5:
+        val += 5;
+    case 6:
+    case 7:
+        val *= 6;
+        break;
+    case 8:;
+    case 9:;
+    case 10:;
+    }
+    is_eq(val, 270);
 }
 
 void switch_bool()
 {
-	double x = 3.0;
-	switch ( x < 0.0 ){
-		case 0:
-			pass("ok");
-			break;
-		case 1:
-			fail("switch_bool 1");
-			break;
-		default:
-			fail("switch_bool 3");
-	}
-	int y = 7;
-	const int t = 0;
-	switch (y){
-		case 0 == t:
-			fail("switch_bool 4");
-			break;
-		case 1 == t:
-			fail("switch_bool 5");
-			break;
-		default:
-			pass("ok");
-			break;
-	}
+    double x = 3.0;
+    switch (x < 0.0) {
+    case 0:
+        pass("ok");
+        break;
+    case 1:
+        fail("switch_bool 1");
+        break;
+    default:
+        fail("switch_bool 3");
+    }
+    int y = 7;
+    const int t = 0;
+    switch (y) {
+    case 0 == t:
+        fail("switch_bool 4");
+        break;
+    case 1 == t:
+        fail("switch_bool 5");
+        break;
+    default:
+        pass("ok");
+        break;
+    }
 }
 
 int main()
 {
     plan(28);
 
-	switch_bool();
+    switch_bool();
     match_a_single_case();
     fallthrough_to_next_case();
     match_no_cases();
     match_default();
     fallthrough_several_cases_including_default();
-	test_switch();
+    test_switch();
 
     // For each of the tests above there will be identical cases that use scopes
     // for the case statements.

@@ -100,17 +100,12 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	// Only for "stddef.h"
 	if p.IncludeHeaderIsExists("stddef.h") {
 		if cFromType == "long" && cToType == "ptrdiff_t" {
-			size, err := SizeOf(p, cToType)
-			if err != nil {
-				err2 = fmt.Errorf("%v,%v", err, err2)
-				return
-			}
 			expr = &goast.BinaryExpr{
 				X:  expr,
 				Op: token.QUO,
 				Y: &goast.BasicLit{
 					Kind:  token.INT,
-					Value: fmt.Sprintf("%v", size),
+					Value: "8",
 				},
 			}
 		}
@@ -248,8 +243,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return goast.NewIdent("nil"), nil
 	}
 
-	// Replace for specific case of fromType for darwin:
-	// Fo : union (anonymous union at sqlite3.c:619241696:3)
+	// For : union (anonymous union at sqlite3.c:619241696:3)
 	if strings.Contains(fromType, "anonymous union") {
 		// I don't understood - How to change correctly
 		// Try change to : `union` , but it is FAIL with that
@@ -350,9 +344,6 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 
 		// Known aliases
 		"__uint16_t", "size_t",
-
-		// Darwin specific
-		"__darwin_ct_rune_t", "darwin.CtRuneT",
 	}
 	for _, v := range types {
 		if fromType == v && toType == "bool" {
@@ -371,6 +362,18 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 			// Swap replaceme with the current expression
 			e.(*goast.IndexExpr).Index = expr
 			return CastExpr(p, e, "int", cToType)
+		}
+	}
+
+	// cast size_t to int
+	{
+		_, fok := program.CStdStructType[cFromType]
+		t, tok := program.CStdStructType[cToType]
+		if fok && tok {
+			return &goast.CallExpr{
+				Fun:  goast.NewIdent(p.ImportType(t)),
+				Args: []goast.Expr{expr},
+			}, nil
 		}
 	}
 

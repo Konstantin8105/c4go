@@ -7,33 +7,33 @@
 
 A tool for [transpiling](https://en.wikipedia.org/wiki/Source-to-source_compiler) C code to Go code.
 
-Milestone of project:
+Milestones of the project:
 
 1. Transpiling project [GNU GSL](https://www.gnu.org/software/gsl/).
 2. Transpiling project [GTK+](https://www.gtk.org/).
 
 Notes:
-* Transpiler works on linux and mac machines
+* Transpiler works on linux machines
 * Need to have installed `clang`. See [llvm download page](http://releases.llvm.org/download.html)
 
 # Installation
 
-`c4go` requires Go 1.9 or newer.
+`c4go` requires Go 1.10 or newer.
 
 ```bash
 go get -u github.com/Konstantin8105/c4go
 ```
 
-# Example of using
+# Usage example
 
 ```bash
-# Change your location to folder with examples:
+# Change your location to the folder with examples:
 cd $GOPATH/src/github.com/Konstantin8105/c4go/examples/
 
-# Transpile one file from C example folder:
+# Transpile one file from the C example folder:
 c4go transpile prime.c
 
-# Look on result
+# Look at the result
 nano prime.go
 
 # Check the result:
@@ -88,19 +88,8 @@ Go code of file `prime.go`:
 package main
 
 import "unsafe"
-import "fmt"
 import "github.com/Konstantin8105/c4go/noarch"
-
-type size_t uint32
-type __time_t int32
-type va_list int64
-type __gnuc_va_list int64
-
-var stdin *noarch.File
-
-var stdout *noarch.File
-
-var stderr *noarch.File
+import "fmt"
 
 // main - transpiled function from  $GOPATH/src/github.com/Konstantin8105/c4go/examples/prime.c:3
 func main() {
@@ -130,13 +119,10 @@ func main() {
 	return
 }
 func init() {
-	 stdin = noarch.Stdin
-	 stdout = noarch.Stdout
-	 stderr = noarch.Stderr
 }
 ```
 
-# C standart library implementation
+# C standard library implementation
 
 ```
             assert.h	       1/1	         100%
@@ -146,14 +132,14 @@ func init() {
             iso646.h	          	    undefined
             limits.h	          	    undefined
             locale.h	       0/3	           0%
-              math.h	     37/58	        63.8%
+              math.h	     40/58	          69%
             setjmp.h	       0/3	           0%
             signal.h	       0/3	           0%
             stdarg.h	       4/4	         100%
             stddef.h	       2/6	        33.3%
              stdio.h	     33/46	        71.7%
-            stdlib.h	     31/47	          66%
-            string.h	     11/24	        45.8%
+            stdlib.h	     32/47	        68.1%
+            string.h	     12/24	          50%
               time.h	      8/15	        53.3%
              wchar.h	      0/68	           0%
             wctype.h	      0/22	           0%
@@ -161,12 +147,12 @@ func init() {
 
 # Contributing
 
-Feel free to add PR, issues.
+Feel free to submit PRs or open issues.
 Main information from: [http://en.cppreference.com/w/c](http://en.cppreference.com/w/c)
 
 ## Testing
 
-By default only unit tests are run with `go test`. You can also include the
+By default, only unit tests are run with `go test`. You can also include the
 integration tests:
 
 ```bash

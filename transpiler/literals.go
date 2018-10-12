@@ -110,30 +110,17 @@ func transpileCharacterLiteral(n *ast.CharacterLiteral) *goast.BasicLit {
 	}
 }
 
-func transpilePredefinedExpr(n *ast.PredefinedExpr, p *program.Program) (goast.Expr, string, error) {
-	// A predefined expression is a literal that is not given a value until
-	// compile time.
-	//
-	// TODO: Predefined expressions are not evaluated
-	// https://github.com/Konstantin8105/c4go/issues/81
+func transpilePredefinedExpr(n *ast.PredefinedExpr, p *program.Program) (
+	expr goast.Expr, exprType string, err error) {
 
-	switch n.Name {
-	case "__PRETTY_FUNCTION__":
-		return util.NewCallExpr(
-			"[]byte",
-			util.NewStringLit(`"void print_number(int *)"`),
-		), "const char*", nil
-
-	case "__func__":
-		return util.NewCallExpr(
-			"[]byte",
-			util.NewStringLit(strconv.Quote(p.Function.Name)),
-		), "const char*", nil
-
-	default:
-		// There are many more.
-		panic(fmt.Sprintf("unknown PredefinedExpr: %s", n.Name))
+	if len(n.Children()) == 1 {
+		expr, exprType, _, _, err = transpileToExpr(n.Children()[0], p, false)
+		return
 	}
+
+	// There are many more.
+	err = fmt.Errorf("unknown PredefinedExpr: %s", n.Name)
+	return
 }
 
 func transpileCompoundLiteralExpr(n *ast.CompoundLiteralExpr, p *program.Program) (goast.Expr, string, error) {
