@@ -60,7 +60,7 @@ func transpileFieldDecl(p *program.Program, n *ast.FieldDecl) (
 			if field.Type == nil {
 				err = fmt.Errorf("Found nil transpileFieldDecl in field Type %v , %v : %v",
 					n, field, err)
-				field = nil
+				field.Type = util.NewIdent(n.Type)
 			}
 		}
 	}()
