@@ -56,8 +56,8 @@ before_install:
   # - go get -u -v github.com/wadey/gocovmerge
 
   # install gometalinter
-  - go get -u github.com/alecthomas/gometalinter
-  - gometalinter --install
+  # - go get -u github.com/alecthomas/gometalinter
+  # - gometalinter --install
 
 script:
   - . ./travis/$SCRIPT.sh

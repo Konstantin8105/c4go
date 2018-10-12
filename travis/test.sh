@@ -4,13 +4,13 @@
 set -e
 echo "" > coverage.txt
 
-for d in $(go list ./... | grep -v vendor); do
-    go test -v -tags=integration -coverprofile=profile.out -covermode=atomic $d
-    if [ -f profile.out ]; then
-        cat profile.out >> coverage.txt
-        rm profile.out
-    fi
-done
+PKGS="./ast/... ./linux/... ./noarch/... ./preprocessor/... ./program/... ./transpiler/... ./types/... ./util/... ./version/..."
+
+echo "List of Go packages"
+echo "$PKGS"
+go test -v -tags=integration -coverprofile=profile.out -covermode=atomic  $PKGS
+cat profile.out >> coverage.txt
+rm profile.out
 
 # check race
 go test -tags=integration -run=TestIntegrationScripts/tests/ctype.c -race -v
