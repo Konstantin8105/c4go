@@ -3,12 +3,10 @@ package transpiler
 import (
 	"fmt"
 	goast "go/ast"
-	"strings"
 
 	"github.com/Konstantin8105/c4go/ast"
 	"github.com/Konstantin8105/c4go/program"
 	"github.com/Konstantin8105/c4go/types"
-	"github.com/Konstantin8105/c4go/util"
 )
 
 func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, exprIsStmt bool) (
@@ -30,12 +28,6 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		expr = goast.NewIdent("nil")
 		exprType = types.NullPointer
 		return
-	}
-	if strings.Contains(n.Type, "enum") {
-		if d, ok := n.Children()[0].(*ast.DeclRefExpr); ok {
-			expr, exprType, err = util.NewIdent(d.Name), n.Type, nil
-			return
-		}
 	}
 
 	expr, exprType, preStmts, postStmts, err = transpileToExpr(
