@@ -26,42 +26,9 @@ func transpileDeclRefExpr(n *ast.DeclRefExpr, p *program.Program) (
 		}
 	}
 
-	{
-		names := []string{
-			"_ISupper",
-			"_ISlower",
-			"_ISalpha",
-			"_ISdigit",
-			"_ISxdigit",
-			"_ISspace",
-			"_ISprint",
-			"_ISgraph",
-			"_ISblank",
-			"_IScntrl",
-			"_ISpunct",
-			"_ISalnum",
-		}
-		for i := range names {
-			if n.Name == names[i] {
-				p.AddImport("github.com/Konstantin8105/c4go/noarch")
-				n.Name = "noarch." + n.Name[1:]
-				return util.NewIdent(n.Name), n.Type, nil
-			}
-		}
-	}
-	{
-		names := []string{
-			"stdin",
-			"stdout",
-			"stderr",
-		}
-		for i := range names {
-			if n.Name == names[i] {
-				p.AddImport("github.com/Konstantin8105/c4go/noarch")
-				n.Name = "noarch." + util.Ucfirst(n.Name)
-				return util.NewIdent(n.Name), n.Type, nil
-			}
-		}
+	if name, ok := program.CVariables[n.Name]; ok {
+		name = p.ImportType(name)
+		return util.NewIdent(name), n.Type, nil
 	}
 
 	if n.For == "Function" {
