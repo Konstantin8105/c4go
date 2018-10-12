@@ -13,7 +13,7 @@ export PKGS_DELIM=$(echo "$PKGS" | tr ' ' ',')
 echo "PKGS       : $PKGS"
 echo "PKGS_DELIM : $PKGS_DELIM"
 
-go test -v -cover -tags integration -coverpkg=$PKGS_DELIM -coverprofile=coverage.txt $PKGS
+go test -v -cover -tags integration -coverpkg=$PKGS_DELIM -coverprofile=coverage.txt $PKGS -- some args
 
 export BUILD=$(ls -d ./build/tests/* | tr '\n' ' ')
 
