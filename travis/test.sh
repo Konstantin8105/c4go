@@ -13,12 +13,12 @@ export PKGS_DELIM=$(echo "$PKGS" | tr ' ' ',')
 echo "PKGS       : $PKGS"
 echo "PKGS_DELIM : $PKGS_DELIM"
 
-go test -v -cover -tags integration -coverpkg=$PKGS_DELIM -coverprofile=coverage.txt $PKGS -- some args
+go test -v -cover -tags integration -coverpkg=$PKGS_DELIM -coverprofile=coverage.txt $PKGS
 
 export BUILD=$(ls -d ./build/tests/* | tr '\n' ' ')
 
 echo "Go transpiled tests: $BUILD"
-go test    -cover -coverprofile=profile.out -coverpkg=./noarch,./linux  ./noarch ./linux $BUILD
+go test    -cover -coverprofile=profile.out -coverpkg=./noarch,./linux  ./noarch ./linux $BUILD  -- some args
 if [ -f profile.out ]; then
     cat profile.out >> coverage.txt
     rm profile.out
