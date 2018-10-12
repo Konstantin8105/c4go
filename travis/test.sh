@@ -9,7 +9,7 @@ echo "" > coverage.txt
 #
 # As in @rodrigocorsi2 comment above (using full path to grep due to 'grep -n'
 # alias).
-export PKGS=$(go list ./... | grep -v c4go/build | grep -v /vendor/)
+export PKGS=$(go list ./... 2>/dev/null | grep -v c4go/build | grep -v c4go/examples | grep -v c4go/tests | grep -v /vendor/)
 
 # Make comma-separated.
 export PKGS_DELIM=$(echo "$PKGS" | paste -sd "," -)
@@ -20,7 +20,7 @@ export PKGS_DELIM=$(echo "$PKGS" | paste -sd "," -)
 # with gocovmerge.
 #
 # Exit code 123 will be returned if any of the tests fail.
-go list -f 'go test -v -tags integration -covermode atomic -coverprofile {{.Name}}.coverprofile -coverpkg $PKGS_DELIM {{.ImportPath}}' $PKGS | xargs -I{} bash -c "{}"
+go list -f 'go test -v -cover -tags integration -covermode atomic -coverprofile {{.Name}}.coverprofile -coverpkg $PKGS_DELIM {{.ImportPath}}' $PKGS | xargs -I{} bash -c "{}"
 
 # Merge coverage profiles.
 COVERAGE_FILES=`ls -1 *.coverprofile 2>/dev/null | wc -l`
