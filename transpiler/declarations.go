@@ -116,8 +116,6 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			if addPackageUnsafe {
 				p.AddImports("unsafe")
 			}
-			// Only for adding to ignore list
-			// fmt.Printf("%40s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
 		}
 	}()
 
