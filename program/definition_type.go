@@ -4,7 +4,9 @@ package program
 // c4go structures
 var DefinitionType = map[string]string{
 	// time.h
-	"time_t": "github.com/Konstantin8105/c4go/noarch.TimeT",
+	"time_t":        "github.com/Konstantin8105/c4go/noarch.TimeT",
+	"__time_t":      "int32",
+	"__suseconds_t": "int32",
 
 	"fpos_t": "int",
 
