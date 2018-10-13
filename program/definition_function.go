@@ -7,8 +7,8 @@ import (
 	"github.com/Konstantin8105/c4go/util"
 )
 
-// FunctionDefinition contains the prototype definition for a function.
-type FunctionDefinition struct {
+// DefinitionFunction contains the prototype definition for a function.
+type DefinitionFunction struct {
 	// The name of the function, like "printf".
 	Name string
 
@@ -347,7 +347,7 @@ func (p *Program) GetIncludeFileNameByFunctionSignature(
 
 // GetFunctionDefinition will return nil if the function does not exist (is not
 // registered).
-func (p *Program) GetFunctionDefinition(functionName string) *FunctionDefinition {
+func (p *Program) GetFunctionDefinition(functionName string) *DefinitionFunction {
 	p.loadFunctionDefinitions()
 
 	if f, ok := p.functionDefinitions[functionName]; ok {
@@ -359,7 +359,7 @@ func (p *Program) GetFunctionDefinition(functionName string) *FunctionDefinition
 
 // AddFunctionDefinition registers a function definition. If the definition
 // already exists it will be replaced.
-func (p *Program) AddFunctionDefinition(f FunctionDefinition) {
+func (p *Program) AddFunctionDefinition(f DefinitionFunction) {
 	p.loadFunctionDefinitions()
 
 	p.functionDefinitions[f.Name] = f
@@ -395,7 +395,7 @@ func (p *Program) loadFunctionDefinitions() {
 		return
 	}
 
-	p.functionDefinitions = map[string]FunctionDefinition{}
+	p.functionDefinitions = map[string]DefinitionFunction{}
 	p.builtInFunctionDefinitionsHaveBeenLoaded = true
 
 	for k, v := range builtInFunctionDefinitions {
@@ -440,7 +440,7 @@ func (p *Program) loadFunctionDefinitions() {
 				substitution = "github.com/Konstantin8105/c4go/" + substitution
 			}
 
-			p.AddFunctionDefinition(FunctionDefinition{
+			p.AddFunctionDefinition(DefinitionFunction{
 				Name:             match[2],
 				ReturnType:       match[1],
 				ArgumentTypes:    argumentTypes,

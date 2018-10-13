@@ -367,8 +367,8 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 
 	// cast size_t to int
 	{
-		_, fok := program.CStdStructType[cFromType]
-		t, tok := program.CStdStructType[cToType]
+		_, fok := program.DefinitionType[cFromType]
+		t, tok := program.DefinitionType[cToType]
 		if fok && tok {
 			return &goast.CallExpr{
 				Fun:  goast.NewIdent(p.ImportType(t)),

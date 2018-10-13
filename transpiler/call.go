@@ -266,7 +266,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		// definitions, so each time we see the CallExpr it will run this every
 		// time. This is so if we come across the real prototype later it will
 		// be handled correctly. Or at least "more" correctly.
-		functionDef = &program.FunctionDefinition{
+		functionDef = &program.DefinitionFunction{
 			Name: functionName,
 		}
 		if len(n.Children()) > 0 {

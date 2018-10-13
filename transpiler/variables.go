@@ -26,7 +26,7 @@ func transpileDeclRefExpr(n *ast.DeclRefExpr, p *program.Program) (
 		}
 	}
 
-	if name, ok := program.CVariables[n.Name]; ok {
+	if name, ok := program.DefinitionVariable[n.Name]; ok {
 		name = p.ImportType(name)
 		return util.NewIdent(name), n.Type, nil
 	}
