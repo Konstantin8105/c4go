@@ -8,6 +8,6 @@ type Timeval struct {
 
 // Timezone - struct from <sys/time.h>
 type Timezone struct {
-	TzMinuteswest int /* minutes west of Greenwich */
-	TzDsttime     int /* type of DST correction */
+	TzMinuteswest int // minutes west of Greenwich
+	TzDsttime     int // type of DST correction
 }
