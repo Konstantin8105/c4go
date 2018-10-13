@@ -13,21 +13,20 @@ export PKGS_DELIM=$(echo "$PKGS" | tr ' ' ',')
 echo "PKGS       : $PKGS"
 echo "PKGS_DELIM : $PKGS_DELIM"
 
-go test -v -cover -tags integration -coverpkg=$PKGS_DELIM -coverprofile=pkg.coverprofile $PKGS
+go test -v -cover -tags integration -coverpkg=$PKGS_DELIM -coverprofile=./build/pkg.coverprofile $PKGS
 
 # Merge coverage profiles.
-COVERAGE_FILES=`ls -1 *.coverprofile 2>/dev/null | wc -l`
+COVERAGE_FILES=`ls -1 ./build/*.coverprofile 2>/dev/null | wc -l`
 if [ $COVERAGE_FILES != 0 ]; then
 	# check program `gocovmerge` is exist
 	if which gocovmerge >/dev/null 2>&1; then
-		export $FILES=$(ls *.coverprofile | tr '\n' ' ')
+		export FILES=$(ls build/*.coverprofile | tr '\n' ' ')
+		echo "Combine next coverprofiles : $FILES"
 		gocovmerge $FILES > coverage.txt
-		rm *.coverprofile
 	fi
 fi
 
 echo "End of coverage"
-
 
 # check race
 go test -tags=integration -run=TestIntegrationScripts/tests/ctype.c -race -v

@@ -31,6 +31,11 @@ type programOut struct {
 	isZero bool
 }
 
+var (
+	buildFolder = "build"
+	separator   = string(os.PathSeparator)
+)
+
 // TestIntegrationScripts tests all programs in the tests directory.
 //
 // Integration tests are not run by default (only unit tests). These are
@@ -54,24 +59,11 @@ func TestIntegrationScripts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	exampleFiles, err := filepath.Glob("examples/" + "*.c")
-	if err != nil {
-		t.Fatal(err)
-	}
+	files := append(testFiles, testCppFiles...)
 
-	files := append(testFiles, exampleFiles...)
-	files = append(files, testCppFiles...)
-
-	isVerbose := flag.CommandLine.Lookup("test.v").Value.String() == "true"
-
-	totalTapTests := 0
 	var (
-		buildFolder  = "build"
-		cFileName    = "a.out"
-		mainFileName = "main.go"
-		stdin        = "7"
-		args         = []string{"some", "args"}
-		separator    = string(os.PathSeparator)
+		stdin = "7"
+		args  = []string{"some", "args"}
 	)
 
 	// Parallel is not acceptable, before solving issue:
@@ -81,15 +73,8 @@ func TestIntegrationScripts(t *testing.T) {
 	for _, file := range files {
 		t.Run(file, func(t *testing.T) {
 
-			compiler, compilerFlag := preprocessor.Compiler(
-				strings.HasSuffix(file, "cpp"))
-
-			cProgram := programOut{}
-			goProgram := programOut{}
-
 			// create subfolders for test
 			subFolder := buildFolder + separator + strings.Split(file, ".")[0] + separator
-			cPath := subFolder + cFileName
 
 			// Create build folder
 			err = os.MkdirAll(subFolder, os.ModePerm)
@@ -97,134 +82,31 @@ func TestIntegrationScripts(t *testing.T) {
 				t.Fatalf("error: %v", err)
 			}
 
-			// Compile C.
-			out, err := exec.Command(
-				compiler, compilerFlag, "-lm", "-o", cPath, file).
-				CombinedOutput()
-			if err != nil {
-				t.Fatalf("error: %s\n%s", err, out)
+			// slice of program results
+			progs := [2]func(string, string, string, []string) (string, error){
+				runC,
+				runGo,
 			}
 
-			// Run C program
-			cmd := exec.Command(cPath, args...)
-			cmd.Stdin = strings.NewReader(stdin)
-			cmd.Stdout = &cProgram.stdout
-			cmd.Stderr = &cProgram.stderr
-			err = cmd.Run()
-			cProgram.isZero = err == nil
+			var results [2]string
 
-			// Check for special exit codes that signal that tests have failed.
-			if exitError, ok := err.(*exec.ExitError); ok {
-				exitStatus := exitError.Sys().(syscall.WaitStatus).ExitStatus()
-				switch exitStatus {
-				case 101, 102:
-					t.Fatal(cProgram.stdout.String())
-				case -1:
-					t.Log(err)
+			for i := 0; i < len(progs); i++ {
+				out, err := progs[i](file, subFolder, stdin, args)
+				if err != nil {
+					t.Fatalf("Error for function %d : %v", i, err)
+					return
 				}
-			}
-
-			mainFileName = "main_test.go"
-
-			programArgs := DefaultProgramArgs()
-			programArgs.inputFiles = []string{file}
-			programArgs.outputFile = subFolder + mainFileName
-			// This appends a TestApp function to the output source so we
-			// can run "go test" against the produced binary.
-			programArgs.outputAsTest = true
-
-			if strings.HasSuffix(file, "cpp") {
-				programArgs.cppCode = true
-			}
-
-			// Compile Go
-			err = Start(programArgs)
-			if err != nil {
-				t.Fatalf("error: %s\n%s", err, out)
-			}
-
-			// Run Go program. The "-v" option is important; without it most or
-			// all of the fmt.* output would be suppressed.
-			args := []string{
-				"test",
-				programArgs.outputFile,
-				"-v",
-			}
-			if !strings.HasPrefix(file, "examples/") {
-				testName := strings.Split(file, ".")[0][6:]
-				args = append(
-					args,
-					// Flag `race` is no need, because we are check in
-					// integration test
-					// "-race",
-					"-covermode=atomic",
-				)
-				args = append(args,
-					"-coverprofile="+testName+".coverprofile",
-					"-coverpkg=./noarch,./linux",
-					"./noarch ./linux "+strings.TrimRight(programArgs.outputFile, "main_test.go"),
-				)
-			}
-			if os.Getenv("TRAVIS") != "true" { // for local testing
-				args = append(args, "-args", "-test.v")
-			}
-			args = append(args, "--", "some", "args")
-
-			cmd = exec.Command("go", args...)
-			cmd.Stdin = strings.NewReader("7")
-			cmd.Stdout = &goProgram.stdout
-			cmd.Stderr = &goProgram.stderr
-			err = cmd.Run()
-			goProgram.isZero = err == nil
-
-			// Combine outputs
-			cCombine := cProgram.stdout.String() + cProgram.stderr.String()
-			goCombine := goProgram.stdout.String() + goProgram.stderr.String()
-
-			// Remove Go test specific lines
-			{
-				lines := strings.Split(goCombine, "\n")
-				goCombine = ""
-				for i := 0; i < len(lines); i++ {
-					if strings.HasPrefix(lines[i], "warning: no packages being tested") {
-						continue
-					}
-					if strings.HasPrefix(lines[i], "=== RUN   TestApp") {
-						continue
-					}
-					if strings.HasPrefix(lines[i], "FAIL\t") {
-						continue
-					}
-					if strings.HasPrefix(lines[i], "exit status") {
-						continue
-					}
-					if lines[i] == "PASS" {
-						continue
-					}
-					if strings.HasPrefix(lines[i], "coverage:") {
-						continue
-					}
-					if strings.HasPrefix(lines[i], "--- PASS: TestApp") {
-						continue
-					}
-					if strings.HasPrefix(lines[i], "ok  \tcommand-line-arguments") {
-						continue
-					}
-					goCombine += lines[i]
-					if i == len(lines)-1 {
-						continue
-					}
-					goCombine += "\n"
+				if out == "" {
+					t.Fatalf("Result is empty for function %d", i)
+					return
 				}
+				results[i] = out
 			}
 
-			// It is need only for "tests/assert.c"
-			// for change absolute path to local path
-			currentDir, err := os.Getwd()
-			if err != nil {
-				t.Fatal("Cannot get currently dir")
-			}
-			goCombine = strings.Replace(goCombine, currentDir+"/", "", -1)
+			var (
+				cCombine  = results[0]
+				goCombine = results[1]
+			)
 
 			if cCombine != goCombine {
 				// Add addition debug information for lines like:
@@ -282,43 +164,184 @@ func TestIntegrationScripts(t *testing.T) {
 					output,
 					util.ShowDiff(cCombine, goCombine))
 			}
-
-			// Check if both exit codes are zero (or non-zero)
-			if cProgram.isZero != goProgram.isZero {
-				t.Fatalf("Exit statuses did not match.\n%s",
-					util.ShowDiff(cCombine, goCombine))
-			}
-
-			// If this is not an example we will extract the number of tests
-			// run.
-			if strings.Index(file, "examples/") == -1 && isVerbose {
-				firstLine := strings.Split(goCombine, "\n")[0]
-
-				matches := util.GetRegex(`1\.\.(\d+)`).
-					FindStringSubmatch(firstLine)
-				if len(matches) == 0 {
-					t.Fatalf("Test did not output tap: %s, got:\n%s", file,
-						goProgram.stdout.String())
-				}
-
-				fmt.Printf("TAP: # %s: %s tests\n", file, matches[1])
-				totalTapTests += util.Atoi(matches[1])
-			}
-
-			// Logs
-			logs, err := getLogs(programArgs.outputFile)
-			if err != nil {
-				t.Fatalf("Cannot read logs: %v", err)
-			}
-			for _, l := range logs {
-				t.Log(l)
+			if flag.CommandLine.Lookup("test.v").Value.String() == "true" {
+				t.Log(goCombine)
 			}
 		})
 	}
+}
 
-	if isVerbose {
-		fmt.Printf("TAP: # Total tests: %d\n", totalTapTests)
+// compile and run C code
+func runC(file, subFolder, stdin string, args []string) (string, error) {
+	cFileName := "a.out"
+	cPath := subFolder + cFileName
+
+	compiler, compilerFlag := preprocessor.Compiler(
+		strings.HasSuffix(file, "cpp"))
+
+	// Compile C.
+	out, err := exec.Command(
+		compiler, compilerFlag, "-lm", "-o", cPath, file).
+		CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("Cannot compile : %v\n%v", err, out)
 	}
+
+	cProgram := programOut{}
+
+	// Run C program
+	cmd := exec.Command(cPath, args...)
+	cmd.Stdin = strings.NewReader(stdin)
+	cmd.Stdout = &cProgram.stdout
+	cmd.Stderr = &cProgram.stderr
+	err = cmd.Run()
+	cProgram.isZero = err == nil
+
+	// Check for special exit codes that signal that tests have failed.
+	if exitError, ok := err.(*exec.ExitError); ok {
+		exitStatus := exitError.Sys().(syscall.WaitStatus).ExitStatus()
+		switch exitStatus {
+		case 101, 102:
+			return "", fmt.Errorf(cProgram.stdout.String())
+			// case -1:
+			// 	t.Log(err)
+		}
+	}
+
+	return cProgram.stdout.String() + cProgram.stderr.String(), nil
+}
+
+func (pr ProgramArgs) runGoTest(stdin string, args []string) (string, error) {
+
+	// Example : programArgs.outputFile = subFolder + "main.go"
+	subFolder := pr.outputFile[:len(pr.outputFile)-len("main.go")]
+
+	// Write main_test.go file
+	err := ioutil.WriteFile(subFolder+"main_test.go", []byte(`package main
+import (
+	"io/ioutil"
+	"os"
+	"testing"
+
+	"github.com/Konstantin8105/c4go/noarch"
+)
+func TestApp(t *testing.T) {
+	os.Chdir("../../..")
+	ioutil.WriteFile("build/stdin", []byte{'7'}, 0777)
+	stdin, _ := os.Open("build/stdin")
+	noarch.Stdin = noarch.NewFile(stdin)
+	main()
+}`), 0644)
+	if err != nil {
+		return "", fmt.Errorf("Cannot write Go test file: %v", err)
+	}
+
+	// Create Go test arguments with coverages
+	// Example:
+	//
+	// go test -coverprofile=ctype.coverprofile                   \
+	// -coverpkg=github.com/Konstantin8105/c4go/noarch,           \
+	//           github.com/Konstantin8105/c4go/linux,            \
+	//           github.com/Konstantin8105/c4go/build/tests/ctype \
+	// github.com/Konstantin8105/c4go/build/tests/ctype -args -test.v -- some args
+	//
+	coverArgs := []string{
+		"test",
+		"-v",
+		fmt.Sprintf("-coverprofile=./build/%s.coverprofile", strings.Replace(subFolder, "/", "_", -1)),
+		fmt.Sprintf("-coverpkg=github.com/Konstantin8105/c4go/noarch,github.com/Konstantin8105/c4go/linux,github.com/Konstantin8105/c4go/%s", subFolder),
+		fmt.Sprintf("github.com/Konstantin8105/c4go/%s", subFolder),
+	}
+	if os.Getenv("TRAVIS") != "true" { // for local testing
+		coverArgs = append(coverArgs, "-args", "-test.v")
+	}
+	coverArgs = append(coverArgs, "--")
+
+	goProgram := programOut{}
+	cmd := exec.Command("go", append(coverArgs, args...)...)
+	cmd.Stdin = strings.NewReader(stdin)
+	cmd.Stdout = &goProgram.stdout
+	cmd.Stderr = &goProgram.stderr
+	err = cmd.Run()
+	goProgram.isZero = err == nil
+
+	// Combine outputs
+	goCombine := goProgram.stdout.String() + goProgram.stderr.String()
+
+	// Logs
+	logs, err := getLogs(pr.outputFile)
+	if err != nil {
+		return "", fmt.Errorf("Cannot read logs: %v", err)
+	}
+	for _, l := range logs {
+		fmt.Println(l)
+	}
+
+	// Remove Go test specific lines
+	{
+		lines := strings.Split(goCombine, "\n")
+		goCombine = ""
+		for i := 0; i < len(lines); i++ {
+			if strings.HasPrefix(lines[i], "warning: no packages being tested") {
+				continue
+			}
+			if strings.HasPrefix(lines[i], "=== RUN   TestApp") {
+				continue
+			}
+			if strings.HasPrefix(lines[i], "FAIL\t") {
+				continue
+			}
+			if strings.HasPrefix(lines[i], "exit status") {
+				continue
+			}
+			if lines[i] == "PASS" {
+				continue
+			}
+			if strings.HasPrefix(lines[i], "coverage:") {
+				continue
+			}
+			if strings.HasPrefix(lines[i], "--- PASS: TestApp") {
+				continue
+			}
+			if strings.HasPrefix(lines[i], "ok  \t") {
+				continue
+			}
+			goCombine += lines[i]
+			if i == len(lines)-1 {
+				continue
+			}
+			goCombine += "\n"
+		}
+	}
+
+	// It is need only for "tests/assert.c"
+	// for change absolute path to local path
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("Cannot get currently dir : %v", err)
+	}
+	goCombine = strings.Replace(goCombine, currentDir+"/", "", -1)
+
+	return goCombine, nil
+}
+
+// compile and run Go code
+func runGo(file, subFolder, stdin string, args []string) (string, error) {
+
+	programArgs := DefaultProgramArgs()
+	programArgs.inputFiles = []string{file}
+	programArgs.outputFile = subFolder + "main.go"
+	if strings.HasSuffix(file, "cpp") {
+		programArgs.cppCode = true
+	}
+
+	// Compile Go
+	err := Start(programArgs)
+	if err != nil {
+		return "", fmt.Errorf("Cannot transpile : %v", err)
+	}
+
+	return programArgs.runGoTest(stdin, args)
 }
 
 func TestStartPreprocess(t *testing.T) {
@@ -386,22 +409,28 @@ func TestMultifileTranspilation(t *testing.T) {
 				"./tests/multi/main1.c",
 				"./tests/multi/main2.c",
 			},
-			"234ERROR!ERROR!ERROR!",
+			"234ERROR!ERROR!ERROR!\n",
 		},
 	}
 
 	for pos, tc := range tcs {
 		t.Run(fmt.Sprintf("Test %d", pos), func(t *testing.T) {
+
+			// create subfolders for test
+			subFolder := buildFolder + separator +
+				"multifileTranspilation" + separator +
+				fmt.Sprintf("%d", pos) + separator
+
+			// Create build folder
+			err := os.MkdirAll(subFolder, os.ModePerm)
+			if err != nil {
+				t.Fatalf("error: %v", err)
+			}
+
 			var args = DefaultProgramArgs()
 			args.inputFiles = tc.source
-			dir, err := ioutil.TempDir("", "c4go_multi")
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer os.RemoveAll(dir) // clean up
-			args.outputFile = path.Join(dir, "multi.go")
+			args.outputFile = path.Join(subFolder, "main.go")
 			args.packageName = "main"
-			args.outputAsTest = true
 
 			// Added for checking verbose mode
 			args.verbose = true
@@ -413,33 +442,35 @@ func TestMultifileTranspilation(t *testing.T) {
 			}
 
 			// Run Go program
-			var buf bytes.Buffer
-			cmd := exec.Command("go", "run", args.outputFile)
-			cmd.Stdout = &buf
-			cmd.Stderr = &buf
-			err = cmd.Run()
+			out, err := args.runGoTest("", []string{""})
 			if err != nil {
-				t.Errorf(err.Error())
+				t.Fatal(err)
 			}
-			if buf.String() != tc.expectedOutput {
-				t.Errorf("Wrong result: %v", buf.String())
+
+			if out != tc.expectedOutput {
+				fmt.Println(util.ShowDiff(out, tc.expectedOutput))
+				t.Errorf("Wrong result: %v", out)
 			}
 		})
 	}
 }
 
 func TestTrigraph(t *testing.T) {
+	// create subfolders for test
+	subFolder := buildFolder + separator +
+		"trigraph" + separator
+
+	// Create build folder
+	err := os.MkdirAll(subFolder, os.ModePerm)
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
 	var args = DefaultProgramArgs()
 	args.inputFiles = []string{"./tests/trigraph/main.c"}
-	dir, err := ioutil.TempDir("", "c4go_trigraph")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(dir) // clean up
-	args.outputFile = path.Join(dir, "multi.go")
+	args.outputFile = path.Join(subFolder, "main.go")
 	args.clangFlags = []string{"-trigraphs"}
 	args.packageName = "main"
-	args.outputAsTest = true
 
 	// Added for checking verbose mode
 	args.verbose = true
@@ -451,32 +482,34 @@ func TestTrigraph(t *testing.T) {
 	}
 
 	// Run Go program
-	var buf bytes.Buffer
-	cmd := exec.Command("go", "run", args.outputFile)
-	cmd.Stdout = &buf
-	cmd.Stderr = &buf
-	err = cmd.Run()
+	out, err := args.runGoTest("", []string{""})
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Fatal(err)
 	}
-	if buf.String() != "#" {
-		t.Errorf("Wrong result: %v", buf.String())
+
+	if out != "#\n" {
+		fmt.Println(util.ShowDiff(out, "#\n"))
+		t.Errorf("Wrong result: %v", out)
 	}
 }
 
 func TestExternalInclude(t *testing.T) {
-	var args = DefaultProgramArgs()
-	args.inputFiles = []string{"./tests/externalHeader/main/main.c"}
-	dir, err := ioutil.TempDir("", "c4go_multi4")
+
+	// create subfolders for test
+	subFolder := buildFolder + separator +
+		"externalInclude" + separator
+
+	// Create build folder
+	err := os.MkdirAll(subFolder, os.ModePerm)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("error: %v", err)
 	}
-	t.Log(dir)
-	defer os.RemoveAll(dir) // clean up
-	args.outputFile = path.Join(dir, "multi.go")
+
+	args := DefaultProgramArgs()
+	args.inputFiles = []string{"./tests/externalHeader/main/main.c"}
+	args.outputFile = path.Join(subFolder, "main.go")
 	args.clangFlags = []string{"-I./tests/externalHeader/include/"}
 	args.packageName = "main"
-	args.outputAsTest = true
 
 	// Added for checking verbose mode
 	args.verbose = true
@@ -488,30 +521,35 @@ func TestExternalInclude(t *testing.T) {
 	}
 
 	// Run Go program
-	var buf bytes.Buffer
-	cmd := exec.Command("go", "run", args.outputFile)
-	cmd.Stdout = &buf
-	cmd.Stderr = &buf
-	err = cmd.Run()
+	out, err := args.runGoTest("", []string{""})
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Fatal(err)
 	}
-	if buf.String() != "42" {
-		t.Errorf("Wrong result: %v", buf.String())
+
+	if out != "42\n" {
+		fmt.Println(util.ShowDiff(out, "42\n"))
+		t.Errorf("Wrong result: %v", out)
 	}
 }
 
 func TestComments(t *testing.T) {
+	// create subfolders for test
+	subFolder := buildFolder + separator +
+		"comments" + separator
+
+	// Create build folder
+	err := os.MkdirAll(subFolder, os.ModePerm)
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
 	var args = DefaultProgramArgs()
 	args.inputFiles = []string{"./tests/comment/main.c"}
-	dir := "./build/comment"
-	_ = os.Mkdir(dir, os.ModePerm)
-	args.outputFile = path.Join(dir, "comment.go")
+	args.outputFile = path.Join(subFolder, "main.go")
 	args.packageName = "main"
-	args.outputAsTest = true
 
 	// testing
-	err := Start(args)
+	err = Start(args)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -552,17 +590,21 @@ func TestCodeQuality(t *testing.T) {
 			continue
 		}
 		t.Run(file, func(t *testing.T) {
-			dir, err := ioutil.TempDir("", fmt.Sprintf("c4go_code_quality_%d_", i))
+			// create subfolders for test
+			subFolder := buildFolder + separator +
+				"code_quality" + separator +
+				fmt.Sprintf("%d", i) + separator
+
+			// Create build folder
+			err := os.MkdirAll(subFolder, os.ModePerm)
 			if err != nil {
-				t.Fatal(err)
+				t.Fatalf("error: %v", err)
 			}
-			defer os.RemoveAll(dir) // clean up
 
 			var args = DefaultProgramArgs()
 			args.inputFiles = []string{file}
-			args.outputFile = path.Join(dir, "main.go")
+			args.outputFile = path.Join(subFolder, "main.go")
 			args.packageName = "code_quality"
-			args.outputAsTest = false
 
 			// testing
 			err = Start(args)
@@ -627,7 +669,6 @@ func generateASTtree() (
 	_ = os.Mkdir(dir, os.ModePerm)
 	args.outputFile = path.Join(dir, "ast.go")
 	args.packageName = "main"
-	args.outputAsTest = true
 
 	lines, filePP, _ = generateAstLines(args)
 	return
