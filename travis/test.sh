@@ -50,6 +50,3 @@ echo "----------------------"
 
 # Run script sqlite
 source ./travis/sqlite.sh
-
-# Run script triangle
-source ./travis/triangle.sh
