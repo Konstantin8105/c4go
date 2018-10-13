@@ -13,6 +13,8 @@ export PKGS_DELIM=$(echo "$PKGS" | tr ' ' ',')
 echo "PKGS       : $PKGS"
 echo "PKGS_DELIM : $PKGS_DELIM"
 
+mkdir ./build/
+
 go test -v -cover -tags integration -coverpkg=$PKGS_DELIM -coverprofile=./build/pkg.coverprofile $PKGS
 
 # Merge coverage profiles.
