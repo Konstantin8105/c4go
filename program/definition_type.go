@@ -8,6 +8,9 @@ var DefinitionType = map[string]string{
 
 	"fpos_t": "int",
 
+	// unistd.h
+	"ssize_t": "github.com/Konstantin8105/c4go/noarch.SsizeT",
+
 	// built-in
 	"bool":                   "bool",
 	"char *":                 "[]byte",
