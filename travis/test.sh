@@ -15,14 +15,16 @@ echo "PKGS_DELIM : $PKGS_DELIM"
 
 go test -v -cover -tags integration -coverpkg=$PKGS_DELIM -coverprofile=pkg.coverprofile $PKGS
 
-export BUILD=$(ls -d ./build/tests/* | grep -v argv | grep -v assert | tr '\n' ' ')
-
-echo "Go transpiled tests: $BUILD"
-
-go test    -cover -coverprofile=out.coverprofile -coverpkg=./noarch,./linux  ./noarch ./linux $BUILD
-
-gocovmerge pkg.coverprofile out.coverprofile > coverage.txt
-rm *.coverprofile
+# Merge coverage profiles.
+COVERAGE_FILES=`ls -1 *.coverprofile 2>/dev/null | wc -l`
+if [ $COVERAGE_FILES != 0 ]; then
+	# check program `gocovmerge` is exist
+	if which gocovmerge >/dev/null 2>&1; then
+		export $FILES=$(ls *.coverprofile | tr '\n' ' ')
+		gocovmerge $FILES > coverage.txt
+		rm *.coverprofile
+	fi
+fi
 
 echo "End of coverage"
 
