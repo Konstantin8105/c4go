@@ -131,7 +131,7 @@ func ResolveType(p *program.Program, s string) (resolveResult string, err error)
 
 	// The simple resolve types are the types that we know there is an exact Go
 	// equivalent. For example float, int, etc.
-	if v, ok := program.CStdStructType[s]; ok {
+	if v, ok := program.DefinitionType[s]; ok {
 		return p.ImportType(v), nil
 	}
 
@@ -147,14 +147,14 @@ func ResolveType(p *program.Program, s string) (resolveResult string, err error)
 
 	// No need resolve typedef types
 	if _, ok := p.TypedefType[s]; ok {
-		if tt, ok := program.CStdStructType[s]; ok {
+		if tt, ok := program.DefinitionType[s]; ok {
 			// "div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
 			ii := p.ImportType(tt)
 			return ii, nil
 		}
 		return s, nil
 	}
-	if tt, ok := program.CStdStructType[s]; ok {
+	if tt, ok := program.DefinitionType[s]; ok {
 		// "div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
 		ii := p.ImportType(tt)
 		return ii, nil

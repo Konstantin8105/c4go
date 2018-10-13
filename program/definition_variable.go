@@ -1,7 +1,7 @@
 package program
 
-// CVariables is map of convertion from C var to C4go variable
-var CVariables = map[string]string{
+// DefinitionVariable is map of convertion from C var to C4go variable
+var DefinitionVariable = map[string]string{
 	// stdio.h
 	"stdin":  "github.com/Konstantin8105/c4go/noarch.Stdin",
 	"stdout": "github.com/Konstantin8105/c4go/noarch.Stdout",

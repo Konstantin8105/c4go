@@ -44,7 +44,7 @@ type Program struct {
 	// Contains the current function name during the transpilation.
 	Function *ast.FunctionDecl
 
-	functionDefinitions                      map[string]FunctionDefinition
+	functionDefinitions                      map[string]DefinitionFunction
 	builtInFunctionDefinitionsHaveBeenLoaded bool
 
 	// These are used to setup the runtime before the application begins. An
@@ -149,7 +149,7 @@ func NewProgram() (p *Program) {
 		EnumTypedefName:                          map[string]bool{},
 		TypedefType:                              map[string]string{},
 		commentLine:                              map[string]int{},
-		functionDefinitions:                      map[string]FunctionDefinition{},
+		functionDefinitions:                      map[string]DefinitionFunction{},
 		builtInFunctionDefinitionsHaveBeenLoaded: false,
 	}
 }

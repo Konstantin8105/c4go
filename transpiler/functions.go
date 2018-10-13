@@ -94,7 +94,7 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 				fmt.Errorf("prefix of type '%s' is not empty", n.Type), n))
 		}
 
-		p.AddFunctionDefinition(program.FunctionDefinition{
+		p.AddFunctionDefinition(program.DefinitionFunction{
 			Name:          n.Name,
 			ReturnType:    r[0],
 			ArgumentTypes: f,
