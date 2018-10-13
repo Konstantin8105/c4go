@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include <time.h>
 #include <sys/time.h>
+#include <time.h>
 
 #include "tests.h"
 
@@ -83,20 +83,20 @@ void test_asctime()
 
 void test_timeval()
 {
-	struct timeval tv;
-	tv.tv_sec  = 1;
-	tv.tv_usec = 75000;
-	is_eq(tv.tv_sec , 1);
-	is_eq(tv.tv_usec, 75000);
+    struct timeval tv;
+    tv.tv_sec = 1;
+    tv.tv_usec = 75000;
+    is_eq(tv.tv_sec, 1);
+    is_eq(tv.tv_usec, 75000);
 }
 
 void test_timezone()
 {
-	struct timezone tv;
-	tv.tz_minuteswest = 1;
-	tv.tz_dsttime     = 75000;
-	is_eq(tv.tz_minuteswest, 1);
-	is_eq(tv.tz_dsttime,     75000);
+    struct timezone tv;
+    tv.tz_minuteswest = 1;
+    tv.tz_dsttime = 75000;
+    is_eq(tv.tz_minuteswest, 1);
+    is_eq(tv.tz_dsttime, 75000);
 }
 
 int main()
@@ -111,7 +111,7 @@ int main()
     START_TEST(mktime);
     START_TEST(time);
 
-	// sys/time.h
+    // sys/time.h
     START_TEST(timeval);
     START_TEST(timezone);
 
