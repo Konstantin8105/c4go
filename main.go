@@ -51,19 +51,15 @@ type ProgramArgs struct {
 	outputFile  string
 	packageName string
 	cppCode     bool
-
-	// A private option to output the Go as a *_test.go file.
-	outputAsTest bool
 }
 
 // DefaultProgramArgs default value of ProgramArgs
 func DefaultProgramArgs() ProgramArgs {
 	return ProgramArgs{
-		verbose:      false,
-		ast:          false,
-		packageName:  "main",
-		clangFlags:   []string{},
-		outputAsTest: false,
+		verbose:     false,
+		ast:         false,
+		packageName: "main",
+		clangFlags:  []string{},
 	}
 }
 
@@ -309,7 +305,6 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 
 	p := program.NewProgram()
 	p.Verbose = args.verbose
-	p.OutputAsTest = args.outputAsTest
 	p.PreprocessorFile = filePP
 
 	// Converting to nodes

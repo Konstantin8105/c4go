@@ -10,11 +10,25 @@ export PKGS=$(go list ./... | grep -v c4go/build | grep -v c4go/examples | grep 
 # Make comma-separated.
 export PKGS_DELIM=$(echo "$PKGS" | tr ' ' ',')
 
-
 echo "PKGS       : $PKGS"
 echo "PKGS_DELIM : $PKGS_DELIM"
 
-go test -v -cover -tags integration -covermode atomic -coverpkg=$PKGS_DELIM -coverprofile coverage.txt $PKGS
+mkdir ./build/
+
+go test -v -cover -tags integration -coverpkg=$PKGS_DELIM -coverprofile=./build/pkg.coverprofile $PKGS
+
+# Merge coverage profiles.
+COVERAGE_FILES=`ls -1 ./build/*.coverprofile 2>/dev/null | wc -l`
+if [ $COVERAGE_FILES != 0 ]; then
+	# check program `gocovmerge` is exist
+	if which gocovmerge >/dev/null 2>&1; then
+		export FILES=$(ls build/*.coverprofile | tr '\n' ' ')
+		echo "Combine next coverprofiles : $FILES"
+		gocovmerge $FILES > coverage.txt
+	fi
+fi
+
+echo "End of coverage"
 
 # check race
 go test -tags=integration -run=TestIntegrationScripts/tests/ctype.c -race -v
