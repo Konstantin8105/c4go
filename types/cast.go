@@ -497,17 +497,9 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return expr, nil
 	}
 
-	functionName := fmt.Sprintf("noarch.%sTo%s",
-		util.GetExportedName(leftName), util.GetExportedName(rightName))
-	p.AddMessage(p.GenerateWarningMessage(
-		fmt.Errorf("Function `%v` haven`t implementation", functionName), nil))
+	p.GenerateWarningMessage(fmt.Errorf("Cannot cast types `%s`->`%s`", cFromType, cToType), nil)
 
-	// FIXME: This is a hack to get SQLite3 to transpile.
-	if strings.Contains(functionName, "RowSetEntry") {
-		functionName = "FIXME111"
-	}
-
-	return util.NewCallExpr(functionName, expr), nil
+	return expr, nil
 }
 
 // IsNullExpr tries to determine if the expression is the result of the NULL
