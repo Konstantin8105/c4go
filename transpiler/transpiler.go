@@ -39,51 +39,6 @@ func TranspileAST(fileName, packageName string, p *program.Program, root ast.Nod
 	}
 	p.File.Decls = append(p.File.Decls, decls...)
 
-	if p.OutputAsTest {
-		p.AddImport("testing")
-		p.AddImport("io/ioutil")
-		p.AddImport("os")
-		p.AddImport("github.com/Konstantin8105/c4go/noarch")
-
-		// TODO: There should be a cleaner way to add a function to the program.
-		// This code was taken from the end of transpileFunctionDecl.
-		p.File.Decls = append(p.File.Decls, &goast.FuncDecl{
-			Name: util.NewIdent("TestApp"),
-			Type: &goast.FuncType{
-				Params: &goast.FieldList{
-					List: []*goast.Field{
-						{
-							Names: []*goast.Ident{util.NewIdent("t")},
-							Type:  goast.NewIdent("*testing.T"),
-						},
-					},
-				},
-			},
-			Body: &goast.BlockStmt{
-				List: []goast.Stmt{
-					util.NewExprStmt(&goast.Ident{Name: "os.Chdir(\"../../..\")"}),
-
-					// "go test" does not redirect stdin to the executable
-					// running the test so we need to override them in the test
-					// itself. See documentation for noarch.Stdin.
-					util.NewExprStmt(&goast.Ident{Name: "ioutil.WriteFile(\"build/stdin\", []byte{'7'}, 0777)"}),
-					util.NewExprStmt(
-						&goast.Ident{Name: "stdin, _ := os.Open(\"build/stdin\")"},
-					),
-					util.NewExprStmt(util.NewBinaryExpr(
-						&goast.Ident{Name: "noarch.Stdin"},
-						token.ASSIGN,
-						&goast.Ident{Name: "noarch.NewFile(stdin)"},
-						"*noarch.File",
-						true,
-					)),
-
-					util.NewExprStmt(util.NewCallExpr("main")),
-				},
-			},
-		})
-	}
-
 	// Now we need to build the __init() function. This sets up certain state
 	// and variables that the runtime expects to be ready.
 	p.File.Decls = append(p.File.Decls, &goast.FuncDecl{
