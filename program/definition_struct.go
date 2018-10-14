@@ -86,4 +86,40 @@ func (p *Program) initializationStructs() {
 			"tm_isdst": "TmIsdst",
 		},
 	}
+
+	// sys/time.h
+	p.Structs["struct timeval"] = &Struct{
+		Name: "struct timeval",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"tv_sec":  "long",
+			"tv_usec": "long",
+		},
+	}
+	p.Structs["c4go_struct timeval"] = &Struct{
+		Name: "github.com/Konstantin8105/c4go/noarch.Timeval",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"tv_sec":  "TvSec",
+			"tv_usec": "TvUsec",
+		},
+	}
+
+	// sys/time.h
+	p.Structs["struct timezone"] = &Struct{
+		Name: "struct timezone",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"tz_minuteswest": "long",
+			"tz_dsttime":     "long",
+		},
+	}
+	p.Structs["c4go_struct timezone"] = &Struct{
+		Name: "github.com/Konstantin8105/c4go/noarch.Timezone",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"tz_minuteswest": "TzMinuteswest",
+			"tz_dsttime":     "TzDsttime",
+		},
+	}
 }

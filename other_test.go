@@ -1,9 +1,12 @@
 package main
 
 import (
+	"archive/zip"
 	"bufio"
 	"bytes"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -289,18 +292,172 @@ func TestFrame3dd(t *testing.T) {
 		t.Fatalf("Cannot transpile `%v`: %v", args, err)
 	}
 
+	// print logs
+	ls, err := getLogs(folder + "src/main.go")
+	if err != nil {
+		t.Fatalf("Cannot show logs: %v", err)
+	}
+	for _, l := range ls {
+		t.Log(l)
+	}
+
 	cmd := exec.Command("go", "build", "-o", folder+"src/frame3dd",
 		args.outputFile)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		t.Fatalf("cmd.Run() failed with %s : %v\n", err, stderr.String())
 	}
-
 }
 
+func TestTriangle(t *testing.T) {
+	folder := "./build/git-source/triangle/"
+
+	// Create build folder
+	if _, err := os.Stat(folder); os.IsNotExist(err) {
+		err = os.MkdirAll(folder, os.ModePerm)
+		if err != nil {
+			t.Fatalf("Cannot create folder %v . %v", folder, err)
+		}
+
+		// download file
+		t.Logf("Download file")
+		fileUrl := "http://www.netlib.org/voronoi/triangle.zip"
+		err := DownloadFile(folder+"triangle.zip", fileUrl)
+		if err != nil {
+			t.Fatalf("Cannot download : %v", err)
+		}
+
+		// extract zip
+		t.Logf("Extract")
+		_, err = Unzip(folder+"triangle.zip", folder)
+		if err != nil {
+			t.Fatalf("Cannot unzip : %v", err)
+		}
+	}
+
+	args := DefaultProgramArgs()
+	args.inputFiles = []string{
+		folder + "triangle.c",
+	}
+	args.clangFlags = []string{}
+	args.outputFile = folder + "main.go"
+	args.ast = false
+	args.verbose = false
+
+	if err := Start(args); err != nil {
+		t.Fatalf("Cannot transpile `%v`: %v", args, err)
+	}
+
+	// print logs
+	ls, err := getLogs(folder + "main.go")
+	if err != nil {
+		t.Fatalf("Cannot show logs: %v", err)
+	}
+	for _, l := range ls {
+		t.Log(l)
+	}
+
+	cmd := exec.Command("go", "build", "-o", folder+"triangle",
+		args.outputFile)
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err = cmd.Run()
+	if err != nil {
+		t.Logf("cmd.Run() failed with %s : %v\n", err, stderr.String())
+	}
+}
+
+// Unzip will decompress a zip archive, moving all files and folders
+// within the zip file (parameter 1) to an output directory (parameter 2).
+func Unzip(src string, dest string) ([]string, error) {
+
+	var filenames []string
+
+	r, err := zip.OpenReader(src)
+	if err != nil {
+		return filenames, err
+	}
+	defer r.Close()
+
+	for _, f := range r.File {
+
+		rc, err := f.Open()
+		if err != nil {
+			return filenames, err
+		}
+		defer rc.Close()
+
+		// Store filename/path for returning and using later on
+		fpath := filepath.Join(dest, f.Name)
+
+		// Check for ZipSlip. More Info: http://bit.ly/2MsjAWE
+		if !strings.HasPrefix(fpath, filepath.Clean(dest)+string(os.PathSeparator)) {
+			return filenames, fmt.Errorf("%s: illegal file path", fpath)
+		}
+
+		filenames = append(filenames, fpath)
+
+		if f.FileInfo().IsDir() {
+
+			// Make Folder
+			os.MkdirAll(fpath, os.ModePerm)
+
+		} else {
+
+			// Make File
+			if err = os.MkdirAll(filepath.Dir(fpath), os.ModePerm); err != nil {
+				return filenames, err
+			}
+
+			outFile, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+			if err != nil {
+				return filenames, err
+			}
+
+			_, err = io.Copy(outFile, rc)
+
+			// Close the file without defer to close before next iteration of loop
+			outFile.Close()
+
+			if err != nil {
+				return filenames, err
+			}
+
+		}
+	}
+	return filenames, nil
+}
+
+// DownloadFile will download a url to a local file. It's efficient because it will
+// write as it downloads and not load the whole file into memory.
+func DownloadFile(filepath string, url string) error {
+
+	// Create the file
+	out, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	// Get the data
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Write the body to file
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 func TestMultifiles(t *testing.T) {
 	// test create not for TRAVIS CI
 	if os.Getenv("TRAVIS") == "true" {
