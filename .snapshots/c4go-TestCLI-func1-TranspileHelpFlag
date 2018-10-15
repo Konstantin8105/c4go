@@ -1,9 +1,11 @@
-(*bytes.Buffer)(Usage: test transpile [-V] [-o file.go] [-p package] file1.c ...
+(*bytes.Buffer)(Usage: test transpile [-V] [-o file.go] [-p package] [-cpuprofile cpu.out] file1.c ...
   -V	print progress as comments
   -clang-flag value
     	Pass arguments to clang. You may provide multiple -clang-flag items.
   -cpp
     	transpile CPP code
+  -cpuprofile string
+    	write cpu profile to this file
   -h	print help information
   -o string
     	output Go generated code to the specified file

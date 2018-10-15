@@ -21,6 +21,7 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
+	"runtime/pprof"
 	"strings"
 	"sync"
 
@@ -415,6 +416,8 @@ func runCommand() int {
 			"p", "main", "set the name of the generated package")
 		transpileHelpFlag = transpileCommand.Bool(
 			"h", false, "print help information")
+		cpuprofile = transpileCommand.String(
+			"cpuprofile", "", "write cpu profile to this file") // debugging
 
 		astCommand = flag.NewFlagSet(
 			"ast", flag.ContinueOnError)
@@ -431,7 +434,6 @@ func runCommand() int {
 		"clang-flag",
 		"Pass arguments to clang. You may provide multiple -clang-flag items.")
 
-	// TODO : add update a c4go or check version
 	// TODO : add example for starters
 
 	flag.Usage = func() {
@@ -485,7 +487,7 @@ func runCommand() int {
 
 		if *transpileHelpFlag || transpileCommand.NArg() == 0 {
 			fmt.Fprintf(stderr,
-				"Usage: %s transpile [-V] [-o file.go] [-p package] file1.c ...\n",
+				"Usage: %s transpile [-V] [-o file.go] [-p package] [-cpuprofile cpu.out] file1.c ...\n",
 				os.Args[0])
 			transpileCommand.PrintDefaults()
 			return 5
@@ -497,6 +499,18 @@ func runCommand() int {
 		args.verbose = *verboseFlag
 		args.clangFlags = clangFlags
 		args.cppCode = *cppFlag
+
+		// debugging
+		if *cpuprofile != "" {
+			f, err := os.Create(*cpuprofile)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "creating cpu profile: %s\n", err)
+				return 8
+			}
+			defer f.Close()
+			pprof.StartCPUProfile(f)
+			defer pprof.StopCPUProfile()
+		}
 
 	case "version":
 		fmt.Fprint(stderr, version.Version())
