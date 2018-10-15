@@ -913,15 +913,35 @@ func BenchmarkTranspile(b *testing.B) {
 	}
 
 	var args = DefaultProgramArgs()
-	args.inputFiles = []string{"./tests/comment/main.c"}
+	args.inputFiles = []string{"./tests/stdio.c"}
 	args.outputFile = path.Join(subFolder, "main.go")
 	args.packageName = "main"
 
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		err = Start(args)
-		if err != nil {
-			panic(err)
+
+	b.Run("Full", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			err = Start(args)
+			if err != nil {
+				panic(err)
+			}
 		}
+	})
+
+	// source from function main.Start
+	lines, filePP, err := generateAstLines(args)
+	if err != nil {
+		panic(err)
 	}
+
+	b.ResetTimer()
+
+	b.Run("GoCode", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			err = generateGoCode(args, lines, filePP)
+			if err != nil {
+				panic(err)
+			}
+		}
+	})
 }
