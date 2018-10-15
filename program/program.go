@@ -96,10 +96,15 @@ type Program struct {
 	// commentLine - a map with:
 	// key    - filename
 	// value  - last comment inserted in Go code
-	commentLine map[string]int
+	commentLine map[string]commentPos
 
 	// preprocessor file
 	PreprocessorFile preprocessor.FilePP
+}
+
+type commentPos struct {
+	pos  int // index in comments slice
+	line int // line position
 }
 
 // NewProgram creates a new blank program.
@@ -143,7 +148,7 @@ func NewProgram() (p *Program) {
 		EnumConstantToEnum:                       map[string]string{},
 		EnumTypedefName:                          map[string]bool{},
 		TypedefType:                              map[string]string{},
-		commentLine:                              map[string]int{},
+		commentLine:                              map[string]commentPos{},
 		functionDefinitions:                      map[string]DefinitionFunction{},
 		builtInFunctionDefinitionsHaveBeenLoaded: false,
 	}
@@ -205,31 +210,33 @@ func (p *Program) GetMessageComments() (_ *goast.CommentGroup) {
 // GetComments - return comments
 func (p *Program) GetComments(n ast.Position) (out []*goast.Comment) {
 	beginLine := p.commentLine[n.File]
-	lastLine := n.Line
-	if lastLine < beginLine {
+	if n.Line < beginLine.line {
 		return
 	}
-	for i := range p.PreprocessorFile.GetComments() {
-		if p.PreprocessorFile.GetComments()[i].File != n.File {
+	comms := p.PreprocessorFile.GetComments()
+	for i := beginLine.pos; i < len(comms); i++ {
+		if comms[i].File != n.File {
 			continue
 		}
-		if beginLine >= p.PreprocessorFile.GetComments()[i].Line {
+		if comms[i].Line <= beginLine.line {
 			continue
 		}
-		if p.PreprocessorFile.GetComments()[i].Line > lastLine {
-			continue
+		if comms[i].Line > n.Line {
+			break
 		}
 		// add comment
 		out = append(out, &goast.Comment{
-			Text: p.PreprocessorFile.GetComments()[i].Comment,
+			Text: comms[i].Comment,
 		})
-		if p.PreprocessorFile.GetComments()[i].Comment[1] == '*' {
+		beginLine.pos = i
+		if comms[i].Comment[1] == '*' {
 			out = append(out, &goast.Comment{
 				Text: "// ",
 			})
 		}
 	}
-	p.commentLine[n.File] = lastLine
+	beginLine.line = n.Line
+	p.commentLine[n.File] = beginLine
 	return
 }
 
@@ -441,7 +448,7 @@ func (p *Program) String() string {
 	for file, beginLine := range p.commentLine {
 		for i := range p.PreprocessorFile.GetComments() {
 			if p.PreprocessorFile.GetComments()[i].File == file {
-				if beginLine < p.PreprocessorFile.GetComments()[i].Line {
+				if beginLine.line < p.PreprocessorFile.GetComments()[i].Line {
 					buf.WriteString(
 						fmt.Sprintln(
 							p.PreprocessorFile.GetComments()[i].Comment))
