@@ -900,3 +900,28 @@ func TestOS(t *testing.T) {
 	}
 	t.Logf("Amount comments: %d", amount)
 }
+
+// Example of run benchmark:
+//
+// go test -v -tags=integration -run=Benchmark -bench=. -benchmem
+//
+func BenchmarkTranspile(b *testing.B) {
+	// create subfolders for test
+	subFolder, err := ioutil.TempDir("", "c4go")
+	if err != nil {
+		panic(err)
+	}
+
+	var args = DefaultProgramArgs()
+	args.inputFiles = []string{"./tests/comment/main.c"}
+	args.outputFile = path.Join(subFolder, "main.go")
+	args.packageName = "main"
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		err = Start(args)
+		if err != nil {
+			panic(err)
+		}
+	}
+}
