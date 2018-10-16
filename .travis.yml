@@ -31,7 +31,7 @@ matrix:
     - env: SCRIPT=test CLANG=3.8
       os: linux
       if: branch = master
-    - env: SCRIPT=test CLANG=6.0
+    - env: SCRIPT=test CLANG=7
       os: linux
       if: branch = master
     # lint checking
