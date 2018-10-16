@@ -196,3 +196,36 @@ PASS
 ```
 So, transpilation time is just 30% of full time. In my point of view
 no need of performance optimization, see [Amdahl's law](https://en.wikipedia.org/wiki/Amdahl%27s_law).
+
+### Example of performance analyse
+
+Please run:
+
+```bash
+# Run cpuprofiling for sqlite transpilation example
+time ./travis/sqlite.sh 
+
+# Example of output:
+#
+# % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+#                                 Dload  Upload   Total   Spent    Left  Speed
+#100 2217k  100 2217k    0     0   235k      0  0:00:09  0:00:09 --:--:--  357k
+#Archive:  /tmp/SQLITE/sqlite-amalgamation-3250200.zip
+#   creating: /tmp/SQLITE/sqlite-amalgamation-3250200/
+#  inflating: /tmp/SQLITE/sqlite-amalgamation-3250200/sqlite3ext.h  
+#  inflating: /tmp/SQLITE/sqlite-amalgamation-3250200/sqlite3.c  
+#  inflating: /tmp/SQLITE/sqlite-amalgamation-3250200/sqlite3.h  
+#  inflating: /tmp/SQLITE/sqlite-amalgamation-3250200/shell.c  
+#After transpiling shell.c and sqlite3.c together, have summary: 695 warnings.
+#In file sqlite.go summary : 3 warnings in go build.
+#Amount unsafe package using: 2902
+#
+#real	0m18.434s
+#user	0m14.212s
+#sys	0m1.434s
+
+# Run profiler
+go tool pprof ./build/cpu.out
+```
+
+For more information, see [Profiling Go Programs](https://blog.golang.org/profiling-go-programs).
