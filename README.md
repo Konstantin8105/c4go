@@ -148,7 +148,7 @@ func init() {
 # Contributing
 
 Feel free to submit PRs or open issues.
-Main information from: [http://en.cppreference.com/w/c](http://en.cppreference.com/w/c)
+Main information from: [en.cppreference.com](http://en.cppreference.com/w/c)
 
 ## Testing
 
@@ -164,8 +164,68 @@ Integration tests in the form of complete C programs that can be found in the
 
 Integration tests work like this:
 
-1. Clang compiles the C to a binary as normal.
-2. c4go converts the C file to Go.
-3. The Go is built to produce another binary.
-4. Both binaries are executed and the output is compared. All C files will
+1. `clang` compiles the C to a binary as normal.
+2. `c4go` converts the C file to Go.
+3. Both binaries are executed and the output is compared. All C files will
 contain some output so the results can be verified.
+
+## Note
+
+### Use lastest version of clang.
+
+If you use `Ubuntu`, then use command like next for choose `clang` version:
+
+```bash
+sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-6.0 1000
+```
+
+### Performance
+
+Main time of transpilation takes `clang`, for example run:
+```bash
+go test -tags=integration -run=Benchmark -bench=. -benchmem
+```
+Result looks for example:
+```
+goos: linux
+goarch: amd64
+pkg: github.com/Konstantin8105/c4go
+BenchmarkTranspile/Full-6         	       5	 274922964 ns/op	43046865 B/op	  379676 allocs/op
+BenchmarkTranspile/GoCode-6       	      20	  86806808 ns/op	36577533 B/op	  308060 allocs/op
+PASS
+```
+So, transpilation time is just 30% of full time. In my point of view
+no need of performance optimization, see [Amdahl's law](https://en.wikipedia.org/wiki/Amdahl%27s_law).
+
+### Example of performance analyse
+
+Please run:
+
+```bash
+# Run cpuprofiling for sqlite transpilation example
+time ./travis/sqlite.sh 
+
+# Example of output:
+#
+# % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+#                                 Dload  Upload   Total   Spent    Left  Speed
+#100 2217k  100 2217k    0     0   235k      0  0:00:09  0:00:09 --:--:--  357k
+#Archive:  /tmp/SQLITE/sqlite-amalgamation-3250200.zip
+#   creating: /tmp/SQLITE/sqlite-amalgamation-3250200/
+#  inflating: /tmp/SQLITE/sqlite-amalgamation-3250200/sqlite3ext.h  
+#  inflating: /tmp/SQLITE/sqlite-amalgamation-3250200/sqlite3.c  
+#  inflating: /tmp/SQLITE/sqlite-amalgamation-3250200/sqlite3.h  
+#  inflating: /tmp/SQLITE/sqlite-amalgamation-3250200/shell.c  
+#After transpiling shell.c and sqlite3.c together, have summary: 695 warnings.
+#In file sqlite.go summary : 3 warnings in go build.
+#Amount unsafe package using: 2902
+#
+#real	0m18.434s
+#user	0m14.212s
+#sys	0m1.434s
+
+# Run profiler
+go tool pprof ./build/cpu.out
+```
+
+For more information, see [Profiling Go Programs](https://blog.golang.org/profiling-go-programs).

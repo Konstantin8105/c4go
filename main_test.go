@@ -181,7 +181,7 @@ func runC(file, subFolder, stdin string, args []string) (string, error) {
 
 	// Compile C.
 	out, err := exec.Command(
-		compiler, compilerFlag, "-lm", "-o", cPath, file).
+		compiler, append(compilerFlag, "-lm", "-o", cPath, file)...).
 		CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("Cannot compile : %v\n%v", err, string(out))

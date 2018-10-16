@@ -1,11 +1,11 @@
 package preprocessor
 
-func Compiler(isCPP bool) (compiler, compilerFlag string) {
+func Compiler(isCPP bool) (compiler string, compilerFlag []string) {
 	compiler = "clang"
-	compilerFlag = "" // "-std=c99"
+	compilerFlag = []string{"-O0"}
 	if isCPP {
 		compiler = "clang++"
-		compilerFlag = "-std=c++98"
+		compilerFlag = []string{"-std=c++98"}
 	}
 	return
 }
