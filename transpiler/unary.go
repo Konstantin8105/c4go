@@ -248,6 +248,26 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 		return
 	}
 
+	// Simplification of case :
+	// -UnaryOperator <> 'int *' prefix '&'
+	//  `-DeclRefExpr <> 'int' lvalue Var 0x3812b58 'n' 'int'
+	if dr, ok := n.Children()[0].(*ast.DeclRefExpr); ok {
+		if dr.Type+" *" == n.Type {
+			// 0: *ast.UnaryExpr {
+			// .  Op: &
+			// .  X: *ast.Ident {
+			// .  .  Name: "i"
+			// .  }
+			// }
+			expr = &goast.UnaryExpr{
+				Op: token.AND,
+				X:  expr,
+			}
+			eType = n.Type
+			return
+		}
+	}
+
 	// In : eType = 'int'
 	// Out: eType = 'int *'
 	// FIXME: This will need to use a real slice to reference the original
