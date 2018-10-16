@@ -286,13 +286,13 @@ func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.Fil
 		fmt.Println("Running clang for AST tree...")
 	}
 	compiler, compilerFlag := preprocessor.Compiler(args.cppCode)
-	astPP, err := exec.Command(compiler, compilerFlag, "-Xclang", "-ast-dump",
-		"-fsyntax-only", "-fno-color-diagnostics", ppFilePath).Output()
+	astPP, err := exec.Command(compiler, append(compilerFlag, "-Xclang", "-ast-dump",
+		"-fsyntax-only", "-fno-color-diagnostics", ppFilePath)...).Output()
 	if err != nil {
 		// If clang fails it still prints out the AST, so we have to run it
 		// again to get the real error.
 		errBody, _ := exec.Command(
-			compiler, compilerFlag, ppFilePath).CombinedOutput()
+			compiler, append(compilerFlag, ppFilePath)...).CombinedOutput()
 
 		panic("clang failed: " + err.Error() + ":\n\n" + string(errBody))
 	}
