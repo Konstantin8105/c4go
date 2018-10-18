@@ -82,6 +82,9 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return
 	}
 
+	// only for debugging
+	// fmt.Printf("%#v -> %#v\n", cFromType, cToType)
+
 	// Uncomment only for debugging
 	if strings.Contains(cFromType, ":") {
 		err2 = fmt.Errorf("Found mistake `cFromType` `%v` C type : %#v",
@@ -291,6 +294,21 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	if toType == "void *" {
 		return expr, nil
 	}
+
+	// TODO Example : "char [20]" -> "char *"
+	// if IsCPointer(cToType) && IsCArray(cFromType) {
+	// 	// goast.Print(token.NewFileSet(), expr)
+	// 	// defer func() {
+	// 	// 	fmt.Printf("%#v -> %#v\n", cFromType, cToType)
+	// 	// 	goast.Print(token.NewFileSet(), expr)
+	// 	// }()
+	// 	// expr = &goast.SliceExpr{
+	// 	// 	X:      expr,
+	// 	// 	Lbrack: 1,
+	// 	// 	Slice3: false,
+	// 	// }
+	// 	// return
+	// }
 
 	fromType, err := ResolveType(p, fromType)
 	if err != nil {
