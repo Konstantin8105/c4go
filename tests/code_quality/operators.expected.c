@@ -59,7 +59,6 @@ func operators_equals() {
 	f(42)
 	// zero value
 	// function
-	//
 	var arr []float32 = make([]float32, 500)
 }
 func init() {
