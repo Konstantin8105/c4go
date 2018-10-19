@@ -15,9 +15,7 @@ var DefinitionType = map[string]string{
 
 	// built-in
 	"bool":                   "bool",
-	"char *":                 "[]byte",
 	"char":                   "byte",
-	"char*":                  "[]byte",
 	"double":                 "float64",
 	"float":                  "float32",
 	"int":                    "int",
