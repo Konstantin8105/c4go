@@ -19,11 +19,11 @@ func NullToTimeT(i int32) []TimeT {
 }
 
 // Time returns the current time.
-func Time(tloc []TimeT) TimeT {
-	var t = TimeT(int32(time.Now().Unix()))
+func Time(tloc *TimeT) TimeT {
+	t := TimeT(int32(time.Now().Unix()))
 
-	if len(tloc) > 0 {
-		tloc[0] = t
+	if tloc != nil {
+		tloc = &t
 	}
 
 	return t
@@ -35,10 +35,10 @@ func IntToTimeT(t int32) TimeT {
 }
 
 // Ctime converts TimeT to a string.
-func Ctime(tloc []TimeT) []byte {
-	if len(tloc) > 0 {
-		var t = time.Unix(int64(tloc[0]), 0)
-		return []byte(t.Format(time.ANSIC) + "\n")
+func Ctime(tloc *TimeT) *byte {
+	if tloc != nil {
+		t := time.Unix(int64(*tloc), 0)
+		return &([]byte(t.Format(time.ANSIC) + "\n\x000")[0])
 	}
 
 	return nil
@@ -69,33 +69,33 @@ type Tm struct {
 // LocalTime - Convert time_t to tm as local time
 // Uses the value pointed by timer to fill a tm structure with the values that
 // represent the corresponding time, expressed for the local timezone.
-func LocalTime(timer []TimeT) (tm []Tm) {
-	t := time.Unix(int64(timer[0]), 0)
-	tm = make([]Tm, 1)
-	tm[0].TmSec = t.Second()
-	tm[0].TmMin = t.Minute()
-	tm[0].TmHour = t.Hour()
-	tm[0].TmMday = t.Day()
-	tm[0].TmMon = int(t.Month()) - 1
-	tm[0].TmYear = t.Year() - 1900
-	tm[0].TmWday = int(t.Weekday())
-	tm[0].TmYday = t.YearDay() - 1
+func LocalTime(timer *TimeT) (tm *Tm) {
+	t := time.Unix(int64(*timer), 0)
+	tm = new(Tm)
+	tm.TmSec = t.Second()
+	tm.TmMin = t.Minute()
+	tm.TmHour = t.Hour()
+	tm.TmMday = t.Day()
+	tm.TmMon = int(t.Month()) - 1
+	tm.TmYear = t.Year() - 1900
+	tm.TmWday = int(t.Weekday())
+	tm.TmYday = t.YearDay() - 1
 	return
 }
 
 // Gmtime - Convert time_t to tm as UTC time
-func Gmtime(timer []TimeT) (tm []Tm) {
-	t := time.Unix(int64(timer[0]), 0)
+func Gmtime(timer *TimeT) (tm *Tm) {
+	t := time.Unix(int64(*timer), 0)
 	t = t.UTC()
-	tm = make([]Tm, 1)
-	tm[0].TmSec = t.Second()
-	tm[0].TmMin = t.Minute()
-	tm[0].TmHour = t.Hour()
-	tm[0].TmMday = t.Day()
-	tm[0].TmMon = int(t.Month()) - 1
-	tm[0].TmYear = t.Year() - 1900
-	tm[0].TmWday = int(t.Weekday())
-	tm[0].TmYday = t.YearDay() - 1
+	tm = new(Tm)
+	tm.TmSec = t.Second()
+	tm.TmMin = t.Minute()
+	tm.TmHour = t.Hour()
+	tm.TmMday = t.Day()
+	tm.TmMon = int(t.Month()) - 1
+	tm.TmYear = t.Year() - 1900
+	tm.TmWday = int(t.Weekday())
+	tm.TmYday = t.YearDay() - 1
 	return
 }
 

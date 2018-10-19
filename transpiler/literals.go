@@ -4,19 +4,15 @@
 package transpiler
 
 import (
-	"bytes"
 	"fmt"
+	goast "go/ast"
 	"go/token"
 	"regexp"
-	"strings"
-
-	goast "go/ast"
-
 	"strconv"
+	"strings"
 
 	"github.com/Konstantin8105/c4go/ast"
 	"github.com/Konstantin8105/c4go/program"
-	"github.com/Konstantin8105/c4go/types"
 	"github.com/Konstantin8105/c4go/util"
 )
 
@@ -58,41 +54,49 @@ func transpileStringLiteral(p *program.Program, n *ast.StringLiteral, arrayToArr
 	n.Value = ConvertToGoFlagFormat(n.Value)
 
 	// Example:
-	// StringLiteral 0x280b918 <col:29> 'char [30]' lvalue "%0"
-	baseType := types.GetBaseType(n.Type)
-	if baseType != "char" {
-		err = fmt.Errorf("Type is not `char` : %v", n.Type)
-		p.AddMessage(p.GenerateWarningMessage(err, n))
-		return
-	}
-	var s int
-	s, err = types.GetAmountArraySize(n.Type)
-	if !arrayToArray {
-		if err != nil {
-			expr = util.NewCallExpr("[]byte",
-				util.NewStringLit(strconv.Quote(n.Value+"\x00")))
-			exprType = "const char *"
-			return
-		}
-		buf := bytes.NewBufferString(n.Value + "\x00")
-		if buf.Len() < s {
-			buf.Write(make([]byte, s-buf.Len()))
-		}
-		expr = util.NewCallExpr("[]byte",
-			util.NewStringLit(strconv.Quote(buf.String())))
-		exprType = "const char *"
-		return
-	}
-	// Example:
-	//
-	// var sba SBA = SBA{10, func() (b [100]byte) {
-	// 	copy(b[:], "qwe")
-	// 	return b
-	// }()}
-	expr = goast.NewIdent(fmt.Sprintf(
-		"func() (b [%v]byte) { copy(b[:],\"%s\" );return }()",
-		s, n.Value))
+	// StringLiteral 0x380b138 <col:16> 'char [24]' lvalue "this string has a \000 NUL"
+	expr = goast.NewIdent(
+		fmt.Sprintf("(&([]byte(%s)[0]))",
+			strconv.Quote(n.Value)))
 	exprType = n.Type
+
+	//
+	// // Example:
+	// // StringLiteral 0x280b918 <col:29> 'char [30]' lvalue "%0"
+	// baseType := types.GetBaseType(n.Type)
+	// if baseType != "char" {
+	// 	err = fmt.Errorf("Type is not `char` : %v", n.Type)
+	// 	p.AddMessage(p.GenerateWarningMessage(err, n))
+	// 	return
+	// }
+	// var s int
+	// s, err = types.GetAmountArraySize(n.Type)
+	// if !arrayToArray {
+	// 	if err != nil {
+	// 		expr = util.NewCallExpr("[]byte",
+	// 			util.NewStringLit(strconv.Quote(n.Value+"\x00")))
+	// 		exprType = "const char *"
+	// 		return
+	// 	}
+	// 	buf := bytes.NewBufferString(n.Value + "\x00")
+	// 	if buf.Len() < s {
+	// 		buf.Write(make([]byte, s-buf.Len()))
+	// 	}
+	// 	expr = util.NewCallExpr("[]byte",
+	// 		util.NewStringLit(strconv.Quote(buf.String())))
+	// 	exprType = "const char *"
+	// 	return
+	// }
+	// // Example:
+	// //
+	// // var sba SBA = SBA{10, func() (b [100]byte) {
+	// // 	copy(b[:], "qwe")
+	// // 	return b
+	// // }()}
+	// expr = goast.NewIdent(fmt.Sprintf(
+	// 	"func() (b [%v]byte) { copy(b[:],\"%s\" );return }()",
+	// 	s, n.Value))
+	// exprType = n.Type
 	return
 }
 

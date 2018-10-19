@@ -425,9 +425,9 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 	}
 
 	x := lhs
-	if n.IsPointer {
-		x = &goast.IndexExpr{X: x, Index: util.NewIntLit(0)}
-	}
+	// if n.IsPointer {
+	// 	x = &goast.IndexExpr{X: x, Index: util.NewIntLit(0)}
+	// }
 
 	// Check for member name translation.
 	lhsType = strings.TrimSpace(lhsType)
