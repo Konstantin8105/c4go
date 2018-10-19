@@ -234,10 +234,7 @@ func ResolveType(p *program.Program, s string) (resolveResult string, err error)
 			err = fmt.Errorf("Cannot resolve star `*` for %v : %v", s, err)
 			return s, err
 		}
-		prefix := "[]"
-		if strings.Contains(r, "noarch.File") {
-			prefix = "*"
-		}
+		prefix := "*"
 		return prefix + r, err
 	}
 
