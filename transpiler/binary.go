@@ -377,23 +377,23 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 		} else {
 			right, err = types.CastExpr(p, right, rightType, returnType)
 
-			if _, ok := right.(*goast.UnaryExpr); ok && types.IsDereferenceType(rightType) {
-				deref, err := types.GetDereferenceType(rightType)
-
-				if !p.AddMessage(p.GenerateWarningMessage(err, n)) {
-					resolvedDeref, err := types.ResolveType(p, deref)
-
-					// FIXME: I'm not sure how this situation arises.
-					if resolvedDeref == "" {
-						resolvedDeref = "interface{}"
-					}
-
-					if !p.AddMessage(p.GenerateWarningMessage(err, n)) {
-						p.AddImport("unsafe")
-						right = util.CreateSliceFromReference(resolvedDeref, right)
-					}
-				}
-			}
+			// if _, ok := right.(*goast.UnaryExpr); ok && types.IsDereferenceType(rightType) {
+			// 	deref, err := types.GetDereferenceType(rightType)
+			//
+			// 	if !p.AddMessage(p.GenerateWarningMessage(err, n)) {
+			// 		resolvedDeref, err := types.ResolveType(p, deref)
+			//
+			// 		// FIXME: I'm not sure how this situation arises.
+			// 		if resolvedDeref == "" {
+			// 			resolvedDeref = "interface{}"
+			// 		}
+			//
+			// 		if !p.AddMessage(p.GenerateWarningMessage(err, n)) {
+			// 			p.AddImport("unsafe")
+			// 			right = util.CreateSliceFromReference(resolvedDeref, right)
+			// 		}
+			// 	}
+			// }
 
 			if p.AddMessage(p.GenerateWarningMessage(err, n)) && right == nil {
 				right = util.NewNil()

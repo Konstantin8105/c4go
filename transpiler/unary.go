@@ -235,54 +235,58 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 		return
 	}
 
-	if types.IsLastArray(eType) {
-		// In : eType = 'int [5]'
-		// Out: eType = 'int *'
-		f := strings.Index(eType, "[")
-		e := strings.Index(eType, "]")
-		if e == len(eType)-1 {
-			eType = eType[:f] + "*"
-		} else {
-			eType = eType[:f] + "*" + eType[e+1:]
-		}
-		return
-	}
+	expr, err = types.CastExpr(p, expr, eType, n.Type)
 
-	// Simplification of case :
-	// -UnaryOperator <> 'int *' prefix '&'
-	//  `-DeclRefExpr <> 'int' lvalue Var 0x3812b58 'n' 'int'
-	if dr, ok := n.Children()[0].(*ast.DeclRefExpr); ok {
-		if dr.Type+" *" == n.Type {
-			// 0: *ast.UnaryExpr {
-			// .  Op: &
-			// .  X: *ast.Ident {
-			// .  .  Name: "i"
-			// .  }
-			// }
-			expr = &goast.UnaryExpr{
-				Op: token.AND,
-				X:  expr,
-			}
-			eType = n.Type
-			return
-		}
-	}
+	eType = n.Type
+
+	// if types.IsLastArray(eType) {
+	// 	// In : eType = 'int [5]'
+	// 	// Out: eType = 'int *'
+	// 	f := strings.Index(eType, "[")
+	// 	e := strings.Index(eType, "]")
+	// 	if e == len(eType)-1 {
+	// 		eType = eType[:f] + "*"
+	// 	} else {
+	// 		eType = eType[:f] + "*" + eType[e+1:]
+	// 	}
+	// 	return
+	// }
+	//
+	// // Simplification of case :
+	// // -UnaryOperator <> 'int *' prefix '&'
+	// //  `-DeclRefExpr <> 'int' lvalue Var 0x3812b58 'n' 'int'
+	// if dr, ok := n.Children()[0].(*ast.DeclRefExpr); ok {
+	// 	if dr.Type+" *" == n.Type {
+	// 		// 0: *ast.UnaryExpr {
+	// 		// .  Op: &
+	// 		// .  X: *ast.Ident {
+	// 		// .  .  Name: "i"
+	// 		// .  }
+	// 		// }
+	// 		expr = &goast.UnaryExpr{
+	// 			Op: token.AND,
+	// 			X:  expr,
+	// 		}
+	// 		eType = n.Type
+	// 		return
+	// 	}
+	// }
 
 	// In : eType = 'int'
 	// Out: eType = 'int *'
 	// FIXME: This will need to use a real slice to reference the original
 	// value.
-	resolvedType, err := types.ResolveType(p, eType)
-	if err != nil {
-		p.AddMessage(p.GenerateWarningMessage(err, n))
-		return
-	}
-
-	p.AddImport("unsafe")
-	expr = util.CreateSliceFromReference(resolvedType, expr)
-
-	// We now have a pointer to the original type.
-	eType += " *"
+	// resolvedType, err := types.ResolveType(p, eType)
+	// if err != nil {
+	// 	p.AddMessage(p.GenerateWarningMessage(err, n))
+	// 	return
+	// }
+	//
+	// p.AddImport("unsafe")
+	// expr = util.CreateSliceFromReference(resolvedType, expr)
+	//
+	// // We now have a pointer to the original type.
+	// eType += " *"
 	return
 }
 
