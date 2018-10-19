@@ -61,7 +61,5 @@ func operators_equals() {
 	// function
 	var arr []float32 = make([]float32, 500)
 }
-func init() {
-}
 
 // array

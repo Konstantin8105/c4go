@@ -15,5 +15,3 @@ func print() {
 	fmt.Printf("Hello")
 	noarch.Printf([]byte("Hello, %d\x00"), 42)
 }
-func init() {
-}

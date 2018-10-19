@@ -29,5 +29,3 @@ func f3() {
 		}
 	}
 }
-func init() {
-}

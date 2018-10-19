@@ -25,5 +25,3 @@ func b() int {
 func c() float32 {
 	return 0
 }
-func init() {
-}
