@@ -158,9 +158,7 @@ func TestIntegrationScripts(t *testing.T) {
 							i+1, indicator, fileLines[i])
 					}
 				}
-				t.Fatalf("\n%10s`%s`\n%10s`%s`\nParts of code:\n%s\n%s",
-					"Expect:\n", cCombine,
-					"Actial:\n", goCombine,
+				t.Fatalf("\nParts of code:\n%s\n%s",
 					output,
 					util.ShowDiff(cCombine, goCombine))
 			}
