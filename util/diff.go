@@ -34,6 +34,11 @@ func ShowDiff(a, b string) string {
 			diffFlag = "*"
 		}
 		out += fmt.Sprintf("%s %3d %-40s%s\n", diffFlag, lineNumber+1, aLine, bLine)
+
+		if lineNumber > len(aLines) || lineNumber > len(bLines) {
+			out += "and more other ..."
+			break
+		}
 	}
 
 	return out

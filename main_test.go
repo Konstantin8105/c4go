@@ -114,6 +114,7 @@ func TestIntegrationScripts(t *testing.T) {
 				buildPrefix := "build/tests/"
 				var output string
 				lines := strings.Split(goCombine, "\n")
+				amountSnippets := 0
 				for _, line := range lines {
 					line = strings.TrimSpace(line)
 					if !strings.HasPrefix(line, buildPrefix) {
@@ -156,6 +157,11 @@ func TestIntegrationScripts(t *testing.T) {
 						}
 						output += fmt.Sprintf("Line : %3d %s: %s\n",
 							i+1, indicator, fileLines[i])
+					}
+					amountSnippets++
+					if amountSnippets >= 4 {
+						output += fmt.Sprintf("and more other snippets...\n")
+						break
 					}
 				}
 				t.Fatalf("\nParts of code:\n%s\n%s",
