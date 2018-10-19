@@ -39,16 +39,6 @@ func TranspileAST(fileName, packageName string, p *program.Program, root ast.Nod
 	}
 	p.File.Decls = append(p.File.Decls, decls...)
 
-	// Now we need to build the __init() function. This sets up certain state
-	// and variables that the runtime expects to be ready.
-	p.File.Decls = append(p.File.Decls, &goast.FuncDecl{
-		Name: goast.NewIdent("init"),
-		Type: util.NewFuncType(&goast.FieldList{}, "", false),
-		Body: &goast.BlockStmt{
-			List: p.StartupStatements(),
-		},
-	})
-
 	// only for "stdbool.h"
 	if p.IncludeHeaderIsExists("stdbool.h") {
 		p.File.Decls = append(p.File.Decls, &goast.GenDecl{

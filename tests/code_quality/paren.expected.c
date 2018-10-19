@@ -17,5 +17,3 @@ func function() {
 	_ = (a)
 	(function())
 }
-func init() {
-}

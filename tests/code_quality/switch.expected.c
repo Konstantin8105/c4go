@@ -38,5 +38,3 @@ func switch_function() {
 		}
 	}
 }
-func init() {
-}

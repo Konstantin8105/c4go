@@ -61,5 +61,3 @@ func if_1() {
 		r = 3
 	}
 }
-func init() {
-}
