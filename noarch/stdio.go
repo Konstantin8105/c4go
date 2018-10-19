@@ -59,7 +59,7 @@ type File struct {
 // The returned pointer can be disassociated from the file by calling fclose()
 // or freopen(). All opened files are automatically closed on normal program
 // termination.
-func Fopen(filePath, mode []byte) *File {
+func Fopen(filePath, mode *byte) *File {
 	var file *os.File
 	var err error
 
@@ -119,7 +119,7 @@ func Fclose(f *File) int {
 // No streams are involved in the operation.
 //
 // Proper file access shall be available.
-func Remove(filePath []byte) int {
+func Remove(filePath *byte) int {
 	if os.Remove(CStringToString(filePath)) != nil {
 		return -1
 	}
@@ -142,7 +142,7 @@ func Remove(filePath []byte) int {
 // implementation.
 //
 // Proper file access shall be available.
-func Rename(oldName, newName []byte) int {
+func Rename(oldName, newName *byte) int {
 	from := CStringToString(oldName)
 	to := CStringToString(newName)
 
@@ -164,7 +164,7 @@ func Rename(oldName, newName []byte) int {
 // Notice that fputs not only differs from puts in that the destination stream
 // can be specified, but also fputs does not write additional characters, while
 // puts appends a newline character at the end automatically.
-func Fputs(str []byte, stream *File) int {
+func Fputs(str *byte, stream *File) int {
 	if stream == nil {
 		return -1
 	}
@@ -362,14 +362,15 @@ func Fflush(stream *File) int {
 //
 // After the format parameter, the function expects at least as many additional
 // arguments as specified by format.
-func Fprintf(f *File, format []byte, args ...interface{}) int {
+func Fprintf(f *File, format *byte, args ...interface{}) int {
 	realArgs := []interface{}{}
 
 	// Convert any C strings into Go strings.
-	typeOfByteSlice := reflect.TypeOf([]byte(nil))
+	var nilByte *byte = nil
+	typeOfByteSlice := reflect.TypeOf(nilByte)
 	for _, arg := range args {
 		if reflect.TypeOf(arg) == typeOfByteSlice {
-			realArgs = append(realArgs, CStringToString(arg.([]byte)))
+			realArgs = append(realArgs, CStringToString(arg.(*byte)))
 		} else {
 			realArgs = append(realArgs, arg)
 		}
@@ -630,22 +631,8 @@ func Fsetpos(stream *File, pos []int) int {
 // format includes format specifiers (subsequences beginning with %), the
 // additional arguments following format are formatted and inserted in the
 // resulting string replacing their respective specifiers.
-func Printf(format []byte, args ...interface{}) int {
-	realArgs := []interface{}{}
-
-	// Convert any C strings into Go strings.
-	typeOfByteSlice := reflect.TypeOf([]byte(nil))
-	for _, arg := range args {
-		if reflect.TypeOf(arg) == typeOfByteSlice {
-			realArgs = append(realArgs, CStringToString(arg.([]byte)))
-		} else {
-			realArgs = append(realArgs, arg)
-		}
-	}
-
-	n, _ := fmt.Printf(CStringToString(format), realArgs...)
-
-	return n
+func Printf(format *byte, args ...interface{}) int {
+	return Fprintf(Stdout, format, args...)
 }
 
 // Puts handles puts().
@@ -660,7 +647,7 @@ func Printf(format []byte, args ...interface{}) int {
 // Notice that puts not only differs from fputs in that it uses stdout as
 // destination, but it also appends a newline character at the end automatically
 // (which fputs does not).
-func Puts(str []byte) int {
+func Puts(str *byte) int {
 	n, _ := fmt.Println(CStringToString(str))
 
 	return n
@@ -674,7 +661,7 @@ func Puts(str []byte) int {
 // The additional arguments should point to already allocated objects of the
 // type specified by their corresponding format specifier within the format
 // string.
-func Scanf(format []byte, args ...interface{}) int {
+func Scanf(format *byte, args ...interface{}) int {
 	realArgs := prepareArgsForScanf(args)
 
 	// We cannot use fmt.Scanf() here because that would use the real stdin
@@ -700,7 +687,7 @@ func Putchar(character int) {
 // format includes format specifiers (subsequences beginning with %), the
 // additional arguments following format are formatted and inserted in the
 // resulting string replacing their respective specifiers.
-func Sprintf(buffer, format []byte, args ...interface{}) int {
+func Sprintf(buffer []byte, format *byte, args ...interface{}) int {
 	realArgs := []interface{}{}
 
 	realArgs = append(realArgs, convert(args)...)
@@ -721,7 +708,7 @@ func Sprintf(buffer, format []byte, args ...interface{}) int {
 // format includes format specifiers (subsequences beginning with %), the
 // additional arguments following format are formatted and inserted in the
 // resulting string replacing their respective specifiers.
-func Vsprintf(buffer, format []byte, varList ...interface{}) int {
+func Vsprintf(buffer []byte, format *byte, varList ...interface{}) int {
 	realArgs := []interface{}{}
 
 	if len(varList) > 1 {
@@ -747,15 +734,16 @@ func Vsprintf(buffer, format []byte, varList ...interface{}) int {
 // format includes format specifiers (subsequences beginning with %), the
 // additional arguments following format are formatted and inserted in the
 // resulting string replacing their respective specifiers.
-func Snprintf(buffer []byte, n int, format []byte, args ...interface{}) int {
+func Snprintf(buffer []byte, n int, format *byte, args ...interface{}) int {
 	return Vsnprintf(buffer, n, format, args)
 }
 
 // convert - convert va_list
 func convert(arg interface{}) (result []interface{}) {
-	typeOfByteSlice := reflect.TypeOf([]byte(nil))
+	var nilByte *byte = nil
+	typeOfByteSlice := reflect.TypeOf(nilByte)
 	if reflect.TypeOf(arg) == typeOfByteSlice {
-		return []interface{}{CStringToString(arg.([]byte))}
+		return []interface{}{CStringToString(arg.(*byte))}
 	}
 	if reflect.TypeOf(arg).Kind() == reflect.Slice {
 		arg := arg.([]interface{})
@@ -773,7 +761,7 @@ func convert(arg interface{}) (result []interface{}) {
 // format includes format specifiers (subsequences beginning with %), the
 // additional arguments following format are formatted and inserted in the
 // resulting string replacing their respective specifiers.
-func Vsnprintf(buffer []byte, n int, format []byte, varList ...interface{}) int {
+func Vsnprintf(buffer []byte, n int, format *byte, varList ...interface{}) int {
 	realArgs := []interface{}{}
 
 	if len(varList) > 1 {
