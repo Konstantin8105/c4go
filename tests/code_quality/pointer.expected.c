@@ -9,6 +9,12 @@ package code_quality
 
 // f - transpiled function from  $GOPATH/src/github.com/Konstantin8105/c4go/tests/code_quality/pointer.c:1
 func f(s *int) *int {
+	var a int = *s
+	var b *int = s
+	var c *int = &a
+	s = f(&a)
+	s = f(b)
+	s = f(c)
 	return s
 }
 

@@ -512,9 +512,9 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 		}, eType, preStmts, postStmts, err
 
 	case *ast.DeclRefExpr:
-		return &goast.IndexExpr{
-			X:     util.NewIdent(v.Name),
-			Index: e,
+		return &goast.StarExpr{
+			Star: 1,
+			X:    util.NewIdent(v.Name),
 		}, eType, preStmts, postStmts, err
 
 	case *ast.ArraySubscriptExpr:

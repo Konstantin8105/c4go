@@ -1,5 +1,11 @@
 int * f(int * s)
 {
+	int a = *s;
+	int * b = s;
+	int * c = &a;
+	s = f(&a);
+	s = f(b);
+	s = f(c);
 	return s;
 }
 

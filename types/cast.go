@@ -82,6 +82,9 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return
 	}
 
+	// only for debugging
+	// fmt.Printf("%#v -> %#v\n", cFromType, cToType)
+
 	// Uncomment only for debugging
 	if strings.Contains(cFromType, ":") {
 		err2 = fmt.Errorf("Found mistake `cFromType` `%v` C type : %#v",
@@ -127,6 +130,20 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 			Op: token.NEQ,
 			Y:  goast.NewIdent("nil"),
 		}, nil
+	}
+
+	// Pointer address
+	// Example :
+	// From : "int"
+	// To   : "int *"
+	{
+		s := strings.TrimSpace(strings.TrimLeft(cToType, cFromType))
+		if s == "*" {
+			return &goast.UnaryExpr{
+				Op: token.AND,
+				X:  expr,
+			}, nil
+		}
 	}
 
 	// Function casting
