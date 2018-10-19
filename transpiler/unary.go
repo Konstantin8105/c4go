@@ -272,7 +272,7 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 	expr goast.Expr, eType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	// pointer - expression with name of array pointer
-	var pointer interface{}
+	var pointer ast.Node
 
 	// locationPointer
 	var locPointer ast.Node
@@ -493,35 +493,7 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 			Index: e,
 		}, eType, preStmts, postStmts, err
 
-	case *ast.ArraySubscriptExpr:
-		arr, _, newPre, newPost, err2 := transpileToExpr(v, p, false)
-		if err2 != nil {
-			return
-		}
-		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
-		return &goast.IndexExpr{
-			X: &goast.ParenExpr{
-				Lparen: 1,
-				X:      arr,
-			},
-			Index: e,
-		}, eType, preStmts, postStmts, err
-
-	case *ast.CallExpr:
-		arr, _, newPre, newPost, err2 := transpileToExpr(v, p, false)
-		if err2 != nil {
-			return
-		}
-		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
-		return &goast.IndexExpr{
-			X: &goast.ParenExpr{
-				Lparen: 1,
-				X:      arr,
-			},
-			Index: e,
-		}, eType, preStmts, postStmts, err
-
-	case *ast.CStyleCastExpr:
+	case *ast.CStyleCastExpr, *ast.VAArgExpr, *ast.CallExpr, *ast.ArraySubscriptExpr:
 		arr, _, newPre, newPost, err2 := transpileToExpr(v, p, false)
 		if err2 != nil {
 			return
@@ -553,19 +525,6 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 				},
 			}, eType, preStmts, postStmts, err
 		}
-		return &goast.IndexExpr{
-			X: &goast.ParenExpr{
-				Lparen: 1,
-				X:      arr,
-			},
-			Index: e,
-		}, eType, preStmts, postStmts, err
-	case *ast.VAArgExpr:
-		arr, _, newPre, newPost, err2 := transpileToExpr(v, p, false)
-		if err2 != nil {
-			return
-		}
-		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 		return &goast.IndexExpr{
 			X: &goast.ParenExpr{
 				Lparen: 1,
