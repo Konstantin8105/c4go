@@ -295,6 +295,21 @@ func transpileDeclStmt(n *ast.DeclStmt, p *program.Program) (
 	return
 }
 
+// Example :
+// -ArraySubscriptExpr 'double' lvalue
+//  |-ImplicitCastExpr 'vertex':'double *' <LValueToRValue>
+//  | `-DeclRefExpr 'vertex':'double *' lvalue Var 0x244c180 'triorg' 'vertex':'double *'
+//  `-IntegerLiteral 'int' 0
+// Result :
+// (*(*float64)(unsafe.Pointer(uintpnt(*float64(triorg))+0)))
+//
+// -ArraySubscriptExpr 'subseg':'double **' lvalue
+//  |-ImplicitCastExpr 'subseg *' <ArrayToPointerDecay> // IGNORED IN ImplicitCastExpr
+//  | `-DeclRefExpr 'subseg [10]' lvalue Var 0x345ae30 'sub' 'subseg [10]'
+//  `-ImplicitCastExpr 'int' <LValueToRValue>
+//    `-DeclRefExpr 'int' lvalue Var 0x345aec0 'i' 'int'
+// Result :
+// sub[i]
 func transpileArraySubscriptExpr(n *ast.ArraySubscriptExpr, p *program.Program) (
 	_ *goast.IndexExpr, theType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
