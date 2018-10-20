@@ -58,7 +58,7 @@ func transpileStringLiteral(p *program.Program, n *ast.StringLiteral, arrayToArr
 	expr = goast.NewIdent(
 		fmt.Sprintf("(&([]byte(%s)[0]))",
 			strconv.Quote(n.Value)))
-	exprType = n.Type
+	exprType = "char *" // n.Type
 
 	//
 	// // Example:

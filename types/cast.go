@@ -146,6 +146,29 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		}
 	}
 
+	// Array to pointer
+	// Example :
+	// cFromType : double [13]
+	// cToType   : double *
+	// Result :
+	// &(expr[0])
+	{
+		bt := GetBaseType(cFromType)
+		if strings.TrimSpace(strings.TrimLeft(cToType, bt)) == "*" {
+			if v := strings.TrimSpace(strings.TrimLeft(cFromType, bt)); len(v) > 2 &&
+				v[0] == '[' && v[len(v)-1] == ']' {
+				return &goast.UnaryExpr{
+					Op: token.AND,
+					X: &goast.IndexExpr{
+						X:      expr,
+						Lbrack: 1,
+						Index:  &goast.BasicLit{Kind: token.INT, Value: "0"},
+					},
+				}, nil
+			}
+		}
+	}
+
 	// Function casting
 	// Example :
 	// cFromType  : double (int, float, double)
