@@ -321,7 +321,7 @@ func transpileArraySubscriptExpr(n *ast.ArraySubscriptExpr, p *program.Program) 
 
 	children := n.Children()
 
-	expression, _, newPre, newPost, err := transpileToExpr(children[0], p, false)
+	expression, exprType, newPre, newPost, err := transpileToExpr(children[0], p, false)
 	if err != nil {
 		return nil, "", nil, nil, err
 	}
@@ -332,6 +332,15 @@ func transpileArraySubscriptExpr(n *ast.ArraySubscriptExpr, p *program.Program) 
 		return nil, "", nil, nil, err
 	}
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+
+	if exprType[len(exprType)-1] == '*' {
+		newType := exprType[:len(exprType)-1] + "[]"
+		expression, err = types.CastExpr(p, expression, exprType, newType)
+		if err != nil {
+			return nil, "", nil, nil, err
+		}
+		exprType = newType
+	}
 
 	return &goast.IndexExpr{
 		X:     expression,

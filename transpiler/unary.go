@@ -500,29 +500,47 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 	eType = n.Type
 
 	switch v := pointer.(type) {
-	case *ast.MemberExpr:
-		arr, _, newPre, newPost, err2 := transpileToExpr(v, p, false)
-		if err2 != nil {
-			return
-		}
-		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
-		return &goast.IndexExpr{
-			X:     arr,
-			Index: e,
-		}, eType, preStmts, postStmts, err
-
 	case *ast.DeclRefExpr:
 		return &goast.StarExpr{
 			Star: 1,
 			X:    util.NewIdent(v.Name),
 		}, eType, preStmts, postStmts, err
 
-	case *ast.CStyleCastExpr, *ast.VAArgExpr, *ast.CallExpr, *ast.ArraySubscriptExpr:
+	case *ast.MemberExpr, *ast.CStyleCastExpr, *ast.VAArgExpr, *ast.CallExpr, *ast.ArraySubscriptExpr:
 		arr, _, newPre, newPost, err2 := transpileToExpr(v, p, false)
 		if err2 != nil {
 			return
 		}
 		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+
+		// 0  *ast.ParenExpr {
+		// 2  .  X: *ast.BasicLit {
+		// 4  .  .  Kind: INT
+		// 5  .  .  Value: "0"
+		// 6  .  }
+		// 8  }
+		if par, ok := e.(*goast.ParenExpr); ok {
+			if bas, ok := par.X.(*goast.BasicLit); ok &&
+				bas.Kind == token.INT && bas.Value == "0" {
+				return &goast.StarExpr{
+					Star: 1,
+					X:    arr,
+				}, eType, preStmts, postStmts, err
+			}
+		}
+
+		// 0  *ast.BasicLit {
+		// 2  .  Kind: INT
+		// 3  .  Value: "0"
+		// 4  }
+		if bas, ok := e.(*goast.BasicLit); ok &&
+			bas.Kind == token.INT && bas.Value == "0" {
+			return &goast.StarExpr{
+				Star: 1,
+				X:    arr,
+			}, eType, preStmts, postStmts, err
+		}
+
 		return &goast.IndexExpr{
 			X: &goast.ParenExpr{
 				Lparen: 1,

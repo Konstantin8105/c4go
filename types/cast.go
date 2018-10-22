@@ -148,15 +148,13 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 
 	// Array to pointer
 	// Example :
-	// cFromType : double [13]
-	// cToType   : double *
+	// cFromType : double **[13]
+	// cToType   : double ***
 	// Result :
 	// &(expr[0])
 	{
-		bt := GetBaseType(cFromType)
-		if strings.TrimSpace(strings.TrimLeft(cToType, bt)) == "*" {
-			if v := strings.TrimSpace(strings.TrimLeft(cFromType, bt)); len(v) > 2 &&
-				v[0] == '[' && v[len(v)-1] == ']' {
+		if cFromType[len(cFromType)-1] == ']' {
+			if cToType[len(cToType)-1] == '*' {
 				return &goast.UnaryExpr{
 					Op: token.AND,
 					X: &goast.IndexExpr{
@@ -167,19 +165,23 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 				}, nil
 			}
 		}
+		// bt := GetBaseType(cFromType)
+		// if strings.TrimSpace(strings.TrimLeft(cToType, bt)) == "*" {
+		// 	if v := strings.TrimSpace(strings.TrimLeft(cFromType, bt)); len(v) > 2 &&
+		// 		v[0] == '[' && v[len(v)-1] == ']' {
+		// 	}
+		// }
 	}
 
 	// Pointer to array
 	// Example :
-	// cFromType : char *
-	// cToType   : char [24]
+	// cFromType : char ***
+	// cToType   : char **[24]
 	// Result    :
-	// (*[24]byte)(unsafe.Pointer(expr))
+	// *(*[24]**byte)(unsafe.Pointer(expr))
 	{
-		bt := GetBaseType(cFromType)
-		if strings.TrimSpace(strings.TrimLeft(cFromType, bt)) == "*" {
-			if v := strings.TrimSpace(strings.TrimLeft(cToType, bt)); len(v) > 2 &&
-				v[0] == '[' && v[len(v)-1] == ']' {
+		if cFromType[len(cFromType)-1] == '*' {
+			if cToType[len(cToType)-1] == ']' {
 				resolved, err := ResolveType(p, cToType)
 				if err != nil {
 					err = fmt.Errorf("Cannot resolve pointer to array `%s`: %v",
@@ -200,6 +202,12 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 					}}, nil
 			}
 		}
+		// bt := GetBaseType(cFromType)
+		// if strings.TrimSpace(strings.TrimLeft(cFromType, bt)) == "*" {
+		// 	if v := strings.TrimSpace(strings.TrimLeft(cToType, bt)); len(v) > 2 &&
+		// 		v[0] == '[' && v[len(v)-1] == ']' {
+		// 	}
+		// }
 	}
 
 	// Function casting
