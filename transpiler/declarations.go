@@ -669,6 +669,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 		err = nil // Error is ignored
 	}
+
 	// for ignore zero value. example:
 	// int i = 0;
 	// tranpile to:

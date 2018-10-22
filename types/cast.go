@@ -169,6 +169,39 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		}
 	}
 
+	// Pointer to array
+	// Example :
+	// cFromType : char *
+	// cToType   : char [24]
+	// Result    :
+	// (*[24]byte)(unsafe.Pointer(expr))
+	{
+		bt := GetBaseType(cFromType)
+		if strings.TrimSpace(strings.TrimLeft(cFromType, bt)) == "*" {
+			if v := strings.TrimSpace(strings.TrimLeft(cToType, bt)); len(v) > 2 &&
+				v[0] == '[' && v[len(v)-1] == ']' {
+				resolved, err := ResolveType(p, cToType)
+				if err != nil {
+					err = fmt.Errorf("Cannot resolve pointer to array `%s`: %v",
+						cToType, err)
+					return
+				}
+				p.AddImport("unsafe")
+				return &goast.StarExpr{
+					Star: 1,
+					X: &goast.CallExpr{
+						Fun:    goast.NewIdent(fmt.Sprintf("(*%s)", resolved)),
+						Lparen: 1,
+						Args: []goast.Expr{&goast.CallExpr{
+							Fun:    goast.NewIdent("unsafe.Pointer"),
+							Lparen: 1,
+							Args:   []goast.Expr{expr},
+						}},
+					}}, nil
+			}
+		}
+	}
+
 	// Function casting
 	// Example :
 	// cFromType  : double (int, float, double)
