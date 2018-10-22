@@ -905,6 +905,43 @@ func TestOS(t *testing.T) {
 	t.Logf("Amount comments: %d", amount)
 }
 
+func TestExamples(t *testing.T) {
+	var args = DefaultProgramArgs()
+	args.inputFiles = []string{"./examples/prime.c"}
+	args.outputFile = "./examples/main.go"
+	args.packageName = "main"
+
+	// testing
+	err := Start(args)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	var file *os.File
+	file, err = os.Open(args.outputFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer file.Close()
+
+	readme, err := ioutil.ReadFile("./README.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if !bytes.Contains(readme, []byte(line)) {
+			t.Errorf("Cannot found line : %s", line)
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		t.Fatal(err)
+	}
+}
+
 // Example of run benchmark:
 //
 // go test -v -tags=integration -run=Benchmark -bench=. -benchmem

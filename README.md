@@ -98,12 +98,10 @@ func main() {
 	fmt.Printf("Enter a number\n")
 	noarch.Scanf([]byte("%d\x00"), (*[100000000]int)(unsafe.Pointer(&n))[:])
 	// get value
-	//
 	noarch.Printf([]byte("The number is: %d\n\x00"), n)
 	if n == 2 {
 		fmt.Printf("Prime number.\n")
 		// -------
-		//
 	} else {
 		for c = 2; c <= n-1; c++ {
 			if n%c == 0 {
