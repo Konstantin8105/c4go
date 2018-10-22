@@ -136,13 +136,14 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	// Example :
 	// From : "int"
 	// To   : "int *"
-	if strings.HasPrefix(cToType, cFromType) {
-		s := strings.TrimSpace(strings.TrimLeft(cToType, cFromType))
-		if s == "*" {
-			return &goast.UnaryExpr{
-				Op: token.AND,
-				X:  expr,
-			}, nil
+	if len(cFromType) < len(cToType) {
+		if cFromType == cToType[:len(cFromType)] {
+			if strings.TrimSpace(cToType[len(cFromType):]) == "*" {
+				return &goast.UnaryExpr{
+					Op: token.AND,
+					X:  expr,
+				}, nil
+			}
 		}
 	}
 
