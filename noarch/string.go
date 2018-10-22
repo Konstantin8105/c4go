@@ -102,11 +102,11 @@ func Strcat(dest, src *byte) *byte {
 // 	return dest
 // }
 
-// TODO Strcmp - compare two strings
+// Strcmp - compare two strings
 // Compares the C string str1 to the C string str2.
-// func Strcmp(str1, str2 []byte) int {
-// 	return bytes.Compare([]byte(CStringToString(str1)), []byte(CStringToString(str2)))
-// }
+func Strcmp(str1, str2 *byte) int {
+	return bytes.Compare([]byte(CStringToString(str1)), []byte(CStringToString(str2)))
+}
 
 // Strchr - Locate first occurrence of character in string
 // See: http://www.cplusplus.com/reference/cstring/strchr/
