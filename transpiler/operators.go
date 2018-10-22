@@ -278,7 +278,7 @@ func pointerArithmetic(p *program.Program,
 		_ = printer.Fprint(&buf, token.NewFileSet(), right)
 		s.Condition = buf.String()
 	}
-	s.Type = resolvedLeftType[2:]
+	s.Type = resolvedLeftType
 
 	s.Operator = "+"
 	if operator == token.SUB {
@@ -287,9 +287,9 @@ func pointerArithmetic(p *program.Program,
 
 	src := `package main
 func main(){
-	a := (*(*[1000000000]{{ .Type }})(unsafe.Pointer(uintptr(
-			unsafe.Pointer(&{{ .Name }}[0])) {{ .Operator }}
-			(uintptr)({{ .Condition }})*unsafe.Sizeof({{ .Name }}[0]))))[:]
+	a := &(*({{ .Type }})(unsafe.Pointer(uintptr(
+			unsafe.Pointer({{ .Name }})) {{ .Operator }}
+			(uintptr)({{ .Condition }})*unsafe.Sizeof({{ .Name }}))))
 }`
 	tmpl := template.Must(template.New("").Parse(src))
 	var source bytes.Buffer
