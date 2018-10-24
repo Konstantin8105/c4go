@@ -643,7 +643,7 @@ func Printf(format []byte, args ...interface{}) int {
 		}
 	}
 
-	n, _ := fmt.Printf(CStringToString(format), realArgs...)
+	n, _ := fmt.Fprintf(os.Stdout, CStringToString(format), realArgs...)
 
 	return n
 }
@@ -661,7 +661,7 @@ func Printf(format []byte, args ...interface{}) int {
 // destination, but it also appends a newline character at the end automatically
 // (which fputs does not).
 func Puts(str []byte) int {
-	n, _ := fmt.Println(CStringToString(str))
+	n, _ := fmt.Fprintln(os.Stdout, CStringToString(str))
 
 	return n
 }
@@ -677,7 +677,7 @@ func Puts(str []byte) int {
 func Scanf(format []byte, args ...interface{}) int {
 	realArgs := prepareArgsForScanf(args)
 
-	// We cannot use fmt.Scanf() here because that would use the real stdin
+	// We cannot use fmt Scanf() here because that would use the real stdin
 	// which does not work under test. See docs for noarch.Stdin.
 	n, _ := fmt.Fscanf(Stdin.OsFile, CStringToString(format), realArgs...)
 	finalizeArgsForScanf(realArgs, args)
@@ -691,7 +691,7 @@ func Scanf(format []byte, args ...interface{}) int {
 //
 // It is equivalent to calling putc with stdout as second argument.
 func Putchar(character int) {
-	fmt.Printf("%c", character)
+	fmt.Fprintf(os.Stdout, "%c", character)
 }
 
 // Sprintf handles sprintf().

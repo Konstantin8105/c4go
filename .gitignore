@@ -6,6 +6,7 @@
 /out
 /.idea
 /build
+/testdata
 /bin
 /coverage.txt
 /c4go
