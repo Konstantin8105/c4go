@@ -55,6 +55,9 @@ before_install:
   # profiles.
   - go get -u -v github.com/wadey/gocovmerge
 
+  # code style
+  - go get -u -v github.com/Konstantin8105/cs
+
   # install gometalinter
   # - go get -u github.com/alecthomas/gometalinter
   # - gometalinter --install
