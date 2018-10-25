@@ -213,7 +213,7 @@ func Start(args ProgramArgs) (err error) {
 	}
 
 	if args.verbose {
-		fmt.Println("Reading clang AST tree...")
+		fmt.Fprintln(os.Stdout, "Reading clang AST tree...")
 	}
 	if args.ast {
 		for _, l := range lines {
@@ -234,7 +234,7 @@ func Start(args ProgramArgs) (err error) {
 
 func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.FilePP, err error) {
 	if args.verbose {
-		fmt.Println("Start tanspiling ...")
+		fmt.Fprintln(os.Stdout, "Start tanspiling ...")
 	}
 
 	if os.Getenv("GOPATH") == "" {
@@ -253,7 +253,7 @@ func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.Fil
 
 	// 2. Preprocess
 	if args.verbose {
-		fmt.Println("Running clang preprocessor...")
+		fmt.Fprintln(os.Stdout, "Running clang preprocessor...")
 	}
 
 	filePP, err = preprocessor.NewFilePP(
@@ -265,7 +265,7 @@ func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.Fil
 	}
 
 	if args.verbose {
-		fmt.Println("Writing preprocessor ...")
+		fmt.Fprintln(os.Stdout, "Writing preprocessor ...")
 	}
 	dir, err := ioutil.TempDir("", "c4go")
 	if err != nil {
@@ -283,7 +283,7 @@ func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.Fil
 
 	// 3. Generate JSON from AST
 	if args.verbose {
-		fmt.Println("Running clang for AST tree...")
+		fmt.Fprintln(os.Stdout, "Running clang for AST tree...")
 	}
 	compiler, compilerFlag := preprocessor.Compiler(args.cppCode)
 	astPP, err := exec.Command(compiler, append(compilerFlag, "-Xclang", "-ast-dump",
@@ -310,7 +310,7 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 
 	// Converting to nodes
 	if args.verbose {
-		fmt.Println("Converting to nodes...")
+		fmt.Fprintln(os.Stdout, "Converting to nodes...")
 	}
 	nodes, astErrors := convertLinesToNodesParallel(lines)
 	for i := range astErrors {
@@ -321,7 +321,7 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 
 	// build tree
 	if args.verbose {
-		fmt.Println("Building tree...")
+		fmt.Fprintln(os.Stdout, "Building tree...")
 	}
 	tree := buildTree(nodes, 0)
 	ast.FixPositions(tree)
@@ -351,7 +351,7 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 
 	// transpile ast tree
 	if args.verbose {
-		fmt.Println("Transpiling tree...")
+		fmt.Fprintln(os.Stdout, "Transpiling tree...")
 	}
 
 	err = transpiler.TranspileAST(args.outputFile, args.packageName,
@@ -366,7 +366,7 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 
 	// write the output Go code
 	if args.verbose {
-		fmt.Println("Writing the output Go code...")
+		fmt.Fprintln(os.Stdout, "Writing the output Go code...")
 	}
 	err = ioutil.WriteFile(outputFilePath, []byte(p.String()), 0644)
 	if err != nil {
@@ -464,7 +464,7 @@ func runCommand() int {
 	case "ast":
 		err := astCommand.Parse(os.Args[2:])
 		if err != nil {
-			fmt.Printf("ast command cannot parse: %v", err)
+			fmt.Fprintf(os.Stdout, "ast command cannot parse: %v", err)
 			return 2
 		}
 
@@ -481,7 +481,7 @@ func runCommand() int {
 	case "transpile":
 		err := transpileCommand.Parse(os.Args[2:])
 		if err != nil {
-			fmt.Printf("transpile command cannot parse: %v", err)
+			fmt.Fprintf(os.Stdout, "transpile command cannot parse: %v", err)
 			return 4
 		}
 
@@ -522,7 +522,7 @@ func runCommand() int {
 	}
 
 	if err := Start(args); err != nil {
-		fmt.Printf("Error: %v\n", err)
+		fmt.Fprintf(os.Stdout, "Error: %v\n", err)
 		return 7
 	}
 

@@ -109,7 +109,7 @@ func getNameOfFunctionFromCallExpr(p *program.Program, n *ast.CallExpr) (string,
 
 // simplificationCallExprPrintf - minimaze Go code
 // transpile C code : printf("Hello")
-// to Go code       : fmt.Printf("Hello")
+// to Go code       : fmt_Printf("Hello")
 // AST example :
 // CallExpr <> 'int'
 // |-ImplicitCastExpr <> 'int (*)(const char *, ...)' <FunctionToPointerDecay>

@@ -18,7 +18,7 @@ import (
 
 func getFileList(prefix, gitSource string) (fileList []string, err error) {
 	var (
-		buildFolder = "build"
+		buildFolder = "testdata"
 		gitFolder   = "git-source"
 		separator   = string(os.PathSeparator)
 	)
@@ -167,7 +167,7 @@ func TestBookSources(t *testing.T) {
 						t.Errorf("Error in `%v`: %v", goFile, err)
 					}
 					for _, log := range logs {
-						fmt.Printf("`%v`:%v\n", file, log)
+						t.Logf("`%v`:%v\n", file, log)
 					}
 
 					// go build testing
@@ -180,8 +180,7 @@ func TestBookSources(t *testing.T) {
 						cmd.Stderr = cmdErr
 						err = cmd.Run()
 						if err != nil {
-							fmt.Printf(
-								"Go build test `%v` : err = %v\n%v",
+							t.Logf("Go build test `%v` : err = %v\n%v",
 								file, err, cmdErr.String())
 							atomic.AddInt32(&amountWarnings, 1)
 						}
@@ -218,7 +217,7 @@ func TestBookSources(t *testing.T) {
 	close(chFile)
 	wg.Wait()
 
-	fmt.Println("Amount warnings summary : ", amountWarnings)
+	t.Logf("Amount warnings summary : %v", amountWarnings)
 }
 
 func getLogs(goFile string) (logs []string, err error) {
@@ -251,7 +250,7 @@ func getLogs(goFile string) (logs []string, err error) {
 }
 
 func TestFrame3dd(t *testing.T) {
-	folder := "./build/git-source/frame3dd/"
+	folder := "./testdata/git-source/frame3dd/"
 
 	// Create build folder
 	if _, err := os.Stat(folder); os.IsNotExist(err) {
@@ -313,7 +312,7 @@ func TestFrame3dd(t *testing.T) {
 }
 
 func TestTriangle(t *testing.T) {
-	folder := "./build/git-source/triangle/"
+	folder := "./testdata/git-source/triangle/"
 
 	// Create build folder
 	if _, err := os.Stat(folder); os.IsNotExist(err) {
@@ -479,20 +478,20 @@ func TestMultifiles(t *testing.T) {
 			gitSource: "https://github.com/jibsen/parg.git",
 			files: []fs{
 				{
-					input: []string{"build/git-source/parg/parg.c"},
+					input: []string{"testdata/git-source/parg/parg.c"},
 					clang: []string{
-						"-Ibuild/git-source/parg/",
+						"-Itestdata/git-source/parg/",
 					},
-					output: "build/git-source/parg/parg.go",
+					output: "testdata/git-source/parg/parg.go",
 				},
 				{
 					input: []string{
-						"build/git-source/parg/test/test_parg.c",
+						"testdata/git-source/parg/test/test_parg.c",
 					},
 					clang: []string{
-						"-Ibuild/git-source/parg/",
+						"-Itestdata/git-source/parg/",
 					},
-					output: "build/git-source/parg/test/test.go",
+					output: "testdata/git-source/parg/test/test.go",
 				},
 			},
 		},
@@ -501,8 +500,8 @@ func TestMultifiles(t *testing.T) {
 			gitSource: "https://github.com/wooorm/stmr.c",
 			files: []fs{
 				{
-					input:  []string{"build/git-source/stmr.c/stmr.c"},
-					output: "build/git-source/stmr.c/stmr.go",
+					input:  []string{"testdata/git-source/stmr.c/stmr.c"},
+					output: "testdata/git-source/stmr.c/stmr.go",
 				},
 			},
 		},
@@ -511,8 +510,8 @@ func TestMultifiles(t *testing.T) {
 			gitSource: "https://github.com/codeplea/tinyexpr.git",
 			files: []fs{
 				{
-					input:  []string{"build/git-source/tinyexpr/tinyexpr.c"},
-					output: "build/git-source/tinyexpr/tinyexpr.go",
+					input:  []string{"testdata/git-source/tinyexpr/tinyexpr.c"},
+					output: "testdata/git-source/tinyexpr/tinyexpr.go",
 				},
 			},
 		},
@@ -523,7 +522,7 @@ func TestMultifiles(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		fmt.Println(">", fileList)
+		t.Log(fileList)
 
 		for _, f := range tc.files {
 			t.Run(fmt.Sprintf("%v", f), func(t *testing.T) {
@@ -546,9 +545,8 @@ func TestMultifiles(t *testing.T) {
 					t.Errorf("Error in `%v`: %v", f.output, err)
 				}
 				for _, log := range logs {
-					fmt.Printf("`%v`:%v\n", f.output, log)
+					t.Logf("`%v`:%v\n", f.output, log)
 				}
-
 			})
 		}
 	}

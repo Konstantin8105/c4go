@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -429,7 +430,7 @@ func TestCSTD(t *testing.T) {
 	})
 
 	for _, l := range ps {
-		fmt.Printf("%s\n", l.line)
+		fmt.Fprintf(os.Stdout, "%s\n", l.line)
 	}
 
 	// checking with README.md
@@ -445,9 +446,9 @@ func TestCSTD(t *testing.T) {
 	}
 
 	// Detail information
-	fmt.Println("\nDetail information:")
+	fmt.Fprintln(os.Stdout, "\nDetail information:")
 	for _, l := range ps {
-		fmt.Printf("%s\n", l.line)
+		fmt.Fprintf(os.Stdout, "%s\n", l.line)
 		var ps []pair
 		for function := range amount[l.inc] {
 			ps = append(ps, pair{
@@ -462,7 +463,7 @@ func TestCSTD(t *testing.T) {
 		})
 
 		for _, l := range ps {
-			fmt.Printf("%s\n", l.line)
+			fmt.Fprintf(os.Stdout, "%s\n", l.line)
 		}
 	}
 }

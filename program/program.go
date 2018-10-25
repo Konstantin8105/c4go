@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"go/format"
 	"go/token"
+	"os"
 
 	goast "go/ast"
 
@@ -332,36 +333,19 @@ type nilWalker struct {
 }
 
 func (n nilWalker) Visit(node goast.Node) (w goast.Visitor) {
-	fmt.Println("---------")
-	fmt.Printf("Node: %#v", node)
+	fmt.Fprintf(os.Stdout, "---------\n")
+	fmt.Fprintf(os.Stdout, "Node: %#v", node)
 	switch v := node.(type) {
 	case *goast.GenDecl:
-		fmt.Printf("%#v\n", v)
+		fmt.Fprintf(os.Stdout, "%#v\n", v)
 		for i, s := range v.Specs {
-			fmt.Printf("Spec%d:   %#v\n", i, s)
+			fmt.Fprintf(os.Stdout, "Spec%d:   %#v\n", i, s)
 			if vs, ok := s.(*goast.ValueSpec); ok {
 				for j := range vs.Names {
-					fmt.Printf("IDS : %#v\n", vs.Names[j])
+					fmt.Fprintf(os.Stdout, "IDS : %#v\n", vs.Names[j])
 				}
 			}
 		}
-
-	case *goast.ValueSpec:
-		fmt.Printf("%#v\n", v)
-		for _, id := range v.Names {
-			fmt.Printf("ID: %#v\n", id)
-		}
-		fmt.Printf("Type: %#v\n", v.Type)
-
-	case *goast.StructType:
-		fmt.Printf("%#v\n", v)
-		fmt.Printf("Fields : %#v\n", v.Fields)
-		fmt.Printf("Struct : %#v\n", v.Struct)
-
-	case *goast.TypeSpec:
-		fmt.Printf("%#v\n", v)
-		fmt.Printf("Type : %#v\n", v.Type)
-
 	}
 	return n
 }

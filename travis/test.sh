@@ -5,7 +5,7 @@ set -e
 echo "" > coverage.txt
 
 # Package list
-export PKGS=$(go list ./... | grep -v c4go/build | grep -v c4go/examples | grep -v c4go/tests | grep -v /vendor/ | tr '\n' ' ')
+export PKGS=$(go list ./... | grep -v c4go/testdata | grep -v c4go/examples | grep -v c4go/tests | grep -v /vendor/ | tr '\n' ' ')
 
 # Make comma-separated.
 export PKGS_DELIM=$(echo "$PKGS" | tr ' ' ',')
@@ -13,16 +13,16 @@ export PKGS_DELIM=$(echo "$PKGS" | tr ' ' ',')
 echo "PKGS       : $PKGS"
 echo "PKGS_DELIM : $PKGS_DELIM"
 
-mkdir ./build/
+mkdir ./testdata/
 
-go test -v -cover -tags integration -coverpkg=$PKGS_DELIM -coverprofile=./build/pkg.coverprofile $PKGS
+go test -v -cover -tags integration -coverpkg=$PKGS_DELIM -coverprofile=./testdata/pkg.coverprofile $PKGS
 
 # Merge coverage profiles.
-COVERAGE_FILES=`ls -1 ./build/*.coverprofile 2>/dev/null | wc -l`
+COVERAGE_FILES=`ls -1 ./testdata/*.coverprofile 2>/dev/null | wc -l`
 if [ $COVERAGE_FILES != 0 ]; then
 	# check program `gocovmerge` is exist
 	if which gocovmerge >/dev/null 2>&1; then
-		export FILES=$(ls build/*.coverprofile | tr '\n' ' ')
+		export FILES=$(ls testdata/*.coverprofile | tr '\n' ' ')
 		echo "Combine next coverprofiles : $FILES"
 		gocovmerge $FILES > coverage.txt
 	fi
