@@ -1,7 +1,7 @@
 language: go
 
 go:
-  - "1.10"
+  - "1.10.x"
 
 os:
   - linux
@@ -13,6 +13,7 @@ env:
     secure: "p/4P6/KQKnkUmTQPUkkuu/Q9n4KR9tno5i6gBf9yJ/SbBRg1YTM5G5QvvZUasOAOeb8sxQaoJqd+H6Jmnj3sgB/zBFrAId+S8IMckuUMPLGvt928MXA+R1DdRDr9arHGKodyaF6VUJkQU78IQusv71FDvV2bdesMJPNc27l3WbEJPEoPGpQMiM6pgZgYFEnpRHTgi3Fmp5FN9jR+evQpPOwvsAVfNuLH2kZ3prk7XDpP2Nx0SmdwVzSKiKFW8XyiM6aHmjWLOOIDbmIynD1Hl2iUTEhbzubIPgBmYt3AbgYL4WzmnnZEfKMFmVGjHmdNIiW1EndI4iLjCpqdTWqOLY7kge8DW+/eURb0WsIAJJsllc/D6P9l2SU1v9PJROdY2dLI5oO06PSvFgXgpyCz0IG1ARYw2JF9JxG1kkNtdcPindn3mlPTcfwHUh41y7mZEYBD22NMl9AyWE1Igqgx2TEYZf+TcyUpV2pLxY7QwcCrga77iCiSrzylKLvrgABaU/zgQXEUe2Oymv4LvgtiwMBJl6x+80yVEMdIMHb10IShThzEgcmMDd1rNDt8k48A3GUVaFi4xu4i3Zoiq2OGQLNOKmejWpNYYHP7iD6gTqRwV5h9t+iTobbxs1WkJfh5VMHKaLN1qQmEz3Nzr08zZ8rkAJ9X3Xf588HhZKVvVsQ="
   matrix:
     - SCRIPT=test CLANG=3.9
+  - GO111MODULE=on
 
 matrix:
   include:
@@ -61,6 +62,8 @@ before_install:
   # install gometalinter
   # - go get -u github.com/alecthomas/gometalinter
   # - gometalinter --install
+
+install: true
 
 script:
   - . ./travis/$SCRIPT.sh
