@@ -1,0 +1,12 @@
+# github.com/Konstantin8105/cs v0.0.0-20181024100459-6ded65a9e27b
+github.com/Konstantin8105/cs
+# github.com/Konstantin8105/errors v0.0.0-20181024090123-74951e1ef317
+github.com/Konstantin8105/errors
+# github.com/bradleyjkemp/cupaloy v2.3.0+incompatible
+github.com/bradleyjkemp/cupaloy
+# github.com/davecgh/go-spew v1.1.1
+github.com/davecgh/go-spew/spew
+# github.com/disiqueira/gotree v1.0.0
+github.com/disiqueira/gotree
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib

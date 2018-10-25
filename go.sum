@@ -1,0 +1,12 @@
+github.com/Konstantin8105/cs v0.0.0-20181024100459-6ded65a9e27b h1:/RcQlPHwmWbS+WsztN0t8lxDgzYDXnulnvAK2G/LDus=
+github.com/Konstantin8105/cs v0.0.0-20181024100459-6ded65a9e27b/go.mod h1:vfMy6JvH0X89EH6mN5haULYCopfUw9q2CXpc5hZWDZk=
+github.com/Konstantin8105/errors v0.0.0-20181024090123-74951e1ef317 h1:j3nynVAjuSfknG0735I6Tc9wb6Pl8x7JNb64dQyEt18=
+github.com/Konstantin8105/errors v0.0.0-20181024090123-74951e1ef317/go.mod h1:6IX9g6G4cMj25Ha20ZZzU3bchQDtGf2EUgFMnRNbabQ=
+github.com/bradleyjkemp/cupaloy v2.3.0+incompatible h1:UafIjBvWQmS9i/xRg+CamMrnLTKNzo+bdmT/oH34c2Y=
+github.com/bradleyjkemp/cupaloy v2.3.0+incompatible/go.mod h1:Au1Xw1sgaJ5iSFktEhYsS0dbQiS1B0/XMXl+42y9Ilk=
+github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
+github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/disiqueira/gotree v1.0.0 h1:en5wk87n7/Jyk6gVME3cx3xN9KmUCstJ1IjHr4Se4To=
+github.com/disiqueira/gotree v1.0.0/go.mod h1:7CwL+VWsWAU95DovkdRZAtA7YbtHwGk+tLV/kNi8niU=
+github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
+github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
