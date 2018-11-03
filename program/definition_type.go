@@ -66,4 +66,8 @@ var DefinitionType = map[string]string{
 	"__sbuf":            "int64",
 	"__sFILEX":          "interface{}",
 	"FILE":              "github.com/Konstantin8105/c4go/noarch.File",
+
+	// termios.h
+	"tcflag_t": "uint32",
+	"cc_t":     "uint8",
 }

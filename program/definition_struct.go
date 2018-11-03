@@ -122,4 +122,28 @@ func (p *Program) initializationStructs() {
 			"tz_dsttime":     "TzDsttime",
 		},
 	}
+
+	// termios.h
+	p.Structs["struct termios"] = &Struct{
+		Name: "struct termios",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"c_iflag": "unsigned int",
+			"c_oflag": "unsigned int",
+			"c_cflag": "unsigned int",
+			"c_lflag": "unsigned int",
+			"cc_t":    "unsigned char[32]",
+		},
+	}
+	p.Structs["c4go_struct termios"] = &Struct{
+		Name: "syscall.Termios",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"c_iflag": "Iflag",
+			"c_oflag": "Oflag",
+			"c_cflag": "Cflag",
+			"c_lflag": "Lflag",
+			"cc_t":    "Cc",
+		},
+	}
 }
