@@ -6,15 +6,17 @@ import (
 	"github.com/pkg/term/termios"
 )
 
-func Tcgetattr(fd int, t *syscall.Termios) int {
-	if err := termios.Tcgetattr(uintptr(fd), t); err != nil {
+type Termios = syscall.Termios
+
+func Tcgetattr(fd int, t []Termios) int {
+	if err := termios.Tcgetattr(uintptr(fd), &t[0]); err != nil {
 		return -1
 	}
 	return 0
 }
 
-func Tcsetattr(fd int, opt int, t *syscall.Termios) int {
-	if err := termios.Tcsetattr(uintptr(fd), uintptr(opt), t); err != nil {
+func Tcsetattr(fd int, opt int, t []Termios) int {
+	if err := termios.Tcsetattr(uintptr(fd), uintptr(opt), &t[0]); err != nil {
 		return -1
 	}
 	return 0
@@ -48,3 +50,15 @@ func Tcflush(fd int, dur int) int {
 // 	}
 // 	return 0
 // }
+
+func Cfmakeraw(t []Termios) {
+	termios.Cfmakeraw(&t[0])
+}
+
+func Cfgetispeed(t []Termios) uint32 {
+	return termios.Cfgetispeed(&t[0])
+}
+
+func Cfgetospeed(t []Termios) uint32 {
+	return termios.Cfgetospeed(&t[0])
+}

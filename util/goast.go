@@ -365,12 +365,6 @@ func CreateSliceFromReference(goType string, expr goast.Expr) goast.Expr {
 	//
 	//     p.AddImport("unsafe")
 	//
-	if goType == "syscall.Termios" {
-		return &goast.UnaryExpr{
-			Op: token.AND,
-			X:  expr,
-		}
-	}
 	return &goast.SliceExpr{
 		X: NewCallExpr(
 			fmt.Sprintf("(*[100000000]%s)", goType),

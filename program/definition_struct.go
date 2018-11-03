@@ -136,7 +136,7 @@ func (p *Program) initializationStructs() {
 		},
 	}
 	p.Structs["c4go_struct termios"] = &Struct{
-		Name: "syscall.Termios",
+		Name: "github.com/Konstantin8105/c4go/noarch.Termios",
 		Type: StructType,
 		Fields: map[string]interface{}{
 			"c_iflag": "Iflag",
