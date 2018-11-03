@@ -132,7 +132,7 @@ func (p *Program) initializationStructs() {
 			"c_oflag": "unsigned int",
 			"c_cflag": "unsigned int",
 			"c_lflag": "unsigned int",
-			"cc_t":    "unsigned char[32]",
+			"c_cc":    "unsigned char[32]",
 		},
 	}
 	p.Structs["c4go_struct termios"] = &Struct{
@@ -143,7 +143,7 @@ func (p *Program) initializationStructs() {
 			"c_oflag": "Oflag",
 			"c_cflag": "Cflag",
 			"c_lflag": "Lflag",
-			"cc_t":    "Cc",
+			"c_cc":    "Cc",
 		},
 	}
 }
