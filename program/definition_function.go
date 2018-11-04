@@ -308,6 +308,13 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int cfsetospeed(struct termios *, speed_t ) -> noarch.Cfsetospeed",
 		"int cfsetspeed(struct termios *, speed_t ) -> noarch.Cfsetspeed",
 	},
+	"sys/ioctl.h": {
+		"int ioctl(int , int , ... ) -> noarch.Ioctl",
+	},
+	"fcntl.h": {
+		"int open(const char *, int , mode_t ) -> noarch.OpenM",
+		"int open(const char *, int ) -> noarch.Open",
+	},
 }
 
 // GetIncludeFileNameByFunctionSignature - return name of C include header

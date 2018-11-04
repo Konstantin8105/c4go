@@ -41,4 +41,7 @@ var DefinitionVariable = map[string]string{
 	"IXANY":   "github.com/pkg/term/termios.IXANY",
 	"IXOFF":   "github.com/pkg/term/termios.IXOFF",
 	"CRTSCTS": "github.com/pkg/term/termios.CRTSCTS",
+
+	// sys/ioctl.h
+	"TIOCGWINSZ": "golang.org/x/sys/unix.TIOCGWINSZ",
 }
