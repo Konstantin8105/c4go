@@ -311,6 +311,10 @@ var builtInFunctionDefinitions = map[string][]string{
 	"sys/ioctl.h": {
 		"int ioctl(int , int , ... ) -> noarch.Ioctl",
 	},
+	"fcntl.h": {
+		"int open(const char *, int , mode_t ) -> noarch.OpenM",
+		"int open(const char *, int ) -> noarch.Open",
+	},
 }
 
 // GetIncludeFileNameByFunctionSignature - return name of C include header

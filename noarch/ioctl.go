@@ -1,6 +1,8 @@
 package noarch
 
-import "golang.org/x/sys/unix"
+import (
+	"golang.org/x/sys/unix"
+)
 
 type Winsize = unix.Winsize
 
