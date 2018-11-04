@@ -146,4 +146,26 @@ func (p *Program) initializationStructs() {
 			"c_cc":    "Cc",
 		},
 	}
+
+	// sys/ioctl.h
+	p.Structs["struct winsize"] = &Struct{
+		Name: "struct winsize",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"ws_row":    "unsigned short",
+			"ws_col":    "unsigned short",
+			"ws_xpixel": "unsigned short",
+			"ws_ypixel": "unsigned short",
+		},
+	}
+	p.Structs["c4go_struct winsize"] = &Struct{
+		Name: "github.com/Konstantin8105/c4go/noarch.Winsize",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"ws_row":    "Row",
+			"ws_col":    "Col",
+			"ws_xpixel": "Xpixel",
+			"ws_ypixel": "Ypixel",
+		},
+	}
 }
