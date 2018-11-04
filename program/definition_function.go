@@ -293,6 +293,21 @@ var builtInFunctionDefinitions = map[string][]string{
 		"time_t mktime(struct tm *) -> noarch.Mktime",
 		"char * asctime(struct tm *) -> noarch.Asctime",
 	},
+	"termios.h": {
+		// termios.h
+		"int tcsetattr(int , int , const struct termios *) -> noarch.Tcsetattr",
+		"int tcgetattr(int , struct termios *) -> noarch.Tcgetattr",
+		"int tcsendbreak(int , int ) -> noarch.Tcsendbreak",
+		"int tcdrain(int ) -> noarch.Tcdrain",
+		"int tcflush(int , int ) -> noarch.Tcflush",
+		"int tcflow(int , int ) -> noarch.Tcflow",
+		"void cfmakeraw(struct termios *) -> noarch.Cfmakeraw",
+		"speed_t cfgetispeed(const struct termios *) -> noarch.Cfgetispeed",
+		"speed_t cfgetospeed(const struct termios *) -> noarch.Cfgetospeed",
+		"int cfsetispeed(struct termios *, speed_t ) -> noarch.Cfsetispeed",
+		"int cfsetospeed(struct termios *, speed_t ) -> noarch.Cfsetospeed",
+		"int cfsetspeed(struct termios *, speed_t ) -> noarch.Cfsetspeed",
+	},
 }
 
 // GetIncludeFileNameByFunctionSignature - return name of C include header

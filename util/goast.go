@@ -350,7 +350,7 @@ func GetUintptrForSlice(expr goast.Expr) (goast.Expr, string) {
 
 // CreateSliceFromReference - create a slice, like :
 // (*[1]int)(unsafe.Pointer(&a))[:]
-func CreateSliceFromReference(goType string, expr goast.Expr) *goast.SliceExpr {
+func CreateSliceFromReference(goType string, expr goast.Expr) goast.Expr {
 	// If the Go type is blank it means that the C type is 'void'.
 	if goType == "" {
 		goType = "interface{}"
