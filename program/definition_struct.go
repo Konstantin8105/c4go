@@ -147,6 +147,52 @@ func (p *Program) initializationStructs() {
 		},
 	}
 
+	// sys/resource.h
+	p.Structs["struct rusage"] = &Struct{
+		Name: "struct rusage",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"ru_utime":    "struct timeval",
+			"ru_stime":    "struct timeval",
+			"ru_maxrss":   "long",
+			"ru_ixrss":    "long",
+			"ru_idrss":    "long",
+			"ru_isrss":    "long",
+			"ru_minflt":   "long",
+			"ru_majflt":   "long",
+			"ru_nswap":    "long",
+			"ru_inblock":  "long",
+			"ru_oublock":  "long",
+			"ru_msgsnd":   "long",
+			"ru_msgrcv":   "long",
+			"ru_nsignals": "long",
+			"ru_nvcsw":    "long",
+			"ru_nivcsw":   "long",
+		},
+	}
+	p.Structs["c4go_struct rusage"] = &Struct{
+		Name: "github.com/Konstantin8105/c4go/noarch.Rusage",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"ru_utime":    "Utime",
+			"ru_stime":    "Stime",
+			"ru_maxrss":   "Maxrss",
+			"ru_ixrss":    "Ixrss",
+			"ru_idrss":    "Idrss",
+			"ru_isrss":    "Isrss",
+			"ru_minflt":   "Minflt",
+			"ru_majflt":   "Majflt",
+			"ru_nswap":    "Nswap",
+			"ru_inblock":  "Inblock",
+			"ru_oublock":  "Oublock",
+			"ru_msgsnd":   "Msgsnd",
+			"ru_msgrcv":   "Msgrcv",
+			"ru_nsignals": "Nsignals",
+			"ru_nvcsw":    "Nvcsw",
+			"ru_nivcsw":   "Nivcsw",
+		},
+	}
+
 	// sys/ioctl.h
 	p.Structs["struct winsize"] = &Struct{
 		Name: "struct winsize",

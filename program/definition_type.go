@@ -70,4 +70,8 @@ var DefinitionType = map[string]string{
 	// termios.h
 	"tcflag_t": "uint32",
 	"cc_t":     "uint8",
+
+	// sys/resource.h
+	"__rusage_who":   "int",
+	"__rusage_who_t": "int",
 }
