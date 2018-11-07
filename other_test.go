@@ -311,6 +311,65 @@ func TestFrame3dd(t *testing.T) {
 	}
 }
 
+func TestCsparse(t *testing.T) {
+	folder := "./testdata/git-source/csparse/"
+
+	// Create build folder
+	if _, err := os.Stat(folder); os.IsNotExist(err) {
+		err = os.MkdirAll(folder, os.ModePerm)
+		if err != nil {
+			t.Fatalf("Cannot create folder %v . %v", folder, err)
+		}
+
+		// download file
+		t.Logf("Download files")
+		err := DownloadFile(
+			folder+"csparse.h",
+			"https://people.sc.fsu.edu/~jburkardt/c_src/csparse/csparse.h")
+		if err != nil {
+			t.Fatalf("Cannot download : %v", err)
+		}
+		err = DownloadFile(
+			folder+"csparse.c",
+			"https://people.sc.fsu.edu/~jburkardt/c_src/csparse/csparse.c")
+		if err != nil {
+			t.Fatalf("Cannot download : %v", err)
+		}
+	}
+
+	args := DefaultProgramArgs()
+	args.inputFiles = []string{
+		folder + "csparse.c",
+	}
+	args.clangFlags = []string{}
+	args.outputFile = folder + "main.go"
+	args.ast = false
+	args.verbose = false
+
+	if err := Start(args); err != nil {
+		t.Fatalf("Cannot transpile `%v`: %v", args, err)
+	}
+
+	// print logs
+	ls, err := getLogs(folder + "main.go")
+	if err != nil {
+		t.Fatalf("Cannot show logs: %v", err)
+	}
+	for _, l := range ls {
+		t.Log(l)
+	}
+
+	cmd := exec.Command("go", "build", "-o", folder+"csparse",
+		args.outputFile)
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err = cmd.Run()
+	if err != nil {
+		t.Logf("cmd.Run() failed with %s : %v\n", err, stderr.String())
+	}
+}
+
 func TestTriangle(t *testing.T) {
 	folder := "./testdata/git-source/triangle/"
 
