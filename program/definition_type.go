@@ -56,6 +56,10 @@ var DefinitionType = map[string]string{
 	"__uint32_t": "uint32",
 	"__uint64_t": "uint64",
 
+	// sys/stat.h
+	"mode_t":   "uint16",
+	"__mode_t": "uint16",
+
 	// These are special cases that almost certainly don't work. I've put
 	// them here because for whatever reason there is no suitable type or we
 	// don't need these platform specific things to be implemented yet.
