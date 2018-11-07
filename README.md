@@ -223,7 +223,7 @@ time ./travis/sqlite.sh
 #sys	0m1.434s
 
 # Run profiler
-go tool pprof ./build/cpu.out
+go tool pprof ./testdata/cpu.out
 ```
 
 For more information, see [Profiling Go Programs](https://blog.golang.org/profiling-go-programs).
