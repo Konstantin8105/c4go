@@ -42,7 +42,7 @@ double* return_null()
 
 int main()
 {
-    plan(100);
+    plan(102);
 
     int i = 10;
     signed char j = 1;
@@ -417,6 +417,14 @@ int main()
         is_eq(o, -36);
         is_eq(~ - 12, 11);
     }
+
+	diag("summ of bools");
+	{
+		int u = 0;
+		is_true(u == 0);
+		u += ( 1 != 0 );
+		is_true(u == 1);
+	}
 
     done_testing();
 }

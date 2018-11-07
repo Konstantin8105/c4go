@@ -292,6 +292,15 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return expr, nil
 	}
 
+	if IsPointer(cFromType) && cToType == "bool" {
+		expr = &goast.BinaryExpr{
+			X:  expr,
+			Op: token.NEQ, // !=
+			Y:  goast.NewIdent("nil"),
+		}
+		return expr, nil
+	}
+
 	fromType, err := ResolveType(p, fromType)
 	if err != nil {
 		return expr, err
@@ -480,15 +489,6 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	}
 
 	if cFromType == "void *" && cToType == "char *" {
-		return expr, nil
-	}
-
-	if IsPointer(cFromType) && cToType == "bool" {
-		expr = &goast.BinaryExpr{
-			Op: token.NEQ,
-			X:  expr,
-			Y:  goast.NewIdent("nil"),
-		}
 		return expr, nil
 	}
 

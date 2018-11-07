@@ -195,9 +195,28 @@ void test_function_if()
 	}
 }
 
+void NullPointerCheck()
+{
+	void *p = NULL;
+	if (p) {
+		fail("p == NULL");
+	}
+	if (!p){
+		pass("p ^^ NULL");
+	}
+	double d = 99;
+	p = &d;
+	if (p) {
+		pass("p __ NULL");
+	}
+	if (!p){
+		fail("p != NULL");
+	}
+}
+
 int main()
 {
-    plan(61);
+    plan(63);
 
     test_string();
     test_null_function();
@@ -331,6 +350,7 @@ int main()
         is_streq(s.input_str, "Hello");
     }
 	test_function_if();
+	NullPointerCheck();
 
     done_testing();
 }

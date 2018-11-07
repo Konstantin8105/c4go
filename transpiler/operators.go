@@ -339,6 +339,12 @@ func transpileCompoundAssignOperator(
 		return nil, "", nil, nil, err
 	}
 
+	right, err = types.CastExpr(p, right, rightType, leftType)
+	if err != nil {
+		return nil, "", nil, nil, err
+	}
+	rightType = leftType
+
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
 	// Pointer arithmetic
