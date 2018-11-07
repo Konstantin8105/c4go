@@ -8,7 +8,7 @@ int d(int v)
 
 int main()
 {
-    plan(15);
+    plan(20);
 
     int x = 1;
 
@@ -118,6 +118,31 @@ int main()
             pass("case 2");
         }
     }
+
+	diag("if equal");
+	{
+		int x = 0;
+		int y = 5;
+		if ((x = y) == 0){
+			fail("if equal");
+		}
+		if ((x = 0) == 0){
+			is_true(x == 0);
+		}
+		int l[5];
+		for (int i=0;i<5;i++){
+			l[i] = i;
+		}
+		is_true(x == 0);
+		is_true(y == 5);
+		int s = 2;
+		if ((l[0] = y-s) == 3){
+			is_true(l[0] == 3);
+		}
+		if ((l[1] = l[4] - s) == 2){
+			is_true(l[1] == 2);
+		}
+	}
 
     done_testing();
 }
