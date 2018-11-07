@@ -339,12 +339,6 @@ func transpileCompoundAssignOperator(
 		return nil, "", nil, nil, err
 	}
 
-	right, err = types.CastExpr(p, right, rightType, leftType)
-	if err != nil {
-		return nil, "", nil, nil, err
-	}
-	rightType = leftType
-
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
 	// Pointer arithmetic
@@ -371,6 +365,12 @@ func transpileCompoundAssignOperator(
 		}
 		return v, vType, preStmts, postStmts, nil
 	}
+
+	right, err = types.CastExpr(p, right, rightType, leftType)
+	if err != nil {
+		return nil, "", nil, nil, err
+	}
+	rightType = leftType
 
 	// The right hand argument of the shift left or shift right operators
 	// in Go must be unsigned integers. In C, shifting with a negative shift
