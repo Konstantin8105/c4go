@@ -230,6 +230,41 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		return nil, "", nil, nil, nil
 	}
 
+	// function "malloc" from stdlib.h
+	//
+	// Change from "malloc" to "calloc"
+	//
+	// CallExpr <> 'void *'
+	// |-ImplicitCastExpr <> 'void *(*)(unsigned long)' <FunctionToPointerDecay>
+	// | `-DeclRefExpr <> 'void *(unsigned long)' Function 'malloc' 'void *(unsigned long)'
+	// `-ImplicitCastExpr <> 'unsigned long' <IntegralCast>
+	//   `- ...
+	//
+	// CallExpr <> 'void *'
+	// |-ImplicitCastExpr <> 'void *(*)(unsigned long, unsigned long)' <FunctionToPointerDecay>
+	// | `-DeclRefExpr <> 'void *(unsigned long, unsigned long)' Function 'calloc' 'void *(unsigned long, unsigned long)'
+	// |-ImplicitCastExpr <> 'unsigned long' <IntegralCast>
+	// | `- ...
+	// `-UnaryExprOrTypeTraitExpr <> 'unsigned long' sizeof 'char'
+	if p.IncludeHeaderIsExists("stdlib.h") {
+		if functionName == "malloc" && len(n.Children()) == 2 {
+			// Change from "malloc" to "calloc"
+			n.ChildNodes[0] = &ast.ImplicitCastExpr{
+				Type: "void *(*)(unsigned long, unsigned long)",
+			}
+			n.ChildNodes[0].(*ast.ImplicitCastExpr).AddChild(&ast.DeclRefExpr{
+				Type: "void *(unsigned long, unsigned long)",
+				Name: "calloc",
+			})
+			n.AddChild(&ast.UnaryExprOrTypeTraitExpr{
+				Type1:    "unsigned long",
+				Function: "sizeof",
+				Type2:    "char",
+			})
+			return transpileCallExprCalloc(n, p)
+		}
+	}
+
 	// function "calloc" from stdlib.h
 	if p.IncludeHeaderIsExists("stdlib.h") {
 		if functionName == "calloc" && len(n.Children()) == 3 {

@@ -153,6 +153,17 @@ void test_malloc4()
     (void)(m4);
 }
 
+void test_malloc5()
+{
+	int  size = 5;
+	void * v = malloc(size * size);
+	char * c = (char *) v;
+	for (int n=0;n<size*size-1;n++)
+		c[n] = n%26 + 'a';
+	c[size*size-1] = '\0';
+	printf("malloc5: %s\n",c);
+}
+
 // calloc() works exactly the same as malloc() however the memory is zeroed out.
 // In Go all allocated memory is zeroed out so they actually are the same thing.
 void test_calloc()
@@ -406,6 +417,7 @@ int main()
     test_malloc2();
     test_malloc3();
     test_malloc4();
+    test_malloc5();
 
     diag("rand");
     int i, nextRand, lastRand = rand();
