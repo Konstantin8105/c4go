@@ -42,7 +42,7 @@ double* return_null()
 
 int main()
 {
-    plan(102);
+    plan(106);
 
     int i = 10;
     signed char j = 1;
@@ -424,6 +424,18 @@ int main()
 		is_true(u == 0);
 		u += ( 1 != 0 );
 		is_true(u == 1);
+	}
+
+	diag("summ of sizeof");
+	{
+		int x = sizeof(char);
+		is_true(x == 1);
+		x = x + sizeof(char);
+		is_true(x == 2);
+		x += sizeof(char) + sizeof(char);
+		is_true(x == 4);
+		x = sizeof(char) * 5 + sizeof(char);
+		is_true(x == 6);
 	}
 
     done_testing();
