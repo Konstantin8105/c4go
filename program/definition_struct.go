@@ -168,4 +168,28 @@ func (p *Program) initializationStructs() {
 			"ws_ypixel": "Ypixel",
 		},
 	}
+
+	// fcntl.h
+	p.Structs["struct flock"] = &Struct{
+		Name: "struct flock",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"l_type":   "short",
+			"l_whence": "short",
+			"l_start":  "off_t",
+			"l_len":    "off_t",
+			"l_pid":    "pid_t",
+		},
+	}
+	p.Structs["c4go_struct flock"] = &Struct{
+		Name: "github.com/Konstantin8105/c4go/noarch.Flock",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"l_type":   "Type",
+			"l_whence": "Whence",
+			"l_start":  "Start",
+			"l_len":    "Len",
+			"l_pid":    "Pid",
+		},
+	}
 }
