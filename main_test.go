@@ -49,12 +49,12 @@ var (
 //     go test -v -tags=integration -run=TestIntegrationScripts/tests/ctype.c
 //
 func TestIntegrationScripts(t *testing.T) {
-	testFiles, err := filepath.Glob("tests/" + "*.c")
+	testFiles, err := filepath.Glob("tests" + os.PathSeparator + "*.c")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	testCppFiles, err := filepath.Glob("tests/" + "*.cpp")
+	testCppFiles, err := filepath.Glob("tests" + os.PathSeparator + "*.cpp")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -111,7 +111,7 @@ func TestIntegrationScripts(t *testing.T) {
 			if cCombine != goCombine {
 				// Add addition debug information for lines like:
 				// build/tests/cast/main_test.go:195:1: expected '}', found 'type'
-				buildPrefix := buildFolder + "/tests/"
+				buildPrefix := buildFolder + os.PathSeparator + "tests" + os.PathSeparator
 				var output string
 				lines := strings.Split(goCombine, "\n")
 				amountSnippets := 0
@@ -124,7 +124,7 @@ func TestIntegrationScripts(t *testing.T) {
 					if index < 0 {
 						continue
 					}
-					filename := "./" + line[0:index]
+					filename := "." + os.PathSeparator + line[0:index]
 					output += "+========================+\n"
 					output += fmt.Sprintf("File : %s\n\n", filename)
 					if len(line) <= index+1 {
@@ -410,8 +410,8 @@ func TestMultifileTranspilation(t *testing.T) {
 	}{
 		{
 			[]string{
-				"./tests/multi/main1.c",
-				"./tests/multi/main2.c",
+				"tests" + os.PathSeparator + "multi" + os.PathSeparator + "main1.c",
+				"tests" + os.PathSeparator + "multi" + os.PathSeparator + "main2.c",
 			},
 			"234ERROR!ERROR!ERROR!\n",
 		},
@@ -470,7 +470,7 @@ func TestTrigraph(t *testing.T) {
 	}
 
 	var args = DefaultProgramArgs()
-	args.inputFiles = []string{"./tests/trigraph/main.c"}
+	args.inputFiles = []string{"tests" + os.PathSeparator + "trigraph" + os.PathSeparator + "main.c"}
 	args.outputFile = path.Join(subFolder, "main.go")
 	args.clangFlags = []string{"-trigraphs"}
 	args.packageName = "main"
@@ -508,7 +508,7 @@ func TestExternalInclude(t *testing.T) {
 	}
 
 	args := DefaultProgramArgs()
-	args.inputFiles = []string{"./tests/externalHeader/main/main.c"}
+	args.inputFiles = []string{"tests" + os.PathSeparator + "externalHeader" + os.PathSeparator + "main" + os.PathSeparator + "main.c"}
 	args.outputFile = path.Join(subFolder, "main.go")
 	args.clangFlags = []string{"-I./tests/externalHeader/include/"}
 	args.packageName = "main"
@@ -545,7 +545,7 @@ func TestComments(t *testing.T) {
 	}
 
 	var args = DefaultProgramArgs()
-	args.inputFiles = []string{"./tests/comment/main.c"}
+	args.inputFiles = []string{"tests" + os.PathSeparator + "comment" + os.PathSeparator + "main.c"}
 	args.outputFile = path.Join(subFolder, "main.go")
 	args.packageName = "main"
 
@@ -575,7 +575,7 @@ func TestComments(t *testing.T) {
 }
 
 func TestCodeQuality(t *testing.T) {
-	files, err := filepath.Glob("tests/code_quality/" + "*.c")
+	files, err := filepath.Glob("tests" + os.PathSeparator + "code_quality" + os.PathSeparator + "*.c")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -662,8 +662,8 @@ func cleaningGoCode(fileName string) (dat []byte, err error) {
 func generateASTtree() (
 	lines []string, filePP preprocessor.FilePP, args ProgramArgs, err error) {
 	args = DefaultProgramArgs()
-	args.inputFiles = []string{"./tests/ast/ast.c"}
-	dir := "./testdata/ast"
+	args.inputFiles = []string{"tests" + os.PathSeparator + "ast" + os.PathSeparator + "ast.c"}
+	dir := "testdata" + os.PathSeparator + "ast"
 	_ = os.Mkdir(dir, os.ModePerm)
 	args.outputFile = path.Join(dir, "ast.go")
 	args.packageName = "main"
@@ -784,8 +784,8 @@ func TestCodeStyle(t *testing.T) {
 
 func TestExamples(t *testing.T) {
 	var args = DefaultProgramArgs()
-	args.inputFiles = []string{"./examples/prime.c"}
-	args.outputFile = "./testdata/main.go"
+	args.inputFiles = []string{"examples" + os.PathSeparator + "prime.c"}
+	args.outputFile = "testdata" + os.PathSeparator + "main.go"
 	args.packageName = "main"
 
 	// testing
@@ -801,7 +801,7 @@ func TestExamples(t *testing.T) {
 	}
 	defer file.Close()
 
-	readme, err := ioutil.ReadFile("./README.md")
+	readme, err := ioutil.ReadFile("README.md")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -831,7 +831,7 @@ func BenchmarkTranspile(b *testing.B) {
 	}
 
 	var args = DefaultProgramArgs()
-	args.inputFiles = []string{"./tests/stdio.c"}
+	args.inputFiles = []string{"tests" + os.PathSeparator + "stdio.c"}
 	args.outputFile = path.Join(subFolder, "main.go")
 	args.packageName = "main"
 
