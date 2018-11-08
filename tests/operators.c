@@ -40,9 +40,14 @@ double* return_null()
     return NULL;
 }
 
+int f_sizeof(int i)
+{
+	return i;
+}
+
 int main()
 {
-    plan(106);
+    plan(110);
 
     int i = 10;
     signed char j = 1;
@@ -436,6 +441,15 @@ int main()
 		is_true(x == 4);
 		x = sizeof(char) * 5 + sizeof(char);
 		is_true(x == 6);
+		x = f_sizeof(sizeof(int));
+		printf("%d\n",x);
+		int y[2];
+		y[0] = 2;
+		is_true(y[0] == 2);
+		is_true(y[sizeof(char)-1] == 2);
+		y[1] = 5;
+		is_true(y[1] == 5);
+		is_true(y[sizeof(char)] == 5);
 	}
 
     done_testing();
