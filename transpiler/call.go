@@ -565,8 +565,11 @@ func transpileCallExprCalloc(n *ast.CallExpr, p *program.Program) (
 			err = fmt.Errorf("Function: calloc. err = %v", err)
 		}
 	}()
-	var allocType string
-	size, _, preStmts, postStmts, err := transpileToExpr(n.Children()[1], p, false)
+	size, sizeType, preStmts, postStmts, err := transpileToExpr(n.Children()[1], p, false)
+	if err != nil {
+		return nil, "", nil, nil, err
+	}
+	size, err = types.CastExpr(p, size, sizeType, "unsigned long")
 	if err != nil {
 		return nil, "", nil, nil, err
 	}
@@ -583,29 +586,56 @@ func transpileCallExprCalloc(n *ast.CallExpr, p *program.Program) (
 	//      `-ImplicitCastExpr <> 'float *' <LValueToRValue>
 	//        `-MemberExpr <> 'float *' lvalue .w 0x2548b38
 	//          `-DeclRefExpr <> 'struct cws':'struct cws' lvalue Var 0x2548c40 't' 'struct cws': 'struct cws'
-	if v, ok := n.Children()[2].(*ast.UnaryExprOrTypeTraitExpr); ok {
+	//
+	// OR
+	//
+	// CallExpr <> 'void *'
+	// |-ImplicitCastExpr <> 'void *(*)(unsigned long, unsigned long)' <FunctionToPointerDecay>
+	// | `-DeclRefExpr <> 'void *(unsigned long, unsigned long)' Function 0x3b9b048 'calloc' 'void *(unsigned long, unsigned long)'
+	// |-ImplicitCastExpr <> 'unsigned long' <IntegralCast>
+	// | `-ImplicitCastExpr <> 'int' <LValueToRValue>
+	// |   `-DeclRefExpr <> 'int' lvalue ParmVar 0x3bc40d8 'n' 'int'
+	// `-ImplicitCastExpr <> 'unsigned long' <IntegralCast>
+	//   `-ImplicitCastExpr <> 'int' <LValueToRValue>
+	//     `-DeclRefExpr <> 'int' lvalue Var 0x3bc4268 'sizeT' 'int'
+	var goType goast.Expr
+	switch v := n.Children()[2].(type) {
+	case *ast.UnaryExprOrTypeTraitExpr:
+		var t string
 		if v.Type2 == "" {
-			_, t, _, _, _ := transpileToExpr(v.Children()[0], p, false)
-			allocType = t
+			_, t, _, _, _ = transpileToExpr(v.Children()[0], p, false)
 		} else {
-			allocType = v.Type2
+			t = v.Type2
 		}
-	} else {
-		return nil, "", nil, nil,
-			fmt.Errorf("Unsupport type '%T' in function calloc", n.Children()[2])
+		t, err := types.ResolveType(p, t)
+		if err != nil {
+			return nil, "", nil, nil, err
+		}
+		goType = &goast.ArrayType{Elt: goast.NewIdent(t)}
+	default:
+		var goTypeT string
+		goType, goTypeT, _, _, _ = transpileToExpr(v.Children()[0], p, false)
+		size, err = types.CastExpr(p, size, sizeType, goTypeT)
+		if err != nil {
+			return nil, "", nil, nil, err
+		}
+		size = &goast.BinaryExpr{
+			X:  &goast.ParenExpr{X: goType},
+			Op: token.MUL,
+			Y:  &goast.ParenExpr{X: size},
+		}
+		goType = &goast.ArrayType{
+			Elt: goast.NewIdent("byte"),
+		}
 	}
 
-	goType, err := types.ResolveType(p, allocType)
-	if err != nil {
-		return nil, "", nil, nil, err
-	}
 	return &goast.CallExpr{
 		Fun: util.NewIdent("make"),
 		Args: []goast.Expr{
-			&goast.ArrayType{Elt: goast.NewIdent(goType)},
+			goType,
 			size,
 		},
-	}, allocType + " *", preStmts, postStmts, nil
+	}, n.Type, preStmts, postStmts, nil
 }
 
 func transpileCallExprQsort(n *ast.CallExpr, p *program.Program) (
