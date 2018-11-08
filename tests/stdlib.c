@@ -199,6 +199,19 @@ void test_calloc()
     is_eq(d[4], 456);
 }
 
+void *cs_calloc (int n)
+{
+	int sizeT = sizeof(int);
+    return (n < 2 ? NULL : calloc (n , sizeT)) ;
+}
+
+void test_calloc2()
+{
+	diag("calloc2");
+	is_null(cs_calloc(0));
+	is_true(cs_calloc(5) != NULL);
+}
+
 void test_free()
 {
     int *buffer1, *buffer2, *buffer3;
@@ -255,7 +268,7 @@ void struct_with_define()
 
 int main()
 {
-    plan(755);
+    plan(757);
 
     struct_with_define();
 
@@ -432,6 +445,8 @@ int main()
     
 	diag("realloc");
     test_realloc();
+
+	test_calloc2();
 
     diag("rand");
     int i, nextRand, lastRand = rand();
