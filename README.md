@@ -53,17 +53,15 @@ int main()
     int n, c;
 
     printf("Enter a number\n");
-	// get value
+    // get value
     scanf("%d", &n);
     printf("The number is: %d\n", n);
 
-	// -------
+    // -------
     if (n == 2)
         printf("Prime number.\n");
-    else
-    {
-        for (c = 2; c <= n - 1; c++)
-        {
+    else {
+        for (c = 2; c <= n - 1; c++) {
             if (n % c == 0)
                 break;
         }
@@ -96,12 +94,12 @@ func main() {
 	var n int
 	var c int
 	fmt.Printf("Enter a number\n")
-	noarch.Scanf([]byte("%d\x00"), (*[100000000]int)(unsafe.Pointer(&n))[:])
 	// get value
+	noarch.Scanf([]byte("%d\x00"), (*[100000000]int)(unsafe.Pointer(&n))[:])
 	noarch.Printf([]byte("The number is: %d\n\x00"), n)
 	if n == 2 {
-		fmt.Printf("Prime number.\n")
 		// -------
+		fmt.Printf("Prime number.\n")
 	} else {
 		for c = 2; c <= n-1; c++ {
 			if n%c == 0 {
@@ -115,8 +113,6 @@ func main() {
 		}
 	}
 	return
-}
-func init() {
 }
 ```
 
