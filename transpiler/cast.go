@@ -3,12 +3,10 @@ package transpiler
 import (
 	"fmt"
 	goast "go/ast"
-	"strings"
 
 	"github.com/Konstantin8105/c4go/ast"
 	"github.com/Konstantin8105/c4go/program"
 	"github.com/Konstantin8105/c4go/types"
-	"github.com/Konstantin8105/c4go/util"
 )
 
 func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, exprIsStmt bool) (
@@ -31,12 +29,6 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		exprType = types.NullPointer
 		return
 	}
-	if strings.Contains(n.Type, "enum") {
-		if d, ok := n.Children()[0].(*ast.DeclRefExpr); ok {
-			expr, exprType, err = util.NewIdent(d.Name), n.Type, nil
-			return
-		}
-	}
 
 	expr, exprType, preStmts, postStmts, err = transpileToExpr(
 		n.Children()[0], p, exprIsStmt)
@@ -48,7 +40,15 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		return
 	}
 
-	if len(n.Type) != 0 && len(n.Type2) != 0 && n.Type != n.Type2 {
+	var cast bool = true
+	if in, ok := n.Children()[0].(*ast.IntegerLiteral); ok && in.Type == "int" {
+		if types.IsCInteger(p, n.Type) || types.IsCFloat(p, n.Type) {
+			cast = false
+			exprType = n.Type
+		}
+	}
+
+	if len(n.Type) != 0 && len(n.Type2) != 0 && n.Type != n.Type2 && cast {
 		var tt string
 		tt, err = types.ResolveType(p, n.Type)
 		expr = &goast.CallExpr{
@@ -60,9 +60,17 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		return
 	}
 
-	if !types.IsFunction(exprType) &&
-		n.Kind != ast.ImplicitCastExprArrayToPointerDecay &&
-		n.Kind != "PointerToIntegral" {
+	if types.IsFunction(exprType) {
+		cast = false
+	}
+	if n.Kind == ast.ImplicitCastExprArrayToPointerDecay {
+		cast = false
+	}
+	if n.Kind == "PointerToIntegral" {
+		cast = false
+	}
+
+	if cast {
 		expr, err = types.CastExpr(p, expr, exprType, n.Type)
 		if err != nil {
 			return nil, "", nil, nil, err

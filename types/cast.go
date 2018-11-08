@@ -72,19 +72,44 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		}
 	}()
 
+	if cFromType == "" {
+		err2 = fmt.Errorf("cFromType is empty")
+		return
+	}
+
+	if cToType == "" {
+		err2 = fmt.Errorf("cToType is empty")
+		return
+	}
+
 	// Uncomment only for debugging
-	// if strings.Contains(cFromType, ":") {
-	// 	panic(fmt.Errorf("Found mistake `cFromType` `%v` C type : %#v",
-	// 		cFromType, expr))
-	// }
-	// if strings.Contains(cToType, ":") {
-	// 	panic(fmt.Errorf("Found mistake `cToType` `%v` C type: %#v",
-	// 		cToType, expr))
-	// }
+	if strings.Contains(cFromType, ":") {
+		err2 = fmt.Errorf("Found mistake `cFromType` `%v` C type : %#v",
+			cFromType, expr)
+		return
+	}
+	if strings.Contains(cToType, ":") {
+		err2 = fmt.Errorf("Found mistake `cToType` `%v` C type: %#v",
+			cToType, expr)
+		return
+	}
 
 	cFromType = CleanCType(cFromType)
 	cToType = CleanCType(cToType)
 
+	// Only for "stddef.h"
+	if p.IncludeHeaderIsExists("stddef.h") {
+		if cFromType == "long" && cToType == "ptrdiff_t" {
+			expr = &goast.BinaryExpr{
+				X:  expr,
+				Op: token.QUO,
+				Y: &goast.BasicLit{
+					Kind:  token.INT,
+					Value: "8",
+				},
+			}
+		}
+	}
 	fromType := cFromType
 	toType := cToType
 
@@ -218,8 +243,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return goast.NewIdent("nil"), nil
 	}
 
-	// Replace for specific case of fromType for darwin:
-	// Fo : union (anonymous union at sqlite3.c:619241696:3)
+	// For : union (anonymous union at sqlite3.c:619241696:3)
 	if strings.Contains(fromType, "anonymous union") {
 		// I don't understood - How to change correctly
 		// Try change to : `union` , but it is FAIL with that
@@ -265,6 +289,15 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 
 	// Let's assume that anything can be converted to a void pointer.
 	if toType == "void *" {
+		return expr, nil
+	}
+
+	if IsPointer(cFromType) && cToType == "bool" {
+		expr = &goast.BinaryExpr{
+			X:  expr,
+			Op: token.NEQ, // !=
+			Y:  goast.NewIdent("nil"),
+		}
 		return expr, nil
 	}
 
@@ -320,9 +353,6 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 
 		// Known aliases
 		"__uint16_t", "size_t",
-
-		// Darwin specific
-		"__darwin_ct_rune_t", "darwin.CtRuneT",
 	}
 	for _, v := range types {
 		if fromType == v && toType == "bool" {
@@ -341,6 +371,18 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 			// Swap replaceme with the current expression
 			e.(*goast.IndexExpr).Index = expr
 			return CastExpr(p, e, "int", cToType)
+		}
+	}
+
+	// cast size_t to int
+	{
+		_, fok := program.DefinitionType[cFromType]
+		t, tok := program.DefinitionType[cToType]
+		if fok && tok {
+			return &goast.CallExpr{
+				Fun:  goast.NewIdent(p.ImportType(t)),
+				Args: []goast.Expr{expr},
+			}, nil
 		}
 	}
 
@@ -450,31 +492,14 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return expr, nil
 	}
 
-	if IsPointer(cFromType) && cToType == "bool" {
-		expr = &goast.BinaryExpr{
-			Op: token.NEQ,
-			X:  expr,
-			Y:  goast.NewIdent("nil"),
-		}
-		return expr, nil
-	}
-
 	if IsCInteger(p, cFromType) && IsPointer(cToType) {
 		expr = goast.NewIdent("nil")
 		return expr, nil
 	}
 
-	functionName := fmt.Sprintf("noarch.%sTo%s",
-		util.GetExportedName(leftName), util.GetExportedName(rightName))
-	p.AddMessage(p.GenerateWarningMessage(
-		fmt.Errorf("Function `%v` haven`t implementation", functionName), nil))
+	p.GenerateWarningMessage(fmt.Errorf("Cannot cast types `%s`->`%s`", cFromType, cToType), nil)
 
-	// FIXME: This is a hack to get SQLite3 to transpile.
-	if strings.Contains(functionName, "RowSetEntry") {
-		functionName = "FIXME111"
-	}
-
-	return util.NewCallExpr(functionName, expr), nil
+	return expr, nil
 }
 
 // IsNullExpr tries to determine if the expression is the result of the NULL

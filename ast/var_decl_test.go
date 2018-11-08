@@ -200,6 +200,24 @@ func TestVarDecl(t *testing.T) {
 			IsRegister:   true,
 			ChildNodes:   []Node{},
 		},
+		`0x1fb1890 <col:2, col:9> col:9 used obj 'class person' callinit`: &VarDecl{
+			Addr: 0x1fb1890,
+			// Parent:       0x3dcaaf0,
+			// Prev:         0x3ec4088,
+			Pos:          NewPositionFromString("col:2, col:9"),
+			Position2:    "col:9",
+			Name:         "obj",
+			Type:         "class person",
+			Type2:        "",
+			IsExtern:     false,
+			IsUsed:       true,
+			IsCInit:      false,
+			IsCallInit:   true,
+			IsReferenced: false,
+			IsStatic:     false,
+			IsRegister:   false,
+			ChildNodes:   []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)

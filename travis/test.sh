@@ -4,33 +4,31 @@ set -e
 
 echo "" > coverage.txt
 
-# The code below was copied from:
-# https://github.com/golang/go/issues/6909#issuecomment-232878416
-#
-# As in @rodrigocorsi2 comment above (using full path to grep due to 'grep -n'
-# alias).
-export PKGS=$(go list ./... | grep -v c4go/build | grep -v /vendor/)
+# Package list
+export PKGS=$(go list ./... | grep -v c4go/testdata | grep -v c4go/examples | grep -v c4go/tests | grep -v /vendor/ | tr '\n' ' ')
 
 # Make comma-separated.
-export PKGS_DELIM=$(echo "$PKGS" | paste -sd "," -)
+export PKGS_DELIM=$(echo "$PKGS" | tr ' ' ',')
 
-# Run tests and append all output to out.txt. It's important we have "-v" so
-# that all the test names are printed. It's also important that the covermode be
-# set to "count" so that the coverage profiles can be merged correctly together
-# with gocovmerge.
-#
-# Exit code 123 will be returned if any of the tests fail.
-go list -f 'go test -v -tags integration -covermode atomic -coverprofile {{.Name}}.coverprofile -coverpkg $PKGS_DELIM {{.ImportPath}}' $PKGS | xargs -I{} bash -c "{}"
+echo "PKGS       : $PKGS"
+echo "PKGS_DELIM : $PKGS_DELIM"
+
+mkdir ./testdata/
+
+go test -v -cover -tags integration -coverpkg=$PKGS_DELIM -coverprofile=./testdata/pkg.coverprofile $PKGS
 
 # Merge coverage profiles.
-COVERAGE_FILES=`ls -1 *.coverprofile 2>/dev/null | wc -l`
+COVERAGE_FILES=`ls -1 ./testdata/*.coverprofile 2>/dev/null | wc -l`
 if [ $COVERAGE_FILES != 0 ]; then
 	# check program `gocovmerge` is exist
 	if which gocovmerge >/dev/null 2>&1; then
-		gocovmerge `ls *.coverprofile` > coverage.txt
-		rm *.coverprofile
+		export FILES=$(ls testdata/*.coverprofile | tr '\n' ' ')
+		echo "Combine next coverprofiles : $FILES"
+		gocovmerge $FILES > coverage.txt
 	fi
 fi
+
+echo "End of coverage"
 
 # check race
 go test -tags=integration -run=TestIntegrationScripts/tests/ctype.c -race -v
@@ -52,6 +50,3 @@ echo "----------------------"
 
 # Run script sqlite
 source ./travis/sqlite.sh
-
-# Run script triangle
-source ./travis/triangle.sh

@@ -5,9 +5,11 @@ int main()
     int n, c;
 
     printf("Enter a number\n");
+	// get value
     scanf("%d", &n);
     printf("The number is: %d\n", n);
 
+	// ------- 
     if (n == 2)
         printf("Prime number.\n");
     else

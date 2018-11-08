@@ -7,6 +7,8 @@ import (
 	"github.com/Konstantin8105/c4go/noarch"
 )
 
+var osExit func(int) = os.Exit
+
 // AssertFail handles __assert_fail().
 func AssertFail(
 	expression, filePath []byte,
@@ -21,7 +23,7 @@ func AssertFail(
 		noarch.CStringToString(functionName),
 		noarch.CStringToString(expression),
 	)
-	os.Exit(134)
+	osExit(134)
 
 	return true
 }

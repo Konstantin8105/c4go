@@ -25,6 +25,8 @@ var cIntegerType = []string{
 	"unsigned long",
 	"unsigned short",
 	"unsigned short int",
+	"size_t",
+	"ptrdiff_t",
 }
 
 // IsCInteger - return true is C type integer
@@ -40,85 +42,23 @@ func IsCInteger(p *program.Program, cType string) bool {
 	return false
 }
 
-// TODO: Some of these are based on assumptions that may not be true for all
-// architectures (like the size of an int). At some point in the future we will
-// need to find out the sizes of some of there and pick the most compatible
-// type.
-//
-// Please keep them sorted by name.
-var simpleResolveTypes = map[string]string{
-	"bool":                   "bool",
-	"char *":                 "[]byte",
-	"char":                   "byte",
-	"char*":                  "[]byte",
-	"double":                 "float64",
-	"float":                  "float32",
-	"int":                    "int",
-	"long double":            "float64",
-	"long int":               "int32",
-	"long long":              "int64",
-	"long long int":          "int64",
-	"long long unsigned int": "uint64",
-	"long unsigned int":      "uint32",
-	"long":                   "int32",
-	"short":                  "int16",
-	"signed char":            "int8",
-	"unsigned char":          "uint8",
-	"unsigned int":           "uint32",
-	"unsigned long long":     "uint64",
-	"unsigned long":          "uint32",
-	"unsigned short":         "uint16",
-	"unsigned short int":     "uint16",
-	"void":                   "",
-	"_Bool":                  "int",
-
-	// void*
-	"void*":  "interface{}",
-	"void *": "interface{}",
-
-	// null is a special case (it should probably have a less ambiguos name)
-	// when using the NULL macro.
-	"null": "null",
-
-	// Non platform-specific types.
-	"uint32":     "uint32",
-	"uint64":     "uint64",
-	"__uint16_t": "uint16",
-	"__uint32_t": "uint32",
-	"__uint64_t": "uint64",
-
-	// These are special cases that almost certainly don't work. I've put
-	// them here because for whatever reason there is no suitable type or we
-	// don't need these platform specific things to be implemented yet.
-	"__builtin_va_list":            "int64",
-	"__darwin_pthread_handler_rec": "int64",
-	"unsigned __int128":            "uint64",
-	"__int128":                     "int64",
-	"__mbstate_t":                  "int64",
-	"__sbuf":                       "int64",
-	"__sFILEX":                     "interface{}",
-	"FILE":                         "github.com/Konstantin8105/c4go/noarch.File",
+var cFloatType = []string{
+	"double",
+	"float",
+	"long double",
 }
 
-// CStdStructType - conversion map from C standart library structures to
-// c4go structures
-var CStdStructType = map[string]string{
-	"div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
-	"ldiv_t":  "github.com/Konstantin8105/c4go/noarch.LdivT",
-	"lldiv_t": "github.com/Konstantin8105/c4go/noarch.LldivT",
-
-	// time.h
-	"tm":        "github.com/Konstantin8105/c4go/noarch.Tm",
-	"struct tm": "github.com/Konstantin8105/c4go/noarch.Tm",
-	"time_t":    "github.com/Konstantin8105/c4go/noarch.TimeT",
-
-	// Darwin specific
-	"__darwin_ct_rune_t": "github.com/Konstantin8105/c4go/darwin.CtRuneT",
-	"fpos_t":             "int",
-	"struct __float2":    "github.com/Konstantin8105/c4go/darwin.Float2",
-	"struct __double2":   "github.com/Konstantin8105/c4go/darwin.Double2",
-	"Float2":             "github.com/Konstantin8105/c4go/darwin.Float2",
-	"Double2":            "github.com/Konstantin8105/c4go/darwin.Double2",
+// IsCInteger - return true is C type integer
+func IsCFloat(p *program.Program, cType string) bool {
+	for i := range cFloatType {
+		if cType == cFloatType[i] {
+			return true
+		}
+	}
+	if rt, ok := p.TypedefType[cType]; ok {
+		return IsCFloat(p, rt)
+	}
+	return false
 }
 
 // NullPointer - is look : (double *)(nil) or (FILE *)(nil)
@@ -157,36 +97,23 @@ var ToVoid = "ToVoid"
 //    certainly incorrect) "interface{}" is also returned. This is to allow the
 //    transpiler to step over type errors and put something as a placeholder
 //    until a more suitable solution is found for those cases.
-func ResolveType(p *program.Program, s string) (_ string, err error) {
+func ResolveType(p *program.Program, s string) (resolveResult string, err error) {
 	defer func() {
+		resolveResult = strings.TrimSpace(resolveResult)
 		if err != nil {
 			err = fmt.Errorf("Cannot resolve type '%s' : %v", s, err)
 		}
 	}()
 
-	// Uncomment only for debugging
-	// if strings.Contains(s, ":") {
-	// 	panic(fmt.Errorf("Found mistake resolve `%v` C type", s))
-	// }
+	if strings.Contains(s, ":") {
+		return "interface{}", errors.New("probably an incorrect type translation 0")
+	}
 
 	s = CleanCType(s)
 
 	// FIXME: This is a hack to avoid casting in some situations.
 	if s == "" {
 		return "interface{}", errors.New("probably an incorrect type translation 1")
-	}
-
-	// FIXME: I have no idea what this is.
-	if s == "const" {
-		return "interface{}", errors.New("probably an incorrect type translation 4")
-	}
-
-	if s == "char *[]" {
-		return "interface{}", errors.New("probably an incorrect type translation 2")
-	}
-
-	if s == "fpos_t" {
-		return "int", nil
 	}
 
 	// FIXME: I have no idea, how to solve.
@@ -204,16 +131,8 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 
 	// The simple resolve types are the types that we know there is an exact Go
 	// equivalent. For example float, int, etc.
-	for k, v := range simpleResolveTypes {
-		if k == s {
-			return p.ImportType(v), nil
-		}
-	}
-
-	if t, ok := p.GetBaseTypeOfTypedef(s); ok {
-		if strings.HasPrefix(t, "union ") {
-			return t[len("union "):], nil
-		}
+	if v, ok := program.DefinitionType[s]; ok {
+		return p.ImportType(v), nil
 	}
 
 	// function type is pointer in Go by default
@@ -228,15 +147,14 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 
 	// No need resolve typedef types
 	if _, ok := p.TypedefType[s]; ok {
-		if tt, ok := CStdStructType[s]; ok {
+		if tt, ok := program.DefinitionType[s]; ok {
 			// "div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
 			ii := p.ImportType(tt)
 			return ii, nil
 		}
 		return s, nil
 	}
-
-	if tt, ok := CStdStructType[s]; ok {
+	if tt, ok := program.DefinitionType[s]; ok {
 		// "div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
 		ii := p.ImportType(tt)
 		return ii, nil
@@ -246,6 +164,37 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 	if IsFunction(s) {
 		g, e := resolveFunction(p, s)
 		return g, e
+	}
+
+	// Example of cases:
+	// "int []"
+	// "int [6]"
+	// "struct s [2]"
+	// "int [2][3]"
+	// "unsigned short [512]"
+	//
+	// Example of resolving:
+	// int [2][3] -> [][]int
+	// int [2][3][4] -> [][][]int
+	if s[len(s)-1] == ']' {
+		index := strings.LastIndex(s, "[")
+		if index < 0 {
+			err = fmt.Errorf("Cannot found [ in type : %v", s)
+			return
+		}
+		r := strings.TrimSpace(s[:index])
+		r, err = ResolveType(p, r)
+		if err != nil {
+			err = fmt.Errorf("Cannot []: %v", err)
+			return
+		}
+		return "[]" + r, nil
+	}
+
+	// Example :
+	// "int (*)"
+	if strings.Contains(s, "(*)") {
+		return ResolveType(p, strings.Replace(s, "(*)", "*", -1))
 	}
 
 	// Check is it typedef enum
@@ -269,55 +218,60 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 		if strings.HasPrefix(s, "union ") {
 			s = s[len("union "):]
 		}
+		if strings.HasPrefix(s, "class ") {
+			s = s[len("class "):]
+		}
+		// TODO : Why here ImportType???
 		return p.ImportType(s), nil
 	}
 
 	// It may be a pointer of a simple type. For example, float *, int *,
 	// etc.
-	if strings.HasSuffix(s, "*") {
-		// The "-1" is important because there may or may not be a space between
-		// the name and the "*". If there is an extra space it will be trimmed
-		// off.
-		t, err := ResolveType(p, strings.TrimSpace(s[:len(s)-1]))
+	if s[len(s)-1] == '*' {
+		r := strings.TrimSpace(s[:len(s)-1])
+		r, err = ResolveType(p, r)
+		if err != nil {
+			err = fmt.Errorf("Cannot resolve star `*` for %v : %v", s, err)
+			return s, err
+		}
 		prefix := "[]"
-		if strings.Contains(t, "noarch.File") {
+		if strings.Contains(r, "noarch.File") {
 			prefix = "*"
 		}
-		return prefix + t, err
-	}
-
-	// It could be an array of fixed length. These needs to be converted to
-	// slices.
-	// int [2][3] -> [][]int
-	// int [2][3][4] -> [][][]int
-	st := strings.Replace(s, "(", "", -1)
-	st = strings.Replace(st, ")", "", -1)
-	search2 := util.GetRegex(`([\w\* ]+)((\[\d+\])+)`).FindStringSubmatch(st)
-	if len(search2) > 2 {
-		t, err := ResolveType(p, search2[1])
-
-		var re = util.GetRegex(`[0-9]+`)
-		arraysNoSize := re.ReplaceAllString(search2[2], "")
-
-		return fmt.Sprintf("%s%s", arraysNoSize, t), err
+		return prefix + r, err
 	}
 
 	// Structures are by name.
-	if strings.HasPrefix(s, "struct ") || strings.HasPrefix(s, "union ") {
-		start := 6
-		if s[0] == 's' {
-			start++
+	var isUnion bool
+	{
+		isUnion = strings.HasPrefix(s, "struct ") ||
+			strings.HasPrefix(s, "class ") ||
+			strings.HasPrefix(s, "union ")
+		if str := p.GetStruct(s); str != nil {
+			isUnion = true
 		}
-		return s[start:], nil
+	}
+	if isUnion {
+		if str := p.GetStruct("c4go_" + s); str != nil {
+			s = str.Name
+		} else {
+			if strings.HasPrefix(s, "struct ") {
+				s = s[len("struct "):]
+			}
+			if strings.HasPrefix(s, "union ") {
+				s = s[len("union "):]
+			}
+			if strings.HasPrefix(s, "class ") {
+				s = s[len("class "):]
+			}
+		}
+		return p.ImportType(s), nil
 	}
 
 	// Enums are by name.
 	if strings.HasPrefix(s, "enum ") {
-		if s[len(s)-1] == '*' {
-			return "*" + s[5:len(s)-2], nil
-		}
-
-		return s[5:], nil
+		s = s[len("enum "):]
+		return s, nil
 	}
 
 	// I have no idea how to handle this yet.
@@ -338,16 +292,6 @@ func ResolveType(p *program.Program, s string) (_ string, err error) {
 	if search {
 		return "interface{}",
 			fmt.Errorf("function pointers are not supported [2] : '%s'", s)
-	}
-
-	// for case : "int []"
-	if strings.HasSuffix(s, " []") {
-		var r string
-		r, err = ResolveType(p, s[:len(s)-len(" []")])
-		if err != nil {
-			return
-		}
-		return "[]" + r, nil
 	}
 
 	errMsg := fmt.Sprintf(

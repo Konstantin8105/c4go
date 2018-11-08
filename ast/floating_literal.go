@@ -75,8 +75,7 @@ type FloatingLiteralError struct {
 // If the floating literal cannot be resolved for any reason the original value
 // will remain. This function will return all errors encountered.
 func RepairFloatingLiteralsFromSource(rootNode Node, filePP preprocessor.FilePP) (
-	_ []FloatingLiteralError) {
-	errs := []FloatingLiteralError{}
+	errs []FloatingLiteralError) {
 	floatingLiteralNodes :=
 		GetAllNodesOfType(rootNode, reflect.TypeOf((*FloatingLiteral)(nil)))
 
@@ -97,14 +96,11 @@ func RepairFloatingLiteralsFromSource(rootNode Node, filePP preprocessor.FilePP)
 		// use the value we have. Hopefully that will be an accurate enough
 		// representation.
 		if err != nil {
-			errs = append(errs, FloatingLiteralError{
-				Node: fNode,
-				Err:  err,
-			})
+			errs = append(errs, FloatingLiteralError{Node: fNode, Err: err})
 		}
 
 		fmt.Sscan(line, &fNode.Value)
 	}
 
-	return errs
+	return
 }

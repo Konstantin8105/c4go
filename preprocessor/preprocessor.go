@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"text/scanner"
 	"unicode"
@@ -45,11 +44,27 @@ func (e *entity) parseComments(comments *[]Comment) {
 	s.Filename = e.include
 	for tok := s.Scan(); tok != scanner.EOF; tok = s.Scan() {
 		if scanner.TokenString(tok) == "Comment" {
-			(*comments) = append(*comments, Comment{
-				File:    e.include,
-				Line:    s.Position.Line + e.positionInSource - 1,
-				Comment: s.TokenText(),
-			})
+			// parse multiline comments to single line comment
+			var lines []string
+			if s.TokenText()[1] == '*' {
+				lines = strings.Split(s.TokenText(), "\n")
+				lines[0] = strings.TrimLeft(lines[0], "/"+"*")
+				lines[len(lines)-1] = strings.TrimRight(lines[len(lines)-1], "*"+"/")
+				for i := range lines {
+					lines[i] = "/" + "/" + lines[i]
+				}
+			} else {
+				lines = append(lines, s.TokenText())
+			}
+
+			// save comments
+			for _, l := range lines {
+				(*comments) = append(*comments, Comment{
+					File:    e.include,
+					Line:    s.Position.Line + e.positionInSource - 1,
+					Comment: l,
+				})
+			}
 		}
 	}
 }
@@ -71,10 +86,7 @@ func (e *entity) isSame(x *entity) bool {
 	for k := range e.lines {
 		is := e.lines[k]
 		js := x.lines[k]
-		if len(*is) != len(*js) {
-			return false
-		}
-		if *is != *js {
+		if len(*is) != len(*js) || *is != *js {
 			return false
 		}
 	}
@@ -104,11 +116,17 @@ type FilePP struct {
 
 // NewFilePP create a struct FilePP with results of analyzing
 // preprocessor C code
-func NewFilePP(inputFiles, clangFlags []string) (f FilePP, err error) {
+func NewFilePP(inputFiles, clangFlags []string, cppCode bool) (
+	f FilePP, err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("Preprocess error : %v", err)
+		}
+	}()
 
 	var allItems []entity
 
-	allItems, err = analyzeFiles(inputFiles, clangFlags)
+	allItems, err = analyzeFiles(inputFiles, clangFlags, cppCode)
 	if err != nil {
 		return
 	}
@@ -116,12 +134,12 @@ func NewFilePP(inputFiles, clangFlags []string) (f FilePP, err error) {
 	// Generate list of user files
 	userSource := map[string]bool{}
 	var us []string
-	us, err = GetIncludeListWithUserSource(inputFiles, clangFlags)
+	us, err = GetIncludeListWithUserSource(inputFiles, clangFlags, cppCode)
 	if err != nil {
 		return
 	}
 	var all []string
-	all, err = GetIncludeFullList(inputFiles, clangFlags)
+	all, err = GetIncludeFullList(inputFiles, clangFlags, cppCode)
 	if err != nil {
 		return
 	}
@@ -200,6 +218,17 @@ func (f FilePP) GetIncludeFiles() []IncludeHeader {
 	return f.includes
 }
 
+// IsUserSource get is it source from user
+func (f FilePP) IsUserSource(in string) bool {
+	for i := range f.includes {
+		if strings.Contains(in, f.includes[i].HeaderName) &&
+			f.includes[i].IsUserSource {
+			return true
+		}
+	}
+	return false
+}
+
 // GetSnippet return short part of code inside preprocessor C code
 func (f FilePP) GetSnippet(file string,
 	line, lineEnd int,
@@ -267,12 +296,11 @@ again:
 		if f.entities[i].include != file {
 			continue
 		}
-		line := line
 		lineEnd := lineEnd
 		if len(f.entities[i].lines)+f.entities[i].positionInSource < lineEnd {
 			continue
 		}
-		l := f.entities[i].lines[line+1-f.entities[i].positionInSource]
+		l := f.entities[i].lines[lineEnd+1-f.entities[i].positionInSource]
 		if col == 0 && colEnd == 0 {
 			return []byte(*l), nil
 		}
@@ -291,11 +319,12 @@ again:
 }
 
 // analyzeFiles - analyze single file and separation preprocessor code to part
-func analyzeFiles(inputFiles, clangFlags []string) (items []entity, err error) {
+func analyzeFiles(inputFiles, clangFlags []string, cppCode bool) (
+	items []entity, err error) {
 	// See : https://clang.llvm.org/docs/CommandGuide/clang.html
 	// clang -E <file>    Run the preprocessor stage.
 	var out bytes.Buffer
-	out, err = getPreprocessSources(inputFiles, clangFlags)
+	out, err = getPreprocessSources(inputFiles, clangFlags, cppCode)
 	if err != nil {
 		return
 	}
@@ -340,7 +369,8 @@ func analyzeFiles(inputFiles, clangFlags []string) (items []entity, err error) {
 
 // See : https://clang.llvm.org/docs/CommandGuide/clang.html
 // clang -E <file>    Run the preprocessor stage.
-func getPreprocessSources(inputFiles, clangFlags []string) (out bytes.Buffer, err error) {
+func getPreprocessSources(inputFiles, clangFlags []string, cppCode bool) (
+	out bytes.Buffer, err error) {
 	// get temp dir
 	dir, err := ioutil.TempDir("", "c4go-union")
 	if err != nil {
@@ -369,11 +399,7 @@ func getPreprocessSources(inputFiles, clangFlags []string) (out bytes.Buffer, er
 	}
 
 	// Add open source defines
-	if runtime.GOOS == "darwin" {
-		clangFlags = append(clangFlags, "-D_XOPEN_SOURCE")
-	} else {
-		clangFlags = append(clangFlags, "-D_GNU_SOURCE")
-	}
+	clangFlags = append(clangFlags, "-D_GNU_SOURCE")
 
 	// preprocessor clang
 	var stderr bytes.Buffer
@@ -384,7 +410,12 @@ func getPreprocessSources(inputFiles, clangFlags []string) (out bytes.Buffer, er
 	args = append(args, unionFileName) // All inputFiles
 
 	var outFile bytes.Buffer
-	cmd := exec.Command("clang", args...)
+	var cmd *exec.Cmd
+
+	compiler, compilerFlag := Compiler(cppCode)
+	args = append(compilerFlag, args...)
+	cmd = exec.Command(compiler, args...)
+
 	cmd.Stdout = &outFile
 	cmd.Stderr = &stderr
 	err = cmd.Run()
@@ -416,6 +447,7 @@ func generateIncludeList(userList, allList []string) (
 			IsUserSource: isUser,
 		})
 	}
+
 	return
 }
 
@@ -423,8 +455,9 @@ func generateIncludeList(userList, allList []string) (
 // Example:
 // $ clang  -MM -c exit.c
 // exit.o: exit.c tests.h
-func GetIncludeListWithUserSource(inputFiles, clangFlags []string) (lines []string, err error) {
-	return getIncludeList(inputFiles, clangFlags, "-MM")
+func GetIncludeListWithUserSource(inputFiles, clangFlags []string, cppCode bool) (
+	lines []string, err error) {
+	return getIncludeList(inputFiles, clangFlags, "-MM", cppCode)
 }
 
 // GetIncludeFullList - Get full list of include files
@@ -436,11 +469,18 @@ func GetIncludeListWithUserSource(inputFiles, clangFlags []string) (lines []stri
 //   /usr/include/x86_64-linux-gnu/gnu/stubs.h \
 //   /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
 //   / ........ and other
-func GetIncludeFullList(inputFiles, clangFlags []string) (lines []string, err error) {
-	return getIncludeList(inputFiles, clangFlags, "-M")
+func GetIncludeFullList(inputFiles, clangFlags []string, cppCode bool) (
+	lines []string, err error) {
+	return getIncludeList(inputFiles, clangFlags, "-M", cppCode)
 }
 
-func getIncludeList(inputFiles, clangFlags []string, flag string) (lines []string, err error) {
+func getIncludeList(inputFiles, clangFlags []string, flag string, cppCode bool) (
+	lines []string, err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("Cannot get Include List : %v", err)
+		}
+	}()
 	var out bytes.Buffer
 	var stderr bytes.Buffer
 	var args []string
@@ -453,7 +493,12 @@ func getIncludeList(inputFiles, clangFlags []string, flag string) (lines []strin
 	args = append(args, flag, "-c")
 	args = append(args, inputFiles...)
 	args = append(args, clangFlags...)
-	cmd := exec.Command("clang", args...)
+	var cmd *exec.Cmd
+
+	compiler, compilerFlag := Compiler(cppCode)
+	args = append(compilerFlag, args...)
+	cmd = exec.Command(compiler, args...)
+
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
 	err = cmd.Run()

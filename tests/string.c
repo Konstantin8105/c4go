@@ -3,7 +3,7 @@
 
 int main()
 {
-    plan(29);
+    plan(39);
 
     diag("TODO: __builtin_object_size");
     // https://github.com/Konstantin8105/c4go/issues/359
@@ -84,11 +84,24 @@ int main()
     {
         diag("strcat");
         char str[80];
+        for (int i = 0; i < 80; i++)
+            str[i] = 0;
         strcpy(str, "these ");
         strcat(str, "strings ");
         strcat(str, "are ");
         strcat(str, "concatenated.");
         is_streq(str, "these strings are concatenated.");
+    }
+    {
+        diag("strncat");
+        char str[80];
+        for (int i = 0; i < 80; i++)
+            str[i] = 0;
+        strncpy(str, "these", 3);
+        strncat(str, " strings", 7);
+        strncat(str, " is", 3);
+        strncat(str, " concatenated.", 14);
+        is_streq(str, "the string is concatenated.");
     }
     {
         diag("strcmp");
@@ -119,6 +132,35 @@ int main()
             amount++;
         }
         is_eq(amount, 4);
+    }
+    {
+        diag("memset");
+        char str[] = "almost every programmer should know memset!";
+        char* ptr = memset(str, '-', 6);
+        is_streq(str, "------ every programmer should know memset!");
+        is_eq(ptr - str, 0);
+    }
+    {
+        diag("memmove");
+        char str[] = "memmove can be very useful......";
+        memmove(str + 20, str + 15, 11);
+        is_streq(str, "memmove can be very very useful.");
+    }
+    {
+        diag("memcmp");
+        char a1[] = { 'a', 'b', 'c' };
+        char a2[] = "abd";
+        is_true(memcmp(a1, a1, 3) == 0);
+        is_true(memcmp(a1, a2, 3) < 0);
+        is_true(memcmp(a2, a1, 3) > 0);
+    }
+    {
+        diag("strstr");
+        char str[] = "one two three";
+        is_streq(strstr(str, "one"), "one two three");
+        is_streq(strstr(str, "two"), "two three");
+        is_streq(strstr(str, "three"), "three");
+        //TODO: NULL check in is_eq(strstr(str, "four") - str, 0);
     }
 
     done_testing();

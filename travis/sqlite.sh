@@ -11,7 +11,7 @@ export C4GO=$C4GO_DIR/c4go
 
 # This will have to be updated every so often to the latest version. You can
 # find the latest version here: https://sqlite.org/download.html
-export SQLITE3_FILE=sqlite-amalgamation-3220000
+export SQLITE3_FILE=sqlite-amalgamation-3250200
 
 # Variable for location of temp sqlite files
 SQLITE_TEMP_FOLDER="/tmp/SQLITE"
@@ -39,7 +39,11 @@ fi
 # echo "In files (sqlite3.go and shell.go) summary : $SQLITE_WARNINGS warnings."
 
 # SQLITE
-$C4GO transpile -o="$SQLITE_TEMP_FOLDER/sqlite.go" -clang-flag="-DSQLITE_THREADSAFE=0" -clang-flag="-DSQLITE_OMIT_LOAD_EXTENSION" $SQLITE_TEMP_FOLDER/$SQLITE3_FILE/shell.c $SQLITE_TEMP_FOLDER/$SQLITE3_FILE/sqlite3.c
+$C4GO transpile  -cpuprofile=./testdata/cpu.out -o="$SQLITE_TEMP_FOLDER/sqlite.go" -clang-flag="-DSQLITE_THREADSAFE=0" -clang-flag="-DSQLITE_OMIT_LOAD_EXTENSION" $SQLITE_TEMP_FOLDER/$SQLITE3_FILE/shell.c $SQLITE_TEMP_FOLDER/$SQLITE3_FILE/sqlite3.c
+
+# See profile file
+# Run:
+# go tool pprof ./testdata/cpu.out
 
 # Show amount "Warning":
 SQLITE_WARNINGS=`cat $SQLITE_TEMP_FOLDER/sqlite.go | grep "^// Warning" | sort | uniq | wc -l`
@@ -49,7 +53,5 @@ echo "After transpiling shell.c and sqlite3.c together, have summary: $SQLITE_WA
 SQLITE_WARNINGS_GO=`go build $SQLITE_TEMP_FOLDER/sqlite.go 2>&1 | wc -l`
 echo "In file sqlite.go summary : $SQLITE_WARNINGS_GO warnings in go build."
 
-# Amount warning from gometalinter
-echo "Calculation warnings by gometalinter"
-GOMETALINTER_WARNINGS=`$GOPATH/bin/gometalinter $SQLITE_TEMP_FOLDER/sqlite.go 2>&1 | wc -l`
-echo "Amount found warnings by gometalinter at 30 second : $GOMETALINTER_WARNINGS warnings."
+SQLITE_UNSAFE=`cat $SQLITE_TEMP_FOLDER/sqlite.go | grep unsafe | wc -l`
+echo "Amount unsafe package using: $SQLITE_UNSAFE"

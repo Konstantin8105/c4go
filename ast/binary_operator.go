@@ -6,13 +6,18 @@ type BinaryOperator struct {
 	Pos        Position
 	Type       string
 	Type2      string
+	IsLvalue   bool
 	Operator   string
 	ChildNodes []Node
 }
 
 func parseBinaryOperator(line string) *BinaryOperator {
 	groups := groupsFromRegex(
-		"<(?P<position>.*)> '(?P<type1>.*?)'(:'(?P<type2>.*?)')? '(?P<operator>.*?)'",
+		`<(?P<position>.*)>
+		 '(?P<type1>.*?)'
+		(:'(?P<type2>.*?)')?
+		(?P<lvalue> lvalue)?
+		 '(?P<operator>.*?)'`,
 		line,
 	)
 
@@ -21,6 +26,7 @@ func parseBinaryOperator(line string) *BinaryOperator {
 		Pos:        NewPositionFromString(groups["position"]),
 		Type:       groups["type1"],
 		Type2:      groups["type2"],
+		IsLvalue:   len(groups["lvalue"]) > 0,
 		Operator:   groups["operator"],
 		ChildNodes: []Node{},
 	}

@@ -1,13 +1,15 @@
 package transpiler
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 	"unicode/utf8"
 
-	"github.com/Konstantin8105/c4go/ast"
 	goast "go/ast"
 	"go/token"
+
+	"github.com/Konstantin8105/c4go/ast"
 )
 
 var chartests = []struct {
@@ -53,5 +55,73 @@ func TestCharacterLiterals(t *testing.T) {
 			t.Errorf("  expected: %v", expected)
 			t.Errorf("  actual:   %v", actual)
 		}
+	}
+}
+
+func TestFormatFlag(t *testing.T) {
+	tcs := []struct {
+		in, out string
+	}{
+		{
+			in:  "",
+			out: "",
+		},
+		{
+			in:  "%",
+			out: "%",
+		},
+		{
+			in:  "%34",
+			out: "%34",
+		},
+		{
+			in:  "%5.4",
+			out: "%5.4",
+		},
+		{
+			in:  "%5f",
+			out: "%5f",
+		},
+		{
+			in:  "%u %u",
+			out: "%d %d",
+		},
+		{
+			in:  "%u %2u",
+			out: "%d %2d",
+		},
+		{
+			in:  "%u",
+			out: "%d",
+		},
+		{
+			in:  "%5u  %2u",
+			out: "%5d  %2d",
+		},
+		{
+			in:  "%5u",
+			out: "%5d",
+		},
+		{
+			in:  "%lf",
+			out: "%f",
+		},
+		{
+			in:  "%12lf",
+			out: "%12f",
+		},
+		{
+			in:  "%12.4lf",
+			out: "%12.4f",
+		},
+	}
+
+	for _, tc := range tcs {
+		t.Run(fmt.Sprintf("%v", tc.in), func(t *testing.T) {
+			act := ConvertToGoFlagFormat(tc.in)
+			if act != tc.out {
+				t.Fatalf("Not same '%v' != '%v'", act, tc.out)
+			}
+		})
 	}
 }

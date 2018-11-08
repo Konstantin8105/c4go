@@ -14,12 +14,12 @@ func TestAllocSizeAttr(t *testing.T) {
 			ChildNodes: []Node{},
 		},
 		`0x7fbd1a167f48 </usr/include/stdlib.h:342:37> Inherited 1 0`: &AllocSizeAttr{
-			Addr:       0x7fbd1a167f48,
-			Pos:        NewPositionFromString("/usr/include/stdlib.h:342:37"),
-			Inherited:  true,
-			A:          1,
-			B:          0,
-			ChildNodes: []Node{},
+			Addr:        0x7fbd1a167f48,
+			Pos:         NewPositionFromString("/usr/include/stdlib.h:342:37"),
+			IsInherited: true,
+			A:           1,
+			B:           0,
+			ChildNodes:  []Node{},
 		},
 	}
 
