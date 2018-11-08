@@ -228,13 +228,13 @@ func transpileToStmt(node ast.Node, p *program.Program) (
 	defer func() {
 		com := p.GetComments(node.Position())
 		for i := range com {
-			postStmts = append(postStmts, &goast.ExprStmt{
+			preStmts = append(preStmts, &goast.ExprStmt{
 				X: goast.NewIdent(com[i].Text),
 			})
 		}
 		cg := p.GetMessageComments()
 		for i := range cg.List {
-			postStmts = append(postStmts, &goast.ExprStmt{
+			preStmts = append(preStmts, &goast.ExprStmt{
 				X: goast.NewIdent(cg.List[i].Text),
 			})
 		}
