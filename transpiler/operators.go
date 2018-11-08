@@ -366,6 +366,12 @@ func transpileCompoundAssignOperator(
 		return v, vType, preStmts, postStmts, nil
 	}
 
+	right, err = types.CastExpr(p, right, rightType, leftType)
+	if err != nil {
+		return nil, "", nil, nil, err
+	}
+	rightType = leftType
+
 	// The right hand argument of the shift left or shift right operators
 	// in Go must be unsigned integers. In C, shifting with a negative shift
 	// count is undefined behaviour (so we should be able to ignore that case).

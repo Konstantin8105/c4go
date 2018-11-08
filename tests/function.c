@@ -166,9 +166,57 @@ void test_null_function()
     is_eq(run_function(5, 0, 0, 0), 5);
 }
 
+void test_function_if()
+{
+	int (*T)(int,double) = NULL;
+	is_null(T);
+	if ( !T ) {
+		pass("!T");
+	}
+	void (*R)(void) = NULL;
+	is_null(R);
+	R = my_function;
+	is_not_null(R);
+	if ( !R ) {
+		pass("!R");
+	}
+	if (!R || !T){
+		pass("!R || !T");
+	}
+	void (*V1)(void) = NULL;
+	is_null(V1);
+	if ( !V1 ) {
+		pass("!V1");
+	}
+	void (*V2)(void *) = NULL;
+	is_null(V2);
+	if ( !(!V2) ) {
+		fail("!V2");
+	}
+}
+
+void NullPointerCheck()
+{
+	void *p = NULL;
+	if (p) {
+		fail("p == NULL");
+	}
+	if (!p){
+		pass("p ^^ NULL");
+	}
+	double d = 99;
+	p = &d;
+	if (p) {
+		pass("p __ NULL");
+	}
+	if (!p){
+		fail("p != NULL");
+	}
+}
+
 int main()
 {
-    plan(53);
+    plan(63);
 
     test_string();
     test_null_function();
@@ -301,6 +349,8 @@ int main()
         strncpy(s.input_str, "Hello", 20);
         is_streq(s.input_str, "Hello");
     }
+	test_function_if();
+	NullPointerCheck();
 
     done_testing();
 }
