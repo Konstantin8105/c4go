@@ -283,6 +283,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"long long unsigned int strtoull(const char *, char **, int) -> noarch.Strtoull",
 		"int system(const char *) -> noarch.System",
 		"void free(void*) -> _",
+		"int atexit(void*) -> noarch.Atexit",
 	},
 	"time.h": {
 		// time.h

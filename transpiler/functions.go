@@ -122,6 +122,18 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 		}
 	}
 
+	if p.IncludeHeaderIsExists("stdlib.h") && n.Name == "main" {
+		body.List = append([]goast.Stmt{&goast.DeferStmt{
+			Call: &goast.CallExpr{
+				Fun: &goast.SelectorExpr{
+					X:   goast.NewIdent("noarch"),
+					Sel: goast.NewIdent("AtexitRun"),
+				},
+			},
+		}}, body.List...)
+		p.AddImport("github.com/Konstantin8105/c4go/noarch")
+	}
+
 	if functionBody != nil {
 		// If verbose mode is on we print the name of the function as a comment
 		// immediately to stdout. This will appear at the top of the program but

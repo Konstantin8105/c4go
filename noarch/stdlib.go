@@ -501,3 +501,16 @@ func capture(w io.Writer, r io.Reader) ([]byte, error) {
 	panic(true)
 	return nil, nil
 }
+
+// transpiling "atexit"
+var AtexitFuncs []func()
+
+func Atexit(f func()) {
+	AtexitFuncs = append(AtexitFuncs, f)
+}
+
+func AtexitRun() {
+	for i := len(AtexitFuncs) - 1; i >= 0; i-- {
+		AtexitFuncs[i]()
+	}
+}
