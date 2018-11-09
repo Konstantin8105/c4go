@@ -15,7 +15,9 @@ echo "PKGS_DELIM : $PKGS_DELIM"
 
 mkdir ./testdata/
 
-go test -v -cover -tags integration -coverpkg=$PKGS_DELIM -coverprofile=./testdata/pkg.coverprofile $PKGS
+go test -v -cover -tags integration     \
+	              -coverpkg=$PKGS_DELIM \
+				  -coverprofile=./testdata/pkg.coverprofile $PKGS
 
 # Merge coverage profiles.
 COVERAGE_FILES=`ls -1 ./testdata/*.coverprofile 2>/dev/null | wc -l`
