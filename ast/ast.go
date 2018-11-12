@@ -247,6 +247,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseReturnsTwiceAttr(line), nil
 	case "SentinelAttr":
 		return parseSentinelAttr(line), nil
+	case "StaticAssertDecl":
+		return parseStaticAssertDecl(line), nil
 	case "StmtExpr":
 		return parseStmtExpr(line), nil
 	case "StringLiteral":

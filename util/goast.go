@@ -116,7 +116,8 @@ func internalTypeToExpr(goType string) goast.Expr {
 // function name is deemed to be not valid.
 func NewCallExpr(functionName string, args ...goast.Expr) *goast.CallExpr {
 	for i := range args {
-		PanicIfNil(args[i], "Argument of function is cannot be nil")
+		// Argument of function is cannot be nil
+		args[i] = goast.NewIdent("C4GO_NOT_TRANSPILED_EXPRESSION")
 	}
 	index := strings.Index(functionName, ".")
 	if index > 0 {

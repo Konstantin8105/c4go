@@ -179,19 +179,11 @@ func simplificationCallExprPrintf(call *ast.CallExpr, p *program.Program) (
 	// }
 	p.AddImport("fmt")
 	printfText = strconv.Quote(printfText)
-	return &goast.CallExpr{
-		Fun: &goast.SelectorExpr{
-			X:   goast.NewIdent("fmt"),
-			Sel: goast.NewIdent("Printf"),
-		},
-		Lparen: 1,
-		Args: []goast.Expr{
-			&goast.BasicLit{
-				Kind:  token.STRING,
-				Value: printfText,
-			},
-		},
-	}, true
+	return util.NewCallExpr("fmt.Printf",
+		&goast.BasicLit{
+			Kind:  token.STRING,
+			Value: printfText,
+		}), true
 }
 
 // transpileCallExpr transpiles expressions that calls a function, for example:
@@ -629,13 +621,8 @@ func transpileCallExprCalloc(n *ast.CallExpr, p *program.Program) (
 		}
 	}
 
-	return &goast.CallExpr{
-		Fun: util.NewIdent("make"),
-		Args: []goast.Expr{
-			goType,
-			size,
-		},
-	}, n.Type, preStmts, postStmts, nil
+	return util.NewCallExpr("make", goType, size),
+		n.Type, preStmts, postStmts, nil
 }
 
 func transpileCallExprQsort(n *ast.CallExpr, p *program.Program) (
