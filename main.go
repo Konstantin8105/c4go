@@ -260,8 +260,7 @@ func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.Fil
 	filePP, err = preprocessor.NewFilePP(
 		args.inputFiles,
 		args.clangFlags,
-		args.cppCode,
-		args.outsideStructs)
+		args.cppCode)
 	if err != nil {
 		return
 	}
@@ -356,7 +355,7 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 		fmt.Fprintln(os.Stdout, "Transpiling tree...")
 	}
 
-	err = transpiler.TranspileAST(args.outputFile, args.packageName,
+	err = transpiler.TranspileAST(args.outputFile, args.packageName, args.outsideStructs,
 		p, tree[0].(ast.Node))
 	if err != nil {
 		for i := range astErrors {
