@@ -284,7 +284,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 	// | `- ...
 	// `-UnaryExprOrTypeTraitExpr <> 'unsigned long' sizeof 'char'
 	//
-	// function "calloc" from stdlib.h
+	// function "realloc" from stdlib.h
 	if p.IncludeHeaderIsExists("stdlib.h") {
 		if functionName == "realloc" && len(n.Children()) == 3 {
 			n.ChildNodes[0] = &ast.ImplicitCastExpr{
