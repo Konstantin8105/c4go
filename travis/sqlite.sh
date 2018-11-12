@@ -24,7 +24,8 @@ if [ ! -e $SQLITE_TEMP_FOLDER/$SQLITE3_FILE.zip ]; then
 fi
 
 # SQLITE
-$C4GO transpile  -cpuprofile=./testdata/cpu.out              \
+$C4GO transpile  -s                                          \
+                 -cpuprofile=./testdata/cpu.out              \
 	             -o="$SQLITE_TEMP_FOLDER/sqlite.go"          \
 				 -clang-flag="-DSQLITE_THREADSAFE=0"         \
 				 -clang-flag="-DSQLITE_OMIT_LOAD_EXTENSION"  \

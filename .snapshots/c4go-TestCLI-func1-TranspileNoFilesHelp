@@ -11,4 +11,5 @@
     	output Go generated code to the specified file
   -p string
     	set the name of the generated package (default "main")
+  -s	transpile with structs(types, unions...) from all source headers
 )

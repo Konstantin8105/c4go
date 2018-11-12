@@ -6,7 +6,7 @@
 //
 // Usage
 //
-//     c4go myfile.c
+//     c4go transpile myfile.c
 //
 package main
 
@@ -45,13 +45,14 @@ var astout io.Writer = os.Stdout
 // Do not instantiate this directly. Instead use DefaultProgramArgs(); then
 // modify any specific attributes.
 type ProgramArgs struct {
-	verbose     bool
-	ast         bool
-	inputFiles  []string
-	clangFlags  []string
-	outputFile  string
-	packageName string
-	cppCode     bool
+	verbose        bool
+	ast            bool
+	inputFiles     []string
+	clangFlags     []string
+	outputFile     string
+	packageName    string
+	cppCode        bool
+	outsideStructs bool
 }
 
 // DefaultProgramArgs default value of ProgramArgs
@@ -354,7 +355,7 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 		fmt.Fprintln(os.Stdout, "Transpiling tree...")
 	}
 
-	err = transpiler.TranspileAST(args.outputFile, args.packageName,
+	err = transpiler.TranspileAST(args.outputFile, args.packageName, args.outsideStructs,
 		p, tree[0].(ast.Node))
 	if err != nil {
 		for i := range astErrors {
@@ -416,6 +417,8 @@ func runCommand() int {
 			"p", "main", "set the name of the generated package")
 		transpileHelpFlag = transpileCommand.Bool(
 			"h", false, "print help information")
+		withOutsideStructs = transpileCommand.Bool(
+			"s", false, "transpile with structs(types, unions...) from all source headers")
 		cpuprofile = transpileCommand.String(
 			"cpuprofile", "", "write cpu profile to this file") // debugging
 
@@ -499,6 +502,7 @@ func runCommand() int {
 		args.verbose = *verboseFlag
 		args.clangFlags = clangFlags
 		args.cppCode = *cppFlag
+		args.outsideStructs = *withOutsideStructs
 
 		// debugging
 		if *cpuprofile != "" {
