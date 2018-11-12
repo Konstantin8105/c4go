@@ -46,6 +46,17 @@ func TestUnaryOperator(t *testing.T) {
 			Operator:   "*",
 			ChildNodes: []Node{},
 		},
+		`0x55d0623ed400 <col:34, col:46> 'const UA_DataType *' prefix '&' cannot overflow`: &UnaryOperator{
+			Addr:             0x55d0623ed400,
+			Pos:              NewPositionFromString("col:34, col:46"),
+			Type:             "const UA_DataType *",
+			Type2:            "",
+			IsLvalue:         false,
+			IsPrefix:         true,
+			IsCannotOverflow: true,
+			Operator:         "&",
+			ChildNodes:       []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)

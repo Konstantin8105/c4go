@@ -153,6 +153,28 @@ void test_malloc4()
     (void)(m4);
 }
 
+void test_malloc5()
+{
+	int  size = 5;
+	void * v = malloc(size * size);
+	char * c = (char *) v;
+	for (int n=0;n<size*size-1;n++)
+		c[n] = n%26 + 'a';
+	c[size*size-1] = '\0';
+	printf("malloc5: %s\n",c);
+}
+
+void test_realloc()
+{
+	int  size = 5;
+	void * v = realloc((char*)(NULL),size * size);
+	char * c = (char *) v;
+	for (int n=0;n<size*size-1;n++)
+		c[n] = n%26 + 'a';
+	c[size*size-1] = '\0';
+	printf("realloc: %s\n",c);
+}
+
 // calloc() works exactly the same as malloc() however the memory is zeroed out.
 // In Go all allocated memory is zeroed out so they actually are the same thing.
 void test_calloc()
@@ -175,6 +197,19 @@ void test_calloc()
 
     is_eq(*d, 123);
     is_eq(d[4], 456);
+}
+
+void *cs_calloc (int n)
+{
+	int sizeT = sizeof(int);
+    return (n < 2 ? NULL : calloc (n , sizeT)) ;
+}
+
+void test_calloc2()
+{
+	diag("calloc2");
+	is_null(cs_calloc(0));
+	is_true(cs_calloc(5) != NULL);
 }
 
 void test_free()
@@ -233,7 +268,7 @@ void struct_with_define()
 
 int main()
 {
-    plan(755);
+    plan(757);
 
     struct_with_define();
 
@@ -406,6 +441,12 @@ int main()
     test_malloc2();
     test_malloc3();
     test_malloc4();
+    test_malloc5();
+    
+	diag("realloc");
+    test_realloc();
+
+	test_calloc2();
 
     diag("rand");
     int i, nextRand, lastRand = rand();

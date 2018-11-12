@@ -283,6 +283,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"long long unsigned int strtoull(const char *, char **, int) -> noarch.Strtoull",
 		"int system(const char *) -> noarch.System",
 		"void free(void*) -> _",
+		"int atexit(void*) -> noarch.Atexit",
 	},
 	"time.h": {
 		// time.h
@@ -292,6 +293,28 @@ var builtInFunctionDefinitions = map[string][]string{
 		"struct tm * gmtime(const time_t *) -> noarch.Gmtime",
 		"time_t mktime(struct tm *) -> noarch.Mktime",
 		"char * asctime(struct tm *) -> noarch.Asctime",
+	},
+	"termios.h": {
+		// termios.h
+		"int tcsetattr(int , int , const struct termios *) -> noarch.Tcsetattr",
+		"int tcgetattr(int , struct termios *) -> noarch.Tcgetattr",
+		"int tcsendbreak(int , int ) -> noarch.Tcsendbreak",
+		"int tcdrain(int ) -> noarch.Tcdrain",
+		"int tcflush(int , int ) -> noarch.Tcflush",
+		"int tcflow(int , int ) -> noarch.Tcflow",
+		"void cfmakeraw(struct termios *) -> noarch.Cfmakeraw",
+		"speed_t cfgetispeed(const struct termios *) -> noarch.Cfgetispeed",
+		"speed_t cfgetospeed(const struct termios *) -> noarch.Cfgetospeed",
+		"int cfsetispeed(struct termios *, speed_t ) -> noarch.Cfsetispeed",
+		"int cfsetospeed(struct termios *, speed_t ) -> noarch.Cfsetospeed",
+		"int cfsetspeed(struct termios *, speed_t ) -> noarch.Cfsetspeed",
+	},
+	"sys/ioctl.h": {
+		"int ioctl(int , int , ... ) -> noarch.Ioctl",
+	},
+	"fcntl.h": {
+		"int open(const char *, int , mode_t ) -> noarch.OpenM",
+		"int open(const char *, int ) -> noarch.Open",
 	},
 }
 

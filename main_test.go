@@ -11,7 +11,6 @@ import (
 	"go/parser"
 	"go/token"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 	"path"
@@ -23,6 +22,7 @@ import (
 
 	"github.com/Konstantin8105/c4go/preprocessor"
 	"github.com/Konstantin8105/c4go/util"
+	"github.com/Konstantin8105/cs"
 )
 
 type programOut struct {
@@ -32,7 +32,7 @@ type programOut struct {
 }
 
 var (
-	buildFolder = "build"
+	buildFolder = "testdata"
 	separator   = string(os.PathSeparator)
 )
 
@@ -111,7 +111,7 @@ func TestIntegrationScripts(t *testing.T) {
 			if cCombine != goCombine {
 				// Add addition debug information for lines like:
 				// build/tests/cast/main_test.go:195:1: expected '}', found 'type'
-				buildPrefix := "build/tests/"
+				buildPrefix := buildFolder + "/tests/"
 				var output string
 				lines := strings.Split(goCombine, "\n")
 				amountSnippets := 0
@@ -231,8 +231,8 @@ import (
 )
 func TestApp(t *testing.T) {
 	os.Chdir("../../..")
-	ioutil.WriteFile("build/stdin", []byte{'7'}, 0777)
-	stdin, _ := os.Open("build/stdin")
+	ioutil.WriteFile("testdata/stdin", []byte{'7'}, 0777)
+	stdin, _ := os.Open("testdata/stdin")
 	noarch.Stdin = noarch.NewFile(stdin)
 	main()
 }`), 0644)
@@ -252,7 +252,7 @@ func TestApp(t *testing.T) {
 	coverArgs := []string{
 		"test",
 		"-v",
-		fmt.Sprintf("-coverprofile=./build/%s.coverprofile", strings.Replace(subFolder, "/", "_", -1)),
+		fmt.Sprintf("-coverprofile=./testdata/%s.coverprofile", strings.Replace(subFolder, "/", "_", -1)),
 		fmt.Sprintf("-coverpkg=github.com/Konstantin8105/c4go/noarch,github.com/Konstantin8105/c4go/linux,github.com/Konstantin8105/c4go/%s", subFolder),
 		fmt.Sprintf("github.com/Konstantin8105/c4go/%s", subFolder),
 	}
@@ -278,7 +278,7 @@ func TestApp(t *testing.T) {
 		return "", fmt.Errorf("Cannot read logs: %v", err)
 	}
 	for _, l := range logs {
-		fmt.Println(l)
+		fmt.Fprintln(os.Stdout, l)
 	}
 
 	// Remove Go test specific lines
@@ -452,8 +452,7 @@ func TestMultifileTranspilation(t *testing.T) {
 			}
 
 			if out != tc.expectedOutput {
-				fmt.Println(util.ShowDiff(out, tc.expectedOutput))
-				t.Errorf("Wrong result: %v", out)
+				t.Errorf("%v", util.ShowDiff(out, tc.expectedOutput))
 			}
 		})
 	}
@@ -492,8 +491,7 @@ func TestTrigraph(t *testing.T) {
 	}
 
 	if out != "#\n" {
-		fmt.Println(util.ShowDiff(out, "#\n"))
-		t.Errorf("Wrong result: %v", out)
+		t.Errorf(util.ShowDiff(out, "#\n"))
 	}
 }
 
@@ -531,8 +529,7 @@ func TestExternalInclude(t *testing.T) {
 	}
 
 	if out != "42\n" {
-		fmt.Println(util.ShowDiff(out, "42\n"))
-		t.Errorf("Wrong result: %v", out)
+		t.Errorf(util.ShowDiff(out, "42\n"))
 	}
 }
 
@@ -627,10 +624,7 @@ func TestCodeQuality(t *testing.T) {
 			}
 
 			if bytes.Compare(goActual, goExpect) != 0 {
-				fmt.Println("actual   : ", string(goActual))
-				fmt.Println("expected : ", string(goExpect))
-
-				t.Errorf("Code quality error for : %s", file)
+				t.Errorf("Code quality error for : %s\n%s\n%s", file, string(goActual), string(goExpect))
 			}
 		})
 	}
@@ -669,7 +663,7 @@ func generateASTtree() (
 	lines []string, filePP preprocessor.FilePP, args ProgramArgs, err error) {
 	args = DefaultProgramArgs()
 	args.inputFiles = []string{"./tests/ast/ast.c"}
-	dir := "./build/ast"
+	dir := "./testdata/ast"
 	_ = os.Mkdir(dir, os.ModePerm)
 	args.outputFile = path.Join(dir, "ast.go")
 	args.packageName = "main"
@@ -784,131 +778,14 @@ func TestWrongAST(t *testing.T) {
 	}
 }
 
-func getGoCode(dir string) (files []string, err error) {
-	ents, err := ioutil.ReadDir(dir)
-	if err != nil {
-		return
-	}
-
-	for _, ent := range ents {
-		if ent.IsDir() {
-			if ent.Name() == "build" {
-				// ignore folder "build"
-				continue
-			}
-			var fs []string
-			fs, err = getGoCode(dir + "/" + ent.Name())
-			if err != nil {
-				return
-			}
-			files = append(files, fs...)
-			continue
-		}
-		if !strings.HasSuffix(ent.Name(), ".go") {
-			continue
-		}
-		files = append(files, dir+"/"+ent.Name())
-	}
-
-	return
-}
-
-func TestTodoComments(t *testing.T) {
-	// Show all todos in code
-	source, err := getGoCode("./")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	var amount int
-
-	// except files
-	except := []string{
-		"preprocessor/parse_comments_test.go",
-	}
-
-	for i := range source {
-		t.Run(source[i], func(t *testing.T) {
-			found := false
-			for _, e := range except {
-				if strings.Contains(source[i], e) {
-					found = true
-					break
-				}
-			}
-			if found {
-				return
-			}
-
-			file, err := os.Open(source[i])
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer file.Close()
-
-			pos := 0
-			scanner := bufio.NewScanner(file)
-			for scanner.Scan() {
-				line := scanner.Text()
-				pos++
-				if !strings.Contains(line, "/"+"*") {
-					continue
-				}
-				index := strings.Index(line, "/"+"*")
-				t.Errorf("%d %s", pos, line[index:])
-				amount++
-			}
-
-			if err := scanner.Err(); err != nil {
-				log.Fatal(err)
-			}
-		})
-	}
-	t.Logf("Amount comments: %d", amount)
-}
-
-func TestOS(t *testing.T) {
-	// Show all todos in code
-	source, err := getGoCode("./")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	var amount int
-
-	for i := range source {
-		t.Run(source[i], func(t *testing.T) {
-			file, err := os.Open(source[i])
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer file.Close()
-
-			pos := 1
-			scanner := bufio.NewScanner(file)
-			for scanner.Scan() {
-				line := scanner.Text()
-				pos++
-				if !(strings.Contains(strings.ToUpper(line), "DAR"+"WIN") ||
-					strings.Contains(strings.ToUpper(line), "MAC"+"OS")) {
-					continue
-				}
-				t.Errorf("%d %s", pos, line)
-				amount++
-			}
-
-			if err := scanner.Err(); err != nil {
-				log.Fatal(err)
-			}
-		})
-	}
-	t.Logf("Amount comments: %d", amount)
+func TestCodeStyle(t *testing.T) {
+	cs.All(t)
 }
 
 func TestExamples(t *testing.T) {
 	var args = DefaultProgramArgs()
 	args.inputFiles = []string{"./examples/prime.c"}
-	args.outputFile = "./examples/main.go"
+	args.outputFile = "./testdata/main.go"
 	args.packageName = "main"
 
 	// testing

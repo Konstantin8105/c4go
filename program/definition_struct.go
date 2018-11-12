@@ -122,4 +122,120 @@ func (p *Program) initializationStructs() {
 			"tz_dsttime":     "TzDsttime",
 		},
 	}
+
+	// termios.h
+	p.Structs["struct termios"] = &Struct{
+		Name: "struct termios",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"c_iflag": "unsigned int",
+			"c_oflag": "unsigned int",
+			"c_cflag": "unsigned int",
+			"c_lflag": "unsigned int",
+			"c_cc":    "unsigned char[32]",
+		},
+	}
+	p.Structs["c4go_struct termios"] = &Struct{
+		Name: "github.com/Konstantin8105/c4go/noarch.Termios",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"c_iflag": "Iflag",
+			"c_oflag": "Oflag",
+			"c_cflag": "Cflag",
+			"c_lflag": "Lflag",
+			"c_cc":    "Cc",
+		},
+	}
+
+	// sys/resource.h
+	p.Structs["struct rusage"] = &Struct{
+		Name: "struct rusage",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"ru_utime":    "struct timeval",
+			"ru_stime":    "struct timeval",
+			"ru_maxrss":   "long",
+			"ru_ixrss":    "long",
+			"ru_idrss":    "long",
+			"ru_isrss":    "long",
+			"ru_minflt":   "long",
+			"ru_majflt":   "long",
+			"ru_nswap":    "long",
+			"ru_inblock":  "long",
+			"ru_oublock":  "long",
+			"ru_msgsnd":   "long",
+			"ru_msgrcv":   "long",
+			"ru_nsignals": "long",
+			"ru_nvcsw":    "long",
+			"ru_nivcsw":   "long",
+		},
+	}
+	p.Structs["c4go_struct rusage"] = &Struct{
+		Name: "github.com/Konstantin8105/c4go/noarch.Rusage",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"ru_utime":    "Utime",
+			"ru_stime":    "Stime",
+			"ru_maxrss":   "Maxrss",
+			"ru_ixrss":    "Ixrss",
+			"ru_idrss":    "Idrss",
+			"ru_isrss":    "Isrss",
+			"ru_minflt":   "Minflt",
+			"ru_majflt":   "Majflt",
+			"ru_nswap":    "Nswap",
+			"ru_inblock":  "Inblock",
+			"ru_oublock":  "Oublock",
+			"ru_msgsnd":   "Msgsnd",
+			"ru_msgrcv":   "Msgrcv",
+			"ru_nsignals": "Nsignals",
+			"ru_nvcsw":    "Nvcsw",
+			"ru_nivcsw":   "Nivcsw",
+		},
+	}
+
+	// sys/ioctl.h
+	p.Structs["struct winsize"] = &Struct{
+		Name: "struct winsize",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"ws_row":    "unsigned short",
+			"ws_col":    "unsigned short",
+			"ws_xpixel": "unsigned short",
+			"ws_ypixel": "unsigned short",
+		},
+	}
+	p.Structs["c4go_struct winsize"] = &Struct{
+		Name: "github.com/Konstantin8105/c4go/noarch.Winsize",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"ws_row":    "Row",
+			"ws_col":    "Col",
+			"ws_xpixel": "Xpixel",
+			"ws_ypixel": "Ypixel",
+		},
+	}
+
+	// fcntl.h
+	p.Structs["struct flock"] = &Struct{
+		Name: "struct flock",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"l_type":   "short",
+			"l_whence": "short",
+			"l_start":  "off_t",
+			"l_len":    "off_t",
+			"l_pid":    "pid_t",
+		},
+	}
+	p.Structs["c4go_struct flock"] = &Struct{
+		Name: "github.com/Konstantin8105/c4go/noarch.Flock",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"l_type":   "Type",
+			"l_whence": "Whence",
+			"l_start":  "Start",
+			"l_len":    "Len",
+			"l_pid":    "Pid",
+		},
+	}
 }

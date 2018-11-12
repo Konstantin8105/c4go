@@ -56,6 +56,10 @@ var DefinitionType = map[string]string{
 	"__uint32_t": "uint32",
 	"__uint64_t": "uint64",
 
+	// sys/stat.h
+	"mode_t":   "uint16",
+	"__mode_t": "uint16",
+
 	// These are special cases that almost certainly don't work. I've put
 	// them here because for whatever reason there is no suitable type or we
 	// don't need these platform specific things to be implemented yet.
@@ -66,4 +70,12 @@ var DefinitionType = map[string]string{
 	"__sbuf":            "int64",
 	"__sFILEX":          "interface{}",
 	"FILE":              "github.com/Konstantin8105/c4go/noarch.File",
+
+	// termios.h
+	"tcflag_t": "uint32",
+	"cc_t":     "uint8",
+
+	// sys/resource.h
+	"__rusage_who":   "int",
+	"__rusage_who_t": "int",
 }

@@ -53,17 +53,15 @@ int main()
     int n, c;
 
     printf("Enter a number\n");
-	// get value
+    // get value
     scanf("%d", &n);
     printf("The number is: %d\n", n);
 
-	// -------
+    // -------
     if (n == 2)
         printf("Prime number.\n");
-    else
-    {
-        for (c = 2; c <= n - 1; c++)
-        {
+    else {
+        for (c = 2; c <= n - 1; c++) {
             if (n % c == 0)
                 break;
         }
@@ -96,12 +94,12 @@ func main() {
 	var n int
 	var c int
 	fmt.Printf("Enter a number\n")
-	noarch.Scanf([]byte("%d\x00"), (*[100000000]int)(unsafe.Pointer(&n))[:])
 	// get value
+	noarch.Scanf([]byte("%d\x00"), (*[100000000]int)(unsafe.Pointer(&n))[:])
 	noarch.Printf([]byte("The number is: %d\n\x00"), n)
 	if n == 2 {
-		fmt.Printf("Prime number.\n")
 		// -------
+		fmt.Printf("Prime number.\n")
 	} else {
 		for c = 2; c <= n-1; c++ {
 			if n%c == 0 {
@@ -115,8 +113,6 @@ func main() {
 		}
 	}
 	return
-}
-func init() {
 }
 ```
 
@@ -136,7 +132,7 @@ func init() {
             stdarg.h	       4/4	         100%
             stddef.h	       2/6	        33.3%
              stdio.h	     33/46	        71.7%
-            stdlib.h	     32/47	        68.1%
+            stdlib.h	     33/47	        70.2%
             string.h	     12/24	          50%
               time.h	      8/15	        53.3%
              wchar.h	      0/68	           0%
@@ -223,7 +219,7 @@ time ./travis/sqlite.sh
 #sys	0m1.434s
 
 # Run profiler
-go tool pprof ./build/cpu.out
+go tool pprof ./testdata/cpu.out
 ```
 
 For more information, see [Profiling Go Programs](https://blog.golang.org/profiling-go-programs).

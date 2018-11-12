@@ -135,6 +135,17 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 		return nil, "", nil, nil, err
 	}
 
+	// UnaryOperator <> 'int' prefix '!'
+	// `-ImplicitCastExpr <> 'int (*)(int, double)' <LValueToRValue>
+	//   `-DeclRefExpr <> 'int (*)(int, double)' lvalue Var 0x2be4e80 'T' 'int (*)(int, double)'
+	if types.IsFunction(eType) {
+		return &goast.BinaryExpr{
+			X:  e,
+			Op: token.EQL, // ==
+			Y:  goast.NewIdent("nil"),
+		}, "bool", preStmts, postStmts, nil
+	}
+
 	// specific case:
 	//
 	// UnaryOperator 'int' prefix '!'

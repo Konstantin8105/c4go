@@ -433,8 +433,6 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 				decls = nil
 				return
 			}
-			// Only for adding to ignore list
-			// fmt.Printf("%40s:\t\"%s\",\n", "\""+n.Name+"\"", n.Pos.File)
 		}
 	}()
 	n.Name = types.CleanCType(types.GenerateCorrectType(n.Name))

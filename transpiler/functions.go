@@ -6,6 +6,7 @@ package transpiler
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/Konstantin8105/c4go/ast"
@@ -121,12 +122,24 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 		}
 	}
 
+	if p.IncludeHeaderIsExists("stdlib.h") && n.Name == "main" {
+		body.List = append([]goast.Stmt{&goast.DeferStmt{
+			Call: &goast.CallExpr{
+				Fun: &goast.SelectorExpr{
+					X:   goast.NewIdent("noarch"),
+					Sel: goast.NewIdent("AtexitRun"),
+				},
+			},
+		}}, body.List...)
+		p.AddImport("github.com/Konstantin8105/c4go/noarch")
+	}
+
 	if functionBody != nil {
 		// If verbose mode is on we print the name of the function as a comment
 		// immediately to stdout. This will appear at the top of the program but
 		// make it much easier to diagnose when the transpiler errors.
 		if p.Verbose {
-			fmt.Printf("// Function: %s(%s)\n", f.Name,
+			fmt.Fprintf(os.Stdout, "// Function: %s(%s)\n", f.Name,
 				strings.Join(f.ArgumentTypes, ", "))
 		}
 

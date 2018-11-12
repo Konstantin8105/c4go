@@ -109,7 +109,7 @@ func getNameOfFunctionFromCallExpr(p *program.Program, n *ast.CallExpr) (string,
 
 // simplificationCallExprPrintf - minimaze Go code
 // transpile C code : printf("Hello")
-// to Go code       : fmt.Printf("Hello")
+// to Go code       : fmt_Printf("Hello")
 // AST example :
 // CallExpr <> 'int'
 // |-ImplicitCastExpr <> 'int (*)(const char *, ...)' <FunctionToPointerDecay>
@@ -228,6 +228,98 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		// ignore function __builtin_va_start, __builtin_va_end
 		// see "Variadic functions"
 		return nil, "", nil, nil, nil
+	}
+
+	// function "malloc" from stdlib.h
+	//
+	// Change from "malloc" to "calloc"
+	//
+	// CallExpr <> 'void *'
+	// |-ImplicitCastExpr <> 'void *(*)(unsigned long)' <FunctionToPointerDecay>
+	// | `-DeclRefExpr <> 'void *(unsigned long)' Function 'malloc' 'void *(unsigned long)'
+	// `-ImplicitCastExpr <> 'unsigned long' <IntegralCast>
+	//   `- ...
+	//
+	// CallExpr <> 'void *'
+	// |-ImplicitCastExpr <> 'void *(*)(unsigned long, unsigned long)' <FunctionToPointerDecay>
+	// | `-DeclRefExpr <> 'void *(unsigned long, unsigned long)' Function 'calloc' 'void *(unsigned long, unsigned long)'
+	// |-ImplicitCastExpr <> 'unsigned long' <IntegralCast>
+	// | `- ...
+	// `-UnaryExprOrTypeTraitExpr <> 'unsigned long' sizeof 'char'
+	if p.IncludeHeaderIsExists("stdlib.h") {
+		if functionName == "malloc" && len(n.Children()) == 2 {
+			// Change from "malloc" to "calloc"
+			n.ChildNodes[0] = &ast.ImplicitCastExpr{
+				Type: "void *(*)(unsigned long, unsigned long)",
+			}
+			n.ChildNodes[0].(*ast.ImplicitCastExpr).AddChild(&ast.DeclRefExpr{
+				Type: "void *(unsigned long, unsigned long)",
+				Name: "calloc",
+			})
+			n.AddChild(&ast.UnaryExprOrTypeTraitExpr{
+				Type1:    "unsigned long",
+				Function: "sizeof",
+				Type2:    "char",
+			})
+			return transpileCallExprCalloc(n, p)
+		}
+	}
+
+	// function "realloc" from stdlib.h
+	//
+	// Change from "realloc" to "calloc"
+	//
+	// CallExpr <> 'void *'
+	// |-ImplicitCastExpr <> 'void *(*)(void *, unsigned long)' <FunctionToPointerDecay>
+	// | `-DeclRefExpr <> 'void *(void *, unsigned long)' Function 0x2c7e3e0 'realloc' 'void *(void *, unsigned long)'
+	// |-ImplicitCastExpr <> 'void *' <BitCast>
+	// | `-CStyleCastExpr <> 'char *' <BitCast>
+	// |   `-ParenExpr <> 'void *'
+	// |     `-ParenExpr <> 'void *'
+	// |       `-CStyleCastExpr <> 'void *' <NullToPointer>
+	// |         `-IntegerLiteral <> 'int' 0
+	// `-ImplicitCastExpr <> 'unsigned long' <IntegralCast>
+	//   `-BinaryOperator <> 'int' '*'
+	//     |-ImplicitCastExpr <> 'int' <LValueToRValue>
+	//     | `-DeclRefExpr <> 'int' lvalue Var 0x2ca14e8 'size' 'int'
+	//     `-ImplicitCastExpr <> 'int' <LValueToRValue>
+	//       `-DeclRefExpr <> 'int' lvalue Var 0x2ca14e8 'size' 'int'
+	//
+	// CallExpr <> 'void *'
+	// |-ImplicitCastExpr <> 'void *(*)(unsigned long, unsigned long)' <FunctionToPointerDecay>
+	// | `-DeclRefExpr <> 'void *(unsigned long, unsigned long)' Function 'calloc' 'void *(unsigned long, unsigned long)'
+	// |-ImplicitCastExpr <> 'unsigned long' <IntegralCast>
+	// | `- ...
+	// `-UnaryExprOrTypeTraitExpr <> 'unsigned long' sizeof 'char'
+	//
+	// function "calloc" from stdlib.h
+	if p.IncludeHeaderIsExists("stdlib.h") {
+		if functionName == "realloc" && len(n.Children()) == 3 {
+			n.ChildNodes[0] = &ast.ImplicitCastExpr{
+				Type: "void *(*)(unsigned long, unsigned long)",
+			}
+			n.ChildNodes[0].(*ast.ImplicitCastExpr).AddChild(&ast.DeclRefExpr{
+				Type: "void *(unsigned long, unsigned long)",
+				Name: "calloc",
+			})
+			sizeofType := "char"
+			if impl, ok := n.Children()[1].(*ast.ImplicitCastExpr); ok {
+				switch v := impl.Children()[0].(type) {
+				case *ast.ImplicitCastExpr:
+					sizeofType = v.Type
+				case *ast.CStyleCastExpr:
+					sizeofType = v.Type
+				}
+			}
+			sizeofType = types.GetBaseType(sizeofType)
+			n.AddChild(&ast.UnaryExprOrTypeTraitExpr{
+				Type1:    "unsigned long",
+				Function: "sizeof",
+				Type2:    sizeofType,
+			})
+			n.ChildNodes = []ast.Node{n.ChildNodes[0], n.ChildNodes[2], n.ChildNodes[3]}
+			return transpileCallExprCalloc(n, p)
+		}
 	}
 
 	// function "calloc" from stdlib.h
@@ -473,8 +565,11 @@ func transpileCallExprCalloc(n *ast.CallExpr, p *program.Program) (
 			err = fmt.Errorf("Function: calloc. err = %v", err)
 		}
 	}()
-	var allocType string
-	size, _, preStmts, postStmts, err := transpileToExpr(n.Children()[1], p, false)
+	size, sizeType, preStmts, postStmts, err := transpileToExpr(n.Children()[1], p, false)
+	if err != nil {
+		return nil, "", nil, nil, err
+	}
+	size, err = types.CastExpr(p, size, sizeType, "unsigned long")
 	if err != nil {
 		return nil, "", nil, nil, err
 	}
@@ -491,29 +586,56 @@ func transpileCallExprCalloc(n *ast.CallExpr, p *program.Program) (
 	//      `-ImplicitCastExpr <> 'float *' <LValueToRValue>
 	//        `-MemberExpr <> 'float *' lvalue .w 0x2548b38
 	//          `-DeclRefExpr <> 'struct cws':'struct cws' lvalue Var 0x2548c40 't' 'struct cws': 'struct cws'
-	if v, ok := n.Children()[2].(*ast.UnaryExprOrTypeTraitExpr); ok {
+	//
+	// OR
+	//
+	// CallExpr <> 'void *'
+	// |-ImplicitCastExpr <> 'void *(*)(unsigned long, unsigned long)' <FunctionToPointerDecay>
+	// | `-DeclRefExpr <> 'void *(unsigned long, unsigned long)' Function 0x3b9b048 'calloc' 'void *(unsigned long, unsigned long)'
+	// |-ImplicitCastExpr <> 'unsigned long' <IntegralCast>
+	// | `-ImplicitCastExpr <> 'int' <LValueToRValue>
+	// |   `-DeclRefExpr <> 'int' lvalue ParmVar 0x3bc40d8 'n' 'int'
+	// `-ImplicitCastExpr <> 'unsigned long' <IntegralCast>
+	//   `-ImplicitCastExpr <> 'int' <LValueToRValue>
+	//     `-DeclRefExpr <> 'int' lvalue Var 0x3bc4268 'sizeT' 'int'
+	var goType goast.Expr
+	switch v := n.Children()[2].(type) {
+	case *ast.UnaryExprOrTypeTraitExpr:
+		var t string
 		if v.Type2 == "" {
-			_, t, _, _, _ := transpileToExpr(v.Children()[0], p, false)
-			allocType = t
+			_, t, _, _, _ = transpileToExpr(v.Children()[0], p, false)
 		} else {
-			allocType = v.Type2
+			t = v.Type2
 		}
-	} else {
-		return nil, "", nil, nil,
-			fmt.Errorf("Unsupport type '%T' in function calloc", n.Children()[2])
+		t, err := types.ResolveType(p, t)
+		if err != nil {
+			return nil, "", nil, nil, err
+		}
+		goType = &goast.ArrayType{Elt: goast.NewIdent(t)}
+	default:
+		var goTypeT string
+		goType, goTypeT, _, _, _ = transpileToExpr(v.Children()[0], p, false)
+		size, err = types.CastExpr(p, size, sizeType, goTypeT)
+		if err != nil {
+			return nil, "", nil, nil, err
+		}
+		size = &goast.BinaryExpr{
+			X:  &goast.ParenExpr{X: goType},
+			Op: token.MUL,
+			Y:  &goast.ParenExpr{X: size},
+		}
+		goType = &goast.ArrayType{
+			Elt: goast.NewIdent("byte"),
+		}
 	}
 
-	goType, err := types.ResolveType(p, allocType)
-	if err != nil {
-		return nil, "", nil, nil, err
-	}
 	return &goast.CallExpr{
 		Fun: util.NewIdent("make"),
 		Args: []goast.Expr{
-			&goast.ArrayType{Elt: goast.NewIdent(goType)},
+			goType,
 			size,
 		},
-	}, allocType + " *", preStmts, postStmts, nil
+	}, n.Type, preStmts, postStmts, nil
 }
 
 func transpileCallExprQsort(n *ast.CallExpr, p *program.Program) (

@@ -175,7 +175,7 @@ func transpileParenExpr(n *ast.ParenExpr, p *program.Program) (
 		}
 	}()
 
-	expr, exprType, preStmts, postStmts, err := transpileToExpr(n.Children()[0], p, false)
+	expr, exprType, preStmts, postStmts, err := atomicOperation(n.Children()[0], p)
 	if err != nil {
 		return
 	}
@@ -365,6 +365,12 @@ func transpileCompoundAssignOperator(
 		}
 		return v, vType, preStmts, postStmts, nil
 	}
+
+	right, err = types.CastExpr(p, right, rightType, leftType)
+	if err != nil {
+		return nil, "", nil, nil, err
+	}
+	rightType = leftType
 
 	// The right hand argument of the shift left or shift right operators
 	// in Go must be unsigned integers. In C, shifting with a negative shift
@@ -931,7 +937,9 @@ func atomicOperation(n ast.Node, p *program.Program) (
 
 		case "=":
 			// Find ast.DeclRefExpr in Children[0]
-			decl, ok := getDeclRefExpr(v.Children()[0])
+			// Or
+			// Find ast.ArraySubscriptExpr in Children[0]
+			decl, ok := getDeclRefExprOrArraySub(v.Children()[0])
 			if !ok {
 				return
 			}
@@ -950,7 +958,19 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			//       |-DeclRefExpr 0x328dd00 <col:25> 'int' lvalue Var 0x328dbd8 'c' 'int'
 			//       `-IntegerLiteral 0x328dd28 <col:29> 'int' 42
 
-			varName := decl.Name
+			// BinaryOperator 0x364a878 <line:139:7, col:23> 'int' '=='
+			// |-ParenExpr 0x364a838 <col:7, col:18> 'int'
+			// | `-BinaryOperator 0x364a810 <col:8, col:17> 'int' '='
+			// |   |-ArraySubscriptExpr 0x364a740 <col:8, col:11> 'int' lvalue
+			// |   | |-ImplicitCastExpr 0x364a728 <col:8> 'int *' <ArrayToPointerDecay>
+			// |   | | `-DeclRefExpr 0x364a6e0 <col:8> 'int [5]' lvalue Var 0x3648ea0 'l' 'int [5]'
+			// |   | `-IntegerLiteral 0x364a708 <col:10> 'int' 0
+			// |   `-BinaryOperator 0x364a7e8 <col:15, col:17> 'int' '-'
+			// |     |-ImplicitCastExpr 0x364a7b8 <col:15> 'int' <LValueToRValue>
+			// |     | `-DeclRefExpr 0x364a768 <col:15> 'int' lvalue Var 0x3647c00 'y' 'int'
+			// |     `-ImplicitCastExpr 0x364a7d0 <col:17> 'int' <LValueToRValue>
+			// |       `-DeclRefExpr 0x364a790 <col:17> 'int' lvalue Var 0x364a648 's' 'int'
+			// `-IntegerLiteral 0x364a858 <col:23> 'int' 3
 
 			var exprResolveType string
 			exprResolveType, err = types.ResolveType(p, v.Type)
@@ -964,8 +984,9 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			preStmts = nil
 			postStmts = nil
 
-			var returnValue goast.Expr = util.NewIdent(varName)
-			if types.IsPointer(decl.Type) && !types.IsPointer(v.Type) {
+			returnValue, _, _, _, _ := transpileToExpr(decl, p, false)
+			if d, ok := decl.(*ast.DeclRefExpr); ok &&
+				types.IsPointer(d.Type) && !types.IsPointer(v.Type) {
 				returnValue = &goast.IndexExpr{
 					X: returnValue,
 					Index: &goast.BasicLit{
@@ -990,21 +1011,23 @@ func atomicOperation(n ast.Node, p *program.Program) (
 	return
 }
 
-// getDeclRefExpr - find ast DeclRefExpr
+// getDeclRefExprOrArraySub - find ast DeclRefExpr
 // Examples of input ast trees:
 // UnaryOperator 0x2a23080 <col:8, col:9> 'int' lvalue prefix '*'
 // `-ImplicitCastExpr 0x2a23068 <col:9> 'int *' <LValueToRValue>
 //   `-DeclRefExpr 0x2a23040 <col:9> 'int *' lvalue Var 0x2a22f20 'a' 'int *'
 //
 // DeclRefExpr 0x328dd00 <col:25> 'int' lvalue Var 0x328dbd8 'c' 'int'
-func getDeclRefExpr(n ast.Node) (*ast.DeclRefExpr, bool) {
+func getDeclRefExprOrArraySub(n ast.Node) (ast.Node, bool) {
 	switch v := n.(type) {
 	case *ast.DeclRefExpr:
 		return v, true
 	case *ast.ImplicitCastExpr:
-		return getDeclRefExpr(n.Children()[0])
+		return getDeclRefExprOrArraySub(n.Children()[0])
 	case *ast.UnaryOperator:
-		return getDeclRefExpr(n.Children()[0])
+		return getDeclRefExprOrArraySub(n.Children()[0])
+	case *ast.ArraySubscriptExpr:
+		return v, true
 	}
 	return nil, false
 }
