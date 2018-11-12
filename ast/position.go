@@ -390,6 +390,8 @@ func setPosition(node Node, position Position) {
 		n.Pos = position
 	case *StmtExpr:
 		n.Pos = position
+	case *StaticAssertDecl:
+		n.Pos = position
 	case *StringLiteral:
 		n.Pos = position
 	case *SwitchStmt:

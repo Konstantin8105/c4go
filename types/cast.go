@@ -192,20 +192,12 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 				return expr, err
 			}
 
-			return &goast.CallExpr{
-				Fun: &goast.Ident{
-					Name: toType,
-				},
-				Lparen: 1,
-				Args: []goast.Expr{
-					&goast.ParenExpr{
-						Lparen: 1,
-						X:      expr,
-						Rparen: 2,
-					},
-				},
-				Rparen: 2,
-			}, nil
+			return util.NewCallExpr(toType,
+				&goast.ParenExpr{
+					Lparen: 1,
+					X:      expr,
+					Rparen: 2,
+				}), nil
 		}
 		e, err := CastExpr(p, expr, fromType, v)
 		if err != nil {
@@ -218,20 +210,12 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		if err != nil {
 			return expr, err
 		}
-		expr = &goast.CallExpr{
-			Fun: &goast.Ident{
-				Name: t,
-			},
-			Lparen: 1,
-			Args: []goast.Expr{
-				&goast.ParenExpr{
-					Lparen: 1,
-					X:      expr,
-					Rparen: 2,
-				},
-			},
-			Rparen: 2,
-		}
+		expr = util.NewCallExpr(t,
+			&goast.ParenExpr{
+				Lparen: 1,
+				X:      expr,
+				Rparen: 2,
+			})
 		if toType == v {
 			return expr, nil
 		}

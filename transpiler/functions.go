@@ -124,12 +124,7 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 
 	if p.IncludeHeaderIsExists("stdlib.h") && n.Name == "main" {
 		body.List = append([]goast.Stmt{&goast.DeferStmt{
-			Call: &goast.CallExpr{
-				Fun: &goast.SelectorExpr{
-					X:   goast.NewIdent("noarch"),
-					Sel: goast.NewIdent("AtexitRun"),
-				},
-			},
+			Call: util.NewCallExpr("noarch.AtexitRun"),
 		}}, body.List...)
 		p.AddImport("github.com/Konstantin8105/c4go/noarch")
 	}

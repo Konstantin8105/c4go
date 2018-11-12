@@ -7,6 +7,7 @@ import (
 	"github.com/Konstantin8105/c4go/ast"
 	"github.com/Konstantin8105/c4go/program"
 	"github.com/Konstantin8105/c4go/types"
+	"github.com/Konstantin8105/c4go/util"
 )
 
 func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, exprIsStmt bool) (
@@ -51,11 +52,7 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 	if len(n.Type) != 0 && len(n.Type2) != 0 && n.Type != n.Type2 && cast {
 		var tt string
 		tt, err = types.ResolveType(p, n.Type)
-		expr = &goast.CallExpr{
-			Fun:    goast.NewIdent(tt),
-			Lparen: 1,
-			Args:   []goast.Expr{expr},
-		}
+		expr = util.NewCallExpr(tt, expr)
 		exprType = n.Type
 		return
 	}
@@ -162,11 +159,7 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 	if len(n.Type) != 0 && len(n.Type2) != 0 && n.Type != n.Type2 {
 		var tt string
 		tt, err = types.ResolveType(p, n.Type)
-		expr = &goast.CallExpr{
-			Fun:    goast.NewIdent(tt),
-			Lparen: 1,
-			Args:   []goast.Expr{expr},
-		}
+		expr = util.NewCallExpr(tt, expr)
 		exprType = n.Type
 		return
 	}

@@ -502,13 +502,10 @@ func transpileImplicitValueInitExpr(n *ast.ImplicitValueInitExpr, p *program.Pro
 		return
 	}
 
-	expr = &goast.CallExpr{
-		Fun:    goast.NewIdent(t),
-		Lparen: 1,
-		Args: []goast.Expr{&goast.BasicLit{
+	expr = util.NewCallExpr(t,
+		&goast.BasicLit{
 			Kind:  token.INT,
 			Value: "0",
-		}},
-	}
+		})
 	return
 }

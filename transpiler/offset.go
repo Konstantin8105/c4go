@@ -7,6 +7,7 @@ import (
 
 	"github.com/Konstantin8105/c4go/ast"
 	"github.com/Konstantin8105/c4go/program"
+	"github.com/Konstantin8105/c4go/util"
 )
 
 func transpileOffsetOfExpr(n *ast.OffsetOfExpr, p *program.Program) (
@@ -60,22 +61,14 @@ func transpileOffsetOfExpr(n *ast.OffsetOfExpr, p *program.Program) (
 	}
 
 	p.AddImport("unsafe")
-	expr = &goast.CallExpr{
-		Fun: &goast.SelectorExpr{
-			X:   goast.NewIdent("unsafe"),
-			Sel: goast.NewIdent("Offsetof"),
-		},
-		Lparen: 1,
-		Args: []goast.Expr{
-			&goast.SelectorExpr{
-				X: &goast.CompositeLit{
-					Type:   goast.NewIdent(string(arguments[0])),
-					Lbrace: 1,
-				},
-				Sel: goast.NewIdent(string(arguments[1])),
+	expr = util.NewCallExpr("unsafe.Offsetof",
+		&goast.SelectorExpr{
+			X: &goast.CompositeLit{
+				Type:   goast.NewIdent(string(arguments[0])),
+				Lbrace: 1,
 			},
-		},
-	}
+			Sel: goast.NewIdent(string(arguments[1])),
+		})
 
 	exprType = n.Type
 	return
