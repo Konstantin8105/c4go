@@ -108,23 +108,21 @@ type IncludeHeader struct {
 
 // FilePP a struct with all information about preprocessor C code
 type FilePP struct {
-	entities       []entity
-	pp             []byte
-	comments       []Comment
-	includes       []IncludeHeader
-	outsideStructs bool
+	entities []entity
+	pp       []byte
+	comments []Comment
+	includes []IncludeHeader
 }
 
 // NewFilePP create a struct FilePP with results of analyzing
 // preprocessor C code
-func NewFilePP(inputFiles, clangFlags []string, cppCode bool, outsideStructs bool) (
+func NewFilePP(inputFiles, clangFlags []string, cppCode bool) (
 	f FilePP, err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("Preprocess error : %v", err)
 		}
 	}()
-	f.outsideStructs = outsideStructs
 
 	var allItems []entity
 
@@ -222,9 +220,6 @@ func (f FilePP) GetIncludeFiles() []IncludeHeader {
 
 // IsUserSource get is it source from user
 func (f FilePP) IsUserSource(in string) bool {
-	if f.outsideStructs {
-		return true
-	}
 	for i := range f.includes {
 		if strings.Contains(in, f.includes[i].HeaderName) &&
 			f.includes[i].IsUserSource {
