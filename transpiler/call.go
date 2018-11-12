@@ -179,7 +179,7 @@ func simplificationCallExprPrintf(call *ast.CallExpr, p *program.Program) (
 	// }
 	p.AddImport("fmt")
 	printfText = strconv.Quote(printfText)
-	return util.NewCallExpr("fmt.Printf",
+	return util.NewCallExpr("fmt"+"."+"Printf",
 		&goast.BasicLit{
 			Kind:  token.STRING,
 			Value: printfText,
