@@ -40,9 +40,9 @@ func parseVarDecl(line string) *VarDecl {
 		(?P<static> static)?
 		(?P<tls> tls)?
 		(?P<register> register)?
+		(?P<nrvo> nrvo)?
 		(?P<cinit> cinit)?
 		(?P<callinit> callinit)?
-		(?P<nrvo> nrvo)?
 		`,
 		line,
 	)
