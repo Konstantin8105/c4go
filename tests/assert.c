@@ -29,3 +29,5 @@ int main()
     fail("%s", "It shouldn't make it to here!");
     done_testing();
 }
+
+void os() {}

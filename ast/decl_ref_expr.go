@@ -6,7 +6,7 @@ type DeclRefExpr struct {
 	Pos        Position
 	Type       string
 	Type1      string
-	Lvalue     bool
+	IsLvalue   bool
 	For        string
 	Address2   string
 	Name       string
@@ -34,7 +34,7 @@ func parseDeclRefExpr(line string) *DeclRefExpr {
 		Pos:        NewPositionFromString(groups["position"]),
 		Type:       groups["type"],
 		Type1:      groups["type1"],
-		Lvalue:     len(groups["lvalue"]) > 0,
+		IsLvalue:   len(groups["lvalue"]) > 0,
 		For:        groups["for"],
 		Address2:   groups["address2"],
 		Name:       groups["name"],

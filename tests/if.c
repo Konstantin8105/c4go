@@ -8,7 +8,7 @@ int d(int v)
 
 int main()
 {
-    plan(13);
+    plan(20);
 
     int x = 1;
 
@@ -56,37 +56,37 @@ int main()
         }
     }
 
-	diag("null");
-	{
-		char c = 'r';
-		char * ch = &c;
-		if ( ch != NULL) {
-			pass("null test 1")
-		}
-		if ( NULL != ch) {
-			pass("null test 2")
-		}
-		if ( NULL != NULL) {
-			fail("null test 3")
-		}
-		ch = NULL;
-		if ( ch == NULL ) {
-			pass("null test 4")
-		}
-		if ( NULL == ch ) {
-			pass("null test 5")
-		}
-		if ( NULL == NULL ) {
-			pass("null test 6")
-		}
-	}
+    diag("null");
+    {
+        char c = 'r';
+        char* ch = &c;
+        if (ch != NULL) {
+            pass("null test 1")
+        }
+        if (NULL != ch) {
+            pass("null test 2")
+        }
+        if (NULL != NULL) {
+            fail("null test 3")
+        }
+        ch = NULL;
+        if (ch == NULL) {
+            pass("null test 4")
+        }
+        if (NULL == ch) {
+            pass("null test 5")
+        }
+        if (NULL == NULL) {
+            pass("null test 6")
+        }
+    }
 
-	diag("Bool to int");
-	if ( (9 != 0) *2){
-		pass("ok");
-	}
+    diag("Bool to int");
+    if ((9 != 0) * 2) {
+        pass("ok");
+    }
 
-	/*
+    /*
 	 * TODO strange error for different gcc version
 	diag("pointer in if");
 	{
@@ -106,6 +106,43 @@ int main()
 		}
 	}
 	*/
+
+    diag("equal on if paren");
+    {
+        int p = 45;
+        int y = 12;
+        if (!(!(y = p, y))) {
+            pass("case 1");
+        }
+        if (!(!(y = p))) {
+            pass("case 2");
+        }
+    }
+
+	diag("if equal");
+	{
+		int x = 0;
+		int y = 5;
+		if ((x = y) == 0){
+			fail("if equal");
+		}
+		if ((x = 0) == 0){
+			is_true(x == 0);
+		}
+		int l[5];
+		for (int i=0;i<5;i++){
+			l[i] = i;
+		}
+		is_true(x == 0);
+		is_true(y == 5);
+		int s = 2;
+		if ((l[0] = y-s) == 3){
+			is_true(l[0] == 3);
+		}
+		if ((l[1] = l[4] - s) == 2){
+			is_true(l[1] == 2);
+		}
+	}
 
     done_testing();
 }

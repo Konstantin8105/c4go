@@ -6,7 +6,7 @@ type CompoundLiteralExpr struct {
 	Pos        Position
 	Type1      string
 	Type2      string
-	Lvalue     bool
+	IsLvalue   bool
 	ChildNodes []Node
 }
 
@@ -23,7 +23,7 @@ func parseCompoundLiteralExpr(line string) *CompoundLiteralExpr {
 		Pos:        NewPositionFromString(groups["position"]),
 		Type1:      groups["type1"],
 		Type2:      groups["type2"],
-		Lvalue:     len(groups["lvalue"]) > 0,
+		IsLvalue:   len(groups["lvalue"]) > 0,
 		ChildNodes: []Node{},
 	}
 }

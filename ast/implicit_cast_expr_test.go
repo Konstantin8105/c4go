@@ -36,6 +36,15 @@ func TestImplicitCastExpr(t *testing.T) {
 			Kind:       "LValueToRValue",
 			ChildNodes: []Node{},
 		},
+		`0x55d0624a21e8 <col:32> 'void (*)(UA_Server *, UA_Session *, const UA_CloseSessionRequest *, UA_CloseSessionResponse *)' <FunctionToPointerDecay> part_of_explicit_cast`: &ImplicitCastExpr{
+			Addr:               0x55d0624a21e8,
+			Pos:                NewPositionFromString("col:32"),
+			Type:               "void (*)(UA_Server *, UA_Session *, const UA_CloseSessionRequest *, UA_CloseSessionResponse *)",
+			Type2:              "",
+			Kind:               "FunctionToPointerDecay",
+			IsPartExplicitCast: true,
+			ChildNodes:         []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)

@@ -134,6 +134,37 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 	if err != nil {
 		return nil, "", nil, nil, err
 	}
+
+	// UnaryOperator <> 'int' prefix '!'
+	// `-ImplicitCastExpr <> 'int (*)(int, double)' <LValueToRValue>
+	//   `-DeclRefExpr <> 'int (*)(int, double)' lvalue Var 0x2be4e80 'T' 'int (*)(int, double)'
+	if types.IsFunction(eType) {
+		return &goast.BinaryExpr{
+			X:  e,
+			Op: token.EQL, // ==
+			Y:  goast.NewIdent("nil"),
+		}, "bool", preStmts, postStmts, nil
+	}
+
+	// specific case:
+	//
+	// UnaryOperator 'int' prefix '!'
+	// `-ParenExpr 'int'
+	//   `-BinaryOperator 'int' '='
+	//     |-DeclRefExpr 'int' lvalue Var 0x3329b60 'y' 'int'
+	//     `-ImplicitCastExpr 'int' <LValueToRValue>
+	//       `-DeclRefExpr 'int' lvalue Var 0x3329ab8 'p' 'int'
+	if par, ok := e.(*goast.ParenExpr); ok {
+		if bi, ok := par.X.(*goast.BinaryExpr); ok {
+			if bi.Op == token.ASSIGN { // =
+				preStmts = append(preStmts, &goast.ExprStmt{
+					X: bi,
+				})
+				e = bi.X
+			}
+		}
+	}
+
 	// null in C is zero
 	if eType == types.NullPointer {
 		e = &goast.BasicLit{
@@ -172,11 +203,7 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 	if p.IncludeHeaderIsExists("stdbool.h") {
 		if t == "_Bool" {
 			t = "int"
-			e = &goast.CallExpr{
-				Fun:    goast.NewIdent("int"),
-				Lparen: 1,
-				Args:   []goast.Expr{e},
-			}
+			e = util.NewCallExpr("int", e)
 		}
 	}
 
@@ -252,7 +279,7 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 	expr goast.Expr, eType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	// pointer - expression with name of array pointer
-	var pointer interface{}
+	var pointer ast.Node
 
 	// locationPointer
 	var locPointer ast.Node
@@ -316,11 +343,11 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 					switch vv := a.Children()[0].(type) {
 					case *ast.MemberExpr, *ast.DeclRefExpr:
 						var typeVV string
-						if vvv, ok := vv.(*ast.MemberExpr); ok {
-							typeVV = vvv.Type
-						}
-						if vvv, ok := vv.(*ast.DeclRefExpr); ok {
-							typeVV = vvv.Type
+						switch vt := vv.(type) {
+						case *ast.MemberExpr:
+							typeVV = vt.Type
+						case *ast.DeclRefExpr:
+							typeVV = vt.Type
 						}
 						typeVV = types.GetBaseType(typeVV)
 
@@ -338,7 +365,8 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 						}
 						a = vv
 						continue
-					case *ast.ImplicitCastExpr, *ast.CStyleCastExpr:
+					case *ast.ImplicitCastExpr, *ast.CStyleCastExpr,
+						*ast.ArraySubscriptExpr:
 						a = vv
 						continue
 					}
@@ -472,35 +500,7 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 			Index: e,
 		}, eType, preStmts, postStmts, err
 
-	case *ast.ArraySubscriptExpr:
-		arr, _, newPre, newPost, err2 := transpileToExpr(v, p, false)
-		if err2 != nil {
-			return
-		}
-		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
-		return &goast.IndexExpr{
-			X: &goast.ParenExpr{
-				Lparen: 1,
-				X:      arr,
-			},
-			Index: e,
-		}, eType, preStmts, postStmts, err
-
-	case *ast.CallExpr:
-		arr, _, newPre, newPost, err2 := transpileToExpr(v, p, false)
-		if err2 != nil {
-			return
-		}
-		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
-		return &goast.IndexExpr{
-			X: &goast.ParenExpr{
-				Lparen: 1,
-				X:      arr,
-			},
-			Index: e,
-		}, eType, preStmts, postStmts, err
-
-	case *ast.CStyleCastExpr:
+	case *ast.CStyleCastExpr, *ast.VAArgExpr, *ast.CallExpr, *ast.ArraySubscriptExpr:
 		arr, _, newPre, newPost, err2 := transpileToExpr(v, p, false)
 		if err2 != nil {
 			return
@@ -532,19 +532,6 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 				},
 			}, eType, preStmts, postStmts, err
 		}
-		return &goast.IndexExpr{
-			X: &goast.ParenExpr{
-				Lparen: 1,
-				X:      arr,
-			},
-			Index: e,
-		}, eType, preStmts, postStmts, err
-	case *ast.VAArgExpr:
-		arr, _, newPre, newPost, err2 := transpileToExpr(v, p, false)
-		if err2 != nil {
-			return
-		}
-		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 		return &goast.IndexExpr{
 			X: &goast.ParenExpr{
 				Lparen: 1,

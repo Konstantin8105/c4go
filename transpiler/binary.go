@@ -522,6 +522,9 @@ func generateAlloc(p *program.Program, allocSize ast.Node, leftType string) (
 	if err != nil {
 		return nil, preStmts, postStmts, err
 	}
+	if toType == "interface{}" {
+		toType = "[]byte"
+	}
 
 	elementSize, err := types.SizeOf(p, derefType)
 	if err != nil {

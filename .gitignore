@@ -6,9 +6,11 @@
 /out
 /.idea
 /build
+/testdata
 /bin
 /coverage.txt
 /c4go
 /.vscode
 *.coverprofile
 tests/*.go
+examples/*.go

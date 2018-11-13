@@ -40,9 +40,14 @@ double* return_null()
     return NULL;
 }
 
+int f_sizeof(int i)
+{
+	return i;
+}
+
 int main()
 {
-    plan(98);
+    plan(110);
 
     int i = 10;
     signed char j = 1;
@@ -400,14 +405,51 @@ int main()
         is_eq(y, 18);
         is_eq(z, 6);
     }
-	diag("char + bool");
+    diag("char + bool");
+    {
+        char prefix = 'W';
+        char* buf = "text";
+        char* v;
+        v = buf + (prefix != 0);
+        is_not_null(v);
+        is_streq(v, "ext");
+    }
+
+    diag("Bitwise complement operator ~");
+    {
+        int i = 35;
+        int o = ~(i);
+        is_eq(o, -36);
+        is_eq(~ - 12, 11);
+    }
+
+	diag("summ of bools");
 	{
-		char prefix = 'W';
-		char *buf   = "text";
-		char *v;
-		v = buf + (prefix != 0);
-		is_not_null(v);
-		is_streq(v,"ext");
+		int u = 0;
+		is_true(u == 0);
+		u += ( 1 != 0 );
+		is_true(u == 1);
+	}
+
+	diag("summ of sizeof");
+	{
+		int x = sizeof(char);
+		is_true(x == 1);
+		x = x + sizeof(char);
+		is_true(x == 2);
+		x += sizeof(char) + sizeof(char);
+		is_true(x == 4);
+		x = sizeof(char) * 5 + sizeof(char);
+		is_true(x == 6);
+		x = f_sizeof(sizeof(int));
+		printf("%d\n",x);
+		int y[2];
+		y[0] = 2;
+		is_true(y[0] == 2);
+		is_true(y[sizeof(char)-1] == 2);
+		y[1] = 5;
+		is_true(y[1] == 5);
+		is_true(y[sizeof(char)] == 5);
 	}
 
     done_testing();

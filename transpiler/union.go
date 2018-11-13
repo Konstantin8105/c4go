@@ -111,20 +111,9 @@ func (unionVar * {{ $.Name }}) {{ .Name }}() (*{{ .TypeField }}){
 
 func isUnionMemberExpr(p *program.Program, n *ast.MemberExpr) (IsUnion bool) {
 	if len(n.Children()) > 0 {
-		if v, ok := n.Children()[0].(*ast.MemberExpr); ok {
-			if p.IsUnion(v.Type) {
-				IsUnion = true
-			}
-		}
-		if v, ok := n.Children()[0].(*ast.DeclRefExpr); ok {
-			if p.IsUnion(v.Type) {
-				IsUnion = true
-			}
-		}
-		if v, ok := n.Children()[0].(*ast.ImplicitCastExpr); ok {
-			if p.IsUnion(v.Type) {
-				IsUnion = true
-			}
+		_, t, _, _, _ := transpileToExpr(n.Children()[0], p, false)
+		if p.IsUnion(t) {
+			IsUnion = true
 		}
 	}
 	return

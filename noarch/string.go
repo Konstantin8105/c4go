@@ -74,6 +74,16 @@ func Strcat(dest, src []byte) []byte {
 	return dest
 }
 
+// Strncat - concatenate strings
+// Appends at most count characters of the source string to the destination string.
+// The terminating null character in destination is overwritten by the first
+// character of source, and a null-character is included at the end
+// of the new string formed by the concatenation of both in destination.
+func Strncat(dest, src []byte, len int) []byte {
+	Strncpy(dest[Strlen(dest):], src, len)
+	return dest
+}
+
 // Strcmp - compare two strings
 // Compares the C string str1 to the C string str2.
 func Strcmp(str1, str2 []byte) int {
@@ -96,6 +106,38 @@ func Strchr(str []byte, ch int) []byte {
 	return nil
 }
 
+// Strstr finds the first occurrence of the null-terminated byte string
+// pointed to by substr in the null-terminated byte string pointed to by str.
+//The terminating null characters are not compared.
+func Strstr(str, subStr []byte) []byte {
+	if subStr == nil {
+		return str
+	}
+	if subStr[0] == '\x00' {
+		return str
+	}
+	i, j, k := 0, 0, 0
+	j++
+	for ; subStr[j] != '\x00'; j++ {
+		k++
+	}
+
+	for str[k] != '\x00' {
+		j, l := 0, i
+
+		for str[i] != '\x00' && subStr[j] != '\x00' && str[i] == subStr[j] {
+			i++
+			j++
+		}
+		if subStr[j] == '\x00' {
+			return str[l:]
+		}
+		i = l + 1
+		k++
+	}
+	return nil
+}
+
 // Memset sets the first num bytes of the block of memory pointed by ptr to
 // the specified value (interpreted as an unsigned char)
 func Memset(ptr []byte, value byte, num uint32) []byte {
@@ -111,4 +153,17 @@ func Memmove(ptr []byte, source []byte, num uint32) []byte {
 		ptr[i] = source[i]
 	}
 	return ptr
+}
+
+// Memcmp - compare two buffers
+// Compares the first count characters of the objects pointed to be lhs and rhs
+func Memcmp(lhs []byte, rhs []byte, count uint32) int {
+	for i := 0; uint32(i) < count; i++ {
+		if int(lhs[i]) < int(rhs[i]) {
+			return -1
+		} else if int(lhs[i]) > int(rhs[i]) {
+			return 1
+		}
+	}
+	return 0
 }

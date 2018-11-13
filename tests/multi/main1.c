@@ -15,6 +15,7 @@ int main() {
 	ERROR_FUNC();
 	error();
 	errorANOTHER();
+	printf("\n");
     return 0;
 }
 

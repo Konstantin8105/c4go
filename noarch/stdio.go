@@ -165,16 +165,13 @@ func Rename(oldName, newName []byte) int {
 // can be specified, but also fputs does not write additional characters, while
 // puts appends a newline character at the end automatically.
 func Fputs(str []byte, stream *File) int {
-	length := 0
-	for _, b := range []byte(str) {
-		if b == 0 {
-			break
-		}
-
-		length++
+	if stream == nil {
+		return -1
 	}
 
-	n, err := stream.OsFile.WriteString(string(str[:length]))
+	s := CStringToString(str)
+
+	n, err := stream.OsFile.WriteString(s)
 	if err != nil {
 		panic(err)
 	}
@@ -473,6 +470,9 @@ func Fgetc(stream *File) int {
 // The character is written at the position indicated by the internal position
 // indicator of the stream, which is then automatically advanced by one.
 func Fputc(c int, f *File) int {
+	if f == nil {
+		return -1
+	}
 	n, err := f.OsFile.Write([]byte{byte(c)})
 	if err != nil {
 		return 0
@@ -643,7 +643,7 @@ func Printf(format []byte, args ...interface{}) int {
 		}
 	}
 
-	n, _ := fmt.Printf(CStringToString(format), realArgs...)
+	n, _ := fmt.Fprintf(os.Stdout, CStringToString(format), realArgs...)
 
 	return n
 }
@@ -661,7 +661,7 @@ func Printf(format []byte, args ...interface{}) int {
 // destination, but it also appends a newline character at the end automatically
 // (which fputs does not).
 func Puts(str []byte) int {
-	n, _ := fmt.Println(CStringToString(str))
+	n, _ := fmt.Fprintln(os.Stdout, CStringToString(str))
 
 	return n
 }
@@ -677,7 +677,7 @@ func Puts(str []byte) int {
 func Scanf(format []byte, args ...interface{}) int {
 	realArgs := prepareArgsForScanf(args)
 
-	// We cannot use fmt.Scanf() here because that would use the real stdin
+	// We cannot use fmt Scanf() here because that would use the real stdin
 	// which does not work under test. See docs for noarch.Stdin.
 	n, _ := fmt.Fscanf(Stdin.OsFile, CStringToString(format), realArgs...)
 	finalizeArgsForScanf(realArgs, args)
@@ -691,7 +691,7 @@ func Scanf(format []byte, args ...interface{}) int {
 //
 // It is equivalent to calling putc with stdout as second argument.
 func Putchar(character int) {
-	fmt.Printf("%c", character)
+	fmt.Fprintf(os.Stdout, "%c", character)
 }
 
 // Sprintf handles sprintf().

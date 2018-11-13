@@ -14,33 +14,6 @@ import (
 	"go/token"
 )
 
-// This map is used to rename struct member names.
-var structFieldTranslations = map[string]map[string]string{
-	"div_t": {
-		"quot": "Quot",
-		"rem":  "Rem",
-	},
-	"ldiv_t": {
-		"quot": "Quot",
-		"rem":  "Rem",
-	},
-	"lldiv_t": {
-		"quot": "Quot",
-		"rem":  "Rem",
-	},
-	"struct tm": {
-		"tm_sec":   "TmSec",
-		"tm_min":   "TmMin",
-		"tm_hour":  "TmHour",
-		"tm_mday":  "TmMday",
-		"tm_mon":   "TmMon",
-		"tm_year":  "TmYear",
-		"tm_wday":  "TmWday",
-		"tm_yday":  "TmYday",
-		"tm_isdst": "TmIsdst",
-	},
-}
-
 func transpileDeclRefExpr(n *ast.DeclRefExpr, p *program.Program) (
 	expr *goast.Ident, exprType string, err error) {
 
@@ -51,6 +24,11 @@ func transpileDeclRefExpr(n *ast.DeclRefExpr, p *program.Program) (
 			expr, exprType, err = util.NewIdent(n.Name), v, nil
 			return
 		}
+	}
+
+	if name, ok := program.DefinitionVariable[n.Name]; ok {
+		name = p.ImportType(name)
+		return util.NewIdent(name), n.Type, nil
 	}
 
 	if n.For == "Function" {
@@ -67,11 +45,6 @@ func transpileDeclRefExpr(n *ast.DeclRefExpr, p *program.Program) (
 	}
 
 	theType := n.Type
-
-	// FIXME: This is for linux to make sure the globals have the right type.
-	if n.Name == "stdout" || n.Name == "stdin" || n.Name == "stderr" {
-		theType = "FILE *"
-	}
 
 	return util.NewIdent(n.Name), theType, nil
 }
@@ -171,41 +144,37 @@ var temp = func() %s {
 }
 
 // GenerateFuncType in according to types
-/*
-Type: *ast.FuncType {
-.  Func: 13:7
-.  Params: *ast.FieldList {
-.  .  Opening: 13:12
-.  .  List: []*ast.Field (len = 2) {
-.  .  .  0: *ast.Field {
-.  .  .  .  Type: *ast.Ident {
-.  .  .  .  .  NamePos: 13:13
-.  .  .  .  .  Name: "int"
-.  .  .  .  }
-.  .  .  }
-.  .  .  1: *ast.Field {
-.  .  .  .  Type: *ast.Ident {
-.  .  .  .  .  NamePos: 13:17
-.  .  .  .  .  Name: "int"
-.  .  .  .  }
-.  .  .  }
-.  .  }
-.  .  Closing: 13:20
-.  }
-.  Results: *ast.FieldList {
-.  .  Opening: -
-.  .  List: []*ast.Field (len = 1) {
-.  .  .  0: *ast.Field {
-.  .  .  .  Type: *ast.Ident {
-.  .  .  .  .  NamePos: 13:21
-.  .  .  .  .  Name: "string"
-.  .  .  .  }
-.  .  .  }
-.  .  }
-.  .  Closing: -
-.  }
-}
-*/
+// Type: *ast.FuncType {
+// .  Func: 13:7
+// .  Params: *ast.FieldList {
+// .  .  Opening: 13:12
+// .  .  List: []*ast.Field (len = 2) {
+// .  .  .  0: *ast.Field {
+// .  .  .  .  Type: *ast.Ident {
+// .  .  .  .  .  NamePos: 13:13
+// .  .  .  .  .  Name: "int"
+// .  .  .  .  }
+// .  .  .  }
+// .  .  .  1: *ast.Field {
+// .  .  .  .  Type: *ast.Ident {
+// .  .  .  .  .  NamePos: 13:17
+// .  .  .  .  .  Name: "int"
+// .  .  .  .  }
+// .  .  .  }
+// .  .  }
+// .  }
+// .  Results: *ast.FieldList {
+// .  .  Opening: -
+// .  .  List: []*ast.Field (len = 1) {
+// .  .  .  0: *ast.Field {
+// .  .  .  .  Type: *ast.Ident {
+// .  .  .  .  .  NamePos: 13:21
+// .  .  .  .  .  Name: "string"
+// .  .  .  .  }
+// .  .  .  }
+// .  .  }
+// .  }
+// }
 func GenerateFuncType(fields, returns []string) *goast.FuncType {
 	var ft goast.FuncType
 	{
@@ -357,6 +326,12 @@ func transpileArraySubscriptExpr(n *ast.ArraySubscriptExpr, p *program.Program) 
 
 func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 	_ goast.Expr, _ string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("Cannot transpile MemberExpr. err = %v", err)
+			p.AddMessage(p.GenerateWarningMessage(err, n))
+		}
+	}()
 
 	n.Type = types.GenerateCorrectType(n.Type)
 	n.Type2 = types.GenerateCorrectType(n.Type2)
@@ -380,9 +355,6 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
-	lhsResolvedType, err := types.ResolveType(p, lhsType)
-	p.AddMessage(p.GenerateWarningMessage(err, n))
-
 	// lhsType will be something like "struct foo"
 	structType := p.GetStruct(lhsType)
 	// added for support "struct typedef"
@@ -400,6 +372,14 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 	// for anonymous structs
 	if structType == nil {
 		structType = p.GetStruct(types.CleanCType(baseType))
+	}
+	// typedef types
+	if structType == nil {
+		structType = p.GetStruct(p.TypedefType[baseType])
+	}
+	if structType == nil {
+		t := types.GetBaseType(baseType)
+		structType = p.GetStruct(p.TypedefType[t])
 	}
 	// other case
 	for _, t := range originTypes {
@@ -430,7 +410,8 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 		//   2. Types may refer to one or more other types in a chain that have
 		//      to be resolved before the real field type can be determined.
 		err = fmt.Errorf("cannot determine type for LHS '%v'"+
-			", will use 'void *' for all fields. Is lvalue = %v", lhsType, n.IsLvalue)
+			", will use 'void *' for all fields. Is lvalue = %v. n.Name = %v",
+			lhsType, n.IsLvalue, n.Name)
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 	} else {
 		if s, ok := structType.Fields[rhs].(string); ok {
@@ -443,12 +424,6 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 		}
 	}
 
-	// FIXME: This is just a hack
-	if util.InStrings(lhsResolvedType, []string{"darwin.Float2", "darwin.Double2"}) {
-		rhs = util.GetExportedName(rhs)
-		rhsType = "int"
-	}
-
 	x := lhs
 	if n.IsPointer {
 		x = &goast.IndexExpr{X: x, Index: util.NewIntLit(0)}
@@ -459,9 +434,10 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 	if lhsType[len(lhsType)-1] == '*' {
 		lhsType = lhsType[:len(lhsType)-len(" *")]
 	}
-	if member, ok := structFieldTranslations[lhsType]; ok {
-		if alias, ok := member[rhs]; ok {
-			rhs = alias
+	if str := p.GetStruct("c4go_" + lhsType); str != nil {
+		if alias, ok := str.Fields[rhs]; ok {
+			rhs = alias.(string)
+			goto Selector
 		}
 	}
 
@@ -486,10 +462,50 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 		}, n.Type, preStmts, postStmts, nil
 	}
 
+Selector:
 	_ = rhsType
 
 	return &goast.SelectorExpr{
 		X:   x,
 		Sel: util.NewIdent(rhs),
 	}, n.Type, preStmts, postStmts, nil
+}
+
+func transpileImplicitValueInitExpr(n *ast.ImplicitValueInitExpr, p *program.Program) (
+	expr goast.Expr, exprType string, _ []goast.Stmt, _ []goast.Stmt, err error) {
+
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("Cannot transpileImplicitValueInitExpr. err = %v", err)
+		}
+	}()
+
+	exprType = n.Type1
+
+	var t string
+	t = n.Type1
+	t, err = types.ResolveType(p, t)
+	p.AddMessage(p.GenerateWarningMessage(err, n))
+
+	var isStruct bool
+	if _, ok := p.Structs[t]; ok {
+		isStruct = true
+	}
+	if _, ok := p.Structs["struct "+t]; ok {
+		isStruct = true
+	}
+	if isStruct {
+		expr = &goast.CompositeLit{
+			Type:   util.NewIdent(t),
+			Lbrace: 1,
+		}
+		return
+	}
+
+	expr = util.NewCallExpr(t,
+		&goast.BasicLit{
+			Kind:  token.INT,
+			Value: "0",
+		})
+	return
 }

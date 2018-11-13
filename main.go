@@ -6,7 +6,7 @@
 //
 // Usage
 //
-//     c4go myfile.c
+//     c4go transpile myfile.c
 //
 package main
 
@@ -21,6 +21,7 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
+	"runtime/pprof"
 	"strings"
 	"sync"
 
@@ -28,6 +29,7 @@ import (
 	"github.com/Konstantin8105/c4go/preprocessor"
 	"github.com/Konstantin8105/c4go/program"
 	"github.com/Konstantin8105/c4go/transpiler"
+	"github.com/Konstantin8105/c4go/version"
 )
 
 var stderr io.Writer = os.Stderr
@@ -43,25 +45,23 @@ var astout io.Writer = os.Stdout
 // Do not instantiate this directly. Instead use DefaultProgramArgs(); then
 // modify any specific attributes.
 type ProgramArgs struct {
-	verbose     bool
-	ast         bool
-	inputFiles  []string
-	clangFlags  []string
-	outputFile  string
-	packageName string
-
-	// A private option to output the Go as a *_test.go file.
-	outputAsTest bool
+	verbose        bool
+	ast            bool
+	inputFiles     []string
+	clangFlags     []string
+	outputFile     string
+	packageName    string
+	cppCode        bool
+	outsideStructs bool
 }
 
 // DefaultProgramArgs default value of ProgramArgs
 func DefaultProgramArgs() ProgramArgs {
 	return ProgramArgs{
-		verbose:      false,
-		ast:          false,
-		packageName:  "main",
-		clangFlags:   []string{},
-		outputAsTest: false,
+		verbose:     false,
+		ast:         false,
+		packageName: "main",
+		clangFlags:  []string{},
 	}
 }
 
@@ -182,6 +182,16 @@ func buildTree(nodes []treeNode, depth int) []ast.Node {
 		switch section[0].node.(type) {
 		case *ast.C4goErrorNode:
 			continue
+
+		// ignore all comments in ast tree
+		case *ast.FullComment, *ast.BlockCommandComment,
+			*ast.HTMLStartTagComment, *ast.HTMLEndTagComment,
+			*ast.InlineCommandComment, *ast.ParagraphComment,
+			*ast.ParamCommandComment, *ast.TextComment,
+			*ast.VerbatimLineComment, *ast.VerbatimBlockComment,
+			*ast.VerbatimBlockLineComment:
+			continue
+
 		default:
 			for _, child := range children {
 				if section[0].node == nil {
@@ -204,7 +214,7 @@ func Start(args ProgramArgs) (err error) {
 	}
 
 	if args.verbose {
-		fmt.Println("Reading clang AST tree...")
+		fmt.Fprintln(os.Stdout, "Reading clang AST tree...")
 	}
 	if args.ast {
 		for _, l := range lines {
@@ -225,7 +235,7 @@ func Start(args ProgramArgs) (err error) {
 
 func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.FilePP, err error) {
 	if args.verbose {
-		fmt.Println("Start tanspiling ...")
+		fmt.Fprintln(os.Stdout, "Start tanspiling ...")
 	}
 
 	if os.Getenv("GOPATH") == "" {
@@ -244,16 +254,19 @@ func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.Fil
 
 	// 2. Preprocess
 	if args.verbose {
-		fmt.Println("Running clang preprocessor...")
+		fmt.Fprintln(os.Stdout, "Running clang preprocessor...")
 	}
 
-	filePP, err = preprocessor.NewFilePP(args.inputFiles, args.clangFlags)
+	filePP, err = preprocessor.NewFilePP(
+		args.inputFiles,
+		args.clangFlags,
+		args.cppCode)
 	if err != nil {
 		return
 	}
 
 	if args.verbose {
-		fmt.Println("Writing preprocessor ...")
+		fmt.Fprintln(os.Stdout, "Writing preprocessor ...")
 	}
 	dir, err := ioutil.TempDir("", "c4go")
 	if err != nil {
@@ -271,14 +284,16 @@ func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.Fil
 
 	// 3. Generate JSON from AST
 	if args.verbose {
-		fmt.Println("Running clang for AST tree...")
+		fmt.Fprintln(os.Stdout, "Running clang for AST tree...")
 	}
-	astPP, err := exec.Command("clang", "-Xclang", "-ast-dump",
-		"-fsyntax-only", "-fno-color-diagnostics", ppFilePath).Output()
+	compiler, compilerFlag := preprocessor.Compiler(args.cppCode)
+	astPP, err := exec.Command(compiler, append(compilerFlag, "-Xclang", "-ast-dump",
+		"-fsyntax-only", "-fno-color-diagnostics", ppFilePath)...).Output()
 	if err != nil {
 		// If clang fails it still prints out the AST, so we have to run it
 		// again to get the real error.
-		errBody, _ := exec.Command("clang", ppFilePath).CombinedOutput()
+		errBody, _ := exec.Command(
+			compiler, append(compilerFlag, ppFilePath)...).CombinedOutput()
 
 		panic("clang failed: " + err.Error() + ":\n\n" + string(errBody))
 	}
@@ -292,24 +307,22 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 
 	p := program.NewProgram()
 	p.Verbose = args.verbose
-	p.OutputAsTest = args.outputAsTest
 	p.PreprocessorFile = filePP
 
 	// Converting to nodes
 	if args.verbose {
-		fmt.Println("Converting to nodes...")
+		fmt.Fprintln(os.Stdout, "Converting to nodes...")
 	}
 	nodes, astErrors := convertLinesToNodesParallel(lines)
 	for i := range astErrors {
-		ls := strings.Split(astErrors[i].Error(), "\n")
-		for _, l := range ls {
-			p.AddMessage(fmt.Sprintf("// AST Error : %v\n", l))
-		}
+		p.AddMessage(fmt.Sprintf(
+			"/"+"* AST Error :\n%v\n*"+"/",
+			astErrors[i].Error()))
 	}
 
 	// build tree
 	if args.verbose {
-		fmt.Println("Building tree...")
+		fmt.Fprintln(os.Stdout, "Building tree...")
 	}
 	tree := buildTree(nodes, 0)
 	ast.FixPositions(tree)
@@ -339,10 +352,10 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 
 	// transpile ast tree
 	if args.verbose {
-		fmt.Println("Transpiling tree...")
+		fmt.Fprintln(os.Stdout, "Transpiling tree...")
 	}
 
-	err = transpiler.TranspileAST(args.outputFile, args.packageName,
+	err = transpiler.TranspileAST(args.outputFile, args.packageName, args.outsideStructs,
 		p, tree[0].(ast.Node))
 	if err != nil {
 		for i := range astErrors {
@@ -354,7 +367,7 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 
 	// write the output Go code
 	if args.verbose {
-		fmt.Println("Writing the output Go code...")
+		fmt.Fprintln(os.Stdout, "Writing the output Go code...")
 	}
 	err = ioutil.WriteFile(outputFilePath, []byte(p.String()), 0644)
 	if err != nil {
@@ -394,6 +407,8 @@ func runCommand() int {
 	var (
 		transpileCommand = flag.NewFlagSet(
 			"transpile", flag.ContinueOnError)
+		cppFlag = transpileCommand.Bool(
+			"cpp", false, "transpile CPP code")
 		verboseFlag = transpileCommand.Bool(
 			"V", false, "print progress as comments")
 		outputFlag = transpileCommand.String(
@@ -402,9 +417,15 @@ func runCommand() int {
 			"p", "main", "set the name of the generated package")
 		transpileHelpFlag = transpileCommand.Bool(
 			"h", false, "print help information")
+		withOutsideStructs = transpileCommand.Bool(
+			"s", false, "transpile with structs(types, unions...) from all source headers")
+		cpuprofile = transpileCommand.String(
+			"cpuprofile", "", "write cpu profile to this file") // debugging
 
 		astCommand = flag.NewFlagSet(
 			"ast", flag.ContinueOnError)
+		astCppFlag = astCommand.Bool(
+			"cpp", false, "transpile CPP code")
 		astHelpFlag = astCommand.Bool(
 			"h", false, "print help information")
 	)
@@ -416,7 +437,6 @@ func runCommand() int {
 		"clang-flag",
 		"Pass arguments to clang. You may provide multiple -clang-flag items.")
 
-	// TODO : add update a c4go or check version
 	// TODO : add example for starters
 
 	flag.Usage = func() {
@@ -424,6 +444,7 @@ func runCommand() int {
 		usage += "Commands:\n"
 		usage += "  transpile\ttranspile an input C source file or files to Go\n"
 		usage += "  ast\t\tprint AST before translated Go code\n"
+		usage += "  version\tprint version of c4go\n"
 		usage += "\n"
 		fmt.Fprintf(stderr, usage, os.Args[0])
 
@@ -446,7 +467,7 @@ func runCommand() int {
 	case "ast":
 		err := astCommand.Parse(os.Args[2:])
 		if err != nil {
-			fmt.Printf("ast command cannot parse: %v", err)
+			fmt.Fprintf(os.Stdout, "ast command cannot parse: %v", err)
 			return 2
 		}
 
@@ -459,16 +480,17 @@ func runCommand() int {
 		args.ast = true
 		args.inputFiles = astCommand.Args()
 		args.clangFlags = clangFlags
+		args.cppCode = *astCppFlag
 	case "transpile":
 		err := transpileCommand.Parse(os.Args[2:])
 		if err != nil {
-			fmt.Printf("transpile command cannot parse: %v", err)
+			fmt.Fprintf(os.Stdout, "transpile command cannot parse: %v", err)
 			return 4
 		}
 
 		if *transpileHelpFlag || transpileCommand.NArg() == 0 {
 			fmt.Fprintf(stderr,
-				"Usage: %s transpile [-V] [-o file.go] [-p package] file1.c ...\n",
+				"Usage: %s transpile [-V] [-o file.go] [-p package] [-cpuprofile cpu.out] file1.c ...\n",
 				os.Args[0])
 			transpileCommand.PrintDefaults()
 			return 5
@@ -479,13 +501,32 @@ func runCommand() int {
 		args.packageName = *packageFlag
 		args.verbose = *verboseFlag
 		args.clangFlags = clangFlags
+		args.cppCode = *cppFlag
+		args.outsideStructs = *withOutsideStructs
+
+		// debugging
+		if *cpuprofile != "" {
+			f, err := os.Create(*cpuprofile)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "creating cpu profile: %s\n", err)
+				return 8
+			}
+			defer f.Close()
+			pprof.StartCPUProfile(f)
+			defer pprof.StopCPUProfile()
+		}
+
+	case "version":
+		fmt.Fprint(stderr, version.Version())
+		return 0
+
 	default:
 		flag.Usage()
 		return 6
 	}
 
 	if err := Start(args); err != nil {
-		fmt.Printf("Error: %v\n", err)
+		fmt.Fprintf(os.Stdout, "Error: %v\n", err)
 		return 7
 	}
 

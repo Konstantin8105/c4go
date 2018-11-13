@@ -3,7 +3,7 @@
 #include "tests.h"
 #include <stdio.h>
 
-typedef void function_t (int args);
+typedef void function_t(int args);
 
 struct programming {
     float constant;
@@ -404,141 +404,186 @@ void struct_array()
 }
 
 typedef struct ss {
-        char id;
+    char id;
 } ss;
 int struct_sizeof()
 {
-        ss v;
-		v.id = 'e';
-        ss *p = &v;
-        is_eq (sizeof p->id, 1);
-		(void)(p);
-		return -1;
+    ss v;
+    v.id = 'e';
+    ss* p = &v;
+    is_eq(sizeof p->id, 1);
+    (void)(p);
+    return -1;
 }
-
 
 static const struct {
-  int eType;           /* Transformation type code */
-  int nName;           /* Length of th name */
-  char *zName;        /* Name of the transformation */
-  double rLimit;      /* Maximum NNN value for this transform */
-  double rXform;      /* Constant used for this transform */
+    int eType; /* Transformation type code */
+    int nName; /* Length of th name */
+    char* zName; /* Name of the transformation */
+    double rLimit; /* Maximum NNN value for this transform */
+    double rXform; /* Constant used for this transform */
 } aXformType[] = {
-  { 0, 6, "second", 464269060800.0, 86400000.0/(24.0*60.0*60.0) },
-  { 0, 6, "minute", 7737817680.0,   86400000.0/(24.0*60.0)      },
-  { 0, 4, "hour",   128963628.0,    86400000.0/24.0             },
-  { 0, 3, "day",    5373485.0,      86400000.0                  },
-  { 1, 5, "month",  176546.0,       30.0*86400000.0             },
-  { 2, 4, "year",   14713.0,        365.0*86400000.0            },
+    { 0, 6, "second", 464269060800.0, 86400000.0 / (24.0 * 60.0 * 60.0) },
+    { 0, 6, "minute", 7737817680.0, 86400000.0 / (24.0 * 60.0) },
+    { 0, 4, "hour", 128963628.0, 86400000.0 / 24.0 },
+    { 0, 3, "day", 5373485.0, 86400000.0 },
+    { 1, 5, "month", 176546.0, 30.0 * 86400000.0 },
+    { 2, 4, "year", 14713.0, 365.0 * 86400000.0 },
 };
-void test_sizeofArray(){
-	is_eq((int)(sizeof(aXformType)/(sizeof(aXformType[0]))),6);
+void test_sizeofArray()
+{
+    is_eq((int)(sizeof(aXformType) / (sizeof(aXformType[0]))), 6);
 }
 
-
 struct StructBase {
-	union {
-		struct StructUsed *pStr;
-		int aaa;
-	} InsideUnion;
+    union {
+        struct StructUsed* pStr;
+        int aaa;
+    } InsideUnion;
 };
 struct StructUsed {
-	int vars;
+    int vars;
 };
-void test_structUsed(){
-	struct StructBase sb;
-	struct StructUsed ss;
-	sb.InsideUnion.pStr = &ss;
-	(*sb.InsideUnion.pStr).vars = 10;
-	is_eq((*sb.InsideUnion.pStr).vars, 10);
+void test_structUsed()
+{
+    struct StructBase sb;
+    struct StructUsed ss;
+    sb.InsideUnion.pStr = &ss;
+    (*sb.InsideUnion.pStr).vars = 10;
+    is_eq((*sb.InsideUnion.pStr).vars, 10);
 }
 
 struct EmptyName {
-	union {
-		long l1;
-		long l2;
-	};
+    union {
+        long l1;
+        long l2;
+    };
 };
-void test_emptyname (){
-	struct EmptyName en;
-	en.l1 = 10;
-	is_eq(en.l1,10);
-	is_eq(en.l2,10);
+void test_emptyname()
+{
+    struct EmptyName en;
+    en.l1 = 10;
+    is_eq(en.l1, 10);
+    is_eq(en.l2, 10);
 }
 
 // Link: http://en.cppreference.com/w/c/language/typedef
 typedef int A[]; // A is int[]
-A a = {1, 2}, b = {3,4,5}; // type of a is int[2], type of b is int[3]
-void test_typedef1(){
-	is_eq(a[1],2);
-	is_eq(b[1],4);
+A a = { 1, 2 }, b = { 3, 4, 5 }; // type of a is int[2], type of b is int[3]
+void test_typedef1()
+{
+    is_eq(a[1], 2);
+    is_eq(b[1], 4);
 }
-void test_typedef2(){
-	typedef float A[];
-	A a = {1., 2.}, b = {3.,4.,5.};
-	is_eq(a[1],2.);
-	is_eq(b[1],4.);
+void test_typedef2()
+{
+    typedef float A[];
+    A a = { 1., 2. }, b = { 3., 4., 5. };
+    is_eq(a[1], 2.);
+    is_eq(b[1], 4.);
 }
 
 void test_pointer_member()
 {
-	struct tttt{
-		int r[10];
-		int *p;
-	};
-	struct tttt t;
-	t.p = t.r;
-	for(int i=0;i<10;i++)
-		t.r[i]= i;
-	is_eq(*t.p,0);
-	t.p++;
-	is_eq(*t.p,1);
-	t.p+=2;
-	is_eq(*t.p,3);
+    struct tttt {
+        int r[10];
+        int* p;
+    };
+    struct tttt t;
+    t.p = t.r;
+    for (int i = 0; i < 10; i++)
+        t.r[i] = i;
+    is_eq(*t.p, 0);
+    t.p++;
+    is_eq(*t.p, 1);
+    t.p += 2;
+    is_eq(*t.p, 3);
 }
 
-struct SBA{
-	int t;
-	char name[100];
+struct SBA {
+    int t;
+    char name[100];
 };
 
 void struct_byte_array()
 {
-	struct SBA sba = {10,"qwe"};
-	is_eq(sba.t,10);
-	is_streq(sba.name,"qwe");
+    struct SBA sba = { 10, "qwe" };
+    is_eq(sba.t, 10);
+    is_streq(sba.name, "qwe");
 }
 
 struct AaA;
 typedef struct AaA tAaA;
-struct AaA{
-	int i;
+struct AaA {
+    int i;
 };
 void struct_typ2()
 {
-	tAaA a;
-	a.i = 10;
-	is_eq(a.i,10);
-	struct AaA b = a;
-	is_eq(b.i,10);
+    tAaA a;
+    a.i = 10;
+    is_eq(a.i, 10);
+    struct AaA b = a;
+    is_eq(b.i, 10);
 }
+
+typedef struct map_node_s map_node_t;
+
+struct map_node_s {
+    unsigned hash;
+    map_node_t* next;
+};
+
+map_node_t* ret()
+{
+    map_node_t mt;
+    mt.hash = 42;
+    return &mt;
+}
+
+void test_map_resize()
+{
+    map_node_t mt;
+    mt.hash = 12;
+    map_node_t* n = &mt;
+    is_not_null(n);
+    is_true(n->hash == 12);
+    map_node_t* n2 = ret();
+    is_not_null(n2);
+    is_true(n2->hash == 42);
+    n2->hash = 15;
+    is_true(n2->hash == 15);
+}
+
+typedef float ext_vec;
+extern ext_vec Re;
+void test_extern_vec()
+{
+    ext_vec e;
+    Re = 12.0;
+    e = 5.0;
+    is_eq(e, 5.0);
+    is_eq(Re, 12.0);
+}
+ext_vec Re;
 
 int main()
 {
-    plan(88);
+    plan(95);
 
-	struct_typ2();
-	struct_byte_array();
-	test_pointer_member();
-	test_typedef1();
-	test_typedef2();
+    test_extern_vec();
+    test_map_resize();
+    struct_typ2();
+    struct_byte_array();
+    test_pointer_member();
+    test_typedef1();
+    test_typedef2();
     struct_array();
     struct_func_func();
     struct_after_struct();
-	struct_sizeof();
-	test_sizeofArray();
-	test_structUsed();
-	test_emptyname();
+    struct_sizeof();
+    test_sizeofArray();
+    test_structUsed();
+    test_emptyname();
 
     struct programming variable;
     char* s = "Programming in Software Development.";

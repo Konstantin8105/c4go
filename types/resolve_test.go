@@ -313,8 +313,8 @@ func TestGenerateCorrectType(t *testing.T) {
 			out: "union __union_at_tests_union_c_46_3_",
 		},
 		{
-			inp: " const struct (anonymous struct at /home/lepricon/go/src/github.com/elliotchance/c2go/tests/struct.c:282:18) [7]",
-			out: "struct __struct_at__home_lepricon_go_src_github_com_elliotchance_c2go_tests_struct_c_282_18_ [7]",
+			inp: " const struct (anonymous struct at /home/lepricon/go/src/github.com/tests/struct.c:282:18) [7]",
+			out: "struct __struct_at__home_lepricon_go_src_github_com_tests_struct_c_282_18_ [7]",
 		},
 	}
 
@@ -324,6 +324,18 @@ func TestGenerateCorrectType(t *testing.T) {
 			if act != tc.out {
 				t.Errorf("Not correct result.\nExpected:%s\nActual:%s\n",
 					tc.out, act)
+			}
+		})
+	}
+}
+
+func TestResolveError(t *testing.T) {
+	tcs := []string{"w:w", "", "const"}
+	for i, tc := range tcs {
+		t.Run(fmt.Sprintf("%v", i), func(t *testing.T) {
+			var p program.Program
+			if _, err := types.ResolveType(&p, tc); err == nil {
+				t.Fatalf("Not acceptable")
 			}
 		})
 	}

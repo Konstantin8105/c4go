@@ -154,22 +154,72 @@ void test_string()
     is_streq(readline("rt", NULL, NULL), "rt");
 }
 
-int run_function(int a, void *v, char ** c,  void (*f)(void) ){
-	(void)(v);
-	(void)(c);
-	return a;
+int run_function(int a, void* v, char** c, void (*f)(void))
+{
+    (void)(v);
+    (void)(c);
+    return a;
 }
-void test_null_function(){
-	is_eq(run_function(5,NULL,NULL,NULL),5);
-	is_eq(run_function(5,   0,   0,   0),5);
+void test_null_function()
+{
+    is_eq(run_function(5, NULL, NULL, NULL), 5);
+    is_eq(run_function(5, 0, 0, 0), 5);
+}
+
+void test_function_if()
+{
+	int (*T)(int,double) = NULL;
+	is_null(T);
+	if ( !T ) {
+		pass("!T");
+	}
+	void (*R)(void) = NULL;
+	is_null(R);
+	R = my_function;
+	is_not_null(R);
+	if ( !R ) {
+		pass("!R");
+	}
+	if (!R || !T){
+		pass("!R || !T");
+	}
+	void (*V1)(void) = NULL;
+	is_null(V1);
+	if ( !V1 ) {
+		pass("!V1");
+	}
+	void (*V2)(void *) = NULL;
+	is_null(V2);
+	if ( !(!V2) ) {
+		fail("!V2");
+	}
+}
+
+void NullPointerCheck()
+{
+	void *p = NULL;
+	if (p) {
+		fail("p == NULL");
+	}
+	if (!p){
+		pass("p ^^ NULL");
+	}
+	double d = 99;
+	p = &d;
+	if (p) {
+		pass("p __ NULL");
+	}
+	if (!p){
+		fail("p != NULL");
+	}
 }
 
 int main()
 {
-    plan(53);
+    plan(63);
 
     test_string();
-	test_null_function();
+    test_null_function();
 
     pass("%s", "Main function.");
 
@@ -285,20 +335,22 @@ int main()
         is_eq(toupper(34, 52), 86);
     }
 
-	diag("function argument from array to slice");
-	{
-		char input_str[20];
+    diag("function argument from array to slice");
+    {
+        char input_str[20];
         strncpy(input_str, "Hello", 20);
-		is_streq(input_str,"Hello");
-	}
-	{
-		struct s_inp{
-			char input_str[20];
-		};
-		struct s_inp s;
+        is_streq(input_str, "Hello");
+    }
+    {
+        struct s_inp {
+            char input_str[20];
+        };
+        struct s_inp s;
         strncpy(s.input_str, "Hello", 20);
-		is_streq(s.input_str,"Hello");
-	}
+        is_streq(s.input_str, "Hello");
+    }
+	test_function_if();
+	NullPointerCheck();
 
     done_testing();
 }

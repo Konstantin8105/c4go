@@ -20,8 +20,8 @@ func NotInt(x int) int {
 	return 0
 }
 
-// NotUint16 works the same as NotInt, but on a uint16.
-func NotUint16(x uint16) uint16 {
+// NotUint16 performs a logical not (!) on an integer and returns an integer.
+func NotUint16(x uint16) int {
 	if x == 0 {
 		return 1
 	}
@@ -29,15 +29,11 @@ func NotUint16(x uint16) uint16 {
 	return 0
 }
 
-// Ternary simulates the ternary (also known as the conditional operator). Go
-// does not have the equivalent of using if statements as expressions or inline
-// if statements. This function takes the true and false parts as closures to be
-// sure that only the true or false condition is evaulated - to prevent side
-// effects.
-func Ternary(a bool, b, c func() interface{}) interface{} {
-	if a {
-		return b()
+// NotUint32 performs a logical not (!) on an integer and returns an integer.
+func NotUint32(x uint32) int {
+	if x == 0 {
+		return 1
 	}
 
-	return c()
+	return 0
 }

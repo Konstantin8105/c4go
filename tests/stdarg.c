@@ -54,50 +54,52 @@ void test_va_list()
     simple("dcff", 3, 'a', 1.999, 42.5);
 }
 
-int sum(int num_args, ...) {
-   int val = 0;
-   va_list ap;
-   int i;
+int sum(int num_args, ...)
+{
+    int val = 0;
+    va_list ap;
+    int i;
 
-   va_start(ap, num_args);
-   for(i = 0; i < num_args; i++) {
-      val += va_arg(ap, int);
-   }
-   va_end(ap);
- 
-   return val;
+    va_start(ap, num_args);
+    for (i = 0; i < num_args; i++) {
+        val += va_arg(ap, int);
+    }
+    va_end(ap);
+
+    return val;
 }
 
 void test_va_list2()
 {
-	is_eq(sum(3, 10, 20, 30), 60);
+    is_eq(sum(3, 10, 20, 30), 60);
 }
 
-int strange(int num_args, ...) {
-   int val = 0;
-   va_list ap;
-   int i;
+int strange(int num_args, ...)
+{
+    int val = 0;
+    va_list ap;
+    int i;
 
-   va_start(ap, num_args);
-   for(i = 0; i < num_args; i++) {
-	  *va_arg(ap, int*) += 2;
-   }
-   va_end(ap);
+    va_start(ap, num_args);
+    for (i = 0; i < num_args; i++) {
+        *va_arg(ap, int*) += 2;
+    }
+    va_end(ap);
 
-   va_start(ap, num_args);
-   for(i = 0; i < num_args; i++) {
-      val += *va_arg(ap, int*);
-   }
-   va_end(ap);
- 
-   return val;
+    va_start(ap, num_args);
+    for (i = 0; i < num_args; i++) {
+        val += *va_arg(ap, int*);
+    }
+    va_end(ap);
+
+    return val;
 }
 
 void test_va_list3()
 {
-	int v1 = 10;
-	int v2 = 23;
-	is_eq(strange(2, &v1, &v2), 10+2+23+2);
+    int v1 = 10;
+    int v2 = 23;
+    is_eq(strange(2, &v1, &v2), 10 + 2 + 23 + 2);
 }
 
 int main()

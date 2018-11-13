@@ -15,6 +15,31 @@ func parseIncludeList(line string) (lines []string, err error) {
 	line = strings.Replace(line, "\xFF", " ", -1)
 	line = strings.Replace(line, "\u0100", " ", -1)
 
+	sepLines := strings.Split(line, "\n")
+	var indexes []int
+	for i := range sepLines {
+		if !(strings.Index(sepLines[i], ":") < 0) {
+			indexes = append(indexes, i)
+		}
+	}
+	if len(indexes) > 1 {
+		for i := 0; i < len(indexes); i++ {
+			var partLines []string
+			var block string
+			if i+1 == len(indexes) {
+				block = strings.Join(sepLines[indexes[i]:], "\n")
+			} else {
+				block = strings.Join(sepLines[indexes[i]:indexes[i+1]], "\n")
+			}
+			partLines, err = parseIncludeList(block)
+			if err != nil {
+				return lines, fmt.Errorf("Part of lines : %v. %v", i, err)
+			}
+			lines = append(lines, partLines...)
+		}
+		return
+	}
+
 	index := strings.Index(line, ":")
 	if index < 0 {
 		err = fmt.Errorf("Cannot find `:` in line : %v", line)

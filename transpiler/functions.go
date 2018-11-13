@@ -6,6 +6,7 @@ package transpiler
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/Konstantin8105/c4go/ast"
@@ -94,7 +95,7 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 				fmt.Errorf("prefix of type '%s' is not empty", n.Type), n))
 		}
 
-		p.AddFunctionDefinition(program.FunctionDefinition{
+		p.AddFunctionDefinition(program.DefinitionFunction{
 			Name:          n.Name,
 			ReturnType:    r[0],
 			ArgumentTypes: f,
@@ -105,10 +106,6 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 	// If the function has a direct substitute in Go we do not want to
 	// output the C definition of it.
 	f := p.GetFunctionDefinition(n.Name)
-	if f != nil && f.Substitution != "" {
-		err = nil
-		return
-	}
 
 	// Test if the function has a body. This is identified by a child node that
 	// is a CompoundStmt (since it is not valid to have a function body without
@@ -125,20 +122,11 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 		}
 	}
 
-	// These functions cause us trouble for whatever reason. Some of them might
-	// even work now.
-	//
-	// TODO: Some functions are ignored because they are too much trouble
-	// https://github.com/Konstantin8105/c4go/issues/78
-	if n.Name == "__istype" ||
-		n.Name == "__isctype" ||
-		n.Name == "__wcwidth" ||
-		n.Name == "__sputc" ||
-		n.Name == "__inline_signbitf" ||
-		n.Name == "__inline_signbitd" ||
-		n.Name == "__inline_signbitl" {
-		err = nil
-		return
+	if p.IncludeHeaderIsExists("stdlib.h") && n.Name == "main" {
+		body.List = append([]goast.Stmt{&goast.DeferStmt{
+			Call: util.NewCallExpr("noarch.AtexitRun"),
+		}}, body.List...)
+		p.AddImport("github.com/Konstantin8105/c4go/noarch")
 	}
 
 	if functionBody != nil {
@@ -146,7 +134,7 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 		// immediately to stdout. This will appear at the top of the program but
 		// make it much easier to diagnose when the transpiler errors.
 		if p.Verbose {
-			fmt.Printf("// Function: %s(%s)\n", f.Name,
+			fmt.Fprintf(os.Stdout, "// Function: %s(%s)\n", f.Name,
 				strings.Join(f.ArgumentTypes, ", "))
 		}
 
@@ -180,7 +168,7 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 					&goast.AssignStmt{
 						Lhs: []goast.Expr{fieldList.List[0].Names[0]},
 						Tok: token.DEFINE,
-						Rhs: []goast.Expr{util.NewCallExpr("len", util.NewTypeIdent("os.Args"))},
+						Rhs: []goast.Expr{util.NewCallExpr("len", goast.NewIdent("os.Args"))},
 					},
 				)
 			}
@@ -197,7 +185,7 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 						Key:   goast.NewIdent("_"),
 						Value: util.NewIdent("argvSingle"),
 						Tok:   token.DEFINE,
-						X:     util.NewTypeIdent("os.Args"),
+						X:     goast.NewIdent("os.Args"),
 						Body: &goast.BlockStmt{
 							List: []goast.Stmt{
 								&goast.AssignStmt{
@@ -229,6 +217,16 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 			if _, ok := last.(*goast.ReturnStmt); !ok && t != "" {
 				body.List = append(body.List, &goast.ReturnStmt{})
 				addReturnName = true
+			}
+		}
+
+		// For functions without return type - no need add return at
+		// the end of body
+		if p.GetFunctionDefinition(n.Name).ReturnType == "void" {
+			if len(body.List) > 0 {
+				if _, ok := (body.List[len(body.List)-1]).(*goast.ReturnStmt); ok {
+					body.List = body.List[:len(body.List)-1]
+				}
 			}
 		}
 
@@ -351,8 +349,10 @@ func transpileReturnStmt(n *ast.ReturnStmt, p *program.Program) (
 		litExpr, isLiteral := e.(*goast.BasicLit)
 		if !isLiteral || (isLiteral && litExpr.Value != "0") {
 			p.AddImport("os")
-			return util.NewExprStmt(util.NewCallExpr("os.Exit", results...)),
-				preStmts, postStmts, nil
+			return util.NewExprStmt(&goast.CallExpr{
+				Fun:  goast.NewIdent("os.Exit"),
+				Args: results,
+			}), preStmts, postStmts, nil
 		}
 		results = []goast.Expr{}
 	}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -373,7 +374,7 @@ func TestCSTD(t *testing.T) {
 	}
 
 	// calculation
-	testFiles, err := filepath.Glob("tests/*.c")
+	testFiles, err := filepath.Glob("tests/" + "*.c")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -429,13 +430,25 @@ func TestCSTD(t *testing.T) {
 	})
 
 	for _, l := range ps {
-		fmt.Printf("%s\n", l.line)
+		fmt.Fprintf(os.Stdout, "%s\n", l.line)
+	}
+
+	// checking with README.md
+	b, err := ioutil.ReadFile("README.md")
+	if err != nil {
+		t.Fatalf("Cannot read file README.md : %v", err)
+	}
+	for _, l := range ps {
+		if !bytes.Contains(b, []byte(l.line)) {
+			t.Errorf("Please update information in file `README.md` about :\n`%s`",
+				l.line)
+		}
 	}
 
 	// Detail information
-	fmt.Println("\nDetail information:")
+	fmt.Fprintln(os.Stdout, "\nDetail information:")
 	for _, l := range ps {
-		fmt.Printf("%s\n", l.line)
+		fmt.Fprintf(os.Stdout, "%s\n", l.line)
 		var ps []pair
 		for function := range amount[l.inc] {
 			ps = append(ps, pair{
@@ -450,7 +463,7 @@ func TestCSTD(t *testing.T) {
 		})
 
 		for _, l := range ps {
-			fmt.Printf("%s\n", l.line)
+			fmt.Fprintf(os.Stdout, "%s\n", l.line)
 		}
 	}
 }

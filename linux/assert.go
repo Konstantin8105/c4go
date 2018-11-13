@@ -7,7 +7,7 @@ import (
 	"github.com/Konstantin8105/c4go/noarch"
 )
 
-var isTest bool = false
+var osExit func(int) = os.Exit
 
 // AssertFail handles __assert_fail().
 func AssertFail(
@@ -23,9 +23,7 @@ func AssertFail(
 		noarch.CStringToString(functionName),
 		noarch.CStringToString(expression),
 	)
-	if !isTest {
-		os.Exit(134)
-	}
+	osExit(134)
 
 	return true
 }

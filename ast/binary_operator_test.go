@@ -21,6 +21,15 @@ func TestBinaryOperator(t *testing.T) {
 			Operator:   "=",
 			ChildNodes: []Node{},
 		},
+		`0x2fdedd0 <col:204, col:223> 'int' lvalue '='`: &BinaryOperator{
+			Addr:       0x2fdedd0,
+			Pos:        NewPositionFromString("col:204, col:223"),
+			Type:       "int",
+			Type2:      "",
+			IsLvalue:   true,
+			Operator:   "=",
+			ChildNodes: []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)
