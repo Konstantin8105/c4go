@@ -52,7 +52,7 @@ func Atos(node Node) string {
 		panic(err)
 	}
 	var out bytes.Buffer
-	err = json.Indent(&out, j, "", "\t")
+	err = json.Indent(&out, j, "", "  ")
 	if err != nil {
 		panic(err)
 	}
