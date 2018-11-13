@@ -266,9 +266,69 @@ void struct_with_define()
     is_eq(a.im, 12);
 }
 
+void test_pointer_malloc1() {
+    int m = 3, n = 5;
+    int *p;
+    p = malloc(m * n * sizeof(int));
+    int i, j, count = 0;
+    for (i = 0; i < m; i++) {
+        for (j = 0; j < n; j++) {
+            count++;
+            p[i+j*m] = count;
+        }
+    }
+	is_eq(p[0], 1);
+	is_eq(p[2+2*m], 13);
+    free(p);
+}
+void test_pointer_malloc2() {
+    int m = 3, n = 5;
+    int (*p)[n];
+    p = malloc(m * n * sizeof(int));
+    int i, j, count = 0;
+    for (i = 0; i < m; i++) {
+        for (j = 0; j < n; j++) {
+            count++;
+            p[i][j] = count;
+        }
+    }
+	is_eq(p[0][0], 1);
+	is_eq(p[2][2], 13);
+    free(p);
+}
+void test_pointer_malloc2const() {
+    int (*p)[5];
+    p = malloc(3 * 5 * sizeof(int));
+    int i, j, count = 0;
+    for (i = 0; i < 3; i++) {
+        for (j = 0; j < 5; j++) {
+            count++;
+            p[i][j] = count;
+        }
+    }
+	is_eq(p[0][0], 1);
+	is_eq(p[2][2], 13);
+    free(p);
+}
+void test_pointer_malloc3() {
+    int m = 3;
+    int (*p)[5];
+    p = malloc(m * 5 * sizeof(int));
+    int i, j, count = 0;
+    for (i = 0; i < m; i++) {
+        for (j = 0; j < 5; j++) {
+            count++;
+            p[i][j] = count;
+        }
+    }
+	is_eq(p[0][0], 1);
+	is_eq(p[2][2], 13);
+    free(p);
+}
+
 int main()
 {
-    plan(757);
+    plan(765);
 
     struct_with_define();
 
@@ -546,6 +606,12 @@ int main()
     test_system();
 
     q_sort();
+
+	diag("pointer array (*)[]");
+	test_pointer_malloc1();
+	test_pointer_malloc2();
+	test_pointer_malloc2const();
+	test_pointer_malloc3();
 
     done_testing();
 }
