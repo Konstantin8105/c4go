@@ -1,3 +1,3 @@
 package noarch
 
-type PtrdiffT uint64
+type PtrdiffT uintptr
