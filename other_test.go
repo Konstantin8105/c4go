@@ -333,13 +333,26 @@ func TestCsparse(t *testing.T) {
 			folder+"csparse.c",
 			"https://people.sc.fsu.edu/~jburkardt/c_src/csparse/csparse.c")
 		if err != nil {
+			t.Fatalf("cannot download : %v", err)
+		}
+		err = DownloadFile(
+			folder+"csparse_demo1.c",
+			"https://people.sc.fsu.edu/~jburkardt/c_src/csparse/csparse_demo1.c")
+		if err != nil {
 			t.Fatalf("Cannot download : %v", err)
+		}
+		err = DownloadFile(
+			folder+"kershaw.st",
+			"https://people.sc.fsu.edu/~jburkardt/c_src/csparse/kershaw.st")
+		if err != nil {
+			t.Fatalf("cannot download : %v", err)
 		}
 	}
 
 	args := DefaultProgramArgs()
 	args.inputFiles = []string{
 		folder + "csparse.c",
+		folder + "csparse_demo1.c",
 	}
 	args.clangFlags = []string{}
 	args.outputFile = folder + "main.go"
