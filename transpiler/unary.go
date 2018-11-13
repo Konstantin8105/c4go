@@ -265,6 +265,24 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 		return
 	}
 
+	if decl, ok := n.Children()[0].(*ast.DeclRefExpr); ok {
+		var found bool
+		for i := range VarNameNotPointer {
+			if decl.Name == VarNameNotPointer[i] {
+				found = true
+				break
+			}
+		}
+		if found {
+			expr = &goast.UnaryExpr{
+				Op: token.AND, // &
+				X:  util.NewIdent(decl.Name),
+			}
+			eType = n.Type
+			return
+		}
+	}
+
 	p.AddImport("unsafe")
 	expr = util.CreateSliceFromReference(resolvedType, expr)
 

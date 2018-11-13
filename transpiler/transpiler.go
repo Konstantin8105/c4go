@@ -372,6 +372,8 @@ func transpileToStmt(node ast.Node, p *program.Program) (
 	return
 }
 
+var VarNameNotPointer []string
+
 func transpileToNode(node ast.Node, p *program.Program) (
 	decls []goast.Decl, err error) {
 	defer func() {
@@ -403,6 +405,10 @@ func transpileToNode(node ast.Node, p *program.Program) (
 
 	switch n := node.(type) {
 	case *ast.FunctionDecl:
+		// analyze variables
+		VarNameNotPointer = analyzeFunctionDec(n, p)
+
+		// transpile
 		com := p.GetComments(node.Position())
 		decls, err = transpileFunctionDecl(n, p)
 		if len(decls) > 0 {
