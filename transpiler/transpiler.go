@@ -166,9 +166,12 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 	case *ast.VAArgExpr:
 		expr, exprType, preStmts, postStmts, err = transpileVAArgExpr(n, p)
 
+	case *ast.VisibilityAttr:
+		// ignore
+
 	default:
 		p.AddMessage(p.GenerateWarningMessage(
-			fmt.Errorf("cannot transpile to expr in transpileToExpr : %T", node), node))
+			fmt.Errorf("cannot transpile to expr in transpileToExpr : %T : %#v", node, node), node))
 		expr = util.NewNil()
 	}
 
