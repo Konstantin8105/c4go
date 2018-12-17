@@ -131,7 +131,7 @@ func main() {
             signal.h	       0/3	           0%
             stdarg.h	       4/4	         100%
             stddef.h	       2/6	        33.3%
-             stdio.h	     32/46	        69.6%
+             stdio.h	     33/46	        71.7%
             stdlib.h	     33/47	        70.2%
             string.h	     12/24	          50%
               time.h	      7/15	        46.7%
