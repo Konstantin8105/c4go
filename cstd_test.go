@@ -383,14 +383,36 @@ func TestCSTD(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Cannot read file : %v\n", file)
 		}
+		// separate on parts
+		body = bytes.Replace(body, []byte("["), []byte(" "), -1)
+		body = bytes.Replace(body, []byte("]"), []byte(" "), -1)
+		body = bytes.Replace(body, []byte("("), []byte(" "), -1)
+		body = bytes.Replace(body, []byte(")"), []byte(" "), -1)
+		body = bytes.Replace(body, []byte("="), []byte(" "), -1)
+		body = bytes.Replace(body, []byte(";"), []byte(" "), -1)
+		body = bytes.Replace(body, []byte(","), []byte(" "), -1)
+		body = bytes.Replace(body, []byte("+"), []byte(" "), -1)
+		body = bytes.Replace(body, []byte("-"), []byte(" "), -1)
+		body = bytes.Replace(body, []byte("/"), []byte(" "), -1)
+		body = bytes.Replace(body, []byte("*"), []byte(" "), -1)
+		body = bytes.Replace(body, []byte("\n"), []byte(" "), -1)
+
+		lines := bytes.Split(body, []byte(" "))
+		for i := range lines {
+			lines[i] = bytes.TrimSpace(lines[i])
+		}
+
 		for include := range amount {
 			// check include file
 			if !bytes.Contains(body, []byte("<"+include+">")) {
 				continue
 			}
+			// finding function
 			for _, function := range cstd[include] {
-				if bytes.Contains(body, []byte(function)) {
-					amount[include][function]++
+				for i := range lines {
+					if bytes.Equal(lines[i], []byte(function)) {
+						amount[include][function]++
+					}
 				}
 			}
 		}
