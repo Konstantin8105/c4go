@@ -1,7 +1,3 @@
-github.com/Konstantin8105/cs v0.0.0-20181024100459-6ded65a9e27b h1:/RcQlPHwmWbS+WsztN0t8lxDgzYDXnulnvAK2G/LDus=
-github.com/Konstantin8105/cs v0.0.0-20181024100459-6ded65a9e27b/go.mod h1:vfMy6JvH0X89EH6mN5haULYCopfUw9q2CXpc5hZWDZk=
-github.com/Konstantin8105/cs v0.0.0-20190128074215-4480758835d8 h1:Vx+mpqqvfygAnVrKvp91/JGh2Ueun+25TxA6bVV+d1I=
-github.com/Konstantin8105/cs v0.0.0-20190128074215-4480758835d8/go.mod h1:vfMy6JvH0X89EH6mN5haULYCopfUw9q2CXpc5hZWDZk=
 github.com/Konstantin8105/cs v0.0.0-20190128080850-835df8c6800b h1:D6xTitWEP2Y41ELI5xoljoTzl0scix576kMqns7dzdw=
 github.com/Konstantin8105/cs v0.0.0-20190128080850-835df8c6800b/go.mod h1:vfMy6JvH0X89EH6mN5haULYCopfUw9q2CXpc5hZWDZk=
 github.com/Konstantin8105/errors v0.0.0-20181212104420-238382203ad7 h1:o4rkWxWs3BenYHSTYaMBYbTo25/sCAhowz/XX5ZdDr4=
