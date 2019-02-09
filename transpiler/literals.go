@@ -60,8 +60,10 @@ func transpileStringLiteral(p *program.Program, n *ast.StringLiteral, arrayToArr
 	// Example:
 	// StringLiteral 0x280b918 <col:29> 'char [30]' lvalue "%0"
 	baseType := types.GetBaseType(n.Type)
-	if baseType != "char" {
-		err = fmt.Errorf("Type is not `char` : %v", n.Type)
+	if baseType != "char" &&
+		!strings.Contains(baseType, "int") &&
+		!strings.Contains(baseType, "wchar_t") {
+		err = fmt.Errorf("Type is not valid : %v", n.Type)
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 		return
 	}
