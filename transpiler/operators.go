@@ -1034,6 +1034,8 @@ func getDeclRefExprOrArraySub(n ast.Node) (ast.Node, bool) {
 		return getDeclRefExprOrArraySub(n.Children()[0])
 	case *ast.ArraySubscriptExpr:
 		return v, true
+	case *ast.MemberExpr:
+		return v, true
 	}
 	return nil, false
 }
