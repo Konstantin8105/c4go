@@ -97,16 +97,21 @@ func transpileIfStmt(n *ast.IfStmt, p *program.Program) (
 		boolCondition = util.NewNil()
 	}
 
-	body, newPre, newPost, err := transpileToBlockStmt(children[2], p)
-	if err != nil {
-		return nil, nil, nil, err
+	body := new(goast.BlockStmt)
+
+	if children[2] != nil {
+		var newPre, newPost []goast.Stmt
+		body, newPre, newPost, err = transpileToBlockStmt(children[2], p)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+
+		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+		if body == nil {
+			return nil, nil, nil, fmt.Errorf("Body of If cannot by nil")
+		}
 	}
 
-	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
-
-	if body == nil {
-		return nil, nil, nil, fmt.Errorf("Body of If cannot by nil")
-	}
 	if boolCondition == nil {
 		return nil, nil, nil, fmt.Errorf("Bool Condition in If cannot by nil")
 	}

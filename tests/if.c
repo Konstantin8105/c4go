@@ -12,6 +12,13 @@ int main()
 
     int x = 1;
 
+	// empty if body
+	if (x == 0)
+		;
+	else if (x != 0) {
+		pass("ok: empty if body");
+	}
+
     // Without else
     if (x == 1)
         pass("%s", "x is equal to one");
