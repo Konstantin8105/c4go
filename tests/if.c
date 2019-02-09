@@ -8,9 +8,16 @@ int d(int v)
 
 int main()
 {
-    plan(21);
+    plan(23);
 
     int x = 1;
+
+	// empty if body
+	if (x == 0)
+		;
+	else if (x != 0) {
+		pass("ok: empty if body");
+	}
 
     // Without else
     if (x == 1)
@@ -153,6 +160,13 @@ int main()
 	}
 	(void)(esc) ;
 	(void)(esct);
+
+	int *y = NULL;
+	if ((y = (int*)calloc(1,sizeof(int))) != NULL){
+		pass("y");
+	} else {
+        fail("y");
+	}
 
     done_testing();
 }

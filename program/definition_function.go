@@ -233,6 +233,12 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int vsprintf(char*, const char *, ...) -> noarch.Vsprintf",
 		"int vsnprintf(char*, int, const char *, ...) -> noarch.Vsnprintf",
 	},
+	"wchar.h": {
+		// wchar.h
+		"wchar_t * wcscpy(wchar_t*, const wchar_t*) -> noarch.Wcscpy",
+		"int wcscmp(const wchar_t*, const wchar_t*) -> noarch.Wcscmp",
+		"size_t wcslen(const wchar_t*) -> noarch.Wcslen",
+	},
 	"string.h": {
 		// string.h
 		"char* strcat(char *, const char *) -> noarch.Strcat",
