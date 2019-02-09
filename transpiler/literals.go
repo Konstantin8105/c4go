@@ -74,6 +74,7 @@ func transpileStringLiteral(p *program.Program, n *ast.StringLiteral, arrayToArr
 			expr = util.NewCallExpr("[]byte",
 				util.NewStringLit(strconv.Quote(n.Value+"\x00")))
 			exprType = "const char *"
+			err = nil // ignore error
 			return
 		}
 		buf := bytes.NewBufferString(n.Value + "\x00")
@@ -81,14 +82,15 @@ func transpileStringLiteral(p *program.Program, n *ast.StringLiteral, arrayToArr
 			buf.Write(make([]byte, s-buf.Len()))
 		}
 		switch {
-		case strings.Contains(baseType, "char"):
-			expr = util.NewCallExpr("[]byte",
-				util.NewStringLit(strconv.Quote(buf.String())))
 		case strings.Contains(baseType, "int"), strings.Contains(baseType, "wchar_t"):
 			expr = util.NewCallExpr("[]rune",
 				util.NewStringLit(strconv.Quote(buf.String())))
+			exprType = "const wchar_t *"
+		default:
+			expr = util.NewCallExpr("[]byte",
+				util.NewStringLit(strconv.Quote(buf.String())))
+			exprType = "const char *"
 		}
-		exprType = "const char *"
 		return
 	}
 	// Example:
