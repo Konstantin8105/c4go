@@ -1,3 +1,3 @@
 package noarch
 
-type WchaT = rune
+type WcharT = rune
