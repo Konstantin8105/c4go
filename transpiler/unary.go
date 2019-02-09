@@ -600,6 +600,8 @@ func transpileUnaryExprOrTypeTraitExpr(n *ast.UnaryExprOrTypeTraitExpr, p *progr
 			realFirstChild = c.Children()[0]
 		case *ast.DeclRefExpr:
 			t = c.Type
+		case *ast.UnaryOperator:
+			t = c.Type
 		case *ast.MemberExpr:
 			t = c.Type
 		case *ast.ArraySubscriptExpr:
