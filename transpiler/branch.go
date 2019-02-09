@@ -67,16 +67,7 @@ func transpileIfStmt(n *ast.IfStmt, p *program.Program) (
 
 	// The last parameter must be false because we are transpiling an
 	// expression - assignment operators need to be wrapped in closures.
-	if cao, ok := children[1].(*ast.CompoundAssignOperator); ok {
-		// example:
-		// if ( val += step) {...}
-		var bin ast.BinaryOperator
-		bin.Operator = ","
-		bin.AddChild(children[1])
-		bin.AddChild(cao.Children()[1])
-		children[1] = &bin
-	}
-	conditional, conditionalType, newPre, newPost, err := transpileToExpr(children[1], p, false)
+	conditional, conditionalType, newPre, newPost, err := atomicOperation(children[1], p)
 	if err != nil {
 		err = fmt.Errorf("Cannot transpile for condition. %v", err)
 		return nil, nil, nil, err

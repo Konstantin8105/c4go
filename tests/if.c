@@ -8,7 +8,7 @@ int d(int v)
 
 int main()
 {
-    plan(23);
+    plan(24);
 
     int x = 1;
 
@@ -166,6 +166,14 @@ int main()
 		pass("y");
 	} else {
         fail("y");
+	}
+
+	struct yS {int *c;};
+	struct yS y2;
+	if ((y2.c = (int*)calloc(1,sizeof(char))) != NULL){
+		pass("y2");
+	} else {
+        fail("y2");
 	}
 
     done_testing();
