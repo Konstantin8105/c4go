@@ -80,8 +80,14 @@ func transpileStringLiteral(p *program.Program, n *ast.StringLiteral, arrayToArr
 		if buf.Len() < s {
 			buf.Write(make([]byte, s-buf.Len()))
 		}
-		expr = util.NewCallExpr("[]byte",
-			util.NewStringLit(strconv.Quote(buf.String())))
+		switch {
+		case strings.Contains(baseType, "char"):
+			expr = util.NewCallExpr("[]byte",
+				util.NewStringLit(strconv.Quote(buf.String())))
+		case strings.Contains(baseType, "int"), strings.Contains(baseType, "wchar_t"):
+			expr = util.NewCallExpr("[]rune",
+				util.NewStringLit(strconv.Quote(buf.String())))
+		}
 		exprType = "const char *"
 		return
 	}
