@@ -8,9 +8,16 @@ int d(int v)
 
 int main()
 {
-    plan(21);
+    plan(22);
 
     int x = 1;
+
+	// empty if body
+	if (x == 0)
+		;
+	else if (x != 0) {
+		pass("ok: empty if body");
+	}
 
     // Without else
     if (x == 1)
