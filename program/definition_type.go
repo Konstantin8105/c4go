@@ -40,6 +40,7 @@ var DefinitionType = map[string]string{
 	"_Bool":                  "int",
 	"size_t":                 "uint",
 	"ptrdiff_t":              "github.com/Konstantin8105/c4go/noarch.PtrdiffT",
+	"wchar_t":                "github.com/Konstantin8105/c4go/noarch.WcharT",
 
 	// void*
 	"void*":  "interface{}",

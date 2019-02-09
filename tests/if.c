@@ -8,7 +8,7 @@ int d(int v)
 
 int main()
 {
-    plan(22);
+    plan(23);
 
     int x = 1;
 
@@ -160,6 +160,13 @@ int main()
 	}
 	(void)(esc) ;
 	(void)(esct);
+
+	int *y = NULL;
+	if ((y = (int*)calloc(1,sizeof(int))) != NULL){
+		pass("y");
+	} else {
+        fail("y");
+	}
 
     done_testing();
 }

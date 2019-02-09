@@ -135,7 +135,7 @@ func main() {
             stdlib.h	     33/47	        70.2%
             string.h	     12/24	          50%
               time.h	      7/15	        46.7%
-             wchar.h	      0/68	           0%
+             wchar.h	      3/68	        4.41%
             wctype.h	      0/22	           0%
 ```
 

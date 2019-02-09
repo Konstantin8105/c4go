@@ -60,8 +60,10 @@ func transpileStringLiteral(p *program.Program, n *ast.StringLiteral, arrayToArr
 	// Example:
 	// StringLiteral 0x280b918 <col:29> 'char [30]' lvalue "%0"
 	baseType := types.GetBaseType(n.Type)
-	if baseType != "char" {
-		err = fmt.Errorf("Type is not `char` : %v", n.Type)
+	if baseType != "char" &&
+		!strings.Contains(baseType, "int") &&
+		!strings.Contains(baseType, "wchar_t") {
+		err = fmt.Errorf("Type is not valid : %v", n.Type)
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 		return
 	}
@@ -72,15 +74,23 @@ func transpileStringLiteral(p *program.Program, n *ast.StringLiteral, arrayToArr
 			expr = util.NewCallExpr("[]byte",
 				util.NewStringLit(strconv.Quote(n.Value+"\x00")))
 			exprType = "const char *"
+			err = nil // ignore error
 			return
 		}
 		buf := bytes.NewBufferString(n.Value + "\x00")
 		if buf.Len() < s {
 			buf.Write(make([]byte, s-buf.Len()))
 		}
-		expr = util.NewCallExpr("[]byte",
-			util.NewStringLit(strconv.Quote(buf.String())))
-		exprType = "const char *"
+		switch {
+		case strings.Contains(baseType, "int"), strings.Contains(baseType, "wchar_t"):
+			expr = util.NewCallExpr("[]rune",
+				util.NewStringLit(strconv.Quote(buf.String())))
+			exprType = "const wchar_t *"
+		default:
+			expr = util.NewCallExpr("[]byte",
+				util.NewStringLit(strconv.Quote(buf.String())))
+			exprType = "const char *"
+		}
 		return
 	}
 	// Example:

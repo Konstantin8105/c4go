@@ -6,13 +6,14 @@ type StringLiteral struct {
 	Pos        Position
 	Type       string
 	Value      string
+	Runes      bool
 	IsLvalue   bool
 	ChildNodes []Node
 }
 
 func parseStringLiteral(line string) *StringLiteral {
 	groups := groupsFromRegex(
-		`<(?P<position>.*)> '(?P<type>.*)' lvalue (?P<value>".*")`,
+		`<(?P<position>.*)> '(?P<type>.*)' lvalue (?P<runes>L)?(?P<value>".*")`,
 		line,
 	)
 
@@ -22,6 +23,7 @@ func parseStringLiteral(line string) *StringLiteral {
 		Type:       groups["type"],
 		Value:      unquote(groups["value"]),
 		IsLvalue:   true,
+		Runes:      groups["runes"] != "",
 		ChildNodes: []Node{},
 	}
 }
