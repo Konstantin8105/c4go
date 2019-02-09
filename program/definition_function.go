@@ -237,6 +237,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		// wchar.h
 		"wchar_t * wcscpy(wchar_t*, const wchar_t*) -> noarch.Wcscpy",
 		"int wcscmp(const wchar_t*, const wchar_t*) -> noarch.Wcscmp",
+		"size_t wcslen(const wchar_t*) -> noarch.Wcslen",
 	},
 	"string.h": {
 		// string.h

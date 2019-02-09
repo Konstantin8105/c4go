@@ -2,7 +2,7 @@
 #include <wchar.h>
 
 int main() {
-	plan(2);
+	plan(5);
 
 	{
 		diag("wcscmp");
@@ -15,17 +15,17 @@ int main() {
 		}
 	}
 
-	// {
-	// 	diag("wcscpy");
-	// 	wchar_t wcs1[]=L"Sample string";
-	// 	wchar_t wcs2[40];
-	// 	wchar_t wcs3[40];
-	// 	wcscpy (wcs2,wcs1);
-	// 	wcscpy (wcs3,L"copy successful");
-	// 	is_wchareq(wcs1,L"Sample string");
-	// 	is_wchareq(wcs2,L"Sample string");
-	// 	is_wchareq(wcs3,L"copy successful");
-	// }
+	{
+		diag("wcscpy");
+		wchar_t wcs1[]=L"Sample string";
+		wchar_t wcs2[40];
+		wchar_t wcs3[40];
+		wcscpy (wcs2,wcs1);
+		wcscpy (wcs3,L"copy successful");
+		is_wchareq(wcs1,L"Sample string");
+		is_wchareq(wcs2,L"Sample string");
+		is_wchareq(wcs3,L"copy successful");
+	}
 
 	done_testing();
 }
