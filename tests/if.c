@@ -8,7 +8,7 @@ int d(int v)
 
 int main()
 {
-    plan(20);
+    plan(21);
 
     int x = 1;
 
@@ -143,6 +143,16 @@ int main()
 			is_true(l[1] == 2);
 		}
 	}
+	
+	int esct = 0;
+	int esc  = 5;
+	if (esct += esc) {
+		pass("ok"); 
+	} else { 
+		fail("fail");
+	}
+	(void)(esc) ;
+	(void)(esct);
 
     done_testing();
 }
