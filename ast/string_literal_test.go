@@ -30,6 +30,14 @@ func TestStringLiteral(t *testing.T) {
 			Value:      "x\vx\x00xxx\axx\tx\n",
 			ChildNodes: []Node{},
 		},
+		`0x3ed1658 <col:16> 'int [16]' lvalue L"copy successful"`: &StringLiteral{
+			Addr:       0x3ed1658,
+			Pos:        NewPositionFromString("col:16"),
+			Type:       "int [16]",
+			IsLvalue:   true,
+			Value:      "copy successful",
+			ChildNodes: []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)
