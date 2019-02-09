@@ -303,6 +303,8 @@ func main(){
 	fset := token.NewFileSet() // positions are relative to fset
 	body := strings.Replace(source.String(), "&#43;", "+", -1)
 	body = strings.Replace(body, "&amp;", "&", -1)
+	body = strings.Replace(body, "&#34;", "\"", -1)
+	// TODO: add unicode convertor
 	f, err := parser.ParseFile(fset, "", body, 0)
 	if err != nil {
 		err = fmt.Errorf("Cannot parse file. err = %v", err)
