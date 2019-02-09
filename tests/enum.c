@@ -137,10 +137,21 @@ typedef enum {
 enum { e1 = 1,
     e2 };
 
+enum {
+	MBchar = 'U', 
+	Troffchar = 'C', 
+	Number = 'N', 
+	Install = 'i', 
+	Lookup = 'l' 
+};
+
+
 // main function
 int main()
 {
-    plan(43);
+    plan(44);
+
+	is_eq(MBchar, 'U');
 
     test_unary();
     test_parent();
