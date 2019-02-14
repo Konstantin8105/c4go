@@ -408,6 +408,8 @@ func setPosition(node Node, position Position) {
 		n.Pos = position
 	case *UnusedAttr:
 		n.Pos = position
+	case *UserAttr:
+		n.Pos = position
 	case *VAArgExpr:
 		n.Pos = position
 	case *VarDecl:
