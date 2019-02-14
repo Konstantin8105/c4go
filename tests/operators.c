@@ -45,9 +45,21 @@ int f_sizeof(int i)
 	return i;
 }
 
+int reteg(int a)
+{
+	int arr[5];
+	for (int i = 0; i < 5;i++) {
+			arr[i] = i;
+	}
+	int *ptr;
+	ptr = &arr[1];
+	(void)(ptr);
+	return *ptr = a+1;
+}
+
 int main()
 {
-    plan(110);
+    plan(111);
 
     int i = 10;
     signed char j = 1;
@@ -450,6 +462,12 @@ int main()
 		y[1] = 5;
 		is_true(y[1] == 5);
 		is_true(y[sizeof(char)] == 5);
+	}
+	diag("function with equal in return");
+	{
+		int a = 42;
+		a = reteg(a);
+		is_eq(a,43);
 	}
 
     done_testing();

@@ -326,7 +326,7 @@ func transpileReturnStmt(n *ast.ReturnStmt, p *program.Program) (
 
 	var eType string
 	var e goast.Expr
-	e, eType, preStmts, postStmts, err = transpileToExpr(n.Children()[0], p, false)
+	e, eType, preStmts, postStmts, err = atomicOperation(n.Children()[0], p)
 	if err != nil {
 		return nil, nil, nil, err
 	}
