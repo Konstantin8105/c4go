@@ -353,5 +353,5 @@ func GetTypeIfExist(node Node) (Type *string, ok bool) {
 		return &v.Type, true
 	}
 
-	panic(fmt.Errorf("Not support parent type %T in pointer seaching", node))
+	return nil, false
 }
