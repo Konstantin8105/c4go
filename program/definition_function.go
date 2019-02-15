@@ -319,6 +319,9 @@ var builtInFunctionDefinitions = map[string][]string{
 	"sys/ioctl.h": {
 		"int ioctl(int , int , ... ) -> noarch.Ioctl",
 	},
+	"sys/time.h": {
+		"int gettimeofday(struct timeval *, struct timezone *) -> noarch.Gettimeofday",
+	},
 	"fcntl.h": {
 		"int open(const char *, int , mode_t ) -> noarch.OpenM",
 		"int open(const char *, int ) -> noarch.Open",
