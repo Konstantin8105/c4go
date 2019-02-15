@@ -40,6 +40,44 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		expr = goast.NewIdent("nil")
 		return
 	}
+	if n.Kind == "IntegralToPointer" {
+		// ImplicitCastExpr 'double *' <IntegralToPointer>
+		// `-ImplicitCastExpr 'long' <LValueToRValue>
+		//   `-DeclRefExpr 'long' lvalue Var 0x30e91d8 'pnt' 'long'
+		if types.IsCPointer(n.Type) {
+			if t, ok := ast.GetTypeIfExist(n.Children()[0]); ok {
+				if types.IsCInteger(p, *t) {
+					resolveType := n.Type
+					resolveType, err = types.ResolveType(p, n.Type)
+					if err != nil {
+						return nil, "", nil, nil, err
+					}
+					expr = &goast.StarExpr{
+						X: &goast.ParenExpr{
+							X: &goast.CallExpr{
+								Fun: &goast.ParenExpr{X: goast.NewIdent("*" + resolveType)},
+								Args: []goast.Expr{
+									&goast.CallExpr{
+										Fun: goast.NewIdent("unsafe.Pointer"),
+										Args: []goast.Expr{
+											&goast.CallExpr{
+												Fun:  goast.NewIdent("uintptr"),
+												Args: []goast.Expr{expr},
+											},
+										},
+									},
+								},
+							},
+						},
+					}
+					p.GenerateWarningMessage(
+						fmt.Errorf("used unsafe convert from integer to pointer"), n)
+					exprType = n.Type
+					return
+				}
+			}
+		}
+	}
 
 	var cast bool = true
 	if in, ok := n.Children()[0].(*ast.IntegerLiteral); ok && in.Type == "int" {
@@ -187,23 +225,19 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 	// `-ParenExpr 'long *'
 	//   `-UnaryOperator 'long *' prefix '&'
 	//     `-DeclRefExpr 'long' lvalue Var 0x38cb568 'l' 'long'
-
 	if len(n.Children()) > 0 {
 		if types.IsCInteger(p, n.Type) {
 			if t, ok := ast.GetTypeIfExist(n.Children()[0]); ok {
 				if types.IsPointer(*t) {
 					// main information	: https://go101.org/article/unsafe.html
-					expr = &goast.CallExpr{
-						Fun: goast.NewIdent(n.Type),
-						Args: []goast.Expr{
-							&goast.CallExpr{
-								Fun: goast.NewIdent("uintptr"),
-								Args: []goast.Expr{
-									expr,
-								},
-							},
-						},
+					var retType string
+					expr, retType = util.GetUintptrForSlice(expr)
+
+					expr, err = types.CastExpr(p, expr, retType, n.Type)
+					if err != nil {
+						return nil, "", nil, nil, err
 					}
+
 					exprType = n.Type
 				}
 			}

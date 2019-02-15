@@ -93,34 +93,63 @@ void test_bool_to_int()
 
 
 // TODO:
-// void test_unsafe_pnt()
-// {
+void test_unsafe_pnt()
+{
+	// (otri).orient = (int) ((unsigned long) (ptr) & (unsigned long) 3l);
+	// {
+		// long pnt;
+		// double d = 42.0;
+		// double *dd = &d;
+		// long pnt2 = (long) (dd);
+		// pnt = pnt2;
+		// double *ddd = pnt;
+		// is_eq(*ddd, 42);
+		// (void)pnt;
+	// }
 	// {
 		// int pnt;
 		// long l = 42;
 		// pnt = (int)&l;
-		// long *l_pnt = (long *)(l);
+		// long *l_pnt = (long *)(pnt);
 		// is_eq(*l_pnt,42);
 	// }
 	// {
 		// int pnt;
 		// long l = 42;
 		// pnt = (int) (&l);
-		// long *l_pnt = (long *)(l);
+		// long *l_pnt = (long *)(pnt);
 		// is_eq(*l_pnt,42);
 	// }
-// }
+	{
+		void * pnt;
+		long l = 42;
+		long *d = &l;
+		pnt = d;
+		long l_pnt = 24;
+		l_pnt = *((long *)(pnt));
+		is_eq(l_pnt,42);
+		(void)pnt;
+	}
+	// {
+		// int pnt;
+		// long l = 42;
+		// long *d = &l;
+		// pnt = (int)(d);
+		// long *l_pnt = (long *)(pnt);
+		// is_eq(*l_pnt,42);
+	// }
+}
 
 int main()
 {
-    plan(33);
+    plan(34);
 
+	START_TEST(unsafe_pnt);
     START_TEST(bool_to_int);
     START_TEST(cast);
     START_TEST(castbool);
     START_TEST(vertex);
     START_TEST(strCh);
-	// START_TEST(unsafe_pnt);
 
     {
         typedef unsigned int u32;
