@@ -3,6 +3,7 @@ package ast
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -320,4 +321,19 @@ func groupsFromRegex(rx, line string) map[string]string {
 	}
 
 	return result
+}
+
+// GetTypeIfExist return string inside field Type of struct
+func GetTypeIfExist(node Node) (Type *string, ok bool) {
+	val := reflect.ValueOf(node).Elem()
+	for i := 0; i < val.NumField(); i++ {
+		valueField := val.Field(i)
+		typeField := val.Type().Field(i)
+		if typeField.Name == "Type" {
+			if s, ok := valueField.Interface().(string); ok {
+				return &s, ok
+			}
+		}
+	}
+	return nil, false
 }

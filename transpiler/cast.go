@@ -178,5 +178,24 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 		}
 		exprType = n.Type
 	}
+
+	// if len(n.Children()) > 0 {
+	// fmt.Println(exprType, n.Children()[0])
+	// }
+
+	// CStyleCastExpr 'int' <PointerToIntegral>
+	// `-UnaryOperator 'long *' prefix '&'
+	//   `-DeclRefExpr 'long' lvalue Var 0x42b5268 'l' 'long'
+	// if len(n.Children()) > 0 {
+	// if types.IsCInteger(p, n.Type) && types.IsPointer(n.Children()[0].Type) {
+	// }
+	// }
+
+	// TODO:
+	// CStyleCastExpr 'int' <PointerToIntegral>
+	// `-ParenExpr 'long *'
+	//   `-UnaryOperator 'long *' prefix '&'
+	//     `-DeclRefExpr 'long' lvalue Var 0x38cb568 'l' 'long'
+
 	return
 }
