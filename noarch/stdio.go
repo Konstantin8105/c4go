@@ -240,6 +240,18 @@ func Fgets(str []byte, num int, stream *File) []byte {
 	return buf[:n]
 }
 
+// Gets read bytes from stdin
+func Gets(str []byte) []byte {
+	_, err := Stdin.OsFile.Read(str)
+
+	// FIXME: Is this the right thing to do in this case?
+	if err != nil {
+		return []byte{}
+	}
+
+	return str
+}
+
 // Rewind handles rewind().
 //
 // Sets the position indicator associated with stream to the beginning of the

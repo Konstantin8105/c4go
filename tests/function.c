@@ -216,7 +216,7 @@ void NullPointerCheck()
 
 int main()
 {
-    plan(63);
+    plan(65);
 
     test_string();
     test_null_function();
@@ -351,6 +351,15 @@ int main()
     }
 	test_function_if();
 	NullPointerCheck();
+
+	{
+		diag("not argument in argument");
+		int t = 0;
+		exit2(t = 2);
+		is_eq(t,2);
+		exit2(t += 2);
+		is_eq(t,4);
+	}
 
     done_testing();
 }

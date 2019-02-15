@@ -27,7 +27,17 @@ func TestStringLiteral(t *testing.T) {
 			Pos:        NewPositionFromString("col:14"),
 			Type:       "char [14]",
 			IsLvalue:   true,
+			Runes:      false,
 			Value:      "x\vx\x00xxx\axx\tx\n",
+			ChildNodes: []Node{},
+		},
+		`0x3ed1658 <col:16> 'int [16]' lvalue L"copy successful"`: &StringLiteral{
+			Addr:       0x3ed1658,
+			Pos:        NewPositionFromString("col:16"),
+			Type:       "int [16]",
+			IsLvalue:   true,
+			Runes:      true,
+			Value:      "copy successful",
 			ChildNodes: []Node{},
 		},
 	}

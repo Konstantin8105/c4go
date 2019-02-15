@@ -303,9 +303,15 @@ func main(){
 	fset := token.NewFileSet() // positions are relative to fset
 	body := strings.Replace(source.String(), "&#43;", "+", -1)
 	body = strings.Replace(body, "&amp;", "&", -1)
+	body = strings.Replace(body, "&#34;", "\"", -1)
+	body = strings.Replace(body, "&#39;", "'", -1)
+	body = strings.Replace(body, "&gt;", ">", -1)
+	body = strings.Replace(body, "&lt;", "<", -1)
+	// TODO: add unicode convertor
 	f, err := parser.ParseFile(fset, "", body, 0)
 	if err != nil {
-		err = fmt.Errorf("Cannot parse file. err = %v", err)
+		body = strings.Replace(body, "\n", "", -1)
+		err = fmt.Errorf("Cannot parse file. err = %v. body = `%s`", err, body)
 		return
 	}
 
@@ -1027,6 +1033,8 @@ func getDeclRefExprOrArraySub(n ast.Node) (ast.Node, bool) {
 	case *ast.UnaryOperator:
 		return getDeclRefExprOrArraySub(n.Children()[0])
 	case *ast.ArraySubscriptExpr:
+		return v, true
+	case *ast.MemberExpr:
 		return v, true
 	}
 	return nil, false

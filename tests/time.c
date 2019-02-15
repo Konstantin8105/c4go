@@ -99,6 +99,17 @@ void test_timezone()
     is_eq(tv.tz_dsttime, 75000);
 }
 
+void test_gettime()
+{
+	struct timeval  tv;
+	struct timezone tz;
+	int r = gettimeofday(&tv,&tz);
+	printf("timezone: %d %d\n",tz.tz_minuteswest, tz.tz_dsttime);
+	(void) tv;
+	(void) r;
+}
+
+
 int main()
 {
     plan(23);
@@ -114,6 +125,7 @@ int main()
     // sys/time.h
     START_TEST(timeval);
     START_TEST(timezone);
+	START_TEST(gettime);
 
     done_testing();
 }

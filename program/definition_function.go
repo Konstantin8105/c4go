@@ -219,6 +219,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int fgetc(FILE*) -> noarch.Fgetc",
 		"int fputc(int, FILE*) -> noarch.Fputc",
 		"int getc(FILE*) -> noarch.Fgetc",
+		"char * gets(char*) -> noarch.Gets",
 		"int getchar() -> noarch.Getchar",
 		"int putc(int, FILE*) -> noarch.Fputc",
 		"int fseek(FILE*, long int, int) -> noarch.Fseek",
@@ -231,6 +232,12 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int snprintf(char*, int, const char *, ...) -> noarch.Snprintf",
 		"int vsprintf(char*, const char *, ...) -> noarch.Vsprintf",
 		"int vsnprintf(char*, int, const char *, ...) -> noarch.Vsnprintf",
+	},
+	"wchar.h": {
+		// wchar.h
+		"wchar_t * wcscpy(wchar_t*, const wchar_t*) -> noarch.Wcscpy",
+		"int wcscmp(const wchar_t*, const wchar_t*) -> noarch.Wcscmp",
+		"size_t wcslen(const wchar_t*) -> noarch.Wcslen",
 	},
 	"string.h": {
 		// string.h
@@ -311,6 +318,9 @@ var builtInFunctionDefinitions = map[string][]string{
 	},
 	"sys/ioctl.h": {
 		"int ioctl(int , int , ... ) -> noarch.Ioctl",
+	},
+	"sys/time.h": {
+		"int gettimeofday(struct timeval *, struct timezone *) -> noarch.Gettimeofday",
 	},
 	"fcntl.h": {
 		"int open(const char *, int , mode_t ) -> noarch.OpenM",

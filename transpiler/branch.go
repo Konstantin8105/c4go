@@ -67,7 +67,7 @@ func transpileIfStmt(n *ast.IfStmt, p *program.Program) (
 
 	// The last parameter must be false because we are transpiling an
 	// expression - assignment operators need to be wrapped in closures.
-	conditional, conditionalType, newPre, newPost, err := transpileToExpr(children[1], p, false)
+	conditional, conditionalType, newPre, newPost, err := atomicOperation(children[1], p)
 	if err != nil {
 		err = fmt.Errorf("Cannot transpile for condition. %v", err)
 		return nil, nil, nil, err
@@ -88,16 +88,21 @@ func transpileIfStmt(n *ast.IfStmt, p *program.Program) (
 		boolCondition = util.NewNil()
 	}
 
-	body, newPre, newPost, err := transpileToBlockStmt(children[2], p)
-	if err != nil {
-		return nil, nil, nil, err
+	body := new(goast.BlockStmt)
+
+	if children[2] != nil {
+		var newPre, newPost []goast.Stmt
+		body, newPre, newPost, err = transpileToBlockStmt(children[2], p)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+
+		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+		if body == nil {
+			return nil, nil, nil, fmt.Errorf("Body of If cannot by nil")
+		}
 	}
 
-	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
-
-	if body == nil {
-		return nil, nil, nil, fmt.Errorf("Body of If cannot by nil")
-	}
 	if boolCondition == nil {
 		return nil, nil, nil, fmt.Errorf("Bool Condition in If cannot by nil")
 	}

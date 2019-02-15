@@ -8,9 +8,16 @@ int d(int v)
 
 int main()
 {
-    plan(20);
+    plan(24);
 
     int x = 1;
+
+	// empty if body
+	if (x == 0)
+		;
+	else if (x != 0) {
+		pass("ok: empty if body");
+	}
 
     // Without else
     if (x == 1)
@@ -142,6 +149,31 @@ int main()
 		if ((l[1] = l[4] - s) == 2){
 			is_true(l[1] == 2);
 		}
+	}
+	
+	int esct = 0;
+	int esc  = 5;
+	if (esct += esc) {
+		pass("ok"); 
+	} else { 
+		fail("fail");
+	}
+	(void)(esc) ;
+	(void)(esct);
+
+	int *y = NULL;
+	if ((y = (int*)calloc(1,sizeof(int))) != NULL){
+		pass("y");
+	} else {
+        fail("y");
+	}
+
+	struct yS {int *c;};
+	struct yS y2;
+	if ((y2.c = (int*)calloc(1,sizeof(char))) != NULL){
+		pass("y2");
+	} else {
+        fail("y2");
 	}
 
     done_testing();
