@@ -201,7 +201,6 @@ func runC(file, subFolder, stdin string, args []string) (string, error) {
 	err = cmd.Run()
 	if err != nil {
 		fmt.Fprintf(os.Stdout, "Error: %v\n", err)
-		return "", nil
 	}
 	cProgram.isZero = err == nil
 
