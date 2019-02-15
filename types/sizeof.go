@@ -65,7 +65,7 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 			}
 
 			if err != nil {
-				err = fmt.Errorf("Cannot canculate `struct` sizeof for `%T`. %v",
+				err = fmt.Errorf("Cannot calculate `struct` sizeof for `%T`. %v",
 					t, err)
 				return 0, err
 			}
@@ -102,7 +102,7 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 			}
 
 			if err != nil {
-				err = fmt.Errorf("Cannot canculate `union` sizeof for `%T`. %v",
+				err = fmt.Errorf("Cannot calculate `union` sizeof for `%T`. %v",
 					t, err)
 				return 0, err
 			}
@@ -151,7 +151,9 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 	totalArraySize := 1
 	arrayType, arraySize := GetArrayTypeAndSize(cType)
 	if arraySize <= 0 {
-		return 0, fmt.Errorf("error in array size")
+		p.GenerateWarningMessage(
+			fmt.Errorf("Error in calculation sizeof of array used default value"), nil)
+		return 4200, nil
 	}
 
 	for arraySize != -1 {
