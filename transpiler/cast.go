@@ -76,9 +76,9 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 	}
 
 	// Convert from struct member array to slice
-	// ImplicitCastExpr 0x3662e28 <col:17, col:19> 'char *' <ArrayToPointerDecay>
-	// `-MemberExpr 0x3662d18 <col:17, col:19> 'char [20]' lvalue .input_str 0x3662ba0
-	//   `-DeclRefExpr 0x3662cf0 <col:17> 'struct s_inp':'struct s_inp' lvalue Var 0x3662c50 's' 'struct s_inp':'struct s_inp'
+	// ImplicitCastExpr 'char *' <ArrayToPointerDecay>
+	// `-MemberExpr 'char [20]' lvalue .input_str 0x3662ba0
+	//   `-DeclRefExpr 'struct s_inp':'struct s_inp' lvalue Var 0x3662c50 's' 'struct s_inp':'struct s_inp'
 	if types.IsCPointer(n.Type) {
 		if len(n.Children()) > 0 {
 			if memb, ok := n.Children()[0].(*ast.MemberExpr); ok && types.IsCArray(memb.Type) {

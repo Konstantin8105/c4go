@@ -431,27 +431,11 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 
 	var typesParentBefore []string
 	for i := range parents {
-		switch v := parents[i].(type) {
-		case *ast.ParenExpr:
-			typesParentBefore = append(typesParentBefore, v.Type)
-			v.Type = "int"
-		case *ast.BinaryOperator:
-			typesParentBefore = append(typesParentBefore, v.Type)
-			v.Type = "int"
-		case *ast.ImplicitCastExpr:
-			typesParentBefore = append(typesParentBefore, v.Type)
-			v.Type = "int"
-		case *ast.CStyleCastExpr:
-			typesParentBefore = append(typesParentBefore, v.Type)
-			v.Type = "int"
-		case *ast.VAArgExpr:
-			typesParentBefore = append(typesParentBefore, v.Type)
-			v.Type = "int"
-		case *ast.MemberExpr:
-			typesParentBefore = append(typesParentBefore, v.Type)
-			v.Type = "int"
-		default:
-			panic(fmt.Errorf("Not support parent type %T in pointer seaching", v))
+		if t, ok := ast.GetTypeIfExist(parents[i]); ok {
+			typesParentBefore = append(typesParentBefore, *t)
+			*t = "int"
+		} else {
+			panic(fmt.Errorf("Not support parent type %T in pointer seaching", parents[i]))
 		}
 	}
 	defer func() {
