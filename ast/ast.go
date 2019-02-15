@@ -274,6 +274,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseUnaryOperator(line), nil
 	case "UnusedAttr":
 		return parseUnusedAttr(line), nil
+	case "UsedAttr":
+		return parseUsedAttr(line), nil
 	case "VAArgExpr":
 		return parseVAArgExpr(line), nil
 	case "VarDecl":
