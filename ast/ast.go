@@ -331,7 +331,23 @@ func GetTypeIfExist(node Node) (Type *string, ok bool) {
 		typeField := val.Type().Field(i)
 		if typeField.Name == "Type" {
 			if s, ok := valueField.Interface().(string); ok {
-				return &s, ok
+				if s != "" {
+					return &s, ok
+				}
+			}
+		}
+		if typeField.Name == "Type1" {
+			if s, ok := valueField.Interface().(string); ok {
+				if s != "" {
+					return &s, ok
+				}
+			}
+		}
+		if typeField.Name == "Type2" {
+			if s, ok := valueField.Interface().(string); ok {
+				if s != "" {
+					return &s, ok
+				}
 			}
 		}
 	}
