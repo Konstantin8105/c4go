@@ -3,7 +3,6 @@ package ast
 
 import (
 	"fmt"
-	"reflect"
 	"strconv"
 	"strings"
 
@@ -327,31 +326,32 @@ func groupsFromRegex(rx, line string) map[string]string {
 
 // GetTypeIfExist return string inside field Type of struct
 func GetTypeIfExist(node Node) (Type *string, ok bool) {
-	val := reflect.ValueOf(node).Elem()
-	for i := 0; i < val.NumField(); i++ {
-		valueField := val.Field(i)
-		typeField := val.Type().Field(i)
-		if typeField.Name == "Type" {
-			if s, ok := valueField.Interface().(string); ok {
-				if s != "" {
-					return &s, ok
-				}
-			}
-		}
-		if typeField.Name == "Type1" {
-			if s, ok := valueField.Interface().(string); ok {
-				if s != "" {
-					return &s, ok
-				}
-			}
-		}
-		if typeField.Name == "Type2" {
-			if s, ok := valueField.Interface().(string); ok {
-				if s != "" {
-					return &s, ok
-				}
-			}
-		}
+	switch v := node.(type) {
+	case *DeclRefExpr:
+		return &v.Type2, true
+	case *ArraySubscriptExpr:
+		return &v.Type, true
+	case *UnaryOperator:
+		return &v.Type, true
+	case *ParenExpr:
+		return &v.Type, true
+	case *BinaryOperator:
+		return &v.Type, true
+	case *ImplicitCastExpr:
+		return &v.Type, true
+	case *CStyleCastExpr:
+		return &v.Type, true
+	case *VAArgExpr:
+		return &v.Type, true
+	case *MemberExpr:
+		return &v.Type, true
+	case *CallExpr:
+		return &v.Type, true
+	case *CharacterLiteral:
+		return &v.Type, true
+	case *StringLiteral:
+		return &v.Type, true
 	}
-	return nil, false
+
+	panic(fmt.Errorf("Not support parent type %T in pointer seaching", node))
 }

@@ -91,7 +91,6 @@ void test_bool_to_int()
     is_eq(x, 11);
 }
 
-/*
 void test_unsafe_pnt()
 {
 	// (otri).orient = (int) ((unsigned long) (ptr) & (unsigned long) 3l);
@@ -110,7 +109,6 @@ void test_unsafe_pnt()
 		is_eq(*l_pnt,42);
 	}
 }
-*/
 
 int main()
 {
