@@ -199,6 +199,9 @@ func runC(file, subFolder, stdin string, args []string) (string, error) {
 	cmd.Stdout = &cProgram.stdout
 	cmd.Stderr = &cProgram.stderr
 	err = cmd.Run()
+	if err != nil {
+		return "", err
+	}
 	cProgram.isZero = err == nil
 
 	// Check for special exit codes that signal that tests have failed.
