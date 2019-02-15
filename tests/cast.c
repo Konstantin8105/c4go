@@ -91,6 +91,16 @@ void test_bool_to_int()
     is_eq(x, 11);
 }
 
+// void test_unsafe_pnt()
+// {
+	// (otri).orient = (int) ((unsigned long) (ptr) & (unsigned long) 3l);
+	// int pnt;
+	// long l = 42;
+	// pnt = (int) (&l);
+	// long *l_pnt = (long *)(l);
+	// is_eq(*l_pnt,42);
+// }
+
 int main()
 {
     plan(33);
@@ -100,6 +110,7 @@ int main()
     START_TEST(castbool);
     START_TEST(vertex);
     START_TEST(strCh);
+	// START_TEST(unsafe_pnt);
 
     {
         typedef unsigned int u32;
