@@ -786,6 +786,9 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		if _, ok := v.Children()[0].(*ast.IntegerLiteral); ok {
 			return
 		}
+		if v.Kind == "IntegralToPointer" {
+			return
+		}
 
 		// for case : overflow char
 		// ImplicitCastExpr 0x2027358 <col:6, col:7> 'char' <IntegralCast>

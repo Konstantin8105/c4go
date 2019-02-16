@@ -40,6 +40,44 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		expr = goast.NewIdent("nil")
 		return
 	}
+	if n.Kind == "IntegralToPointer" {
+		// ImplicitCastExpr 'double *' <IntegralToPointer>
+		// `-ImplicitCastExpr 'long' <LValueToRValue>
+		//   `-DeclRefExpr 'long' lvalue Var 0x30e91d8 'pnt' 'long'
+		if types.IsCPointer(n.Type) {
+			if t, ok := ast.GetTypeIfExist(n.Children()[0]); ok {
+				if types.IsCInteger(p, *t) {
+					resolveType := n.Type
+					resolveType, err = types.ResolveType(p, n.Type)
+					if err != nil {
+						return nil, "", nil, nil, err
+					}
+					expr = &goast.StarExpr{
+						X: &goast.ParenExpr{
+							X: &goast.CallExpr{
+								Fun: &goast.ParenExpr{X: goast.NewIdent("*" + resolveType)},
+								Args: []goast.Expr{
+									&goast.CallExpr{
+										Fun: goast.NewIdent("unsafe.Pointer"),
+										Args: []goast.Expr{
+											&goast.CallExpr{
+												Fun:  goast.NewIdent("uintptr"),
+												Args: []goast.Expr{expr},
+											},
+										},
+									},
+								},
+							},
+						},
+					}
+					p.GenerateWarningMessage(
+						fmt.Errorf("used unsafe convert from integer to pointer"), n)
+					exprType = n.Type
+					return
+				}
+			}
+		}
+	}
 
 	var cast bool = true
 	if in, ok := n.Children()[0].(*ast.IntegerLiteral); ok && in.Type == "int" {
@@ -76,9 +114,9 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 	}
 
 	// Convert from struct member array to slice
-	// ImplicitCastExpr 0x3662e28 <col:17, col:19> 'char *' <ArrayToPointerDecay>
-	// `-MemberExpr 0x3662d18 <col:17, col:19> 'char [20]' lvalue .input_str 0x3662ba0
-	//   `-DeclRefExpr 0x3662cf0 <col:17> 'struct s_inp':'struct s_inp' lvalue Var 0x3662c50 's' 'struct s_inp':'struct s_inp'
+	// ImplicitCastExpr 'char *' <ArrayToPointerDecay>
+	// `-MemberExpr 'char [20]' lvalue .input_str 0x3662ba0
+	//   `-DeclRefExpr 'struct s_inp':'struct s_inp' lvalue Var 0x3662c50 's' 'struct s_inp':'struct s_inp'
 	if types.IsCPointer(n.Type) {
 		if len(n.Children()) > 0 {
 			if memb, ok := n.Children()[0].(*ast.MemberExpr); ok && types.IsCArray(memb.Type) {
@@ -178,5 +216,33 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 		}
 		exprType = n.Type
 	}
+
+	// CStyleCastExpr 'int' <PointerToIntegral>
+	// `-UnaryOperator 'long *' prefix '&'
+	//   `-DeclRefExpr 'long' lvalue Var 0x42b5268 'l' 'long'
+	//
+	// CStyleCastExpr 'int' <PointerToIntegral>
+	// `-ParenExpr 'long *'
+	//   `-UnaryOperator 'long *' prefix '&'
+	//     `-DeclRefExpr 'long' lvalue Var 0x38cb568 'l' 'long'
+	if len(n.Children()) > 0 {
+		if types.IsCInteger(p, n.Type) {
+			if t, ok := ast.GetTypeIfExist(n.Children()[0]); ok {
+				if types.IsPointer(*t) {
+					// main information	: https://go101.org/article/unsafe.html
+					var retType string
+					expr, retType = util.GetUintptrForSlice(expr)
+
+					expr, err = types.CastExpr(p, expr, retType, n.Type)
+					if err != nil {
+						return nil, "", nil, nil, err
+					}
+
+					exprType = n.Type
+				}
+			}
+		}
+	}
+
 	return
 }

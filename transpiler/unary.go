@@ -431,46 +431,19 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 
 	var typesParentBefore []string
 	for i := range parents {
-		switch v := parents[i].(type) {
-		case *ast.ParenExpr:
-			typesParentBefore = append(typesParentBefore, v.Type)
-			v.Type = "int"
-		case *ast.BinaryOperator:
-			typesParentBefore = append(typesParentBefore, v.Type)
-			v.Type = "int"
-		case *ast.ImplicitCastExpr:
-			typesParentBefore = append(typesParentBefore, v.Type)
-			v.Type = "int"
-		case *ast.CStyleCastExpr:
-			typesParentBefore = append(typesParentBefore, v.Type)
-			v.Type = "int"
-		case *ast.VAArgExpr:
-			typesParentBefore = append(typesParentBefore, v.Type)
-			v.Type = "int"
-		case *ast.MemberExpr:
-			typesParentBefore = append(typesParentBefore, v.Type)
-			v.Type = "int"
-		default:
-			panic(fmt.Errorf("Not support parent type %T in pointer seaching", v))
+		if t, ok := ast.GetTypeIfExist(parents[i]); ok {
+			typesParentBefore = append(typesParentBefore, *t)
+			*t = "int"
+		} else {
+			panic(fmt.Errorf("Not support parent type %T in pointer seaching", parents[i]))
 		}
 	}
 	defer func() {
 		for i := range parents {
-			switch v := parents[i].(type) {
-			case *ast.ParenExpr:
-				v.Type = typesParentBefore[i]
-			case *ast.BinaryOperator:
-				v.Type = typesParentBefore[i]
-			case *ast.ImplicitCastExpr:
-				v.Type = typesParentBefore[i]
-			case *ast.CStyleCastExpr:
-				v.Type = typesParentBefore[i]
-			case *ast.VAArgExpr:
-				v.Type = typesParentBefore[i]
-			case *ast.MemberExpr:
-				v.Type = typesParentBefore[i]
-			default:
-				panic(fmt.Errorf("Not support parent type %T in pointer seaching", v))
+			if t, ok := ast.GetTypeIfExist(parents[i]); ok {
+				*t = typesParentBefore[i]
+			} else {
+				panic(fmt.Errorf("Not support parent type %T in pointer seaching", parents[i]))
 			}
 		}
 	}()
@@ -611,33 +584,12 @@ func transpileUnaryExprOrTypeTraitExpr(n *ast.UnaryExprOrTypeTraitExpr, p *progr
 		}
 
 		if t == "" {
-			switch ty := realFirstChild.(type) {
-			case *ast.DeclRefExpr:
-				t = ty.Type2
-
-			case *ast.ArraySubscriptExpr:
-				t = ty.Type
-
-			case *ast.MemberExpr:
-				t = ty.Type
-
-			case *ast.UnaryOperator:
-				t = ty.Type
-
-			case *ast.ParenExpr:
-				t = ty.Type
-
-			case *ast.CallExpr:
-				t = ty.Type
-
-			case *ast.CharacterLiteral:
-				t = ty.Type
-
-			case *ast.StringLiteral:
-				t = ty.Type
-
-			default:
-				panic(fmt.Sprintf("cannot do unary on: %#v", ty))
+			if node, ok := realFirstChild.(ast.Node); ok {
+				if ty, ok := ast.GetTypeIfExist(node); ok {
+					t = *ty
+				} else {
+					panic(fmt.Sprintf("cannot do unary on: %#v", realFirstChild))
+				}
 			}
 		}
 	}
