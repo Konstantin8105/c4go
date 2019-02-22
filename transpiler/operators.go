@@ -42,7 +42,7 @@ func transpileConditionalOperator(n *ast.ConditionalOperator, p *program.Program
 	}()
 
 	// a - condition
-	a, aType, newPre, newPost, err := transpileToExpr(n.Children()[0], p, false)
+	a, aType, newPre, newPost, err := atomicOperation(n.Children()[0], p)
 	if err != nil {
 		return
 	}
@@ -200,7 +200,11 @@ func transpileParenExpr(n *ast.ParenExpr, p *program.Program) (
 		exprType = n.Type
 	}
 
-	r = &goast.ParenExpr{X: expr}
+	var ok bool
+	r, ok = expr.(*goast.ParenExpr)
+	if !ok {
+		r = &goast.ParenExpr{X: expr}
+	}
 
 	return
 }
@@ -777,7 +781,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 
 	case *ast.ParenExpr:
 		// ParenExpr 0x3c42468 <col:18, col:40> 'int'
-		return atomicOperation(v.Children()[0], p)
+		return
 
 	case *ast.ImplicitCastExpr:
 		if _, ok := v.Children()[0].(*ast.MemberExpr); ok {
@@ -875,6 +879,11 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		return
 
 	case *ast.BinaryOperator:
+		defer func() {
+			if err != nil {
+				err = fmt.Errorf("binary operator : `%v`. %v", v.Operator, err)
+			}
+		}()
 		switch v.Operator {
 		case ",":
 			// BinaryOperator 0x35b95e8 <col:29, col:51> 'int' ','
@@ -930,6 +939,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			var exprResolveType string
 			exprResolveType, err = types.ResolveType(p, v.Type)
 			if err != nil {
+				err = fmt.Errorf("exprResolveType error for type `%v`: %v", v.Type, err)
 				return
 			}
 

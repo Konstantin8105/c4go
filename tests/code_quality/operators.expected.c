@@ -1,5 +1,5 @@
 //
-//	Package main - transpiled by c4go
+//	Package - transpiled by c4go
 //
 //	If you have found any issues, please raise an issue at:
 //	https://github.com/Konstantin8105/c4go/
@@ -42,23 +42,23 @@ func operators_equals() {
 	var v1 float64
 	var v2 float32
 	var x1 int
-	var x2 uint32
-	var x3 int32
-	var x4 int64
-	var x5 int16
-	var z1 float64
-	var z2 float32
+	var x2 uint32 = uint32((0))
+	var x3 int32 = int32((0))
+	var x4 int64 = int64((0))
+	var x5 int16 = int16((0))
+	var z1 float64 = float64((0))
+	var z2 float32 = float32((0))
 	var t1 float64
-	var t2 float32
+	var t2 float32 = float32((0))
 	var r1 []int
 	var r2 [][]int
 	var r3 [][][]int
 	var r4 [][][][]int
 	var r5 [][][][][]int
 	var r6 [][][][][][]int
-	f(42)
 	// zero value
 	// function
+	f(42)
 	var arr []float32 = make([]float32, 500)
 }
 

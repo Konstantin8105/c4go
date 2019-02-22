@@ -31,7 +31,7 @@ void test_return_ternary()
 
 int main()
 {
-    plan(11);
+    plan(13);
 
     int a = 'a' == 65 ? 10 : 100;
     float b = 10 == 10 ? 1.0 : 2.0;
@@ -76,6 +76,14 @@ int main()
         0 ? f_empty() : f_empty();
     }
     pass("Ok - ToVoid");
+	{
+		diag("oper ++");
+		int b = 42;
+		int addr = 0;
+		b = addr++? 1:2;
+		is_eq(addr, 1);
+		is_eq(b, 2);
+	}
 
     test_return_ternary();
 

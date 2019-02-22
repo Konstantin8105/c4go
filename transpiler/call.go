@@ -416,6 +416,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			// to:
 			// call(val = 43,val);
 			var b ast.BinaryOperator
+			b.Type = bin.Type
 			b.Operator = ","
 			b.AddChild(arg)
 			b.AddChild(bin.Children()[0])
@@ -428,12 +429,13 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			// to:
 			// call(val += 43,val);
 			var b ast.BinaryOperator
+			b.Type = cmp.Type
 			b.Operator = ","
 			b.AddChild(arg)
 			b.AddChild(cmp.Children()[0])
 			arg = &b
 		}
-		e, eType, newPre, newPost, err := transpileToExpr(arg, p, false)
+		e, eType, newPre, newPost, err := atomicOperation(arg, p)
 		if err != nil {
 			err = fmt.Errorf("argument position is %d. %v", i, err)
 			p.AddMessage(p.GenerateWarningMessage(err, arg))
