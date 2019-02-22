@@ -200,7 +200,12 @@ func transpileParenExpr(n *ast.ParenExpr, p *program.Program) (
 		exprType = n.Type
 	}
 
-	r = &goast.ParenExpr{X: expr}
+	var ok bool
+	r, ok = expr.(*goast.ParenExpr)
+	if !ok {
+		r = &goast.ParenExpr{X: expr}
+	}
+
 	return
 }
 

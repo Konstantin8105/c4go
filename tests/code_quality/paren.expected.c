@@ -1,5 +1,5 @@
 //
-//	Package main - transpiled by c4go
+//	Package - transpiled by c4go
 //
 //	If you have found any issues, please raise an issue at:
 //	https://github.com/Konstantin8105/c4go/
@@ -12,7 +12,7 @@ func function() {
 	var t int
 	t = (0)
 	var a int
-	a = t
+	a = (t)
 	_ = (t)
 	_ = (a)
 	(function())
