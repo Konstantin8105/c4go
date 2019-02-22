@@ -142,7 +142,7 @@ void test_unsafe_pnt()
 
 int main()
 {
-    plan(34);
+    plan(36);
 
 	START_TEST(unsafe_pnt);
     START_TEST(bool_to_int);
@@ -244,6 +244,20 @@ int main()
             pass("unsigned long to bool")
         }
     }
+	diag("char to bool");
+	{
+        char c = 2;
+        if (!(!(c))) {
+            pass("char to bool")
+        }
+	}
+	diag("long to bool");
+	{
+        long c = 2;
+        if (!(!(c))) {
+            pass("long to bool")
+        }
+	}
 
     char_overflow();
 
