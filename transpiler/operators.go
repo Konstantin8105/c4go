@@ -201,7 +201,6 @@ func transpileParenExpr(n *ast.ParenExpr, p *program.Program) (
 	}
 
 	r = &goast.ParenExpr{X: expr}
-
 	return
 }
 
@@ -777,7 +776,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 
 	case *ast.ParenExpr:
 		// ParenExpr 0x3c42468 <col:18, col:40> 'int'
-		return atomicOperation(v.Children()[0], p)
+		return
 
 	case *ast.ImplicitCastExpr:
 		if _, ok := v.Children()[0].(*ast.MemberExpr); ok {
