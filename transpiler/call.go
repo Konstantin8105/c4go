@@ -433,7 +433,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			b.AddChild(cmp.Children()[0])
 			arg = &b
 		}
-		e, eType, newPre, newPost, err := transpileToExpr(arg, p, false)
+		e, eType, newPre, newPost, err := atomicOperation(arg, p)
 		if err != nil {
 			err = fmt.Errorf("argument position is %d. %v", i, err)
 			p.AddMessage(p.GenerateWarningMessage(err, arg))

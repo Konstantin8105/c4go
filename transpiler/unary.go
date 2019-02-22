@@ -130,7 +130,7 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 
 func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 	goast.Expr, string, []goast.Stmt, []goast.Stmt, error) {
-	e, eType, preStmts, postStmts, err := transpileToExpr(n.Children()[0], p, false)
+	e, eType, preStmts, postStmts, err := atomicOperation(n.Children()[0], p)
 	if err != nil {
 		return nil, "", nil, nil, err
 	}

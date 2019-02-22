@@ -42,7 +42,7 @@ func transpileConditionalOperator(n *ast.ConditionalOperator, p *program.Program
 	}()
 
 	// a - condition
-	a, aType, newPre, newPost, err := transpileToExpr(n.Children()[0], p, false)
+	a, aType, newPre, newPost, err := atomicOperation(n.Children()[0], p)
 	if err != nil {
 		return
 	}

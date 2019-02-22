@@ -59,7 +59,7 @@ int reteg(int a)
 
 int main()
 {
-    plan(111);
+    plan(113);
 
     int i = 10;
     signed char j = 1;
@@ -468,6 +468,22 @@ int main()
 		int a = 42;
 		a = reteg(a);
 		is_eq(a,43);
+	}
+	diag("equal in function");
+	{
+		int a[2];
+		a[0] = -1;
+		a[1] = 42;
+		int b = a[0];
+		b += reteg((*a)++);
+		is_eq(a[1],42);
+	}
+	diag("operation Not in if");
+	{
+		int addr = 0;
+		if (!addr++){
+			is_eq(addr,1);
+		}
 	}
 
     done_testing();
