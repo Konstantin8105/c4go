@@ -20,6 +20,15 @@ func NotInt(x int) int {
 	return 0
 }
 
+// NotInt32 performs a logical not (!) on an integer and returns an integer.
+func NotInt32(x int32) int {
+	if x == 0 {
+		return 1
+	}
+
+	return 0
+}
+
 // NotUint16 performs a logical not (!) on an integer and returns an integer.
 func NotUint16(x uint16) int {
 	if x == 0 {
@@ -31,6 +40,15 @@ func NotUint16(x uint16) int {
 
 // NotUint32 performs a logical not (!) on an integer and returns an integer.
 func NotUint32(x uint32) int {
+	if x == 0 {
+		return 1
+	}
+
+	return 0
+}
+
+// NotByte performs a logical not (!) on an integer and returns an integer.
+func NotByte(x byte) int {
 	if x == 0 {
 		return 1
 	}
