@@ -874,6 +874,11 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		return
 
 	case *ast.BinaryOperator:
+		defer func() {
+			if err != nil {
+				err = fmt.Errorf("binary operator : `%v`. %v", v.Operator, err)
+			}
+		}()
 		switch v.Operator {
 		case ",":
 			// BinaryOperator 0x35b95e8 <col:29, col:51> 'int' ','
@@ -929,6 +934,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			var exprResolveType string
 			exprResolveType, err = types.ResolveType(p, v.Type)
 			if err != nil {
+				err = fmt.Errorf("exprResolveType error for type `%v`: %v", v.Type, err)
 				return
 			}
 
