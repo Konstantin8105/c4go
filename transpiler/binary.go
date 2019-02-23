@@ -358,6 +358,19 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			right, err = types.CastExpr(p, right, rightType, leftType)
 			rightType = leftType
 			p.AddMessage(p.GenerateWarningMessage(err, n))
+
+			// compare pointers
+			//
+			// BinaryOperator 'int' '<'
+			// |-ImplicitCastExpr 'char *' <LValueToRValue>
+			// | `-DeclRefExpr 'char *' lvalue Var 0x26ba988 'c' 'char *'
+			// `-ImplicitCastExpr 'char *' <LValueToRValue>
+			//   `-DeclRefExpr 'char *' lvalue Var 0x26ba8a8 'b' 'char *'
+			if types.IsCPointer(leftType) {
+				left = util.GetUintptr(left)
+				right = util.GetUintptr(right)
+				p.AddImport("unsafe")
+			}
 		}
 	}
 

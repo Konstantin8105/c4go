@@ -302,6 +302,24 @@ func ConvertFunctionNameFromCtoGo(name string) string {
 	return name
 }
 
+// GetUintptr - return uintptr. Example : uintptr(unsafe.Pointer(&expr))
+func GetUintptr(expr goast.Expr) goast.Expr {
+	return &goast.CallExpr{
+		Fun: goast.NewIdent("uintptr"),
+		Args: []goast.Expr{
+			&goast.CallExpr{
+				Fun: goast.NewIdent("unsafe.Pointer"),
+				Args: []goast.Expr{
+					&goast.UnaryExpr{
+						Op: token.AND,
+						X:  expr,
+					},
+				},
+			},
+		},
+	}
+}
+
 // GetUintptrForSlice - return uintptr for slice
 // Example : uint64(uintptr(unsafe.Pointer((*(**int)(unsafe.Pointer(& ...slice... )))))))
 func GetUintptrForSlice(expr goast.Expr) (goast.Expr, string) {
