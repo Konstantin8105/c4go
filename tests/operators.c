@@ -59,7 +59,7 @@ int reteg(int a)
 
 int main()
 {
-    plan(113);
+    plan(114);
 
     int i = 10;
     signed char j = 1;
@@ -483,6 +483,14 @@ int main()
 		int addr = 0;
 		if (!addr++){
 			is_eq(addr,1);
+		}
+	}
+	diag("compare char pointer");
+	{
+		char *b = "happy new code";
+		char *c = b[3];
+		if (c < b) {
+			pass("ok");
 		}
 	}
 
