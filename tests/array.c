@@ -401,7 +401,7 @@ void test_parg_struct()
 
 int main()
 {
-    plan(168);
+    plan(169);
 
     test_parg_struct();
     START_TEST(struct_init);
@@ -893,8 +893,11 @@ int main()
 		char *p3 = w3;
 		char *pa[3] = {p1,p2,p3};
 		char **pnt = pa;
+		char **pnt2 = pa;
 		*pnt += 1;
 		is_streq(*pnt, "ello");
+		(*pnt2)++;
+		is_streq(*pnt2,"llo");
 	}
 
     done_testing();

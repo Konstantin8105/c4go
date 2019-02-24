@@ -30,9 +30,9 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 
 	if types.IsPointer(n.Type) {
 		switch operator {
-		case token.INC:
+		case token.INC: // ++
 			operator = token.ADD
-		case token.DEC:
+		case token.DEC: // --
 			operator = token.SUB
 		}
 		// remove paren - ()
@@ -77,10 +77,24 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 		if err != nil {
 			return
 		}
-		expr = &goast.BinaryExpr{
-			X:  goast.NewIdent(name),
-			Op: token.ASSIGN,
-			Y:  expr,
+
+		found := false
+		if sl, ok := expr.(*goast.SliceExpr); ok {
+			if ind, ok := sl.X.(*goast.IndexExpr); ok {
+				expr = &goast.BinaryExpr{
+					X:  ind,
+					Op: token.ASSIGN,
+					Y:  expr,
+				}
+				found = true
+			}
+		}
+		if !found {
+			expr = &goast.BinaryExpr{
+				X:  goast.NewIdent(name),
+				Op: token.ASSIGN,
+				Y:  expr,
+			}
 		}
 		return
 	}
