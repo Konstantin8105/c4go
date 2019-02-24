@@ -355,7 +355,8 @@ func transpileCompoundAssignOperator(
 	if types.IsPointer(n.Type) &&
 		(operator == token.ADD_ASSIGN || operator == token.SUB_ASSIGN) {
 		operator = convertToWithoutAssign(operator)
-		v, vType, newPre, newPost, err := pointerArithmetic(p, left, leftType, right, rightType, operator)
+		v, vType, newPre, newPost, err := pointerArithmetic(
+			p, left, leftType, right, rightType, operator)
 		if err != nil {
 			return nil, "", nil, nil, err
 		}
@@ -368,10 +369,23 @@ func transpileCompoundAssignOperator(
 		if err != nil {
 			return nil, "", nil, nil, err
 		}
-		v = &goast.BinaryExpr{
-			X:  goast.NewIdent(name),
-			Op: token.ASSIGN,
-			Y:  v,
+		found := false
+		if sl, ok := v.(*goast.SliceExpr); ok {
+			if ind, ok := sl.X.(*goast.IndexExpr); ok {
+				v = &goast.BinaryExpr{
+					X:  ind,
+					Op: token.ASSIGN,
+					Y:  v,
+				}
+				found = true
+			}
+		}
+		if !found {
+			v = &goast.BinaryExpr{
+				X:  goast.NewIdent(name),
+				Op: token.ASSIGN,
+				Y:  v,
+			}
 		}
 		return v, vType, preStmts, postStmts, nil
 	}

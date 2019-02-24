@@ -187,8 +187,10 @@ static int last_test_was_ok = 1;
     }                                                              \
     else                                                           \
     {                                                              \
-        fail("%s (%d b) == %s (%d b) # got \"%s\"", #actual,       \
-            strlen(#actual), #expected, strlen(#expected), actual) \
+        fail("%s (%d b) == %s (%d b) # got \"%s\"",                \
+		#actual, strlen(#actual),                                  \
+        #expected, strlen(#expected),                              \
+		actual)                                                    \
     }
 
 // Compare two C wchars
