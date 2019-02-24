@@ -401,7 +401,7 @@ void test_parg_struct()
 
 int main()
 {
-    plan(167);
+    plan(169);
 
     test_parg_struct();
     START_TEST(struct_init);
@@ -883,6 +883,22 @@ int main()
         is_not_null(t.w);
         (void)(t);
     }
+	{
+		diag("[][]char += 1");
+		char w1[]= "hello";
+		char w2[]= "world";
+		char w3[]= "people";
+		char *p1 = w1;
+		char *p2 = w2;
+		char *p3 = w3;
+		char *pa[3] = {p1,p2,p3};
+		char **pnt = pa;
+		char **pnt2 = pa;
+		*pnt += 1;
+		is_streq(*pnt, "ello");
+		(*pnt2)++;
+		is_streq(*pnt2,"llo");
+	}
 
     done_testing();
 }
