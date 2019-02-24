@@ -167,3 +167,10 @@ func Memcmp(lhs []byte, rhs []byte, count uint32) int {
 	}
 	return 0
 }
+
+func Memcpy(dest, source []byte, num uint) []byte {
+	for i := 0; i < int(num); i++ {
+		dest[i] = source[i]
+	}
+	return nil
+}

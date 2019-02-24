@@ -3,7 +3,7 @@
 
 int main()
 {
-    plan(39);
+    plan(40);
 
     diag("TODO: __builtin_object_size");
     // https://github.com/Konstantin8105/c4go/issues/359
@@ -162,6 +162,13 @@ int main()
         is_streq(strstr(str, "three"), "three");
         //TODO: NULL check in is_eq(strstr(str, "four") - str, 0);
     }
+	{
+		diag("memcpy");
+		char myname[] = "Pierre de Fermat";
+		char name[40]; 
+		memcpy ( name, myname, strlen(myname)+1 );
+		is_streq(name, myname);
+	}
 
     done_testing();
 }
