@@ -174,3 +174,20 @@ func Memcpy(dest, source []byte, num uint) []byte {
 	}
 	return nil
 }
+
+func Strrchr(source []byte, c int) []byte {
+	ch := byte(c)
+	pos := len(source)
+	for i := range source {
+		if source[i] == '\x00' {
+			pos = i
+			break
+		}
+	}
+	for i := pos; i >= 0; i-- {
+		if source[i] == ch {
+			return source[i:]
+		}
+	}
+	return source
+}

@@ -3,7 +3,7 @@
 
 int main()
 {
-    plan(40);
+    plan(41);
 
     diag("TODO: __builtin_object_size");
     // https://github.com/Konstantin8105/c4go/issues/359
@@ -168,6 +168,14 @@ int main()
 		char name[40]; 
 		memcpy ( name, myname, strlen(myname)+1 );
 		is_streq(name, myname);
+	}
+	{
+		diag("strrchr");
+		char str[] = "This is a sample string";
+		char failData[] = "faildata";
+		char * pch = &failData;
+		pch=strrchr(str,'s');
+		is_eq(pch-str+1,18);
 	}
 
     done_testing();
