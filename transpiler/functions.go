@@ -85,7 +85,7 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 	if p.GetFunctionDefinition(n.Name) == nil {
 		var pr string
 		var f, r []string
-		pr, f, r, err = types.ParseFunction(n.Type)
+		pr, _, f, r, err = util.ParseFunction(n.Type)
 		if err != nil {
 			err = fmt.Errorf("Cannot get function definition : %v", err)
 			return

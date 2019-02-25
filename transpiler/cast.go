@@ -22,8 +22,8 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		}
 	}()
 
-	n.Type = types.GenerateCorrectType(n.Type)
-	n.Type2 = types.GenerateCorrectType(n.Type2)
+	n.Type = util.GenerateCorrectType(n.Type)
+	n.Type2 = util.GenerateCorrectType(n.Type2)
 
 	if n.Kind == ast.CStyleCastExprNullToPointer {
 		expr = goast.NewIdent("nil")
@@ -44,7 +44,7 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		// ImplicitCastExpr 'double *' <IntegralToPointer>
 		// `-ImplicitCastExpr 'long' <LValueToRValue>
 		//   `-DeclRefExpr 'long' lvalue Var 0x30e91d8 'pnt' 'long'
-		if types.IsCPointer(n.Type) {
+		if util.IsCPointer(n.Type) {
 			if t, ok := ast.GetTypeIfExist(n.Children()[0]); ok {
 				if types.IsCInteger(p, *t) {
 					resolveType := n.Type
@@ -132,7 +132,7 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		return
 	}
 
-	if types.IsFunction(exprType) {
+	if util.IsFunction(exprType) {
 		cast = false
 	}
 	if n.Kind == ast.ImplicitCastExprArrayToPointerDecay {
@@ -154,9 +154,9 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 	// ImplicitCastExpr 'char *' <ArrayToPointerDecay>
 	// `-MemberExpr 'char [20]' lvalue .input_str 0x3662ba0
 	//   `-DeclRefExpr 'struct s_inp':'struct s_inp' lvalue Var 0x3662c50 's' 'struct s_inp':'struct s_inp'
-	if types.IsCPointer(n.Type) {
+	if util.IsCPointer(n.Type) {
 		if len(n.Children()) > 0 {
-			if memb, ok := n.Children()[0].(*ast.MemberExpr); ok && types.IsCArray(memb.Type) {
+			if memb, ok := n.Children()[0].(*ast.MemberExpr); ok && util.IsCArray(memb.Type) {
 				expr = &goast.SliceExpr{
 					X:      expr,
 					Lbrack: 1,
@@ -181,8 +181,8 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 		}
 	}()
 
-	n.Type = types.GenerateCorrectType(n.Type)
-	n.Type2 = types.GenerateCorrectType(n.Type2)
+	n.Type = util.GenerateCorrectType(n.Type)
+	n.Type2 = util.GenerateCorrectType(n.Type2)
 
 	// Char overflow
 	// example for byte(-1)
@@ -244,7 +244,7 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 		return
 	}
 
-	if !types.IsFunction(exprType) &&
+	if !util.IsFunction(exprType) &&
 		n.Kind != ast.ImplicitCastExprArrayToPointerDecay &&
 		n.Kind != "PointerToIntegral" {
 		expr, err = types.CastExpr(p, expr, exprType, n.Type)
@@ -265,7 +265,7 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 	if len(n.Children()) > 0 {
 		if types.IsCInteger(p, n.Type) {
 			if t, ok := ast.GetTypeIfExist(n.Children()[0]); ok {
-				if types.IsPointer(*t) {
+				if util.IsPointer(*t) {
 					// main information	: https://go101.org/article/unsafe.html
 					var retType string
 					expr, retType = util.GetUintptrForSlice(expr)

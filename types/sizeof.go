@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Konstantin8105/c4go/program"
+	"github.com/Konstantin8105/c4go/util"
 )
 
 // SizeOf returns the number of bytes for a type. This the same as using the
@@ -17,7 +18,7 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 	}()
 
 	// Remove keywords that do not effect the size.
-	cType = CleanCType(cType)
+	cType = util.CleanCType(cType)
 	cType = strings.Replace(cType, "unsigned ", "", -1)
 	cType = strings.Replace(cType, "signed ", "", -1)
 
@@ -43,7 +44,7 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 	// A structure will be the sum of its parts.
 	var isStruct, ok bool
 	var s *program.Struct
-	cType = GenerateCorrectType(cType)
+	cType = util.GenerateCorrectType(cType)
 	if s, ok = p.Structs[cType]; ok {
 		isStruct = true
 	} else if s, ok = p.Structs["struct "+cType]; ok {
