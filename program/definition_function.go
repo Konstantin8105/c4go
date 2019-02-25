@@ -58,6 +58,9 @@ type DefinitionFunction struct {
 //     size_t fread(void*, size_t, size_t, FILE*) -> $0 = noarch.Fread(&1, $2, $3, $4)
 //
 var builtInFunctionDefinitions = map[string][]string{
+	"errno.h": {
+		"int * __errno_location(void ) -> noarch.ErrnoLocation",
+	},
 	"assert.h": {
 		// linux/assert.h
 		"bool __assert_fail(const char*, const char*, unsigned int, const char*) -> linux.AssertFail",
