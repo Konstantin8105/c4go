@@ -311,6 +311,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"time_t mktime(struct tm *) -> noarch.Mktime",
 		"char * asctime(struct tm *) -> noarch.Asctime",
 		"clock_t clock(void) -> noarch.Clock",
+		"double difftime(time_t , time_t ) -> noarch.Difftime",
 	},
 	"termios.h": {
 		// termios.h

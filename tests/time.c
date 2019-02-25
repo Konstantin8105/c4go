@@ -116,6 +116,30 @@ void test_clock()
 	is_true(l > 0);
 }
 
+void test_difftime()
+{
+	time_t now;
+	struct tm newyear;
+	double seconds;
+	
+	time(&now);
+
+	double d = now;
+	d /= 1000;
+	long l = d;
+	l *= 1000;
+	now = ((time_t)(l));
+	
+	newyear = *localtime(&now);
+	
+	newyear.tm_hour = 0; newyear.tm_min = 0; newyear.tm_sec = 0;
+	newyear.tm_mon = 0;  newyear.tm_mday = 1;
+	
+	seconds = difftime(now,mktime(&newyear));
+	
+	printf ("%.f seconds since new year in the current timezone.\n", seconds);
+}
+
 int main()
 {
     plan(24);
@@ -128,6 +152,7 @@ int main()
     START_TEST(mktime);
     START_TEST(time);
 	START_TEST(clock);
+	START_TEST(difftime);
 
     // sys/time.h
     START_TEST(timeval);
