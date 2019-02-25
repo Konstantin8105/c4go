@@ -59,7 +59,7 @@ int reteg(int a)
 
 int main()
 {
-    plan(114);
+    plan(115);
 
     int i = 10;
     signed char j = 1;
@@ -492,6 +492,12 @@ int main()
 		if (c < b) {
 			pass("ok");
 		}
+	}
+	diag("kilo.c example");
+	{
+		unsigned int flag = 100;
+		flag &= ~(2 | 256 | 1024);
+		is_eq(flag, 100);
 	}
 
     done_testing();

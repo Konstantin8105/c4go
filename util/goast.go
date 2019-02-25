@@ -474,3 +474,79 @@ func NewAnonymousFunction(body, deferBody []goast.Stmt,
 		},
 	}}
 }
+
+// ConvertToUnsigned - return convertion from signed to unsigned type
+// s := func() uint {
+//		var x int64
+//		x = -1
+//		if x < 0 {
+//			x += 5
+//		}
+//		return uint(x)
+//	}()
+func ConvertToUnsigned(expr goast.Expr, returnType string) goast.Expr {
+
+	varName := "c4go_temp_name"
+	// maxValue := "123123123"
+
+	if u, ok := expr.(*goast.CallExpr); ok {
+		if i, ok := u.Fun.(*goast.Ident); ok {
+			switch i.Name {
+			case "uint32", "uint", "uint64":
+				expr = u.Args[0]
+			}
+		}
+	}
+
+	return &goast.CallExpr{Fun: &goast.FuncLit{
+		Type: &goast.FuncType{
+			Results: &goast.FieldList{List: []*goast.Field{
+				{Type: goast.NewIdent(returnType)},
+			}},
+		},
+		Body: &goast.BlockStmt{
+			List: []goast.Stmt{
+				&goast.DeclStmt{
+					Decl: &goast.GenDecl{
+						Tok: token.VAR,
+						Specs: []goast.Spec{
+							&goast.ValueSpec{
+								Names: []*goast.Ident{goast.NewIdent(varName)},
+								Type:  goast.NewIdent("int64"),
+							},
+						},
+					},
+				},
+				&goast.AssignStmt{
+					Lhs: []goast.Expr{goast.NewIdent(varName)},
+					Tok: token.ASSIGN,
+					Rhs: []goast.Expr{expr},
+				},
+				// &goast.IfStmt{
+				// 	Cond: &goast.BinaryExpr{
+				// 		X:  goast.NewIdent(varName),
+				// 		Op: token.LSS, // <
+				// 		Y:  goast.NewIdent("0"),
+				// 	},
+				// 	Body: &goast.BlockStmt{
+				// 		List: []goast.Stmt{
+				// 			&goast.AssignStmt{
+				// 				Lhs: []goast.Expr{goast.NewIdent(varName)},
+				// 				Tok: token.ADD_ASSIGN, // +=
+				// 				Rhs: []goast.Expr{goast.NewIdent(maxValue)},
+				// 			},
+				// 		},
+				// 	},
+				// },
+				&goast.ReturnStmt{
+					Results: []goast.Expr{
+						&goast.CallExpr{
+							Fun:  goast.NewIdent(returnType),
+							Args: []goast.Expr{goast.NewIdent(varName)},
+						},
+					},
+				},
+			},
+		},
+	}}
+}

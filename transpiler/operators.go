@@ -808,6 +808,24 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			return
 		}
 
+		// avoid problem :
+		//
+		// constant -1331 overflows uint32
+		//
+		// ImplicitCastExpr 'unsigned int' <IntegralCast>
+		// `-UnaryOperator 'int' prefix '~'
+		if t, ok := ast.GetTypeIfExist(v.Children()[0]); ok && !types.IsSigned(p, v.Type) && types.IsSigned(p, *t) {
+			if un, ok := n.Children()[0].(*ast.UnaryOperator); ok && un.Operator == "~" {
+				var goType string
+				goType, err = types.ResolveType(p, v.Type)
+				if err != nil {
+					return
+				}
+				expr = util.ConvertToUnsigned(expr, goType)
+				return
+			}
+		}
+
 		// for case : overflow char
 		// ImplicitCastExpr 0x2027358 <col:6, col:7> 'char' <IntegralCast>
 		// `-UnaryOperator 0x2027338 <col:6, col:7> 'int' prefix '-'

@@ -29,6 +29,16 @@ var cIntegerType = []string{
 	"ptrdiff_t",
 }
 
+func IsSigned(p *program.Program, cType string) bool {
+	if !strings.Contains(cType, "unsigned") {
+		return true
+	}
+	if rt, ok := p.TypedefType[cType]; ok {
+		return IsSigned(p, rt)
+	}
+	return false
+}
+
 // IsCInteger - return true is C type integer
 func IsCInteger(p *program.Program, cType string) bool {
 	for i := range cIntegerType {
