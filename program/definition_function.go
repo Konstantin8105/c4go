@@ -328,6 +328,14 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int open(const char *, int , mode_t ) -> noarch.OpenM",
 		"int open(const char *, int ) -> noarch.Open",
 	},
+	"unistd.h": {
+		"int pipe(int *) -> noarch.Pipe",
+		"void exit(int) -> golang.org/x/sys/unix.Exit",
+		"ssize_t write(int, const void *, size_t) -> noarch.Write",
+		"ssize_t read(int, void *, size_t) -> noarch.Read",
+		"int close(int) -> golang.org/x/sys/unix.CloseOnExec",
+		"int isatty(int) -> noarch.Isatty",
+	},
 }
 
 // GetIncludeFileNameByFunctionSignature - return name of C include header
