@@ -18,7 +18,7 @@ func Isatty(fd int) int {
 func Pipe(p []int) int {
 	err := unix.Pipe(p)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Fprintf(os.Stderr, "%v", err)
 		return -1
 	}
 	return 0
