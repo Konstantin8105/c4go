@@ -697,6 +697,13 @@ func Scanf(format []byte, args ...interface{}) int {
 	return n
 }
 
+func Sscanf(str []byte, format []byte, args ...interface{}) int {
+	realArgs := prepareArgsForScanf(args)
+	n, _ := fmt.Sscanf(CStringToString(str), CStringToString(format), realArgs...)
+	finalizeArgsForScanf(realArgs, args)
+	return n
+}
+
 // Putchar handles putchar().
 //
 // Writes a character to the standard output (stdout).

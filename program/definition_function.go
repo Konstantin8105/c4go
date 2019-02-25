@@ -234,6 +234,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int vsnprintf(char*, int, const char *, ...) -> noarch.Vsnprintf",
 		"void perror( const char *) -> noarch.Perror",
 		"ssize_t getline(char **, size_t *, FILE *) -> noarch.Getline",
+		"int sscanf( const char *, const char *, ...) -> noarch.Sscanf",
 	},
 	"wchar.h": {
 		// wchar.h

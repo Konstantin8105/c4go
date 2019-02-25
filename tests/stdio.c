@@ -553,9 +553,20 @@ void test_getline()
 	is_true(getline(pnt,l,pFile) == filesize);
 }
 
+void test_sscanf()
+{
+	char sentence []="Rudolph is 12 years old";
+	char temp[50];
+	char str [20];
+	int i;
+	sscanf (sentence,"%s %s %d",str,temp,&i);
+	is_eq(i,12);
+	is_streq(str,"Rudolph");
+}
+
 int main()
 {
-    plan(63);
+    plan(65);
 
     START_TEST(putchar)
     START_TEST(puts)
@@ -590,6 +601,7 @@ int main()
     START_TEST(vsnprintf)
     START_TEST(eof)
 	START_TEST(getline)
+	START_TEST(sscanf)
 
 	// that test must be last test
 	START_TEST(perror)
