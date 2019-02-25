@@ -109,10 +109,16 @@ void test_gettime()
 	(void) r;
 }
 
+void test_clock()
+{
+	clock_t c = clock();
+	unsigned long l = c;
+	is_true(l > 0);
+}
 
 int main()
 {
-    plan(23);
+    plan(24);
 
     // sorting in according to :
     // http://www.cplusplus.com/reference/ctime/
@@ -121,6 +127,7 @@ int main()
     START_TEST(gmtime);
     START_TEST(mktime);
     START_TEST(time);
+	START_TEST(clock);
 
     // sys/time.h
     START_TEST(timeval);
