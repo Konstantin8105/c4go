@@ -116,26 +116,20 @@ func Strstr(str, subStr []byte) []byte {
 	if subStr[0] == '\x00' {
 		return str
 	}
-	i, j, k := 0, 0, 0
-	j++
-	for ; subStr[j] != '\x00'; j++ {
-		k++
+
+	k := 0
+	for i := range subStr {
+		if subStr[i] == '\x00' {
+			k = i
+			break
+		}
 	}
 
-	for str[k] != '\x00' {
-		j, l := 0, i
-
-		for str[i] != '\x00' && subStr[j] != '\x00' && str[i] == subStr[j] {
-			i++
-			j++
-		}
-		if subStr[j] == '\x00' {
-			return str[l:]
-		}
-		i = l + 1
-		k++
+	index := bytes.Index(str, subStr[:k])
+	if index < 0 {
+		return nil
 	}
-	return nil
+	return str[index:]
 }
 
 // Memset sets the first num bytes of the block of memory pointed by ptr to

@@ -831,8 +831,16 @@ func Getline(line [][]byte, len []uint, f *File) SsizeT {
 		if err != nil {
 			break
 		}
+		if buf[0] == '\n' {
+			break
+		}
 		line[0] = append(line[0], buf...)
 		counter++
 	}
+	if counter == 0 {
+		return SsizeT(-1)
+	}
+	line[0] = append(line[0], '\x00')
+	counter++
 	return SsizeT(counter)
 }
