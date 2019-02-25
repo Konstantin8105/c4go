@@ -140,6 +140,11 @@ void test_difftime()
 	printf ("%.f seconds since new year in the current timezone.\n", seconds);
 }
 
+void test_CLOCKS_PER_SEC()
+{
+	printf("%d\n",CLOCKS_PER_SEC);
+}
+
 int main()
 {
     plan(24);
@@ -153,6 +158,7 @@ int main()
     START_TEST(time);
 	START_TEST(clock);
 	START_TEST(difftime);
+	START_TEST(CLOCKS_PER_SEC);
 
     // sys/time.h
     START_TEST(timeval);
