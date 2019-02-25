@@ -329,8 +329,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int gettimeofday(struct timeval *, struct timezone *) -> noarch.Gettimeofday",
 	},
 	"fcntl.h": {
-		"int open(const char *, int , mode_t ) -> noarch.OpenM",
-		"int open(const char *, int ) -> noarch.Open",
+		"int open(const char *, int , ...) -> noarch.Open",
 	},
 	"unistd.h": {
 		"int pipe(int *) -> noarch.Pipe",
