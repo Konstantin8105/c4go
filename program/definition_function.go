@@ -232,6 +232,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int snprintf(char*, int, const char *, ...) -> noarch.Snprintf",
 		"int vsprintf(char*, const char *, ...) -> noarch.Vsprintf",
 		"int vsnprintf(char*, int, const char *, ...) -> noarch.Vsnprintf",
+		"void perror( const char *) -> noarch.Perror",
 	},
 	"wchar.h": {
 		// wchar.h

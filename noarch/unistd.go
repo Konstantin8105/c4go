@@ -24,22 +24,22 @@ func Pipe(p []int) int {
 	return 0
 }
 
-func Read(fd int, p []byte, num int) int {
+func Read(fd int, p []byte, num int) SsizeT {
 	n, err := unix.Read(fd, p)
 	_ = num
 	if err != nil {
-		return -1
+		return SsizeT(-1)
 	}
-	return n
+	return SsizeT(n)
 }
 
-func Write(fd int, p []byte, num int) int {
+func Write(fd int, p []byte, num int) SsizeT {
 	n, err := unix.Write(fd, p)
 	_ = num
 	if err != nil {
-		return -1
+		return SsizeT(-1)
 	}
-	return n
+	return SsizeT(n)
 }
 
 type SsizeT int32

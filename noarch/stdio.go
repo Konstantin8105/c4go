@@ -807,3 +807,8 @@ func Vsnprintf(buffer []byte, n int, format []byte, varList ...interface{}) int 
 	n = len(result)
 	return n
 }
+
+func Perror(msg []byte) {
+	m := CStringToString(msg)
+	fmt.Fprintf(os.Stderr, "%s: No such file or directory\n", m)
+}

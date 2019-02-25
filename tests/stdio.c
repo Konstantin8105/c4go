@@ -12,7 +12,8 @@
     test_##t();
 
 // size of that file
-int filesize = 11394;
+int filesize = 32;
+char *test_file = "tests/stdio.txt";
 
 void test_putchar()
 {
@@ -334,7 +335,7 @@ void test_ftell()
     FILE* pFile;
     long size;
 
-    pFile = fopen("tests/stdio.c", "r");
+    pFile = fopen(test_file, "r");
     is_not_null(pFile);
 
     fseek(pFile, 0, SEEK_END); // non-portable
@@ -446,7 +447,7 @@ void test_feof()
 {
     FILE* pFile;
     int n = 0;
-    pFile = fopen("tests/stdio.c", "r");
+    pFile = fopen(test_file, "r");
     is_not_null(pFile);
 
     while (fgetc(pFile) != EOF) {
@@ -534,6 +535,11 @@ void test_eof()
     }
 }
 
+void test_perror()
+{
+	perror("test perror");
+}
+
 int main()
 {
     plan(61);
@@ -570,6 +576,7 @@ int main()
     START_TEST(vsprintf)
     START_TEST(vsnprintf)
     START_TEST(eof)
+	START_TEST(perror)
 
     done_testing();
 }
