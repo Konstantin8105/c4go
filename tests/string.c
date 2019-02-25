@@ -174,6 +174,7 @@ int main()
 		char name[40]; 
 		memcpy ( name, myname, strlen(myname)+1 );
 		is_streq(name, myname);
+		printf("name = `%s`\n",name);
 	}
 	{
 		diag("strrchr");

@@ -2,6 +2,7 @@ package noarch
 
 import (
 	"bytes"
+	"reflect"
 )
 
 // Strlen returns the length of a string.
@@ -164,16 +165,20 @@ func Memcmp(lhs []byte, rhs []byte, count uint32) int {
 	return 0
 }
 
-func Memcpy(dest, source interface{}, num uint) interface{} {
-	p1 := dest.([]byte)
-	p2 := source.([]byte)
-	for i := 0; i < int(num); i++ {
-		if len(p2) <= i {
-			break
+func Memcpy(dst, src interface{}, size uint) interface{} {
+	switch reflect.TypeOf(src).Kind() {
+	case reflect.Slice:
+		s := reflect.ValueOf(src)
+		d := reflect.ValueOf(dst)
+		size /= uint(int(s.Index(0).Type().Size()))
+		for i := 0; i < int(size); i++ {
+			if i >= s.Len() {
+				break
+			}
+			d.Index(i).Set(s.Index(i))
 		}
-		p1[i] = p2[i]
 	}
-	return nil
+	return dst
 }
 
 func Strrchr(source []byte, c int) []byte {
