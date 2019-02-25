@@ -164,9 +164,14 @@ func Memcmp(lhs []byte, rhs []byte, count uint32) int {
 	return 0
 }
 
-func Memcpy(dest, source []byte, num uint) []byte {
+func Memcpy(dest, source interface{}, num uint) interface{} {
+	p1 := dest.([]byte)
+	p2 := source.([]byte)
 	for i := 0; i < int(num); i++ {
-		dest[i] = source[i]
+		if len(p2) <= i {
+			break
+		}
+		p1[i] = p2[i]
 	}
 	return nil
 }
