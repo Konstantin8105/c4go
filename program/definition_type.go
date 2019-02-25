@@ -12,6 +12,11 @@ var DefinitionType = map[string]string{
 
 	// unistd.h
 	"ssize_t": "github.com/Konstantin8105/c4go/noarch.SsizeT",
+	"pid_t":   "github.com/Konstantin8105/c4go/noarch.PidT",
+	"__pid_t": "github.com/Konstantin8105/c4go/noarch.PidT",
+
+	// sys/wait.h
+	"__WAIT_STATUS": "golang.org/x/sys/unix.WaitStatus",
 
 	// built-in
 	"bool":                   "bool",
