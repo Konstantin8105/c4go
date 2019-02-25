@@ -265,6 +265,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int memcmp(const char *, const char *, unsigned int) -> noarch.Memcmp",
 		"void * memcpy(void *, const void *, size_t) -> noarch.Memcpy",
 		"const char * strrchr( const char *, int) -> noarch.Strrchr",
+		"char * strdup(const char *) -> noarch.Strdup",
 	},
 	"stdlib.h": {
 		// stdlib.h
