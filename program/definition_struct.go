@@ -55,6 +55,24 @@ func (p *Program) initializationStructs() {
 		},
 	}
 
+	// locale.h
+	p.Structs["struct lconv"] = &Struct{
+		Name: "struct lconv",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"currency_symbol": "char *",
+			"int_curr_symbol": "char *",
+		},
+	}
+	p.Structs["c4go_struct lconv"] = &Struct{
+		Name: "github.com/Konstantin8105/c4go/noarch.Lconv",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"currency_symbol": "Currency_symbol",
+			"int_curr_symbol": "IntCurrSymbol",
+		},
+	}
+
 	// time.h
 	p.Structs["struct tm"] = &Struct{
 		Name: "struct tm",

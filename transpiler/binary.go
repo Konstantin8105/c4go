@@ -280,7 +280,9 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	// in Go must be unsigned integers. In C, shifting with a negative shift
 	// count is undefined behaviour (so we should be able to ignore that case).
 	// To handle this, cast the shift count to a uint64.
-	if operator == token.SHL || operator == token.SHR {
+	if operator == token.SHL || // <<
+		operator == token.SHR || // >>
+		false {
 		right, err = types.CastExpr(p, right, rightType, "unsigned long long")
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 		if right == nil {
@@ -293,7 +295,9 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 
 	// pointer arithmetic
 	if types.IsPointer(n.Type) {
-		if operator == token.ADD || operator == token.SUB {
+		if operator == token.ADD || // +
+			operator == token.SUB || // -
+			false {
 			if types.IsPointer(leftType) {
 				expr, eType, newPre, newPost, err =
 					pointerArithmetic(p, left, leftType, right, rightType, operator)
@@ -323,7 +327,15 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 		operator == token.SUB || // -
 		operator == token.MUL || // *
 		operator == token.QUO || // /
-		operator == token.REM { // %
+		operator == token.REM || // %
+		operator == token.LEQ || // <=
+		operator == token.GEQ || // >=
+		operator == token.ADD_ASSIGN || // +=
+		operator == token.SUB_ASSIGN || // -=
+		operator == token.MUL_ASSIGN || // *=
+		operator == token.QUO_ASSIGN || // /=
+		operator == token.REM_ASSIGN || // %=
+		false {
 
 		if rightType == types.NullPointer && leftType == types.NullPointer {
 			// example C code :
@@ -338,11 +350,13 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			// side. This is a bit crude because we should make a better
 			// decision of which type to cast to instead of only using the type
 			// of the left side.
+
 			if operator == token.ADD || // +
 				operator == token.SUB || // -
 				operator == token.MUL || // *
 				operator == token.QUO || // /
-				operator == token.REM { // %
+				operator == token.REM || // %
+				false {
 
 				if rightType == "bool" {
 					right, err = types.CastExpr(p, right, rightType, "int")
@@ -358,10 +372,23 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			right, err = types.CastExpr(p, right, rightType, leftType)
 			rightType = leftType
 			p.AddMessage(p.GenerateWarningMessage(err, n))
+
+			// compare pointers
+			//
+			// BinaryOperator 'int' '<'
+			// |-ImplicitCastExpr 'char *' <LValueToRValue>
+			// | `-DeclRefExpr 'char *' lvalue Var 0x26ba988 'c' 'char *'
+			// `-ImplicitCastExpr 'char *' <LValueToRValue>
+			//   `-DeclRefExpr 'char *' lvalue Var 0x26ba8a8 'b' 'char *'
+			if types.IsCPointer(leftType) {
+				left = util.GetUintptr(left)
+				right = util.GetUintptr(right)
+				p.AddImport("unsafe")
+			}
 		}
 	}
 
-	if operator == token.ASSIGN {
+	if operator == token.ASSIGN { // =
 		// Memory allocation is translated into the Go-style.
 		allocSize := getAllocationSizeNode(p, n.Children()[1])
 

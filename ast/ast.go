@@ -323,3 +323,35 @@ func groupsFromRegex(rx, line string) map[string]string {
 
 	return result
 }
+
+// GetTypeIfExist return string inside field Type of struct
+func GetTypeIfExist(node Node) (Type *string, ok bool) {
+	switch v := node.(type) {
+	case *DeclRefExpr:
+		return &v.Type2, true
+	case *ArraySubscriptExpr:
+		return &v.Type, true
+	case *UnaryOperator:
+		return &v.Type, true
+	case *ParenExpr:
+		return &v.Type, true
+	case *BinaryOperator:
+		return &v.Type, true
+	case *ImplicitCastExpr:
+		return &v.Type, true
+	case *CStyleCastExpr:
+		return &v.Type, true
+	case *VAArgExpr:
+		return &v.Type, true
+	case *MemberExpr:
+		return &v.Type, true
+	case *CallExpr:
+		return &v.Type, true
+	case *CharacterLiteral:
+		return &v.Type, true
+	case *StringLiteral:
+		return &v.Type, true
+	}
+
+	return nil, false
+}

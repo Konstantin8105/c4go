@@ -58,6 +58,9 @@ type DefinitionFunction struct {
 //     size_t fread(void*, size_t, size_t, FILE*) -> $0 = noarch.Fread(&1, $2, $3, $4)
 //
 var builtInFunctionDefinitions = map[string][]string{
+	"errno.h": {
+		"int * __errno_location(void ) -> noarch.ErrnoLocation",
+	},
 	"assert.h": {
 		// linux/assert.h
 		"bool __assert_fail(const char*, const char*, unsigned int, const char*) -> linux.AssertFail",
@@ -232,6 +235,9 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int snprintf(char*, int, const char *, ...) -> noarch.Snprintf",
 		"int vsprintf(char*, const char *, ...) -> noarch.Vsprintf",
 		"int vsnprintf(char*, int, const char *, ...) -> noarch.Vsnprintf",
+		"void perror( const char *) -> noarch.Perror",
+		"ssize_t getline(char **, size_t *, FILE *) -> noarch.Getline",
+		"int sscanf( const char *, const char *, ...) -> noarch.Sscanf",
 	},
 	"wchar.h": {
 		// wchar.h
@@ -260,6 +266,10 @@ var builtInFunctionDefinitions = map[string][]string{
 		"char * memset(char *, char, unsigned int) -> noarch.Memset",
 		"char * memmove(char *, char *, unsigned int) -> noarch.Memmove",
 		"int memcmp(const char *, const char *, unsigned int) -> noarch.Memcmp",
+		"void * memcpy(void *, const void *, size_t) -> noarch.Memcpy",
+		"const char * strrchr( const char *, int) -> noarch.Strrchr",
+		"char * strdup(const char *) -> noarch.Strdup",
+		"char * strerror(int ) -> noarch.Strerror",
 	},
 	"stdlib.h": {
 		// stdlib.h
@@ -300,6 +310,12 @@ var builtInFunctionDefinitions = map[string][]string{
 		"struct tm * gmtime(const time_t *) -> noarch.Gmtime",
 		"time_t mktime(struct tm *) -> noarch.Mktime",
 		"char * asctime(struct tm *) -> noarch.Asctime",
+		"clock_t clock(void) -> noarch.Clock",
+		"double difftime(time_t , time_t ) -> noarch.Difftime",
+	},
+	"locale.h": {
+		"struct lconv * localeconv(void) -> noarch.Localeconv",
+		"char * setlocale(int , const char * ) -> noarch.Setlocale",
 	},
 	"termios.h": {
 		// termios.h
@@ -323,8 +339,15 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int gettimeofday(struct timeval *, struct timezone *) -> noarch.Gettimeofday",
 	},
 	"fcntl.h": {
-		"int open(const char *, int , mode_t ) -> noarch.OpenM",
-		"int open(const char *, int ) -> noarch.Open",
+		"int open(const char *, int , ...) -> noarch.Open",
+	},
+	"unistd.h": {
+		"int pipe(int *) -> noarch.Pipe",
+		"void exit(int) -> golang.org/x/sys/unix.Exit",
+		"ssize_t write(int, const void *, size_t) -> noarch.Write",
+		"ssize_t read(int, void *, size_t) -> noarch.Read",
+		"int close(int) -> golang.org/x/sys/unix.CloseOnExec",
+		"int isatty(int) -> noarch.Isatty",
 	},
 }
 

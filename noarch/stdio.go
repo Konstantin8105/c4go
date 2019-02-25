@@ -697,6 +697,13 @@ func Scanf(format []byte, args ...interface{}) int {
 	return n
 }
 
+func Sscanf(str []byte, format []byte, args ...interface{}) int {
+	realArgs := prepareArgsForScanf(args)
+	n, _ := fmt.Sscanf(CStringToString(str), CStringToString(format), realArgs...)
+	finalizeArgsForScanf(realArgs, args)
+	return n
+}
+
 // Putchar handles putchar().
 //
 // Writes a character to the standard output (stdout).
@@ -806,4 +813,34 @@ func Vsnprintf(buffer []byte, n int, format []byte, varList ...interface{}) int 
 
 	n = len(result)
 	return n
+}
+
+func Perror(msg []byte) {
+	m := CStringToString(msg)
+	fmt.Fprintf(os.Stderr, "%s: No such file or directory\n", m)
+}
+
+func Getline(line [][]byte, len []uint, f *File) SsizeT {
+	counter := 0
+	for {
+		buf := make([]byte, 1)
+		_, err := f.OsFile.Read(buf)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			break
+		}
+		if buf[0] == '\n' {
+			break
+		}
+		line[0] = append(line[0], buf...)
+		counter++
+	}
+	if counter == 0 {
+		return SsizeT(-1)
+	}
+	line[0] = append(line[0], '\x00')
+	counter++
+	return SsizeT(counter)
 }

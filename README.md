@@ -125,16 +125,16 @@ func main() {
              float.h	          	    undefined
             iso646.h	          	    undefined
             limits.h	          	    undefined
-            locale.h	       0/3	           0%
+            locale.h	       3/3	         100%
               math.h	     37/58	        63.8%
             setjmp.h	       0/3	           0%
             signal.h	       0/3	           0%
             stdarg.h	       4/4	         100%
             stddef.h	       2/6	        33.3%
-             stdio.h	     33/46	        71.7%
+             stdio.h	     35/46	        76.1%
             stdlib.h	     33/47	        70.2%
-            string.h	     12/24	          50%
-              time.h	      7/15	        46.7%
+            string.h	     16/24	        66.7%
+              time.h	     13/15	        86.7%
              wchar.h	      3/68	        4.41%
             wctype.h	      0/22	           0%
 ```

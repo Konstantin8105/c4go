@@ -1,5 +1,5 @@
 //
-//	Package main - transpiled by c4go
+//	Package - transpiled by c4go
 //
 //	If you have found any issues, please raise an issue at:
 //	https://github.com/Konstantin8105/c4go/
@@ -52,7 +52,7 @@ func if_1() {
 		return 5
 	}()
 	r = func() int {
-		if map[bool]int{false: 0, true: 1}[w > 1]+map[bool]int{false: 0, true: 1}[r == 4] != 0 {
+		if map[bool]int{false: 0, true: 1}[(w > 1)]+map[bool]int{false: 0, true: 1}[(r == 4)] != 0 {
 			return -1
 		}
 		return 5

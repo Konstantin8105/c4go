@@ -59,7 +59,7 @@ int reteg(int a)
 
 int main()
 {
-    plan(111);
+    plan(115);
 
     int i = 10;
     signed char j = 1;
@@ -468,6 +468,36 @@ int main()
 		int a = 42;
 		a = reteg(a);
 		is_eq(a,43);
+	}
+	diag("equal in function");
+	{
+		int a[2];
+		a[0] = -1;
+		a[1] = 42;
+		int b = a[0];
+		b += reteg((*a)++);
+		is_eq(a[1],42);
+	}
+	diag("operation Not in if");
+	{
+		int addr = 0;
+		if (!addr++){
+			is_eq(addr,1);
+		}
+	}
+	diag("compare char pointer");
+	{
+		char *b = "happy new code";
+		char *c = b[3];
+		if (c < b) {
+			pass("ok");
+		}
+	}
+	diag("kilo.c example");
+	{
+		unsigned int flag = 100;
+		flag &= ~(2 | 256 | 1024);
+		is_eq(flag, 100);
 	}
 
     done_testing();

@@ -79,4 +79,7 @@ var DefinitionType = map[string]string{
 	// sys/resource.h
 	"__rusage_who":   "int",
 	"__rusage_who_t": "int",
+
+	// time.h
+	"clock_t": "github.com/Konstantin8105/c4go/noarch.ClockT",
 }

@@ -302,13 +302,31 @@ func ConvertFunctionNameFromCtoGo(name string) string {
 	return name
 }
 
+// GetUintptr - return uintptr. Example : uintptr(unsafe.Pointer(&expr))
+func GetUintptr(expr goast.Expr) goast.Expr {
+	return &goast.CallExpr{
+		Fun: goast.NewIdent("uintptr"),
+		Args: []goast.Expr{
+			&goast.CallExpr{
+				Fun: goast.NewIdent("unsafe.Pointer"),
+				Args: []goast.Expr{
+					&goast.UnaryExpr{
+						Op: token.AND,
+						X:  expr,
+					},
+				},
+			},
+		},
+	}
+}
+
 // GetUintptrForSlice - return uintptr for slice
 // Example : uint64(uintptr(unsafe.Pointer((*(**int)(unsafe.Pointer(& ...slice... )))))))
 func GetUintptrForSlice(expr goast.Expr) (goast.Expr, string) {
-	returnType := "long"
+	returnType := "long long"
 
 	return &goast.CallExpr{
-		Fun:    goast.NewIdent("uint64"),
+		Fun:    goast.NewIdent("int64"),
 		Lparen: 1,
 		Args: []goast.Expr{&goast.CallExpr{
 			Fun:    goast.NewIdent("uintptr"),
@@ -453,6 +471,82 @@ func NewAnonymousFunction(body, deferBody []goast.Stmt,
 			List: append(body, &goast.ReturnStmt{
 				Results: []goast.Expr{returnValue},
 			}),
+		},
+	}}
+}
+
+// ConvertToUnsigned - return convertion from signed to unsigned type
+// s := func() uint {
+//		var x int64
+//		x = -1
+//		if x < 0 {
+//			x += 5
+//		}
+//		return uint(x)
+//	}()
+func ConvertToUnsigned(expr goast.Expr, returnType string) goast.Expr {
+
+	varName := "c4go_temp_name"
+	// maxValue := "123123123"
+
+	if u, ok := expr.(*goast.CallExpr); ok {
+		if i, ok := u.Fun.(*goast.Ident); ok {
+			switch i.Name {
+			case "uint32", "uint", "uint64":
+				expr = u.Args[0]
+			}
+		}
+	}
+
+	return &goast.CallExpr{Fun: &goast.FuncLit{
+		Type: &goast.FuncType{
+			Results: &goast.FieldList{List: []*goast.Field{
+				{Type: goast.NewIdent(returnType)},
+			}},
+		},
+		Body: &goast.BlockStmt{
+			List: []goast.Stmt{
+				&goast.DeclStmt{
+					Decl: &goast.GenDecl{
+						Tok: token.VAR,
+						Specs: []goast.Spec{
+							&goast.ValueSpec{
+								Names: []*goast.Ident{goast.NewIdent(varName)},
+								Type:  goast.NewIdent("int64"),
+							},
+						},
+					},
+				},
+				&goast.AssignStmt{
+					Lhs: []goast.Expr{goast.NewIdent(varName)},
+					Tok: token.ASSIGN,
+					Rhs: []goast.Expr{expr},
+				},
+				// &goast.IfStmt{
+				// 	Cond: &goast.BinaryExpr{
+				// 		X:  goast.NewIdent(varName),
+				// 		Op: token.LSS, // <
+				// 		Y:  goast.NewIdent("0"),
+				// 	},
+				// 	Body: &goast.BlockStmt{
+				// 		List: []goast.Stmt{
+				// 			&goast.AssignStmt{
+				// 				Lhs: []goast.Expr{goast.NewIdent(varName)},
+				// 				Tok: token.ADD_ASSIGN, // +=
+				// 				Rhs: []goast.Expr{goast.NewIdent(maxValue)},
+				// 			},
+				// 		},
+				// 	},
+				// },
+				&goast.ReturnStmt{
+					Results: []goast.Expr{
+						&goast.CallExpr{
+							Fun:  goast.NewIdent(returnType),
+							Args: []goast.Expr{goast.NewIdent(varName)},
+						},
+					},
+				},
+			},
 		},
 	}}
 }

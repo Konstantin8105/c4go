@@ -99,7 +99,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 
 	// Only for "stddef.h"
 	if p.IncludeHeaderIsExists("stddef.h") {
-		if cFromType == "long" && cToType == "ptrdiff_t" {
+		if cFromType == "long long" && cToType == "ptrdiff_t" {
 			expr = &goast.BinaryExpr{
 				X:  expr,
 				Op: token.QUO,
@@ -337,6 +337,8 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 
 		// Known aliases
 		"__uint16_t", "size_t",
+
+		"noarch.SsizeT",
 	}
 	for _, v := range types {
 		if fromType == v && toType == "bool" {

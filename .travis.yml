@@ -57,6 +57,9 @@ before_install:
 
   # code style
   - go get -u -v github.com/Konstantin8105/cs
+  
+  # for tests
+  - go get -u -v golang.org/x/sys/unix
 
   # install gometalinter
   # - go get -u github.com/alecthomas/gometalinter

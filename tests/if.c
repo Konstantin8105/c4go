@@ -8,7 +8,7 @@ int d(int v)
 
 int main()
 {
-    plan(24);
+    plan(25);
 
     int x = 1;
 
@@ -174,6 +174,14 @@ int main()
 		pass("y2");
 	} else {
         fail("y2");
+	}
+
+	{
+		diag("ssize_t to bool");
+		ssize_t len = 1;
+		if (len) {
+			pass("ok");
+		}
 	}
 
     done_testing();
