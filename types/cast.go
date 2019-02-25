@@ -337,6 +337,8 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 
 		// Known aliases
 		"__uint16_t", "size_t",
+
+		"noarch.SsizeT",
 	}
 	for _, v := range types {
 		if fromType == v && toType == "bool" {
