@@ -401,7 +401,7 @@ void test_parg_struct()
 
 int main()
 {
-    plan(169);
+    plan(171);
 
     test_parg_struct();
     START_TEST(struct_init);
@@ -898,6 +898,18 @@ int main()
 		is_streq(*pnt, "ello");
 		(*pnt2)++;
 		is_streq(*pnt2,"llo");
+	}
+	{
+		diag("pnt of value : size_t");
+		size_t len = 42;
+		size_t * l = &len;
+		is_eq(*l,len);
+	}
+	{
+		diag("pnt of value : ssize_t");
+		ssize_t len = 42;
+		ssize_t * l = &len;
+		is_eq(*l,len);
 	}
 
     done_testing();

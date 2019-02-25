@@ -540,9 +540,22 @@ void test_perror()
 	perror("test perror");
 }
 
+void test_getline()
+{
+    FILE* pFile;
+    pFile = fopen(test_file, "r");
+    is_not_null(pFile);
+
+	size_t len;
+	char *line = NULL;
+	char **pnt = &line;
+	size_t *l = &len;
+	is_true(getline(pnt,l,pFile) == filesize);
+}
+
 int main()
 {
-    plan(61);
+    plan(63);
 
     START_TEST(putchar)
     START_TEST(puts)
@@ -576,6 +589,9 @@ int main()
     START_TEST(vsprintf)
     START_TEST(vsnprintf)
     START_TEST(eof)
+	START_TEST(getline)
+
+	// that test must be last test
 	START_TEST(perror)
 
     done_testing();
