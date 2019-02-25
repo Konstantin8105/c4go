@@ -148,11 +148,13 @@ func Memset(ptr []byte, value byte, num uint32) []byte {
 }
 
 // Memmove move block of memory
-func Memmove(ptr []byte, source []byte, num uint32) []byte {
+func Memmove(ptr, source interface{}, num uint32) interface{} {
+	p1 := ptr.([]byte)
+	p2 := source.([]byte)
 	for i := int(num); i >= 0; i-- {
-		ptr[i] = source[i]
+		p1[i] = p2[i]
 	}
-	return ptr
+	return p1
 }
 
 // Memcmp - compare two buffers
@@ -190,4 +192,12 @@ func Strrchr(source []byte, c int) []byte {
 		}
 	}
 	return source
+}
+
+func Strdup(s []byte) []byte {
+	return s
+}
+
+func Strerror(e int) []byte {
+	return []byte("strerror")
 }

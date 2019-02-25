@@ -232,9 +232,13 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 
 // tranpileUnaryOperatorAmpersant - operator ampersant &
 // Example of AST:
-// `-ImplicitCastExpr 0x2d0fe38 <col:9, col:10> 'int *' <BitCast>
-//   `-UnaryOperator 0x2d0fe18 <col:9, col:10> 'int (*)[5]' prefix '&'
-//     `-DeclRefExpr 0x2d0fdc0 <col:10> 'int [5]' lvalue Var 0x2d0fb20 'arr' 'int [5]'
+//
+// UnaryOperator 'int (*)[5]' prefix '&'
+// `-DeclRefExpr 'int [5]' lvalue Var 0x2d0fb20 'arr' 'int [5]'
+//
+// UnaryOperator 'char **' prefix '&'
+// `-DeclRefExpr 'char *' lvalue Var 0x39b95f0 'line' 'char *'
+//
 func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 	expr goast.Expr, eType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {

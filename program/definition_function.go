@@ -232,6 +232,9 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int snprintf(char*, int, const char *, ...) -> noarch.Snprintf",
 		"int vsprintf(char*, const char *, ...) -> noarch.Vsprintf",
 		"int vsnprintf(char*, int, const char *, ...) -> noarch.Vsnprintf",
+		"void perror( const char *) -> noarch.Perror",
+		"ssize_t getline(char **, size_t *, FILE *) -> noarch.Getline",
+		"int sscanf( const char *, const char *, ...) -> noarch.Sscanf",
 	},
 	"wchar.h": {
 		// wchar.h
@@ -262,6 +265,8 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int memcmp(const char *, const char *, unsigned int) -> noarch.Memcmp",
 		"void * memcpy(void *, const void *, size_t) -> noarch.Memcpy",
 		"const char * strrchr( const char *, int) -> noarch.Strrchr",
+		"char * strdup(const char *) -> noarch.Strdup",
+		"char * strerror(int ) -> noarch.Strerror",
 	},
 	"stdlib.h": {
 		// stdlib.h
@@ -325,8 +330,15 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int gettimeofday(struct timeval *, struct timezone *) -> noarch.Gettimeofday",
 	},
 	"fcntl.h": {
-		"int open(const char *, int , mode_t ) -> noarch.OpenM",
-		"int open(const char *, int ) -> noarch.Open",
+		"int open(const char *, int , ...) -> noarch.Open",
+	},
+	"unistd.h": {
+		"int pipe(int *) -> noarch.Pipe",
+		"void exit(int) -> golang.org/x/sys/unix.Exit",
+		"ssize_t write(int, const void *, size_t) -> noarch.Write",
+		"ssize_t read(int, void *, size_t) -> noarch.Read",
+		"int close(int) -> golang.org/x/sys/unix.CloseOnExec",
+		"int isatty(int) -> noarch.Isatty",
 	},
 }
 

@@ -3,7 +3,7 @@
 
 int main()
 {
-    plan(41);
+    plan(43);
 
     diag("TODO: __builtin_object_size");
     // https://github.com/Konstantin8105/c4go/issues/359
@@ -176,6 +176,17 @@ int main()
 		char * pch = &failData;
 		pch=strrchr(str,'s');
 		is_eq(pch-str+1,18);
+	}
+	{
+		diag("strdup");
+		const char *s1 = "String";
+		char *s2 = strdup(s1);
+		is_streq(s1,s2);
+		is_true(s1 != s2);
+	}
+	{
+		diag("strerror");
+		strerror(0);
 	}
 
     done_testing();
