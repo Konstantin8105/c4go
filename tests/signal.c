@@ -13,8 +13,7 @@ int main()
 {
     plan(0);
 
-	void (*prev_handler)(int);
-	prev_handler = signal (SIGINT, my_handler);
+	signal (SIGINT, my_handler);
 	raise(SIGINT);
 	printf ("signaled is %d.\n",signaled);
 
