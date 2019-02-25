@@ -33,7 +33,7 @@ func Read(fd int, p []byte, num int) SsizeT {
 	return SsizeT(n)
 }
 
-func Write(fd int, p []byte, num int) SsizeT {
+func Write(fd int, p []byte, num uint) SsizeT {
 	n, err := unix.Write(fd, p)
 	_ = num
 	if err != nil {
