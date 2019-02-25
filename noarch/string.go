@@ -197,3 +197,7 @@ func Strrchr(source []byte, c int) []byte {
 func Strdup(s []byte) []byte {
 	return s
 }
+
+func Strerror(e int) []byte {
+	return []byte("strerror")
+}

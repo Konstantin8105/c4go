@@ -184,6 +184,10 @@ int main()
 		is_streq(s1,s2);
 		is_true(s1 != s2);
 	}
+	{
+		diag("strerror");
+		strerror(0);
+	}
 
     done_testing();
 }
