@@ -125,7 +125,7 @@ func main() {
              float.h	          	    undefined
             iso646.h	          	    undefined
             limits.h	          	    undefined
-            locale.h	       0/3	           0%
+            locale.h	       3/3	         100%
               math.h	     37/58	        63.8%
             setjmp.h	       0/3	           0%
             signal.h	       0/3	           0%
