@@ -149,7 +149,7 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 	}
 
 	// definition type
-	if t, ok := program.DefinitionType[cType]; ok {
+	if t, ok := program.DefinitionType[cType]; ok && cType != t {
 		return SizeOf(p, t)
 	}
 
