@@ -157,8 +157,14 @@ int main()
     {
         diag("strstr");
         char str[] = "one two three";
+
+		printf("%s\n",strstr(str, "one"));
         is_streq(strstr(str, "one"), "one two three");
+
+		printf("%s\n",strstr(str, "two"));
         is_streq(strstr(str, "two"), "two three");
+
+		printf("%s\n",strstr(str, "three"));
         is_streq(strstr(str, "three"), "three");
         //TODO: NULL check in is_eq(strstr(str, "four") - str, 0);
     }
@@ -168,6 +174,7 @@ int main()
 		char name[40]; 
 		memcpy ( name, myname, strlen(myname)+1 );
 		is_streq(name, myname);
+		printf("name = `%s`\n",name);
 	}
 	{
 		diag("strrchr");

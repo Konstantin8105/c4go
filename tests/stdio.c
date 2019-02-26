@@ -550,7 +550,9 @@ void test_getline()
 	char *line = NULL;
 	char **pnt = &line;
 	size_t *l = &len;
-	is_true(getline(pnt,l,pFile) == filesize);
+	ssize_t pos = getline(pnt,l,pFile) ;
+	printf("getline = %d\n", pos);
+	is_true(pos == filesize);
 }
 
 void test_sscanf()
