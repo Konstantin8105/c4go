@@ -5,7 +5,7 @@ package program
 var DefinitionType = map[string]string{
 	// time.h
 	"time_t": "github.com/Konstantin8105/c4go/noarch.TimeT",
-	"github.com/Konstantin8105/c4go/noarch.TimeT": "long int",
+	"github.com/Konstantin8105/c4go/noarch.TimeT": "int32",
 	"__time_t":      "int32",
 	"__suseconds_t": "int32",
 
@@ -42,7 +42,9 @@ var DefinitionType = map[string]string{
 	"_Bool":                  "int",
 	"size_t":                 "uint",
 	"ptrdiff_t":              "github.com/Konstantin8105/c4go/noarch.PtrdiffT",
-	"wchar_t":                "github.com/Konstantin8105/c4go/noarch.WcharT",
+	"github.com/Konstantin8105/c4go/noarch.PtrdiffT": "uint64",
+	"wchar_t": "github.com/Konstantin8105/c4go/noarch.WcharT",
+	"github.com/Konstantin8105/c4go/noarch.WcharT": "rune",
 
 	// void*
 	"void*":  "interface{}",
