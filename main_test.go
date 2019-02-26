@@ -231,7 +231,7 @@ func (pr ProgramArgs) runGoTest(stdin string, args []string) (_ string, err erro
 		}
 	}
 	goProgram := programOut{}
-	cmd := exec.Command(subFolder + "app")
+	cmd := exec.Command(subFolder+"app", append([]string{"--"}, args...)...)
 	cmd.Stdin = strings.NewReader(stdin)
 	cmd.Stdout = &goProgram.stdout
 	cmd.Stderr = &goProgram.stderr
