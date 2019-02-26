@@ -327,6 +327,8 @@ func groupsFromRegex(rx, line string) map[string]string {
 // GetTypeIfExist return string inside field Type of struct
 func GetTypeIfExist(node Node) (Type *string, ok bool) {
 	switch v := node.(type) {
+	case *IntegerLiteral:
+		return &v.Type, true
 	case *DeclRefExpr:
 		return &v.Type2, true
 	case *ArraySubscriptExpr:

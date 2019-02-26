@@ -584,39 +584,14 @@ func createIfWithNotConditionAndBreak(condition ast.Node) (ifStmt ast.IfStmt) {
 
 	var par ast.ParenExpr
 	var unitary ast.UnaryOperator
-	switch con := condition.(type) {
-	case *ast.BinaryOperator:
-		par.Type = con.Type
-		unitary.Type = con.Type
 
-	case *ast.ImplicitCastExpr:
-		par.Type = con.Type
-		unitary.Type = con.Type
-
-	case *ast.CStyleCastExpr:
-		par.Type = con.Type
-		unitary.Type = con.Type
-
-	case *ast.ParenExpr:
-		par.Type = con.Type
-		unitary.Type = con.Type
-
-	case *ast.UnaryOperator:
-		par.Type = con.Type
-		unitary.Type = con.Type
-
-	case *ast.IntegerLiteral:
-		par.Type = con.Type
-		unitary.Type = con.Type
-
-	case *ast.CallExpr:
-		par.Type = con.Type
-		unitary.Type = con.Type
-
-	default:
-		panic(
-			fmt.Errorf("Type %T is not implemented in createIfWithNotConditionAndBreak", condition))
+	if typ, ok := ast.GetTypeIfExist(condition); ok {
+		par.Type = *typ
+		unitary.Type = *typ
+	} else {
+		panic(fmt.Errorf("Type %T is not implemented in createIfWithNotConditionAndBreak", condition))
 	}
+
 	par.AddChild(condition)
 	unitary.Operator = "!"
 	unitary.AddChild(&par)
