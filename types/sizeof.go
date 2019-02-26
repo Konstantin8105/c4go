@@ -137,7 +137,7 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 	case "short":
 		return 2, nil
 
-	case "int", "float":
+	case "int", "float", "long int":
 		return 4, nil
 
 	case "long", "double":
@@ -145,6 +145,40 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 
 	case "long double", "long long", "long long int", "long long unsigned int":
 		return 16, nil
+	}
+
+	// definition type
+	if t, ok := program.DefinitionType[cType]; ok {
+		return SizeOf(p, t)
+	}
+
+	// resolved type
+	conv := func(t string) (bytes int, ok bool) {
+		switch t {
+		case "byte", "int8", "uint8":
+			return 1, true
+
+		case "int16", "uint16":
+			return 2, true
+
+		case "int32", "uint32", "rune", "float32":
+			return 4, true
+
+		case "int64", "uint64", "float64", "complex64", "uintptr", "int", "uint":
+			return 8, true
+
+		case "complex128":
+			return 16, true
+		}
+		return -1, false
+	}
+	if t, ok := conv(cType); ok {
+		return t, nil
+	}
+	if r, err := ResolveType(p, cType); err != nil {
+		if t, ok := conv(r); ok {
+			return t, nil
+		}
 	}
 
 	// Get size for array types like: `base_type [count]`

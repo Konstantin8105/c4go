@@ -4,7 +4,8 @@ package program
 // c4go structures
 var DefinitionType = map[string]string{
 	// time.h
-	"time_t":        "github.com/Konstantin8105/c4go/noarch.TimeT",
+	"time_t": "github.com/Konstantin8105/c4go/noarch.TimeT",
+	"github.com/Konstantin8105/c4go/noarch.TimeT": "long int",
 	"__time_t":      "int32",
 	"__suseconds_t": "int32",
 
@@ -12,6 +13,7 @@ var DefinitionType = map[string]string{
 
 	// unistd.h
 	"ssize_t": "github.com/Konstantin8105/c4go/noarch.SsizeT",
+	"github.com/Konstantin8105/c4go/noarch.SsizeT": "long int",
 
 	// built-in
 	"bool":                   "bool",
