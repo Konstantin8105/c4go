@@ -85,7 +85,7 @@ var cstd = map[string][]string{
 	"iso646.h": {},
 	"limits.h": {},
 	"locale.h": {
-		"struct lconv",
+		"lconv", // "struct lconv",
 		"setlocale",
 		"localeconv",
 	},
@@ -263,7 +263,7 @@ var cstd = map[string][]string{
 		"clock_t",
 		"size_t",
 		"time_t",
-		"struct tm",
+		"tm", // "struct tm",
 	},
 	"wchar.h": {
 
@@ -328,7 +328,7 @@ var cstd = map[string][]string{
 		"wcsftime",
 		"mbstate_t",
 		"size_t",
-		"struct tm",
+		"tm", // "struct tm",
 		"wchar_t",
 		"wint_t",
 		"NULL",

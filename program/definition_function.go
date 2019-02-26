@@ -310,6 +310,12 @@ var builtInFunctionDefinitions = map[string][]string{
 		"struct tm * gmtime(const time_t *) -> noarch.Gmtime",
 		"time_t mktime(struct tm *) -> noarch.Mktime",
 		"char * asctime(struct tm *) -> noarch.Asctime",
+		"clock_t clock(void) -> noarch.Clock",
+		"double difftime(time_t , time_t ) -> noarch.Difftime",
+	},
+	"locale.h": {
+		"struct lconv * localeconv(void) -> noarch.Localeconv",
+		"char * setlocale(int , const char * ) -> noarch.Setlocale",
 	},
 	"termios.h": {
 		// termios.h

@@ -127,3 +127,13 @@ func Asctime(tm []Tm) []byte {
 		tm[0].TmMin, tm[0].TmSec,
 		1900+tm[0].TmYear))
 }
+
+type ClockT int64
+
+func Clock() ClockT {
+	return ClockT(time.Now().Unix())
+}
+
+func Difftime(end, start TimeT) float64 {
+	return float64(end - start)
+}
