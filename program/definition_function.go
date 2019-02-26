@@ -354,6 +354,13 @@ var builtInFunctionDefinitions = map[string][]string{
 		"ssize_t read(int, void *, size_t) -> noarch.Read",
 		"int close(int) -> golang.org/x/sys/unix.CloseOnExec",
 		"int isatty(int) -> noarch.Isatty",
+		"int ftruncate(int , off_t ) -> noarch.Ftruncate",
+		"int unlink(const char *) -> noarch.Unlink",
+	},
+	"sys/stat.h": {
+		"int fstat(int , struct stat  *) -> noarch.Fstat",
+		"int stat(const char * , struct stat * ) -> noarch.Stat",
+		"int lstat(const char * , struct stat * ) -> noarch.Lstat",
 	},
 }
 

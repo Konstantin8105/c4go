@@ -90,4 +90,8 @@ var DefinitionType = map[string]string{
 
 	// signal.h
 	"sig_atomic_t": "int64",
+
+	// sys/types.h
+	"off_t":   "int64",
+	"__off_t": "int64",
 }
