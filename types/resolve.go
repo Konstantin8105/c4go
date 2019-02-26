@@ -766,6 +766,14 @@ func GetBaseType(s string) string {
 			}
 		}
 	}
+	if s[0] == '[' {
+		// for go type : []uint
+		for i := 1; i < len(s); i++ {
+			if s[i] == ']' {
+				return GetBaseType(s[i+1:])
+			}
+		}
+	}
 	if s[len(s)-1] == '*' {
 		return GetBaseType(s[:len(s)-1])
 	}

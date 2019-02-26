@@ -751,6 +751,10 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 
 ignoreType:
 
+	if n.Name == types.GetBaseType(theType) {
+		renamedVarDeclName(&n.Name)
+	}
+
 	return []goast.Decl{&goast.GenDecl{
 		Tok: token.VAR,
 		Specs: []goast.Spec{
@@ -762,4 +766,8 @@ ignoreType:
 			},
 		},
 	}}, "", nil
+}
+
+func renamedVarDeclName(name *string) {
+	*name = *name + "Renamed"
 }

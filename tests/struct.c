@@ -566,6 +566,22 @@ void test_extern_vec()
 }
 ext_vec Re;
 
+
+// struct fmap{
+	// int g;
+// };
+// 
+// static struct fmap *fmap;
+// 
+// void same_name()
+// {
+	// diag("same_name");
+	// struct fmap f;
+	// fmap = &f;
+	// fmap->g = 42;
+	// is_eq(fmap->g,42);
+// }
+
 int main()
 {
     plan(95);
@@ -967,6 +983,8 @@ int main()
     func_in_func_in_struct();
 
     struct_inside_union();
+
+	// same_name();
 
     done_testing();
 }
