@@ -335,24 +335,22 @@ void switch_bool()
 
 void switch_char()
 {
-	char form = '1';
-	switch (form) {
-	default:
-	case '1':
-		form = 'S';
-		break;
-	case 0:
-		;
-	};
-	is_eq(form,'S');
+    char form = '1';
+    switch (form) {
+    default:
+    case '1':
+        form = 'S';
+        break;
+    case 0:;
+    };
+    is_eq(form, 'S');
 }
-
 
 int main()
 {
     plan(29);
 
-	switch_char();
+    switch_char();
     switch_bool();
     match_a_single_case();
     fallthrough_to_next_case();
