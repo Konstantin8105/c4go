@@ -138,11 +138,6 @@ func ParseFunction(s string) (prefix string, funcname string, f []string, r []st
 			for i := range f {
 				f[i] = strings.TrimSpace(f[i])
 			}
-			// for debugging:
-			// fmt.Printf("prefix   : %#v\n", prefix)
-			// fmt.Printf("funcname : %#v\n", funcname)
-			// fmt.Printf("fields   : %#v\n", f)
-			// fmt.Printf("returns  : %#v\n", r)
 		}
 	}()
 
