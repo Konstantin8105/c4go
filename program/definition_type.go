@@ -84,4 +84,7 @@ var DefinitionType = map[string]string{
 
 	// time.h
 	"clock_t": "github.com/Konstantin8105/c4go/noarch.ClockT",
+
+	// signal.h
+	"sig_atomic_t": "int64",
 }

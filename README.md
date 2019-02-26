@@ -128,7 +128,7 @@ func main() {
             locale.h	       3/3	         100%
               math.h	     37/58	        63.8%
             setjmp.h	       0/3	           0%
-            signal.h	       0/3	           0%
+            signal.h	       3/3	         100%
             stdarg.h	       4/4	         100%
             stddef.h	       2/6	        33.3%
              stdio.h	     35/46	        76.1%
