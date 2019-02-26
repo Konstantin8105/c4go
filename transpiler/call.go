@@ -94,16 +94,18 @@ func getName(p *program.Program, firstChild ast.Node) (name string, err error) {
 	return "", fmt.Errorf("cannot getName for: %#v", firstChild)
 }
 
-func getNameOfFunctionFromCallExpr(p *program.Program, n *ast.CallExpr) (string, error) {
+func getNameOfFunctionFromCallExpr(p *program.Program, n ast.Node) (string, error) {
 	// The first child will always contain the name of the function being
 	// called.
-	firstChild, ok := n.Children()[0].(*ast.ImplicitCastExpr)
-	if !ok {
-		err := fmt.Errorf("unable to use CallExpr: %#v", n.Children()[0])
-		return "", err
-	}
+	switch v := n.(type) {
+	case *ast.CallExpr, *ast.ParenExpr:
+		return getNameOfFunctionFromCallExpr(p, n.Children()[0])
 
-	return getName(p, firstChild.Children()[0])
+	case *ast.ImplicitCastExpr, *ast.CStyleCastExpr:
+		return getName(p, v.Children()[0])
+	}
+	err := fmt.Errorf("unable to use CallExpr: %#v", n)
+	return "", err
 }
 
 // simplificationCallExprPrintf - minimaze Go code
