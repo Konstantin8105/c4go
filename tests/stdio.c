@@ -13,7 +13,7 @@
 
 // size of that file
 int filesize = 32;
-char *test_file = "tests/stdio.txt";
+char* test_file = "tests/stdio.txt";
 
 void test_putchar()
 {
@@ -537,7 +537,7 @@ void test_eof()
 
 void test_perror()
 {
-	perror("test perror");
+    perror("test perror");
 }
 
 void test_getline()
@@ -546,24 +546,24 @@ void test_getline()
     pFile = fopen(test_file, "r");
     is_not_null(pFile);
 
-	size_t len;
-	char *line = NULL;
-	char **pnt = &line;
-	size_t *l = &len;
-	ssize_t pos = getline(pnt,l,pFile) ;
-	printf("getline = %d\n", pos);
-	is_true(pos == filesize);
+    size_t len;
+    char* line = NULL;
+    char** pnt = &line;
+    size_t* l = &len;
+    ssize_t pos = getline(pnt, l, pFile);
+    printf("getline = %d\n", pos);
+    is_true(pos == filesize);
 }
 
 void test_sscanf()
 {
-	char sentence []="Rudolph is 12 years old";
-	char temp[50];
-	char str [20];
-	int i;
-	sscanf (sentence,"%s %s %d",str,temp,&i);
-	is_eq(i,12);
-	is_streq(str,"Rudolph");
+    char sentence[] = "Rudolph is 12 years old";
+    char temp[50];
+    char str[20];
+    int i;
+    sscanf(sentence, "%s %s %d", str, temp, &i);
+    is_eq(i, 12);
+    is_streq(str, "Rudolph");
 }
 
 int main()
@@ -602,11 +602,11 @@ int main()
     START_TEST(vsprintf)
     START_TEST(vsnprintf)
     START_TEST(eof)
-	START_TEST(getline)
-	START_TEST(sscanf)
+    START_TEST(getline)
+    START_TEST(sscanf)
 
-	// that test must be last test
-	START_TEST(perror)
+    // that test must be last test
+    START_TEST(perror)
 
     done_testing();
 }
