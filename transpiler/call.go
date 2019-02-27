@@ -354,7 +354,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		}
 		if len(n.Children()) > 0 {
 			if v, ok := n.Children()[0].(*ast.ImplicitCastExpr); ok &&
-				(types.IsFunction(v.Type) || types.IsTypedefFunction(p, v.Type)) {
+				(util.IsFunction(v.Type) || types.IsTypedefFunction(p, v.Type)) {
 				t := v.Type
 				if v, ok := p.TypedefType[t]; ok {
 					t = v
@@ -364,7 +364,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 						t = p.TypedefType[t]
 					}
 				}
-				prefix, fields, returns, err := types.ParseFunction(t)
+				prefix, _, fields, returns, err := util.ParseFunction(t)
 				if err != nil {
 					p.AddMessage(p.GenerateWarningMessage(fmt.Errorf(
 						"Cannot resolve function : %v", err), n))
@@ -537,7 +537,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			}
 
 			if len(functionDef.ArgumentTypes) > i {
-				if !types.IsPointer(functionDef.ArgumentTypes[i]) {
+				if !util.IsPointer(functionDef.ArgumentTypes[i]) {
 					if strings.HasPrefix(functionDef.ArgumentTypes[i], "union ") {
 						a = &goast.CallExpr{
 							Fun: &goast.SelectorExpr{

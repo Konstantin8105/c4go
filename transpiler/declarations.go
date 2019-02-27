@@ -35,7 +35,7 @@ func newFunctionField(p *program.Program, name, cType string) (
 		err = fmt.Errorf("Name of function field cannot be empty")
 		return
 	}
-	if !types.IsFunction(cType) {
+	if !util.IsFunction(cType) {
 		err = fmt.Errorf("Cannot create function field for type : %s", cType)
 		return
 	}
@@ -64,7 +64,7 @@ func transpileFieldDecl(p *program.Program, n *ast.FieldDecl) (
 			}
 		}
 	}()
-	if types.IsFunction(n.Type) {
+	if util.IsFunction(n.Type) {
 		field, err = newFunctionField(p, n.Name, n.Type)
 		if err == nil {
 			return
@@ -106,7 +106,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 
 	var addPackageUnsafe bool
 
-	n.Name = types.GenerateCorrectType(n.Name)
+	n.Name = util.GenerateCorrectType(n.Name)
 	name := n.Name
 	defer func() {
 		if err != nil {
@@ -135,7 +135,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		return
 	}
 
-	name = types.GenerateCorrectType(name)
+	name = util.GenerateCorrectType(name)
 	p.DefineType(name)
 	defer func() {
 		if err != nil {
@@ -151,7 +151,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			if pos < len(n.Children()) {
 				switch v := n.Children()[pos+1].(type) {
 				case *ast.FieldDecl:
-					rec.Name = types.GetBaseType(types.GenerateCorrectType(v.Type))
+					rec.Name = types.GetBaseType(util.GenerateCorrectType(v.Type))
 				default:
 					p.AddMessage(p.GenerateWarningMessage(
 						fmt.Errorf("Cannot find name for anon RecordDecl: %T",
@@ -165,8 +165,8 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 	for pos := range n.Children() {
 		switch field := n.Children()[pos].(type) {
 		case *ast.FieldDecl:
-			field.Type = types.GenerateCorrectType(field.Type)
-			field.Type2 = types.GenerateCorrectType(field.Type2)
+			field.Type = util.GenerateCorrectType(field.Type)
+			field.Type2 = util.GenerateCorrectType(field.Type2)
 			var f *goast.Field
 			f, err = transpileFieldDecl(p, field)
 			if err != nil {
@@ -348,7 +348,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 func transpileCXXRecordDecl(p *program.Program, n *ast.RecordDecl) (
 	decls []goast.Decl, err error) {
 
-	n.Name = types.GenerateCorrectType(n.Name)
+	n.Name = util.GenerateCorrectType(n.Name)
 	name := n.Name
 
 	defer func() {
@@ -435,9 +435,9 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 			}
 		}
 	}()
-	n.Name = types.CleanCType(types.GenerateCorrectType(n.Name))
-	n.Type = types.CleanCType(types.GenerateCorrectType(n.Type))
-	n.Type2 = types.CleanCType(types.GenerateCorrectType(n.Type2))
+	n.Name = util.CleanCType(util.GenerateCorrectType(n.Name))
+	n.Type = util.CleanCType(util.GenerateCorrectType(n.Type))
+	n.Type2 = util.CleanCType(util.GenerateCorrectType(n.Type2))
 	name := n.Name
 
 	if "struct "+n.Name == n.Type || "union "+n.Name == n.Type {
@@ -445,7 +445,7 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 		return
 	}
 
-	if types.IsFunction(n.Type) {
+	if util.IsFunction(n.Type) {
 		var field *goast.Field
 		field, err = newFunctionField(p, n.Name, n.Type)
 		if err != nil {
@@ -574,9 +574,9 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 		}
 	}()
 
-	n.Name = types.GenerateCorrectType(n.Name)
-	n.Type = types.GenerateCorrectType(n.Type)
-	n.Type2 = types.GenerateCorrectType(n.Type2)
+	n.Name = util.GenerateCorrectType(n.Name)
+	n.Type = util.GenerateCorrectType(n.Type)
+	n.Type2 = util.GenerateCorrectType(n.Type2)
 
 	// Ignore extern as there is no analogy for Go right now.
 	if n.IsExtern && len(n.ChildNodes) == 0 {
@@ -617,7 +617,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 		if v, ok := (n.Children()[0]).(*ast.ImplicitCastExpr); ok {
 			if len(v.Type) > 0 {
 				// Is it function ?
-				if types.IsFunction(v.Type) {
+				if util.IsFunction(v.Type) {
 					var prefix string
 					var fields, returns []string
 					prefix, fields, returns, err = types.SeparateFunction(p, v.Type)

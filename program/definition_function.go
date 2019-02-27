@@ -58,7 +58,13 @@ type DefinitionFunction struct {
 //     size_t fread(void*, size_t, size_t, FILE*) -> $0 = noarch.Fread(&1, $2, $3, $4)
 //
 var builtInFunctionDefinitions = map[string][]string{
+	"signal.h": {
+		// signal.h
+		"void (*signal(int , void (*)(int)))(int) -> noarch.Signal",
+		"int raise(int ) -> noarch.Raise",
+	},
 	"errno.h": {
+		// errno.h
 		"int * __errno_location(void ) -> noarch.ErrnoLocation",
 	},
 	"assert.h": {
@@ -398,6 +404,7 @@ func (p *Program) GetIncludeFileNameByFunctionSignature(
 			return k, nil
 		}
 	}
+
 	return
 }
 
@@ -460,23 +467,17 @@ func (p *Program) loadFunctionDefinitions() {
 		}
 
 		for _, f := range v {
-			match := util.GetRegex(`^(.+) ([^ ]+)\(([, a-z*A-Z_0-9.]*)\)( -> .+)?$`).
-				FindStringSubmatch(f)
-
-			// Unpack argument types.
-			argumentTypes := strings.Split(match[3], ",")
-			for i := range argumentTypes {
-				argumentTypes[i] = strings.TrimSpace(argumentTypes[i])
-			}
-			if len(argumentTypes) == 1 && argumentTypes[0] == "" {
-				argumentTypes = []string{}
+			index := strings.Index(f, "->")
+			_, a, w, e, err := util.ParseFunction(f[:index])
+			if err != nil {
+				panic(err)
 			}
 
 			// Defaults for transformations.
 			var returnParameters, parameters []int
 
 			// Substitution rules.
-			substitution := match[4]
+			substitution := strings.TrimSpace(f[index+2:])
 			if substitution != "" {
 				substitution = strings.TrimLeft(substitution, " ->")
 
@@ -497,9 +498,9 @@ func (p *Program) loadFunctionDefinitions() {
 			}
 
 			p.AddFunctionDefinition(DefinitionFunction{
-				Name:             match[2],
-				ReturnType:       match[1],
-				ArgumentTypes:    argumentTypes,
+				Name:             a,
+				ReturnType:       e[0],
+				ArgumentTypes:    w,
 				Substitution:     substitution,
 				ReturnParameters: returnParameters,
 				Parameters:       parameters,

@@ -255,7 +255,7 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 	var transpilate bool
 	if v, ok := children[3].(*ast.UnaryOperator); ok {
 		if vv, ok := v.Children()[0].(*ast.DeclRefExpr); ok {
-			if !types.IsPointer(vv.Type) && !types.IsFunction(vv.Type) {
+			if !util.IsPointer(vv.Type) && !util.IsFunction(vv.Type) {
 				switch v.Operator {
 				case "++":
 					// for case:

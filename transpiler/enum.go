@@ -12,7 +12,6 @@ import (
 
 	"github.com/Konstantin8105/c4go/ast"
 	"github.com/Konstantin8105/c4go/program"
-	"github.com/Konstantin8105/c4go/types"
 	"github.com/Konstantin8105/c4go/util"
 )
 
@@ -52,7 +51,7 @@ func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (
 		return
 	}
 
-	n.Name = types.GenerateCorrectType(n.Name)
+	n.Name = util.GenerateCorrectType(n.Name)
 	n.Name = strings.TrimPrefix(n.Name, "enum ")
 
 	// For case `enum` without name

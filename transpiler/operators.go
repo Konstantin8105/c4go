@@ -189,7 +189,7 @@ func transpileParenExpr(n *ast.ParenExpr, p *program.Program) (
 		return
 	}
 
-	if !types.IsFunction(exprType) &&
+	if !util.IsFunction(exprType) &&
 		exprType != "void" &&
 		exprType != "bool" &&
 		exprType != types.ToVoid {
@@ -249,7 +249,7 @@ func pointerArithmetic(p *program.Program,
 		err = fmt.Errorf("right type is not C integer type : '%s'", rightType)
 		return
 	}
-	if !types.IsPointer(leftType) {
+	if !util.IsPointer(leftType) {
 		err = fmt.Errorf("left type is not a pointer : '%s'", leftType)
 		return
 	}
@@ -352,7 +352,7 @@ func transpileCompoundAssignOperator(
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
 	// Pointer arithmetic
-	if types.IsPointer(n.Type) &&
+	if util.IsPointer(n.Type) &&
 		(operator == token.ADD_ASSIGN || operator == token.SUB_ASSIGN) {
 		operator = convertToWithoutAssign(operator)
 		v, vType, newPre, newPost, err := pointerArithmetic(
@@ -714,7 +714,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		if vv, ok := v.Children()[0].(*ast.UnaryOperator); ok && vv.IsPrefix && vv.Operator == "*" {
 			if vvv, ok := vv.Children()[0].(*ast.ImplicitCastExpr); ok {
 				if vvvv, ok := vvv.Children()[0].(*ast.DeclRefExpr); ok {
-					if types.IsPointer(vvvv.Type) {
+					if util.IsPointer(vvvv.Type) {
 						varName := vvvv.Name
 
 						var exprResolveType string
@@ -894,7 +894,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		}
 
 		var cast bool = true
-		if types.IsFunction(exprType) {
+		if util.IsFunction(exprType) {
 			cast = false
 		}
 		if v.Kind == ast.ImplicitCastExprArrayToPointerDecay {
@@ -1037,7 +1037,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 
 			returnValue, _, _, _, _ := transpileToExpr(decl, p, false)
 			if d, ok := decl.(*ast.DeclRefExpr); ok &&
-				types.IsPointer(d.Type) && !types.IsPointer(v.Type) {
+				util.IsPointer(d.Type) && !util.IsPointer(v.Type) {
 				returnValue = &goast.IndexExpr{
 					X: returnValue,
 					Index: &goast.BasicLit{

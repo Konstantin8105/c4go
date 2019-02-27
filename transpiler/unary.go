@@ -28,7 +28,7 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 		return
 	}
 
-	if types.IsPointer(n.Type) {
+	if util.IsPointer(n.Type) {
 		switch operator {
 		case token.INC: // ++
 			operator = token.ADD
@@ -152,7 +152,7 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 	// UnaryOperator <> 'int' prefix '!'
 	// `-ImplicitCastExpr <> 'int (*)(int, double)' <LValueToRValue>
 	//   `-DeclRefExpr <> 'int (*)(int, double)' lvalue Var 0x2be4e80 'T' 'int (*)(int, double)'
-	if types.IsFunction(eType) {
+	if util.IsFunction(eType) {
 		return &goast.BinaryExpr{
 			X:  e,
 			Op: token.EQL, // ==
@@ -256,11 +256,11 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 		return
 	}
 
-	if types.IsFunction(eType) {
+	if util.IsFunction(eType) {
 		return
 	}
 
-	if types.IsLastArray(eType) {
+	if util.IsLastArray(eType) {
 		// In : eType = 'int [5]'
 		// Out: eType = 'int *'
 		f := strings.Index(eType, "[")
