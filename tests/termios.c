@@ -5,11 +5,11 @@
 
 int main()
 {
-	plan(0);
-	
-	struct termios t;
+    plan(0);
 
-	(void)t;
-	
-	done_testing();
+    struct termios t;
+
+    (void)t;
+
+    done_testing();
 };

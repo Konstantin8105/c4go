@@ -76,14 +76,14 @@ int main()
         0 ? f_empty() : f_empty();
     }
     pass("Ok - ToVoid");
-	{
-		diag("oper ++");
-		int b = 42;
-		int addr = 0;
-		b = addr++? 1:2;
-		is_eq(addr, 1);
-		is_eq(b, 2);
-	}
+    {
+        diag("oper ++");
+        int b = 42;
+        int addr = 0;
+        b = addr++ ? 1 : 2;
+        is_eq(addr, 1);
+        is_eq(b, 2);
+    }
 
     test_return_ternary();
 

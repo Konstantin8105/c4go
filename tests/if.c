@@ -12,12 +12,12 @@ int main()
 
     int x = 1;
 
-	// empty if body
-	if (x == 0)
-		;
-	else if (x != 0) {
-		pass("ok: empty if body");
-	}
+    // empty if body
+    if (x == 0)
+        ;
+    else if (x != 0) {
+        pass("ok: empty if body");
+    }
 
     // Without else
     if (x == 1)
@@ -126,63 +126,65 @@ int main()
         }
     }
 
-	diag("if equal");
-	{
-		int x = 0;
-		int y = 5;
-		if ((x = y) == 0){
-			fail("if equal");
-		}
-		if ((x = 0) == 0){
-			is_true(x == 0);
-		}
-		int l[5];
-		for (int i=0;i<5;i++){
-			l[i] = i;
-		}
-		is_true(x == 0);
-		is_true(y == 5);
-		int s = 2;
-		if ((l[0] = y-s) == 3){
-			is_true(l[0] == 3);
-		}
-		if ((l[1] = l[4] - s) == 2){
-			is_true(l[1] == 2);
-		}
-	}
-	
-	int esct = 0;
-	int esc  = 5;
-	if (esct += esc) {
-		pass("ok"); 
-	} else { 
-		fail("fail");
-	}
-	(void)(esc) ;
-	(void)(esct);
+    diag("if equal");
+    {
+        int x = 0;
+        int y = 5;
+        if ((x = y) == 0) {
+            fail("if equal");
+        }
+        if ((x = 0) == 0) {
+            is_true(x == 0);
+        }
+        int l[5];
+        for (int i = 0; i < 5; i++) {
+            l[i] = i;
+        }
+        is_true(x == 0);
+        is_true(y == 5);
+        int s = 2;
+        if ((l[0] = y - s) == 3) {
+            is_true(l[0] == 3);
+        }
+        if ((l[1] = l[4] - s) == 2) {
+            is_true(l[1] == 2);
+        }
+    }
 
-	int *y = NULL;
-	if ((y = (int*)calloc(1,sizeof(int))) != NULL){
-		pass("y");
-	} else {
+    int esct = 0;
+    int esc = 5;
+    if (esct += esc) {
+        pass("ok");
+    } else {
+        fail("fail");
+    }
+    (void)(esc);
+    (void)(esct);
+
+    int* y = NULL;
+    if ((y = (int*)calloc(1, sizeof(int))) != NULL) {
+        pass("y");
+    } else {
         fail("y");
-	}
+    }
 
-	struct yS {int *c;};
-	struct yS y2;
-	if ((y2.c = (int*)calloc(1,sizeof(char))) != NULL){
-		pass("y2");
-	} else {
+    struct yS {
+        int* c;
+    };
+    struct yS y2;
+    if ((y2.c = (int*)calloc(1, sizeof(char))) != NULL) {
+        pass("y2");
+    } else {
         fail("y2");
-	}
+    }
 
-	{
-		diag("ssize_t to bool");
-		ssize_t len = 1;
-		if (len) {
-			pass("ok");
-		}
-	}
+    {
+        diag("ssize_t to bool");
+        ssize_t len = 1;
+        if (len) {
+            pass("ok");
+        }
+    }
 
     done_testing();
 }
