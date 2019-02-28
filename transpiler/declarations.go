@@ -244,7 +244,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		}
 	}
 
-	s, err := program.NewStruct(n)
+	s, err := program.NewStruct(p, n)
 	if err != nil {
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 		return
@@ -527,16 +527,7 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 		resolvedType = "interface{}"
 	}
 
-	if v, ok := p.Structs["struct "+resolvedType]; ok {
-		// Registration "typedef struct" with non-empty name of struct
-		p.Structs["struct "+name] = v
-	} else if v, ok := p.EnumConstantToEnum["enum "+resolvedType]; ok {
-		// Registration "enum constants"
-		p.EnumConstantToEnum["enum "+resolvedType] = v
-	} else {
-		// Registration "typedef type type2"
-		p.TypedefType[n.Name] = n.Type
-	}
+	p.TypedefType[n.Name] = n.Type
 
 	// 0: *ast.GenDecl {
 	// .  Tok: type
