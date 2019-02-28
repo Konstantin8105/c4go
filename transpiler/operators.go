@@ -64,7 +64,7 @@ func transpileConditionalOperator(n *ast.ConditionalOperator, p *program.Program
 	}
 
 	// b - body
-	b, bType, newPre, newPost, err := transpileToExpr(n.Children()[1], p, false)
+	b, bType, newPre, newPost, err := atomicOperation(n.Children()[1], p)
 	if err != nil {
 		err = fmt.Errorf("parameter `b` : %v", err)
 		return
