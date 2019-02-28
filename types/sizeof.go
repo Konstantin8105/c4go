@@ -66,8 +66,9 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 			}
 
 			if err != nil {
-				err = fmt.Errorf("Cannot canculate `struct` sizeof for `%T`. %v",
-					t, err)
+				err = fmt.Errorf(
+					"Cannot calculate `struct` sizeof for `%T`. bytes = '%v'. %v",
+					t, bytes, err)
 				return 0, err
 			}
 			totalBytes += bytes
