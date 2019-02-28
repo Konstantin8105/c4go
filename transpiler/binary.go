@@ -501,7 +501,8 @@ func getAllocationSizeNode(p *program.Program, node ast.Node) ast.Node {
 		return nil
 	}
 
-	functionName, _ := getNameOfFunctionFromCallExpr(p, expr)
+	functionName, err := getName(p, expr)
+	p.AddMessage(p.GenerateWarningMessage(err, node))
 
 	if functionName == "malloc" {
 		// Is 1 always the body in this case? Might need to be more careful

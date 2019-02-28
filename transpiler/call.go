@@ -65,6 +65,9 @@ func getName(p *program.Program, firstChild ast.Node) (name string, err error) {
 		}
 		return n + "." + fc.Name, nil
 
+	case *ast.CallExpr:
+		return getName(p, fc.Children()[0])
+
 	case *ast.ParenExpr:
 		return getName(p, fc.Children()[0])
 
@@ -92,18 +95,6 @@ func getName(p *program.Program, firstChild ast.Node) (name string, err error) {
 	}
 
 	return "", fmt.Errorf("cannot getName for: %#v", firstChild)
-}
-
-func getNameOfFunctionFromCallExpr(p *program.Program, n *ast.CallExpr) (string, error) {
-	// The first child will always contain the name of the function being
-	// called.
-	firstChild, ok := n.Children()[0].(*ast.ImplicitCastExpr)
-	if !ok {
-		err := fmt.Errorf("unable to use CallExpr: %#v", n.Children()[0])
-		return "", err
-	}
-
-	return getName(p, firstChild.Children()[0])
 }
 
 // simplificationCallExprPrintf - minimaze Go code
@@ -201,7 +192,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		}
 	}()
 
-	functionName, err := getNameOfFunctionFromCallExpr(p, n)
+	functionName, err := getName(p, n)
 	if err != nil {
 		return nil, "", nil, nil, err
 	}
