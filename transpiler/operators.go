@@ -59,12 +59,14 @@ func transpileConditionalOperator(n *ast.ConditionalOperator, p *program.Program
 
 	a, err = types.CastExpr(p, a, aType, "bool")
 	if err != nil {
+		err = fmt.Errorf("parameter `a` : %v", err)
 		return
 	}
 
 	// b - body
-	b, bType, newPre, newPost, err := transpileToExpr(n.Children()[1], p, false)
+	b, bType, newPre, newPost, err := atomicOperation(n.Children()[1], p)
 	if err != nil {
+		err = fmt.Errorf("parameter `b` : %v", err)
 		return
 	}
 	// Theorephly, length is must be zero
@@ -85,6 +87,7 @@ func transpileConditionalOperator(n *ast.ConditionalOperator, p *program.Program
 	// c - else body
 	c, cType, newPre, newPost, err := transpileToExpr(n.Children()[2], p, false)
 	if err != nil {
+		err = fmt.Errorf("parameter `c` : %v", err)
 		return nil, "", nil, nil, err
 	}
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
@@ -92,6 +95,7 @@ func transpileConditionalOperator(n *ast.ConditionalOperator, p *program.Program
 	if n.Type != "void" {
 		c, err = types.CastExpr(p, c, cType, n.Type)
 		if err != nil {
+			err = fmt.Errorf("parameter `c` : %v", err)
 			return
 		}
 		cType = n.Type
@@ -548,6 +552,9 @@ func atomicOperation(n ast.Node, p *program.Program) (
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("Cannot create atomicOperation |%T|. err = %v", n, err)
+		}
+		if exprType == "" {
+			p.AddMessage(p.GenerateWarningMessage(fmt.Errorf("exprType is empty"), n))
 		}
 	}()
 
