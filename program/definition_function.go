@@ -228,6 +228,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int fgetc(FILE*) -> noarch.Fgetc",
 		"int fputc(int, FILE*) -> noarch.Fputc",
 		"int getc(FILE*) -> noarch.Fgetc",
+		"int ungetc(int , FILE *) -> noarch.Ungetc",
 		"char * gets(char*) -> noarch.Gets",
 		"int getchar() -> noarch.Getchar",
 		"int putc(int, FILE*) -> noarch.Fputc",

@@ -566,9 +566,30 @@ void test_sscanf()
     is_streq(str, "Rudolph");
 }
 
+void test_ungetc()
+{
+  FILE * pFile;
+  int c;
+  char buffer [256];
+
+  pFile = fopen (test_file,"r");
+  is_not_null(pFile);
+  while (!feof (pFile)) {
+    c=getc (pFile);
+    if (c == EOF) break;
+    if (c == 'T') {
+		ungetc ('@',pFile);
+	} else {
+		ungetc (c,pFile);
+	}
+    // fgets (buffer,10,pFile);
+  	// printf("%s\n",buffer);
+  }
+}
+
 int main()
 {
-    plan(65);
+    plan(66);
 
     START_TEST(putchar)
     START_TEST(puts)
@@ -604,6 +625,7 @@ int main()
     START_TEST(eof)
     START_TEST(getline)
     START_TEST(sscanf)
+    START_TEST(ungetc)
 
     // that test must be last test
     START_TEST(perror)
