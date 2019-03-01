@@ -566,9 +566,41 @@ void test_extern_vec()
 }
 ext_vec Re;
 
+struct wb{
+	int i;
+};
+
+int wb_test(struct wb * wb)
+{
+	return wb->i;
+}
+
+void test_same_name()
+{
+	diag("=== same name ===");
+	{
+		struct wb wb;
+		wb.i = 42;
+		is_eq(wb_test(&wb),42);
+	}
+	{
+		struct wb tt;
+		tt.i = 42;
+		struct wb * wb;
+		wb = &tt;
+		is_eq(wb_test(wb),42);
+	}
+	{
+		struct wb wb[2];
+		wb[0].i = 42; wb[1].i = 42;
+		is_eq(wb_test(&(wb[0])),42);
+	}
+	diag("=================");
+}
+
 int main()
 {
-    plan(95);
+    plan(98);
 
     test_extern_vec();
     test_map_resize();
@@ -584,6 +616,7 @@ int main()
     test_sizeofArray();
     test_structUsed();
     test_emptyname();
+	test_same_name();
 
     struct programming variable;
     char* s = "Programming in Software Development.";
