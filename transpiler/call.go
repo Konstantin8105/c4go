@@ -190,6 +190,9 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		if err != nil {
 			err = fmt.Errorf("Error in transpileCallExpr : %v", err)
 		}
+		if resultType == "" {
+			p.AddMessage(p.GenerateWarningMessage(fmt.Errorf("exprType is empty"), n))
+		}
 	}()
 
 	functionName, err := getName(p, n)
@@ -209,7 +212,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		functionName == "__builtin_va_end" {
 		// ignore function __builtin_va_start, __builtin_va_end
 		// see "Variadic functions"
-		return nil, "", nil, nil, nil
+		return nil, n.Type, nil, nil, nil
 	}
 
 	// function "malloc" from stdlib.h
@@ -344,9 +347,33 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			Name: functionName,
 		}
 		if len(n.Children()) > 0 {
-			if v, ok := n.Children()[0].(*ast.ImplicitCastExpr); ok &&
-				(util.IsFunction(v.Type) || types.IsTypedefFunction(p, v.Type)) {
-				t := v.Type
+
+			checker := func(t string) bool {
+				return util.IsFunction(t) || types.IsTypedefFunction(p, t)
+			}
+
+			var finder func(n ast.Node) string
+			finder = func(n ast.Node) (t string) {
+				switch v := n.(type) {
+				case *ast.ImplicitCastExpr:
+					t = v.Type
+				case *ast.ParenExpr:
+					t = v.Type
+				case *ast.CStyleCastExpr:
+					t = v.Type
+				default:
+					panic(fmt.Errorf("add type %T", n))
+				}
+				if checker(t) {
+					return t
+				}
+				if len(n.Children()) == 0 {
+					return ""
+				}
+				return finder(n.Children()[0])
+			}
+
+			if t := finder(n.Children()[0]); checker(t) {
 				if v, ok := p.TypedefType[t]; ok {
 					t = v
 				} else {
@@ -558,7 +585,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			Rhs: []goast.Expr{realArgs[0]},
 		}
 		preStmts = append(preStmts, devNull)
-		return nil, "", preStmts, postStmts, nil
+		return nil, n.Type, preStmts, postStmts, nil
 	}
 
 	return util.NewCallExpr(functionName, realArgs...),

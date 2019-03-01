@@ -267,6 +267,19 @@ int main()
             pass("long to bool")
         }
     }
+	diag("equal slice");
+	{
+		{
+			char n[10] = "hey";
+			char m[10] = "boy";
+			is_true( n != m );
+		}
+		{
+			char *n = "hey";
+			char *m = "boy";
+			is_true( n != m );
+		}
+	}
 
     char_overflow();
 

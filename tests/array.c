@@ -399,9 +399,30 @@ void test_parg_struct()
     is_streq(po_def[1].name, "optarg");
 }
 
+int function_array_field(int a)
+{
+	return a+1;
+}
+void test_function_array()
+{
+	struct fa {
+		int(* pf)(int);
+	};
+	struct fa f[10];
+	int i = 0;
+	for (i = 0; i < 10 ; i++)  {
+		f[i].pf = function_array_field;
+	}
+	int y = 42;
+	for (i = 0; i < 10; i++) {
+		y = ((f[i]).pf)(y);
+	}
+	is_eq(y , 52);
+}
+
 int main()
 {
-    plan(171);
+    plan(172);
 
     test_parg_struct();
     START_TEST(struct_init);
@@ -425,6 +446,7 @@ int main()
     START_TEST(ptrarr);
     START_TEST(stringarr_init);
     START_TEST(partialarr_init);
+    START_TEST(function_array);
 
     is_eq(arrayEx[1], 2.0);
 
