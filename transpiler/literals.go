@@ -100,8 +100,8 @@ func transpileStringLiteral(p *program.Program, n *ast.StringLiteral, arrayToArr
 	// 	return b
 	// }()}
 	expr = goast.NewIdent(fmt.Sprintf(
-		"func() (b [%v]byte) { copy(b[:],\"%s\" );return }()",
-		s, n.Value))
+		"func() (b [%v]byte) {copy(b[:], %s);return }()",
+		s, strconv.Quote(n.Value)))
 	exprType = n.Type
 	return
 }

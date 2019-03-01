@@ -139,9 +139,18 @@ void test_unsafe_pnt()
     // }
 }
 
+void test_init()
+{
+	char ch[4][10] = {"\"", "\n", "\\", "a"};
+	is_streq(ch[0], "\"");
+	is_streq(ch[1], "\n");
+	is_streq(ch[2], "\\");
+	is_streq(ch[3], "a");
+}
+
 int main()
 {
-    plan(38);
+    plan(42);
 
     START_TEST(unsafe_pnt);
     START_TEST(bool_to_int);
@@ -149,6 +158,7 @@ int main()
     START_TEST(castbool);
     START_TEST(vertex);
     START_TEST(strCh);
+    START_TEST(init);
 
     {
         typedef unsigned int u32;
