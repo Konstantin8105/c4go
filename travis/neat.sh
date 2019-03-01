@@ -59,7 +59,7 @@ for f in $NEAT_TEMP_FOLDER/*.go ; do
 	# iteration by Go files
 		echo "	file : $f"
 	# show amount error from `go build`:
-		WARNINGS_GO=`go build -o $f.app $f 2>&1 | wc -l`
+		WARNINGS_GO=`go build -o $f.app -gcflags="-e" $f 2>&1 | wc -l`
 		echo "		Go build : $WARNINGS_GO warnings"
 	# amount unsafe
 		UNSAFE=`cat $f | grep unsafe | wc -l`
@@ -71,5 +71,5 @@ for f in $NEAT_TEMP_FOLDER/*.go ; do
 	# iteration by Go files
 		echo "	file : $f"
 	# show amount error from `go build`:
-		go build -o $f.app $f 2>&1 | sort 
+		go build -o $f.app -gcflags="-e" $f 2>&1 | sort 
 done
