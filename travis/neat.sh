@@ -66,4 +66,10 @@ for f in $NEAT_TEMP_FOLDER/*.go ; do
 		echo "		Unsafe   : $UNSAFE"
 done
 
-
+# show go build warnings	
+for f in $NEAT_TEMP_FOLDER/*.go ; do
+	# iteration by Go files
+		echo "	file : $f"
+	# show amount error from `go build`:
+		go build -o $f.app $f 2>&1 | sort 
+done
