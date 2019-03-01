@@ -150,7 +150,7 @@ void test_init()
 
 int main()
 {
-    plan(40);
+    plan(42);
 
     START_TEST(unsafe_pnt);
     START_TEST(bool_to_int);
