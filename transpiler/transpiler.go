@@ -10,6 +10,7 @@ import (
 	"go/token"
 	"os"
 	"strings"
+	"unicode"
 
 	"github.com/Konstantin8105/c4go/ast"
 	"github.com/Konstantin8105/c4go/program"
@@ -31,6 +32,69 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 
 	if err != nil {
 		return err
+	}
+
+	// replace if type name and variable name
+	{
+		var replacer func(ast.Node)
+		replacer = func(node ast.Node) {
+			if node == nil {
+				return
+			}
+			var vName *string
+			var vType *string
+			switch v := node.(type) {
+			case *ast.DeclRefExpr:
+				vName = &v.Name
+				vType = &v.Type
+			case *ast.VarDecl:
+				vName = &v.Name
+				vType = &v.Type
+			case *ast.ParmVarDecl:
+				vName = &v.Name
+				vType = &v.Type
+			}
+
+			// examples:
+			//   vName        vType
+			//   `wb`         `wb`
+			//   `wb`        `wb *`
+			//   `wb`      `struct wb`
+			//   `wb`      `struct wb *`
+			//   `wb`      `struct wb*`
+			//   `wb`      `struct wb [10]`
+			// not ok:
+			//   `wb`      `struct wba`
+			postfix := "_c4go_postfix"
+			if vType != nil && vName != nil &&
+				len(strings.TrimSpace(*vName)) > 0 &&
+				strings.Contains(*vType, *vName) {
+
+				for _, pr := range []string{*vName, "struct " + *vName, "union " + *vName} {
+					if pr == *vType {
+						*vName += postfix
+						break
+					}
+					if len(*vType) > len(pr) && pr == (*vType)[:len(pr)] && len(pr) > 0 {
+						letter := (*vType)[len(pr)]
+						if unicode.IsLetter(rune(letter)) {
+							continue
+						}
+						if unicode.IsNumber(rune(letter)) {
+							continue
+						}
+						if letter == '*' || letter == '[' || letter == ' ' {
+							*vName += postfix
+							break
+						}
+					}
+				}
+			}
+			for i := range node.Children() {
+				replacer(node.Children()[i])
+			}
+		}
+		replacer(root)
 	}
 
 	// Now begin building the Go AST.
