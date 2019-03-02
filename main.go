@@ -52,16 +52,20 @@ type ProgramArgs struct {
 	outputFile     string
 	packageName    string
 	cppCode        bool
+	bindingFlag    bool
 	outsideStructs bool
 }
 
 // DefaultProgramArgs default value of ProgramArgs
 func DefaultProgramArgs() ProgramArgs {
 	return ProgramArgs{
-		verbose:     false,
-		ast:         false,
-		packageName: "main",
-		clangFlags:  []string{},
+		verbose:        false,
+		ast:            false,
+		cppCode:        false,
+		bindingFlag:    false,
+		outsideStructs: false,
+		packageName:    "main",
+		clangFlags:     []string{},
 	}
 }
 
@@ -355,8 +359,13 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 		fmt.Fprintln(os.Stdout, "Transpiling tree...")
 	}
 
-	err = transpiler.TranspileAST(args.outputFile, args.packageName, args.outsideStructs,
-		p, tree[0].(ast.Node))
+	err = transpiler.TranspileAST(
+		args.outputFile,
+		args.packageName,
+		args.outsideStructs,
+		args.bindingFlag,
+		p,
+		tree[0].(ast.Node))
 	if err != nil {
 		for i := range astErrors {
 			fmt.Fprintf(os.Stderr, "AST error #%d:\n%v\n",
@@ -411,6 +420,8 @@ func runCommand() int {
 			"cpp", false, "transpile CPP code")
 		verboseFlag = transpileCommand.Bool(
 			"V", false, "print progress as comments")
+		bindingFlag = transpileCommand.Bool(
+			"b", false, "generate \"C\" binding and inject in result")
 		outputFlag = transpileCommand.String(
 			"o", "", "output Go generated code to the specified file")
 		packageFlag = transpileCommand.String(
@@ -490,7 +501,7 @@ func runCommand() int {
 
 		if *transpileHelpFlag || transpileCommand.NArg() == 0 {
 			fmt.Fprintf(stderr,
-				"Usage: %s transpile [-V] [-o file.go] [-p package] [-cpuprofile cpu.out] file1.c ...\n",
+				"Usage: %s transpile [-V] [-o file.go] [-p package] [-cpuprofile cpu.out] [-b] [-cpp] [-s] file1.c ...\n",
 				os.Args[0])
 			transpileCommand.PrintDefaults()
 			return 5
@@ -501,6 +512,7 @@ func runCommand() int {
 		args.packageName = *packageFlag
 		args.verbose = *verboseFlag
 		args.clangFlags = clangFlags
+		args.bindingFlag = *bindingFlag
 		args.cppCode = *cppFlag
 		args.outsideStructs = *withOutsideStructs
 

@@ -18,10 +18,14 @@ import (
 	"github.com/Konstantin8105/c4go/util"
 )
 
-var AddOutsideStruct bool
+var (
+	AddOutsideStruct bool
+	Binding          bool
+)
 
 // TranspileAST iterates through the Clang AST and builds a Go AST
 func TranspileAST(fileName, packageName string, withOutsideStructs bool,
+	bindingFlag bool,
 	p *program.Program, root ast.Node) (err error) {
 	// Start by parsing an empty file.
 	p.FileSet = token.NewFileSet()
@@ -29,6 +33,7 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 	f, err := parser.ParseFile(p.FileSet, fileName, packageSignature, 0)
 	p.File = f
 	AddOutsideStruct = withOutsideStructs
+	Binding = bindingFlag
 
 	if err != nil {
 		return err
