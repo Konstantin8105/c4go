@@ -30,8 +30,8 @@ go build
 
 # remove go files from last transpilation
 	echo "***** remove go files"
-	rm -f NEAT_TEMP_FOLDER/*.go
-
+	rm -f $NEAT_TEMP_FOLDER/*.go
+	rm -f $NEAT_TEMP_FOLDER/*.app
 
 # transpilation of all projects
 	COUNTER=0
