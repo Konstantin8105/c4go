@@ -73,6 +73,8 @@ if [ "$1" == "-s" ]; then
 		for f in $NEAT_TEMP_FOLDER/*.go ; do
 			# iteration by Go files
 				echo "	file : $f"
+			# c4go warnings
+				cat $f | grep "^// Warning" | sort | uniq
 			# show amount error from `go build`:
 				go build -o $f.app -gcflags="-e" $f 2>&1 | sort 
 		done
