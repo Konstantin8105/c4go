@@ -4,13 +4,12 @@ set -e
 
 go build
 
-export C4GO_DIR=$GOPATH/src/github.com/Konstantin8105/c4go
-export C4GO=$C4GO_DIR/c4go
+# prepare variables
+	export C4GO_DIR=$GOPATH/src/github.com/Konstantin8105/c4go
+	export C4GO=$C4GO_DIR/c4go
+	export NEAT_TEMP_FOLDER="/tmp/NEAT"
 
-# create temp folder
-	NEAT_TEMP_FOLDER="/tmp/NEAT"
-
-# clone projects
+# prepare C code
     if [ ! -d $NEAT_TEMP_FOLDER ]; then
 		mkdir -p $NEAT_TEMP_FOLDER
 		git clone https://github.com/aligrudi/neateqn.git	$NEAT_TEMP_FOLDER/0
@@ -29,17 +28,17 @@ export C4GO=$C4GO_DIR/c4go
 		sed '135,140d'	/tmp/NEAT/4/draw.c		> /tmp/NEAT/4/draw.c
 	fi
 
-# remove go files
+# remove go files from last transpilation
 	echo "***** remove go files"
 	rm -f NEAT_TEMP_FOLDER/*.go
 
-# prepare C code for transpilation
 
 # transpilation of all projects
 	COUNTER=0
 	for f in $NEAT_TEMP_FOLDER/*; do
     	if [ -d ${f} ]; then
-			echo "***** transpilation folder : $COUNTER"
+			# iteration by C projects
+				echo "***** transpilation folder : $COUNTER"
         	# Will not run if no directories are available
 				$C4GO transpile -s						\
 					-clang-flag="-DTROFFFDIR=\"MMM\""	\
@@ -49,7 +48,7 @@ export C4GO=$C4GO_DIR/c4go
     	fi
 	done
 
-# show warnings comments
+# show warnings comments in Go source
 	echo "***** warnings"
 	WARNINGS=`cat $NEAT_TEMP_FOLDER/*.go | grep "^// Warning" | sort | uniq | wc -l`
 	echo "After transpiling : $WARNINGS warnings."
@@ -66,10 +65,15 @@ for f in $NEAT_TEMP_FOLDER/*.go ; do
 		echo "		Unsafe   : $UNSAFE"
 done
 
-# show go build warnings	
-for f in $NEAT_TEMP_FOLDER/*.go ; do
-	# iteration by Go files
-		echo "	file : $f"
-	# show amount error from `go build`:
-		go build -o $f.app -gcflags="-e" $f 2>&1 | sort 
-done
+
+# Arguments menu
+echo "    -s for show detail of Go build errors"
+if [ "$1" == "-s" ]; then
+	# show go build warnings	
+		for f in $NEAT_TEMP_FOLDER/*.go ; do
+			# iteration by Go files
+				echo "	file : $f"
+			# show amount error from `go build`:
+				go build -o $f.app -gcflags="-e" $f 2>&1 | sort 
+		done
+fi
