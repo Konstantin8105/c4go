@@ -19,6 +19,11 @@ type DefinitionFunction struct {
 	// to represent a varargs.
 	ArgumentTypes []string
 
+	// Each function from some source. For example: "stdio.h" - true
+	IsOutsideIncludeFile bool
+	// If function called, then true.
+	IsCalled bool
+
 	// If this is not empty then this function name should be used instead
 	// of the Name. Many low level functions have an exact match with a Go
 	// function. For example, "sin()".
@@ -427,12 +432,33 @@ func (p *Program) GetFunctionDefinition(functionName string) *DefinitionFunction
 	return nil
 }
 
+func (p *Program) SetCalled(name string) {
+	f, ok := p.functionDefinitions[name]
+	if ok {
+		f.IsCalled = true
+		p.functionDefinitions[name] = f
+	}
+}
+
 // AddFunctionDefinition registers a function definition. If the definition
 // already exists it will be replaced.
 func (p *Program) AddFunctionDefinition(f DefinitionFunction) {
 	p.loadFunctionDefinitions()
 
 	p.functionDefinitions[f.Name] = f
+}
+
+func (p *Program) GetOutsideCalledFunctions() (ds []DefinitionFunction) {
+	for _, v := range p.functionDefinitions {
+		if !v.IsOutsideIncludeFile {
+			continue
+		}
+		if !v.IsCalled {
+			continue
+		}
+		ds = append(ds, v)
+	}
+	return
 }
 
 // dollarArgumentsToIntSlice converts a list of dollar arguments, like "$1, &2"

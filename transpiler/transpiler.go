@@ -18,10 +18,7 @@ import (
 	"github.com/Konstantin8105/c4go/util"
 )
 
-var (
-	AddOutsideStruct bool
-	Binding          bool
-)
+var AddOutsideStruct bool
 
 // TranspileAST iterates through the Clang AST and builds a Go AST
 func TranspileAST(fileName, packageName string, withOutsideStructs bool,
@@ -33,7 +30,6 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 	f, err := parser.ParseFile(p.FileSet, fileName, packageSignature, 0)
 	p.File = f
 	AddOutsideStruct = withOutsideStructs
-	Binding = bindingFlag
 
 	if err != nil {
 		return err
@@ -110,6 +106,9 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 		err = nil // Error is ignored
 	}
 	p.File.Decls = append(p.File.Decls, decls...)
+
+	// binding
+	bind := generateBinding(p)
 
 	// only for "stdbool.h"
 	if p.IncludeHeaderIsExists("stdbool.h") {
@@ -463,6 +462,22 @@ func transpileToNode(node ast.Node, p *program.Program) (
 	switch n := node.(type) {
 	case *ast.TranslationUnitDecl:
 		return transpileTranslationUnitDecl(p, n)
+	}
+
+	if fd, ok := node.(*ast.FunctionDecl); ok {
+		if !p.PreprocessorFile.IsUserSource(fd.Position().File) {
+			if p.GetFunctionDefinition(fd.Name) == nil {
+				_, _, f, r, err := util.ParseFunction(fd.Type)
+				if err == nil {
+					p.AddFunctionDefinition(program.DefinitionFunction{
+						Name:                 fd.Name,
+						ReturnType:           r[0],
+						ArgumentTypes:        f,
+						IsOutsideIncludeFile: true,
+					})
+				}
+			}
+		}
 	}
 
 	if !AddOutsideStruct {
