@@ -481,7 +481,10 @@ func transpileToNode(node ast.Node, p *program.Program) (
 	}
 
 	if fd, ok := node.(*ast.FunctionDecl); ok {
-		if p.GetFunctionDefinition(fd.Name) == nil {
+		if d := p.GetFunctionDefinition(fd.Name); d == nil ||
+			p.PreprocessorFile.IsUserSource(d.IncludeFile) {
+
+			// create new definition
 			if _, _, f, r, err := util.ParseFunction(fd.Type); err == nil {
 				p.AddFunctionDefinition(program.DefinitionFunction{
 					Name:          fd.Name,

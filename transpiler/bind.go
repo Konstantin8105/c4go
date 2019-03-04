@@ -59,6 +59,9 @@ func generateBinding(p *program.Program) (bindHeader, bindCode string) {
 
 		code := getBindFunction(p, ds[i])
 		index := strings.Index(code, "\n")
+		if index < 0 {
+			continue
+		}
 		bindCode += code[index:] + "\n"
 	}
 
