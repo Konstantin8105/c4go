@@ -273,7 +273,7 @@ func (f FilePP) GetBaseInclude(in string) string {
 			return f.includes[i].BaseHeaderName
 		}
 	}
-	panic("not acceptable include")
+	return in
 }
 
 // GetSnippet return short part of code inside preprocessor C code
