@@ -102,8 +102,9 @@ type Comment struct {
 
 // IncludeHeader - struct for C include header
 type IncludeHeader struct {
-	HeaderName   string
-	IsUserSource bool
+	HeaderName     string
+	BaseHeaderName string
+	IsUserSource   bool
 }
 
 // FilePP a struct with all information about preprocessor C code
@@ -143,6 +144,7 @@ func NewFilePP(inputFiles, clangFlags []string, cppCode bool) (
 	if err != nil {
 		return
 	}
+
 	// Generate C header list
 	f.includes = generateIncludeList(us, all)
 
@@ -200,6 +202,41 @@ func NewFilePP(inputFiles, clangFlags []string, cppCode bool) (
 	}
 	f.pp = ([]byte)(strings.Join(lines, "\n"))
 
+	{
+		for i := range f.includes {
+			f.includes[i].BaseHeaderName = f.includes[i].HeaderName
+		}
+		// correct include names only for external Includes
+		var ier []string
+		ier, err = GetIeraphyIncludeList(inputFiles, clangFlags, cppCode)
+		for i := range f.includes {
+			if f.includes[i].IsUserSource {
+				continue
+			}
+			// find position in Include ierarphy
+			var pos int = -1
+			for j := range ier {
+				if strings.Contains(ier[j], f.includes[i].BaseHeaderName) {
+					pos = j
+					break
+				}
+			}
+			if pos < 0 {
+				continue
+			}
+
+			for ; pos > 0; pos-- {
+				// move by ierarphy to ".. "
+				if ier[pos] == ".. "+f.includes[i].BaseHeaderName {
+					break
+				}
+				index := strings.Index(ier[pos-1], " ")
+				if index >= 0 {
+					f.includes[i].BaseHeaderName = ier[pos-1][index+1:]
+				}
+			}
+		}
+	}
 	return
 }
 
@@ -227,6 +264,16 @@ func (f FilePP) IsUserSource(in string) bool {
 		}
 	}
 	return false
+}
+
+// GetBaseInclude return base include
+func (f FilePP) GetBaseInclude(in string) string {
+	for i := range f.includes {
+		if in == f.includes[i].HeaderName {
+			return f.includes[i].BaseHeaderName
+		}
+	}
+	panic("not acceptable include")
 }
 
 // GetSnippet return short part of code inside preprocessor C code
@@ -457,7 +504,12 @@ func generateIncludeList(userList, allList []string) (
 // exit.o: exit.c tests.h
 func GetIncludeListWithUserSource(inputFiles, clangFlags []string, cppCode bool) (
 	lines []string, err error) {
-	return getIncludeList(inputFiles, clangFlags, "-MM", cppCode)
+	var out string
+	out, err = getIncludeList(inputFiles, clangFlags, []string{"-MM"}, cppCode)
+	if err != nil {
+		return
+	}
+	return parseIncludeList(out)
 }
 
 // GetIncludeFullList - Get full list of include files
@@ -471,11 +523,31 @@ func GetIncludeListWithUserSource(inputFiles, clangFlags []string, cppCode bool)
 //   / ........ and other
 func GetIncludeFullList(inputFiles, clangFlags []string, cppCode bool) (
 	lines []string, err error) {
-	return getIncludeList(inputFiles, clangFlags, "-M", cppCode)
+	var out string
+	out, err = getIncludeList(inputFiles, clangFlags, []string{"-M"}, cppCode)
+	if err != nil {
+		return
+	}
+	return parseIncludeList(out)
 }
 
-func getIncludeList(inputFiles, clangFlags []string, flag string, cppCode bool) (
+// GetIncludeListWithUserSource - Get list of include files
+// Example:
+// $ clang  -MM -c exit.c
+// exit.o: exit.c tests.h
+func GetIeraphyIncludeList(inputFiles, clangFlags []string, cppCode bool) (
 	lines []string, err error) {
+	var out string
+	out, err = getIncludeList(inputFiles, clangFlags, []string{"-MM", "-H"}, cppCode)
+	if err != nil {
+		return
+	}
+	return strings.Split(out, "\n"), nil
+}
+
+// getIncludeList return stdout lines
+func getIncludeList(inputFiles, clangFlags []string, flag []string, cppCode bool) (
+	_ string, err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("Cannot get Include List : %v", err)
@@ -490,11 +562,18 @@ func getIncludeList(inputFiles, clangFlags []string, flag string, cppCode bool) 
 			return
 		}
 	}
-	args = append(args, flag, "-c")
+	args = append(args, flag...)
+	args = append(args, "-c")
 	args = append(args, inputFiles...)
 	args = append(args, clangFlags...)
-	var cmd *exec.Cmd
 
+	defer func() {
+		if err != nil {
+			fmt.Errorf("used next arguments: `%v`. %v", args, err)
+		}
+	}()
+
+	var cmd *exec.Cmd
 	compiler, compilerFlag := Compiler(cppCode)
 	args = append(compilerFlag, args...)
 	cmd = exec.Command(compiler, args...)
@@ -506,5 +585,9 @@ func getIncludeList(inputFiles, clangFlags []string, flag string, cppCode bool) 
 		err = fmt.Errorf("preprocess failed: %v\nStdErr = %v", err, stderr.String())
 		return
 	}
-	return parseIncludeList(out.String())
+
+	// add stderr to out, for flags "-MM -H"
+	out.WriteString(stderr.String())
+
+	return out.String(), err
 }
