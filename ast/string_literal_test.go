@@ -40,6 +40,16 @@ func TestStringLiteral(t *testing.T) {
 			Value:      "copy successful",
 			ChildNodes: []Node{},
 		},
+		`0x2759028 <col:19> 'STRING':'char [100]' lvalue "C"`: &StringLiteral{
+			Addr:       0x2759028,
+			Pos:        NewPositionFromString("col:19"),
+			Type:       "STRING",
+			Type2:      "char [100]",
+			IsLvalue:   true,
+			Runes:      false,
+			Value:      "C",
+			ChildNodes: []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)
