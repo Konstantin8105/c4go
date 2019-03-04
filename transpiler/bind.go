@@ -24,7 +24,7 @@ func generateBinding(p *program.Program) (bindHeader, bindCode string) {
 	{
 		in := map[string]bool{}
 		for i := range ds {
-			in[ds[i].IncludeFile] = true
+			in[p.PreprocessorFile.GetBaseInclude(ds[i].IncludeFile)] = true
 		}
 		for header := range in {
 			bindHeader += fmt.Sprintf("// #include <%s>\n", header)
