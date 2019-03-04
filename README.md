@@ -116,7 +116,7 @@ func main() {
 }
 ```
 
-# Example with bunding function without internal implementation inside `c4go`
+# Example with binding function
 
 Run:
 
