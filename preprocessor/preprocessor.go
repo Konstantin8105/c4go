@@ -209,6 +209,9 @@ func NewFilePP(inputFiles, clangFlags []string, cppCode bool) (
 		// correct include names only for external Includes
 		var ier []string
 		ier, err = GetIeraphyIncludeList(inputFiles, clangFlags, cppCode)
+
+		// TODO: create real tree of includes and check by ./travis/ed.sh
+
 		for i := range f.includes {
 			if f.includes[i].IsUserSource {
 				continue
@@ -226,7 +229,6 @@ func NewFilePP(inputFiles, clangFlags []string, cppCode bool) (
 			}
 
 			for ; pos > 0; pos-- {
-				// move by ierarphy to ".. "
 				if ier[pos] == ".. "+f.includes[i].BaseHeaderName {
 					break
 				}
