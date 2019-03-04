@@ -19,6 +19,11 @@ type DefinitionFunction struct {
 	// to represent a varargs.
 	ArgumentTypes []string
 
+	// Each function from some source. For example: "stdio.h"
+	IncludeFile string
+	// If function called, then true.
+	IsCalled bool
+
 	// If this is not empty then this function name should be used instead
 	// of the Name. Many low level functions have an exact match with a Go
 	// function. For example, "sin()".
@@ -514,4 +519,28 @@ func (p *Program) loadFunctionDefinitions() {
 			})
 		}
 	}
+}
+
+func (p *Program) SetCalled(name string) {
+	f, ok := p.functionDefinitions[name]
+	if ok {
+		f.IsCalled = true
+		p.functionDefinitions[name] = f
+	}
+}
+
+func (p *Program) GetOutsideCalledFunctions() (ds []DefinitionFunction) {
+	for _, v := range p.functionDefinitions {
+		if v.IncludeFile == "" {
+			continue
+		}
+		if p.PreprocessorFile.IsUserSource(v.IncludeFile) {
+			continue
+		}
+		if !v.IsCalled {
+			continue
+		}
+		ds = append(ds, v)
+	}
+	return
 }

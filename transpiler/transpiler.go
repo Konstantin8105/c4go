@@ -119,6 +119,8 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 		})
 	}
 
+	generateBinding(p)
+
 	// Add the imports after everything else so we can ensure that they are all
 	// placed at the top.
 	for _, quotedImportPath := range p.Imports() {
@@ -458,6 +460,19 @@ func transpileToNode(node ast.Node, p *program.Program) (
 	switch n := node.(type) {
 	case *ast.TranslationUnitDecl:
 		return transpileTranslationUnitDecl(p, n)
+	}
+
+	if fd, ok := node.(*ast.FunctionDecl); ok {
+		if p.GetFunctionDefinition(fd.Name) == nil {
+			if _, _, f, r, err := util.ParseFunction(fd.Type); err == nil {
+				p.AddFunctionDefinition(program.DefinitionFunction{
+					Name:          fd.Name,
+					ReturnType:    r[0],
+					ArgumentTypes: f,
+					IncludeFile:   fd.Position().File,
+				})
+			}
+		}
 	}
 
 	if !AddOutsideStruct {
