@@ -54,10 +54,15 @@ func generateBinding(p *program.Program) (bindHeader, bindCode string) {
 		//		return float64(C.frexp(C.double(arg1), unsafe.Pointer(arg2)))
 		// }
 
-		p.AddMessage(p.GenerateWarningMessage(fmt.Errorf(
-			"Haven`t implementation for function : `%s`", ds[i].Name), nil))
+		mess := p.GenerateWarningMessage(fmt.Errorf(
+			"Haven`t implementation for function : `%s`", ds[i].Name), nil)
+		bindCode += mess + "\n"
 
-		code := getBindFunction(p, ds[i])
+		code, err := getBindFunction(p, ds[i])
+		if err != nil {
+			bindCode += p.GenerateWarningMessage(err, nil) + "\n"
+			continue
+		}
 		index := strings.Index(code, "\n")
 		if index < 0 {
 			continue
@@ -68,7 +73,7 @@ func generateBinding(p *program.Program) (bindHeader, bindCode string) {
 	return
 }
 
-func getBindFunction(p *program.Program, d program.DefinitionFunction) (code string) {
+func getBindFunction(p *program.Program, d program.DefinitionFunction) (code string, err error) {
 	var f goast.FuncDecl
 	f.Name = goast.NewIdent(d.Name)
 
@@ -80,9 +85,7 @@ func getBindFunction(p *program.Program, d program.DefinitionFunction) (code str
 	for i := range d.ArgumentTypes {
 		resolveType, err := types.ResolveType(p, d.ArgumentTypes[i])
 		if err != nil {
-			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("cannot generate argument binding function `%s`: %v", d.Name, err), nil))
-			return
+			return "", fmt.Errorf("cannot generate argument binding function `%s`: %v", d.Name, err)
 		}
 		fl.List = append(fl.List, &goast.Field{
 			Names: []*goast.Ident{goast.NewIdent(fmt.Sprintf("%s%d", prefix, i))},
@@ -99,9 +102,7 @@ func getBindFunction(p *program.Program, d program.DefinitionFunction) (code str
 	if d.ReturnType != "" {
 		resolveType, err := types.ResolveType(p, d.ReturnType)
 		if err != nil {
-			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("cannot generate return type binding function `%s`: %v", d.Name, err), nil))
-			return
+			return "", fmt.Errorf("cannot generate return type binding function `%s`: %v", d.Name, err)
 		}
 		fr.List = append(fr.List, &goast.Field{
 			Type: goast.NewIdent(resolveType),
@@ -115,9 +116,7 @@ func getBindFunction(p *program.Program, d program.DefinitionFunction) (code str
 		// convert from Go type to Cgo type
 		cgoExpr, err := ResolveCgoType(p, argResolvedType[i], goast.NewIdent(fmt.Sprintf("%s%d", prefix, i)))
 		if err != nil {
-			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("cannot resolve cgo type for function `%s`: %v", d.Name, err), nil))
-			return
+			return "", fmt.Errorf("cannot resolve cgo type for function `%s`: %v", d.Name, err)
 		}
 
 		arg = append(arg, cgoExpr)
@@ -146,13 +145,10 @@ func getBindFunction(p *program.Program, d program.DefinitionFunction) (code str
 		Name:  goast.NewIdent("main"),
 		Decls: []goast.Decl{&f},
 	}); err != nil {
-		p.AddMessage(p.GenerateWarningMessage(
-			fmt.Errorf("cannot get source of binding function : %s", d.Name), nil))
-		panic(err)
-		return
+		return "", fmt.Errorf("cannot get source of binding function : %s", d.Name)
 	}
 
-	return buf.String()
+	return buf.String(), nil
 }
 
 func cgoTypes(goType string) (_ string, ok bool) {
