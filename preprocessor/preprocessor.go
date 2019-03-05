@@ -210,7 +210,33 @@ func NewFilePP(inputFiles, clangFlags []string, cppCode bool) (
 		var ier []string
 		ier, err = GetIeraphyIncludeList(inputFiles, clangFlags, cppCode)
 
-		// TODO: create real tree of includes and check by ./travis/ed.sh
+		// cut lines without pattern ". "
+	again:
+		for i := range ier {
+			remove := false
+			if len(ier[i]) == 0 {
+				remove = true
+			} else if ier[i][0] != '.' {
+				remove = true
+			} else if index := strings.Index(ier[i], ". "); index < 0 {
+				remove = true
+			}
+			if remove {
+				ier = append(ier[:i], ier[i+1:]...)
+				goto again
+			}
+		}
+
+		separator := func(line string) (level int, name string) {
+			for i := range line {
+				if line[i] == ' ' {
+					level = i
+					break
+				}
+			}
+			name = line[level+1:]
+			return
+		}
 
 		for i := range f.includes {
 			if f.includes[i].IsUserSource {
@@ -228,14 +254,19 @@ func NewFilePP(inputFiles, clangFlags []string, cppCode bool) (
 				continue
 			}
 
-			for ; pos > 0; pos-- {
-				if ier[pos] == ".. "+f.includes[i].BaseHeaderName {
+			// find level of line
+			level, _ := separator(ier[pos])
+
+			for j := pos; j > 0; j-- {
+				levelJ, nameJ := separator(ier[j])
+				if levelJ >= level {
+					continue
+				}
+				if f.IsUserSource(nameJ) {
 					break
 				}
-				index := strings.Index(ier[pos-1], " ")
-				if index >= 0 {
-					f.includes[i].BaseHeaderName = ier[pos-1][index+1:]
-				}
+				f.includes[i].BaseHeaderName = nameJ
+				level = levelJ
 			}
 		}
 	}
@@ -533,10 +564,21 @@ func GetIncludeFullList(inputFiles, clangFlags []string, cppCode bool) (
 	return parseIncludeList(out)
 }
 
-// GetIncludeListWithUserSource - Get list of include files
+// GetIeraphyIncludeList - Get list of include files in ierarphy
 // Example:
-// $ clang  -MM -c exit.c
-// exit.o: exit.c tests.h
+// clang -MM -H ./tests/math.c
+// . ./tests/tests.h
+// .. /usr/include/string.h
+// ... /usr/include/features.h
+// .... /usr/include/stdc-predef.h
+// .... /usr/include/x86_64-linux-gnu/sys/cdefs.h
+// ..... /usr/include/x86_64-linux-gnu/bits/wordsize.h
+// .... /usr/include/x86_64-linux-gnu/gnu/stubs.h
+// ..... /usr/include/x86_64-linux-gnu/gnu/stubs-64.h
+// ... /usr/lib/llvm-6.0/lib/clang/6.0.0/include/stddef.h
+// ... /usr/include/xlocale.h
+// .. /usr/include/math.h
+// ... /usr/include/x86_64-linux-gnu/bits/math-vector.h
 func GetIeraphyIncludeList(inputFiles, clangFlags []string, cppCode bool) (
 	lines []string, err error) {
 	var out string

@@ -55,7 +55,7 @@ func generateBinding(p *program.Program) (bindHeader, bindCode string) {
 		// }
 
 		mess := p.GenerateWarningMessage(fmt.Errorf(
-			"Haven`t implementation for function : `%s`", ds[i].Name), nil)
+			"Add c-binding for implementate function : `%s`", ds[i].Name), nil)
 		bindCode += mess + "\n"
 
 		code, err := getBindFunction(p, ds[i])
