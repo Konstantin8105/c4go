@@ -28,7 +28,7 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 		return
 	}
 
-	if types.IsPointer(n.Type) {
+	if util.IsPointer(n.Type) {
 		switch operator {
 		case token.INC: // ++
 			operator = token.ADD
@@ -152,7 +152,7 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 	// UnaryOperator <> 'int' prefix '!'
 	// `-ImplicitCastExpr <> 'int (*)(int, double)' <LValueToRValue>
 	//   `-DeclRefExpr <> 'int (*)(int, double)' lvalue Var 0x2be4e80 'T' 'int (*)(int, double)'
-	if types.IsFunction(eType) {
+	if util.IsFunction(eType) {
 		return &goast.BinaryExpr{
 			X:  e,
 			Op: token.EQL, // ==
@@ -256,11 +256,11 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 		return
 	}
 
-	if types.IsFunction(eType) {
+	if util.IsFunction(eType) {
 		return
 	}
 
-	if types.IsLastArray(eType) {
+	if util.IsLastArray(eType) {
 		// In : eType = 'int [5]'
 		// Out: eType = 'int *'
 		f := strings.Index(eType, "[")
@@ -583,32 +583,10 @@ func transpileUnaryExprOrTypeTraitExpr(n *ast.UnaryExprOrTypeTraitExpr, p *progr
 	// It will have children if the sizeof() is referencing a variable.
 	// Fortunately clang already has the type in the AST for us.
 	if len(n.Children()) > 0 {
-		var realFirstChild interface{}
-		t = ""
-
-		switch c := n.Children()[0].(type) {
-		case *ast.ParenExpr:
-			realFirstChild = c.Children()[0]
-		case *ast.DeclRefExpr:
-			t = c.Type
-		case *ast.UnaryOperator:
-			t = c.Type
-		case *ast.MemberExpr:
-			t = c.Type
-		case *ast.ArraySubscriptExpr:
-			t = c.Type
-		default:
+		if typ, ok := ast.GetTypeIfExist(n.Children()[0]); ok {
+			t = *typ
+		} else {
 			panic(fmt.Sprintf("cannot find first child from: %#v", n.Children()[0]))
-		}
-
-		if t == "" {
-			if node, ok := realFirstChild.(ast.Node); ok {
-				if ty, ok := ast.GetTypeIfExist(node); ok {
-					t = *ty
-				} else {
-					panic(fmt.Sprintf("cannot do unary on: %#v", realFirstChild))
-				}
-			}
 		}
 	}
 

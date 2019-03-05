@@ -63,9 +63,13 @@ func transpileStringLiteral(p *program.Program, n *ast.StringLiteral, arrayToArr
 	if baseType != "char" &&
 		!strings.Contains(baseType, "int") &&
 		!strings.Contains(baseType, "wchar_t") {
-		err = fmt.Errorf("Type is not valid : %v", n.Type)
-		p.AddMessage(p.GenerateWarningMessage(err, n))
-		return
+		if t, ok := p.TypedefType[baseType]; ok {
+			n.Type = t
+		} else {
+			err = fmt.Errorf("Type is not valid : `%v`", n.Type)
+			p.AddMessage(p.GenerateWarningMessage(err, n))
+			return
+		}
 	}
 	var s int
 	s, err = types.GetAmountArraySize(n.Type)
@@ -100,8 +104,8 @@ func transpileStringLiteral(p *program.Program, n *ast.StringLiteral, arrayToArr
 	// 	return b
 	// }()}
 	expr = goast.NewIdent(fmt.Sprintf(
-		"func() (b [%v]byte) { copy(b[:],\"%s\" );return }()",
-		s, n.Value))
+		"func() (b [%v]byte) {copy(b[:], %s);return }()",
+		s, strconv.Quote(n.Value)))
 	exprType = n.Type
 	return
 }

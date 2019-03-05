@@ -19,6 +19,11 @@ type DefinitionFunction struct {
 	// to represent a varargs.
 	ArgumentTypes []string
 
+	// Each function from some source. For example: "stdio.h"
+	IncludeFile string
+	// If function called, then true.
+	IsCalled bool
+
 	// If this is not empty then this function name should be used instead
 	// of the Name. Many low level functions have an exact match with a Go
 	// function. For example, "sin()".
@@ -58,7 +63,13 @@ type DefinitionFunction struct {
 //     size_t fread(void*, size_t, size_t, FILE*) -> $0 = noarch.Fread(&1, $2, $3, $4)
 //
 var builtInFunctionDefinitions = map[string][]string{
+	"signal.h": {
+		// signal.h
+		"void (*signal(int , void (*)(int)))(int) -> noarch.Signal",
+		"int raise(int ) -> noarch.Raise",
+	},
 	"errno.h": {
+		// errno.h
 		"int * __errno_location(void ) -> noarch.ErrnoLocation",
 	},
 	"assert.h": {
@@ -348,6 +359,13 @@ var builtInFunctionDefinitions = map[string][]string{
 		"ssize_t read(int, void *, size_t) -> noarch.Read",
 		"int close(int) -> golang.org/x/sys/unix.CloseOnExec",
 		"int isatty(int) -> noarch.Isatty",
+		"int ftruncate(int , off_t ) -> noarch.Ftruncate",
+		"int unlink(const char *) -> noarch.Unlink",
+	},
+	"sys/stat.h": {
+		"int fstat(int , struct stat  *) -> noarch.Fstat",
+		"int stat(const char * , struct stat * ) -> noarch.Stat",
+		"int lstat(const char * , struct stat * ) -> noarch.Lstat",
 	},
 }
 
@@ -398,6 +416,7 @@ func (p *Program) GetIncludeFileNameByFunctionSignature(
 			return k, nil
 		}
 	}
+
 	return
 }
 
@@ -460,23 +479,17 @@ func (p *Program) loadFunctionDefinitions() {
 		}
 
 		for _, f := range v {
-			match := util.GetRegex(`^(.+) ([^ ]+)\(([, a-z*A-Z_0-9.]*)\)( -> .+)?$`).
-				FindStringSubmatch(f)
-
-			// Unpack argument types.
-			argumentTypes := strings.Split(match[3], ",")
-			for i := range argumentTypes {
-				argumentTypes[i] = strings.TrimSpace(argumentTypes[i])
-			}
-			if len(argumentTypes) == 1 && argumentTypes[0] == "" {
-				argumentTypes = []string{}
+			index := strings.Index(f, "->")
+			_, a, w, e, err := util.ParseFunction(f[:index])
+			if err != nil {
+				panic(err)
 			}
 
 			// Defaults for transformations.
 			var returnParameters, parameters []int
 
 			// Substitution rules.
-			substitution := match[4]
+			substitution := strings.TrimSpace(f[index+2:])
 			if substitution != "" {
 				substitution = strings.TrimLeft(substitution, " ->")
 
@@ -497,13 +510,37 @@ func (p *Program) loadFunctionDefinitions() {
 			}
 
 			p.AddFunctionDefinition(DefinitionFunction{
-				Name:             match[2],
-				ReturnType:       match[1],
-				ArgumentTypes:    argumentTypes,
+				Name:             a,
+				ReturnType:       e[0],
+				ArgumentTypes:    w,
 				Substitution:     substitution,
 				ReturnParameters: returnParameters,
 				Parameters:       parameters,
 			})
 		}
 	}
+}
+
+func (p *Program) SetCalled(name string) {
+	f, ok := p.functionDefinitions[name]
+	if ok {
+		f.IsCalled = true
+		p.functionDefinitions[name] = f
+	}
+}
+
+func (p *Program) GetOutsideCalledFunctions() (ds []DefinitionFunction) {
+	for _, v := range p.functionDefinitions {
+		if v.IncludeFile == "" {
+			continue
+		}
+		if p.PreprocessorFile.IsUserSource(v.IncludeFile) {
+			continue
+		}
+		if !v.IsCalled {
+			continue
+		}
+		ds = append(ds, v)
+	}
+	return
 }

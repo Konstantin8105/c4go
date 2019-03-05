@@ -3,6 +3,7 @@ package noarch
 import (
 	"fmt"
 	"os"
+	"syscall"
 
 	"golang.org/x/sys/unix"
 )
@@ -25,9 +26,8 @@ func Pipe(p []int) int {
 	return 0
 }
 
-func Read(fd int, p []byte, num int) SsizeT {
-	n, err := unix.Read(fd, p)
-	_ = num
+func Read(fd int, p []byte, num uint) SsizeT {
+	n, err := syscall.Read(fd, p)
 	if err != nil {
 		return SsizeT(-1)
 	}
@@ -35,8 +35,7 @@ func Read(fd int, p []byte, num int) SsizeT {
 }
 
 func Write(fd int, p []byte, num uint) SsizeT {
-	n, err := unix.Write(fd, p)
-	_ = num
+	n, err := syscall.Write(fd, p)
 	if err != nil {
 		return SsizeT(-1)
 	}

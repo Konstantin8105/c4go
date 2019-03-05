@@ -10,6 +10,7 @@ import (
 	"go/token"
 	"os"
 	"strings"
+	"unicode"
 
 	"github.com/Konstantin8105/c4go/ast"
 	"github.com/Konstantin8105/c4go/program"
@@ -21,7 +22,9 @@ var AddOutsideStruct bool
 
 // TranspileAST iterates through the Clang AST and builds a Go AST
 func TranspileAST(fileName, packageName string, withOutsideStructs bool,
-	p *program.Program, root ast.Node) (err error) {
+	p *program.Program, root ast.Node) (
+	source string, // result Go source
+	err error) {
 	// Start by parsing an empty file.
 	p.FileSet = token.NewFileSet()
 	packageSignature := fmt.Sprintf("package %v", packageName)
@@ -30,7 +33,70 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 	AddOutsideStruct = withOutsideStructs
 
 	if err != nil {
-		return err
+		return
+	}
+
+	// replace if type name and variable name
+	{
+		var replacer func(ast.Node)
+		replacer = func(node ast.Node) {
+			if node == nil {
+				return
+			}
+			var vName *string
+			var vType *string
+			switch v := node.(type) {
+			case *ast.DeclRefExpr:
+				vName = &v.Name
+				vType = &v.Type
+			case *ast.VarDecl:
+				vName = &v.Name
+				vType = &v.Type
+			case *ast.ParmVarDecl:
+				vName = &v.Name
+				vType = &v.Type
+			}
+
+			// examples:
+			//   vName        vType
+			//   `wb`         `wb`
+			//   `wb`        `wb *`
+			//   `wb`      `struct wb`
+			//   `wb`      `struct wb *`
+			//   `wb`      `struct wb*`
+			//   `wb`      `struct wb [10]`
+			// not ok:
+			//   `wb`      `struct wba`
+			postfix := "_c4go_postfix"
+			if vType != nil && vName != nil &&
+				len(strings.TrimSpace(*vName)) > 0 &&
+				strings.Contains(*vType, *vName) {
+
+				for _, pr := range []string{*vName, "struct " + *vName, "union " + *vName} {
+					if pr == *vType {
+						*vName += postfix
+						break
+					}
+					if len(*vType) > len(pr) && pr == (*vType)[:len(pr)] && len(pr) > 0 {
+						letter := (*vType)[len(pr)]
+						if unicode.IsLetter(rune(letter)) {
+							continue
+						}
+						if unicode.IsNumber(rune(letter)) {
+							continue
+						}
+						if letter == '*' || letter == '[' || letter == ' ' {
+							*vName += postfix
+							break
+						}
+					}
+				}
+			}
+			for i := range node.Children() {
+				replacer(node.Children()[i])
+			}
+		}
+		replacer(root)
 	}
 
 	// Now begin building the Go AST.
@@ -72,7 +138,25 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 		p.File.Decls = append([]goast.Decl{importDecl}, p.File.Decls...)
 	}
 
-	return err
+	// generate Go source
+	source = p.String()
+
+	// checking implementation for all called functions
+	bindHeader, bindCode := generateBinding(p)
+	if len(bindCode) > 0 {
+		index := strings.Index(source, "package")
+		index += strings.Index(source[index:], "\n")
+		src := source[:index]
+		src += "\n"
+		src += bindHeader
+		src += "\n"
+		src += source[index:]
+		src += "\n"
+		src += bindCode
+		source = src
+	}
+
+	return
 }
 
 func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
@@ -394,6 +478,22 @@ func transpileToNode(node ast.Node, p *program.Program) (
 	switch n := node.(type) {
 	case *ast.TranslationUnitDecl:
 		return transpileTranslationUnitDecl(p, n)
+	}
+
+	if fd, ok := node.(*ast.FunctionDecl); ok {
+		if d := p.GetFunctionDefinition(fd.Name); d == nil ||
+			p.PreprocessorFile.IsUserSource(d.IncludeFile) {
+
+			// create new definition
+			if _, _, f, r, err := util.ParseFunction(fd.Type); err == nil {
+				p.AddFunctionDefinition(program.DefinitionFunction{
+					Name:          fd.Name,
+					ReturnType:    r[0],
+					ArgumentTypes: f,
+					IncludeFile:   p.PreprocessorFile.GetBaseInclude(fd.Position().File),
+				})
+			}
+		}
 	}
 
 	if !AddOutsideStruct {

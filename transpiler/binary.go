@@ -239,7 +239,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 		err = fmt.Errorf("cannot atomic for right part. %v", err)
 		return nil, "unknown53", nil, nil, err
 	}
-	if types.IsPointer(leftType) && types.IsPointer(rightType) && operator == token.SUB {
+	if util.IsPointer(leftType) && util.IsPointer(rightType) && operator == token.SUB {
 		p.AddImport("unsafe")
 		left, leftType = util.GetUintptrForSlice(left)
 		right, rightType = util.GetUintptrForSlice(right)
@@ -294,11 +294,11 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	}
 
 	// pointer arithmetic
-	if types.IsPointer(n.Type) {
+	if util.IsPointer(n.Type) {
 		if operator == token.ADD || // +
 			operator == token.SUB || // -
 			false {
-			if types.IsPointer(leftType) {
+			if util.IsPointer(leftType) {
 				expr, eType, newPre, newPost, err =
 					pointerArithmetic(p, left, leftType, right, rightType, operator)
 			} else {
@@ -380,7 +380,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			// | `-DeclRefExpr 'char *' lvalue Var 0x26ba988 'c' 'char *'
 			// `-ImplicitCastExpr 'char *' <LValueToRValue>
 			//   `-DeclRefExpr 'char *' lvalue Var 0x26ba8a8 'b' 'char *'
-			if types.IsCPointer(leftType) {
+			if util.IsCPointer(leftType) || util.IsCArray(leftType) {
 				left = util.GetUintptr(left)
 				right = util.GetUintptr(right)
 				p.AddImport("unsafe")
@@ -430,7 +430,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	}
 
 	var resolvedLeftType = n.Type
-	if !types.IsFunction(n.Type) && !types.IsTypedefFunction(p, n.Type) {
+	if !util.IsFunction(n.Type) && !types.IsTypedefFunction(p, n.Type) {
 		if leftType != types.NullPointer {
 			resolvedLeftType, err = types.ResolveType(p, leftType)
 		} else {
@@ -501,7 +501,8 @@ func getAllocationSizeNode(p *program.Program, node ast.Node) ast.Node {
 		return nil
 	}
 
-	functionName, _ := getNameOfFunctionFromCallExpr(p, expr)
+	functionName, err := getName(p, expr)
+	p.AddMessage(p.GenerateWarningMessage(err, node))
 
 	if functionName == "malloc" {
 		// Is 1 always the body in this case? Might need to be more careful

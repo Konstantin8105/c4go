@@ -29,11 +29,13 @@ type Struct struct {
 }
 
 // NewStruct creates a new Struct definition from an ast.RecordDecl.
-func NewStruct(n *ast.RecordDecl) (_ *Struct, err error) {
+func NewStruct(p *Program, n *ast.RecordDecl) (st *Struct, err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("Cannot create new structure : %T. Error : %v",
 				n, err)
+		} else {
+			p.Structs[n.Name] = st
 		}
 	}()
 	fields := make(map[string]interface{})
@@ -47,7 +49,7 @@ func NewStruct(n *ast.RecordDecl) (_ *Struct, err error) {
 			fields[f.Name] = f.Type
 
 		case *ast.RecordDecl:
-			fields[f.Name], err = NewStruct(f)
+			fields[f.Name], err = NewStruct(p, f)
 			if err != nil {
 				return
 			}

@@ -91,65 +91,74 @@ void test_bool_to_int()
     is_eq(x, 11);
 }
 
-
 // TODO:
 void test_unsafe_pnt()
 {
-	// (otri).orient = (int) ((unsigned long) (ptr) & (unsigned long) 3l);
-	// {
-		// long pnt;
-		// double d = 42.0;
-		// double *dd = &d;
-		// long pnt2 = (long) (dd);
-		// pnt = pnt2;
-		// double *ddd = pnt;
-		// is_eq(*ddd, 42);
-		// (void)pnt;
-	// }
-	// {
-		// int pnt;
-		// long l = 42;
-		// pnt = (int)&l;
-		// long *l_pnt = (long *)(pnt);
-		// is_eq(*l_pnt,42);
-	// }
-	// {
-		// int pnt;
-		// long l = 42;
-		// pnt = (int) (&l);
-		// long *l_pnt = (long *)(pnt);
-		// is_eq(*l_pnt,42);
-	// }
-	{
-		void * pnt;
-		long l = 42;
-		long *d = &l;
-		pnt = d;
-		long l_pnt = 24;
-		l_pnt = *((long *)(pnt));
-		is_eq(l_pnt,42);
-		(void)pnt;
-	}
-	// {
-		// int pnt;
-		// long l = 42;
-		// long *d = &l;
-		// pnt = (int)(d);
-		// long *l_pnt = (long *)(pnt);
-		// is_eq(*l_pnt,42);
-	// }
+    // (otri).orient = (int) ((unsigned long) (ptr) & (unsigned long) 3l);
+    // {
+    // long pnt;
+    // double d = 42.0;
+    // double *dd = &d;
+    // long pnt2 = (long) (dd);
+    // pnt = pnt2;
+    // double *ddd = pnt;
+    // is_eq(*ddd, 42);
+    // (void)pnt;
+    // }
+    // {
+    // int pnt;
+    // long l = 42;
+    // pnt = (int)&l;
+    // long *l_pnt = (long *)(pnt);
+    // is_eq(*l_pnt,42);
+    // }
+    // {
+    // int pnt;
+    // long l = 42;
+    // pnt = (int) (&l);
+    // long *l_pnt = (long *)(pnt);
+    // is_eq(*l_pnt,42);
+    // }
+    {
+        void* pnt;
+        long l = 42;
+        long* d = &l;
+        pnt = d;
+        long l_pnt = 24;
+        l_pnt = *((long*)(pnt));
+        is_eq(l_pnt, 42);
+        (void)pnt;
+    }
+    // {
+    // int pnt;
+    // long l = 42;
+    // long *d = &l;
+    // pnt = (int)(d);
+    // long *l_pnt = (long *)(pnt);
+    // is_eq(*l_pnt,42);
+    // }
+}
+
+void test_init()
+{
+	char ch[4][10] = {"\"", "\n", "\\", "a"};
+	is_streq(ch[0], "\"");
+	is_streq(ch[1], "\n");
+	is_streq(ch[2], "\\");
+	is_streq(ch[3], "a");
 }
 
 int main()
 {
-    plan(36);
+    plan(42);
 
-	START_TEST(unsafe_pnt);
+    START_TEST(unsafe_pnt);
     START_TEST(bool_to_int);
     START_TEST(cast);
     START_TEST(castbool);
     START_TEST(vertex);
     START_TEST(strCh);
+    START_TEST(init);
 
     {
         typedef unsigned int u32;
@@ -244,19 +253,32 @@ int main()
             pass("unsigned long to bool")
         }
     }
-	diag("char to bool");
-	{
+    diag("char to bool");
+    {
         char c = 2;
         if (!(!(c))) {
             pass("char to bool")
         }
-	}
-	diag("long to bool");
-	{
+    }
+    diag("long to bool");
+    {
         long c = 2;
         if (!(!(c))) {
             pass("long to bool")
         }
+    }
+	diag("equal slice");
+	{
+		{
+			char n[10] = "hey";
+			char m[10] = "boy";
+			is_true( n != m );
+		}
+		{
+			char *n = "hey";
+			char *m = "boy";
+			is_true( n != m );
+		}
 	}
 
     char_overflow();

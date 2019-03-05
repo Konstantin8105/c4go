@@ -399,9 +399,30 @@ void test_parg_struct()
     is_streq(po_def[1].name, "optarg");
 }
 
+int function_array_field(int a)
+{
+	return a+1;
+}
+void test_function_array()
+{
+	struct fa {
+		int(* pf)(int);
+	};
+	struct fa f[10];
+	int i = 0;
+	for (i = 0; i < 10 ; i++)  {
+		f[i].pf = function_array_field;
+	}
+	int y = 42;
+	for (i = 0; i < 10; i++) {
+		y = ((f[i]).pf)(y);
+	}
+	is_eq(y , 52);
+}
+
 int main()
 {
-    plan(171);
+    plan(172);
 
     test_parg_struct();
     START_TEST(struct_init);
@@ -425,6 +446,7 @@ int main()
     START_TEST(ptrarr);
     START_TEST(stringarr_init);
     START_TEST(partialarr_init);
+    START_TEST(function_array);
 
     is_eq(arrayEx[1], 2.0);
 
@@ -883,34 +905,34 @@ int main()
         is_not_null(t.w);
         (void)(t);
     }
-	{
-		diag("[][]char += 1");
-		char w1[]= "hello";
-		char w2[]= "world";
-		char w3[]= "people";
-		char *p1 = w1;
-		char *p2 = w2;
-		char *p3 = w3;
-		char *pa[3] = {p1,p2,p3};
-		char **pnt = pa;
-		char **pnt2 = pa;
-		*pnt += 1;
-		is_streq(*pnt, "ello");
-		(*pnt2)++;
-		is_streq(*pnt2,"llo");
-	}
-	{
-		diag("pnt of value : size_t");
-		size_t len = 42;
-		size_t * l = &len;
-		is_eq(*l,len);
-	}
-	{
-		diag("pnt of value : ssize_t");
-		ssize_t len = 42;
-		ssize_t * l = &len;
-		is_eq(*l,len);
-	}
+    {
+        diag("[][]char += 1");
+        char w1[] = "hello";
+        char w2[] = "world";
+        char w3[] = "people";
+        char* p1 = w1;
+        char* p2 = w2;
+        char* p3 = w3;
+        char* pa[3] = { p1, p2, p3 };
+        char** pnt = pa;
+        char** pnt2 = pa;
+        *pnt += 1;
+        is_streq(*pnt, "ello");
+        (*pnt2)++;
+        is_streq(*pnt2, "llo");
+    }
+    {
+        diag("pnt of value : size_t");
+        size_t len = 42;
+        size_t* l = &len;
+        is_eq(*l, len);
+    }
+    {
+        diag("pnt of value : ssize_t");
+        ssize_t len = 42;
+        ssize_t* l = &len;
+        is_eq(*l, len);
+    }
 
     done_testing();
 }
