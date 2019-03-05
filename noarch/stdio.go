@@ -502,10 +502,6 @@ func Getchar() int {
 	return getc(Stdin.OsFile)
 }
 
-func Ungetc(ch int, f *File) int {
-	return -1
-}
-
 // Fseek handles fseek().
 //
 // Sets the position indicator associated with the stream to a new position.
