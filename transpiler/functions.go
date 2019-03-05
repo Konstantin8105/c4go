@@ -361,3 +361,120 @@ func transpileReturnStmt(n *ast.ReturnStmt, p *program.Program) (
 		Results: results,
 	}, preStmts, postStmts, nil
 }
+
+// analyze function
+func analyzeFunctionDec(n *ast.FunctionDecl, p *program.Program) (names []string) {
+	// create list of variables not pointer
+	var f func(ast.Node)
+	f = func(a ast.Node) {
+		switch v := a.(type) {
+		case *ast.VarDecl:
+			if types.IsPointer(v.Type) || types.IsFunction(v.Type) {
+				return
+			}
+			if !(types.IsCInteger(p, v.Type) || types.IsCFloat(p, v.Type)) {
+				return
+			}
+			names = append(names, v.Name)
+		default:
+			if a != nil {
+				for i := range a.Children() {
+					if a.Children() != nil {
+						f(a.Children()[i])
+					}
+				}
+			}
+		}
+	}
+	f(n)
+
+	if len(names) == 0 {
+		return
+	}
+
+	// find all using
+	var excluder func(ast.Node, string) bool
+
+	var unaryEx func(ast.Node, string) bool
+	unaryEx = func(a ast.Node, name string) bool {
+		switch v := a.(type) {
+		case *ast.UnaryOperator:
+			// `-UnaryOperator 0x32d53e8 'float *' prefix '&'
+			//   `-DeclRefExpr 0x32d53c0 'float' lvalue Var 0x32d5298 'o' 'float' <<-----
+			if decl, ok := v.Children()[0].(*ast.DeclRefExpr); ok {
+				if decl.Name == name {
+					return true
+				}
+			} else {
+				return unaryEx(v.Children()[0], name)
+			}
+
+		default:
+			if a != nil {
+				for i := range a.Children() {
+					if a.Children()[i] != nil {
+						if unaryEx(a.Children()[i], name) {
+							return true
+						}
+					}
+				}
+			}
+		}
+		return false
+	}
+
+	excluder = func(a ast.Node, name string) bool {
+		switch v := a.(type) {
+		case *ast.VarDecl:
+			// VarDecl used oo 'float *' cinit
+			// `-UnaryOperator 0x32d53e8 'float *' prefix '&'
+			//   `-DeclRefExpr 0x32d53c0 'float' lvalue Var 0x32d5298 'o' 'float' <<-----
+			if len(v.Children()) != 0 {
+				return unaryEx(v, name)
+			}
+
+		case *ast.CallExpr:
+			// CallExpr 'double *'
+			// |-ImplicitCastExpr  'double *(*)(int *const *, double *)' <FunctionToPointerDecay>
+			// | `-DeclRefExpr  'double *(int *const *, double *)' Function 0x30e9f38 'returner' ...
+			// |-ImplicitCastExpr 'int *const *' <NullToPointer>
+			// | `-IntegerLiteral 'int' 0
+			// `-UnaryOperator 'double *' prefix '&'
+			//   `-DeclRefExpr 'double' lvalue Var 0x30ed938 'fd' 'double'
+			if len(v.Children()) != 0 {
+				return unaryEx(v, name)
+			}
+
+		case *ast.BinaryOperator:
+			// BinaryOperator  'int *' '='
+			// |-DeclRefExpr 'int *' lvalue Var 0x294fbb0 'b' 'int *'
+			// `-UnaryOperator 'int *' prefix '&'
+			//   `-DeclRefExpr 'int' lvalue Var 0x294fb00 'a' 'int' <<--
+			if len(v.Children()) != 0 {
+				return unaryEx(v, name)
+			}
+
+		default:
+			if a != nil {
+				for i := range a.Children() {
+					if a.Children()[i] != nil {
+						if excluder(a.Children()[i], name) {
+							return true
+						}
+					}
+				}
+			}
+		}
+		return false
+	}
+
+	var correctNames []string
+	for i := range names {
+		if excluder(n, names[i]) {
+			continue
+		}
+		correctNames = append(correctNames, names[i])
+	}
+
+	return correctNames
+}
