@@ -106,6 +106,24 @@ func (p *Program) initializationStructs() {
 	}
 
 	// sys/time.h
+	p.Structs["struct itimerval"] = &Struct{
+		Name: "struct itimerval",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"it_interval": "struct timeval",
+			"it_value":    "struct timeval",
+		},
+	}
+	p.Structs["c4go_struct itimerval"] = &Struct{
+		Name: "github.com/Konstantin8105/c4go/noarch.Itimeval",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"it_interval": "ItInterval",
+			"it_value":    "ItValue",
+		},
+	}
+
+	// sys/time.h
 	p.Structs["struct timeval"] = &Struct{
 		Name: "struct timeval",
 		Type: StructType,
