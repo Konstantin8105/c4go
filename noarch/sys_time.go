@@ -12,6 +12,11 @@ type Timezone struct {
 	TzDsttime     int // type of DST correction
 }
 
+type Itimeval struct {
+	ItInterval Timeval
+	ItValue    Timeval
+}
+
 // Gettimeofday - gettimeofday from <sys/time.h>
 func Gettimeofday(tv []Timeval, tz []Timezone) int {
 	return -1
