@@ -355,7 +355,8 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 		fmt.Fprintln(os.Stdout, "Transpiling tree...")
 	}
 
-	err = transpiler.TranspileAST(args.outputFile, args.packageName, args.outsideStructs,
+	var source string
+	source, err = transpiler.TranspileAST(args.outputFile, args.packageName, args.outsideStructs,
 		p, tree[0].(ast.Node))
 	if err != nil {
 		for i := range astErrors {
@@ -369,7 +370,7 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 	if args.verbose {
 		fmt.Fprintln(os.Stdout, "Writing the output Go code...")
 	}
-	err = ioutil.WriteFile(outputFilePath, []byte(p.String()), 0644)
+	err = ioutil.WriteFile(outputFilePath, []byte(source), 0644)
 	if err != nil {
 		return fmt.Errorf("writing Go output file failed: %v", err)
 	}

@@ -22,7 +22,9 @@ var AddOutsideStruct bool
 
 // TranspileAST iterates through the Clang AST and builds a Go AST
 func TranspileAST(fileName, packageName string, withOutsideStructs bool,
-	p *program.Program, root ast.Node) (err error) {
+	p *program.Program, root ast.Node) (
+	source string, // result Go source
+	err error) {
 	// Start by parsing an empty file.
 	p.FileSet = token.NewFileSet()
 	packageSignature := fmt.Sprintf("package %v", packageName)
@@ -31,7 +33,7 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 	AddOutsideStruct = withOutsideStructs
 
 	if err != nil {
-		return err
+		return
 	}
 
 	// replace if type name and variable name
@@ -136,7 +138,25 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 		p.File.Decls = append([]goast.Decl{importDecl}, p.File.Decls...)
 	}
 
-	return err
+	// generate Go source
+	source = p.String()
+
+	// checking implementation for all called functions
+	bindHeader, bindCode := generateBinding(p)
+	if len(bindCode) > 0 {
+		index := strings.Index(source, "package")
+		index += strings.Index(source[index:], "\n")
+		src := source[:index]
+		src += "\n"
+		src += bindHeader
+		src += "\n"
+		src += source[index:]
+		src += "\n"
+		src += bindCode
+		source = src
+	}
+
+	return
 }
 
 func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
@@ -458,6 +478,22 @@ func transpileToNode(node ast.Node, p *program.Program) (
 	switch n := node.(type) {
 	case *ast.TranslationUnitDecl:
 		return transpileTranslationUnitDecl(p, n)
+	}
+
+	if fd, ok := node.(*ast.FunctionDecl); ok {
+		if d := p.GetFunctionDefinition(fd.Name); d == nil ||
+			p.PreprocessorFile.IsUserSource(d.IncludeFile) {
+
+			// create new definition
+			if _, _, f, r, err := util.ParseFunction(fd.Type); err == nil {
+				p.AddFunctionDefinition(program.DefinitionFunction{
+					Name:          fd.Name,
+					ReturnType:    r[0],
+					ArgumentTypes: f,
+					IncludeFile:   p.PreprocessorFile.GetBaseInclude(fd.Position().File),
+				})
+			}
+		}
 	}
 
 	if !AddOutsideStruct {

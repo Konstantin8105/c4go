@@ -334,6 +334,10 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 	// defined is handled below (we haven't seen the prototype yet).
 	functionDef := p.GetFunctionDefinition(functionName)
 
+	if functionDef != nil {
+		p.SetCalled(functionName)
+	}
+
 	if functionDef == nil {
 		// We do not have a prototype for the function, but we should not exit
 		// here. Instead we will create a mock definition for it so that this

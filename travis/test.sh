@@ -15,7 +15,8 @@ export PKGS_DELIM=$(echo "$PKGS" | tr ' ' ',')
 echo "PKGS       : $PKGS"
 echo "PKGS_DELIM : $PKGS_DELIM"
 
-go test -v -cover -tags integration     \
+go test -v -cover -timeout=30m          \
+				  -tags integration     \
 	              -coverpkg=$PKGS_DELIM \
 				  -coverprofile=./testdata/pkg.coverprofile $PKGS
 

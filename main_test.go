@@ -83,15 +83,21 @@ func TestIntegrationScripts(t *testing.T) {
 			}
 
 			// slice of program results
-			progs := [2]func(string, string, string, []string) (string, error){
+			progs := [2]func(string, string, string, []string, []string) (string, error){
 				runC,
 				runGo,
 			}
 
 			var results [2]string
+			var clangFlags []string
+
+			// specific of binding
+			if strings.Contains(file, "bind.c") {
+				clangFlags = append(clangFlags, "-Itests/bind/bind.h")
+			}
 
 			for i := 0; i < len(progs); i++ {
-				out, err := progs[i](file, subFolder, stdin, args)
+				out, err := progs[i](file, subFolder, stdin, clangFlags, args)
 				if err != nil {
 					t.Fatalf("Error for function %d : %v", i, err)
 					return
@@ -176,7 +182,7 @@ func TestIntegrationScripts(t *testing.T) {
 }
 
 // compile and run C code
-func runC(file, subFolder, stdin string, args []string) (string, error) {
+func runC(file, subFolder, stdin string, clangFlags, args []string) (string, error) {
 	cFileName := "a.out"
 	cPath := subFolder + cFileName
 
@@ -184,9 +190,13 @@ func runC(file, subFolder, stdin string, args []string) (string, error) {
 		strings.HasSuffix(file, "cpp"))
 
 	// Compile C.
-	out, err := exec.Command(
-		compiler, append(compilerFlag, "-lm", "-o", cPath, file)...).
-		CombinedOutput()
+	var seq []string
+	seq = append(seq, compilerFlag...)
+	seq = append(seq, "-lm")
+	seq = append(seq, "-o", cPath)
+	seq = append(seq, clangFlags...)
+	seq = append(seq, file)
+	out, err := exec.Command(compiler, seq...).CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("Cannot compile : %v\n%v", err, string(out))
 	}
@@ -345,11 +355,12 @@ func TestApp(t *testing.T) {
 }
 
 // compile and run Go code
-func runGo(file, subFolder, stdin string, args []string) (string, error) {
+func runGo(file, subFolder, stdin string, clangFlags, args []string) (string, error) {
 
 	programArgs := DefaultProgramArgs()
 	programArgs.inputFiles = []string{file}
 	programArgs.outputFile = subFolder + "main.go"
+	programArgs.clangFlags = clangFlags
 	if strings.HasSuffix(file, "cpp") {
 		programArgs.cppCode = true
 	}
