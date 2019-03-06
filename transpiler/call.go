@@ -192,6 +192,8 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		}
 		if resultType == "" {
 			p.AddMessage(p.GenerateWarningMessage(fmt.Errorf("exprType is empty"), n))
+		} else {
+			resultType = util.AvoidGoKeyword(resultType)
 		}
 	}()
 

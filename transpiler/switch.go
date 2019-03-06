@@ -3,14 +3,14 @@
 package transpiler
 
 import (
+	"fmt"
 	goast "go/ast"
 	"go/token"
-
-	"fmt"
 
 	"github.com/Konstantin8105/c4go/ast"
 	"github.com/Konstantin8105/c4go/program"
 	"github.com/Konstantin8105/c4go/types"
+	"github.com/Konstantin8105/c4go/util"
 )
 
 func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
@@ -44,7 +44,7 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	if conditionType == "bool" {
+	if conditionType == util.GoTypeBool {
 		condition, err = types.CastExpr(p, condition, conditionType, "int")
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 	}
@@ -350,7 +350,7 @@ func transpileCaseStmt(n *ast.CaseStmt, p *program.Program) (
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	if cType == "bool" {
+	if cType == util.GoTypeBool {
 		c, err = types.CastExpr(p, c, cType, "int")
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 	}

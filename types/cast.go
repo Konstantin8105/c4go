@@ -2,12 +2,10 @@ package types
 
 import (
 	"fmt"
-	"go/token"
-	"strings"
-
 	goast "go/ast"
-
+	"go/token"
 	"strconv"
+	"strings"
 
 	"github.com/Konstantin8105/c4go/program"
 	"github.com/Konstantin8105/c4go/util"
@@ -121,7 +119,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return nil, fmt.Errorf("Expr is nil")
 	}
 
-	if util.IsFunction(cFromType) && toType == "bool" {
+	if util.IsFunction(cFromType) && toType == util.GoTypeBool {
 		return &goast.BinaryExpr{
 			X:  expr,
 			Op: token.NEQ,
@@ -276,13 +274,48 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return expr, nil
 	}
 
-	if util.IsPointer(cFromType) && cToType == "bool" {
+	if util.IsPointer(cFromType) && cToType == util.GoTypeBool {
 		expr = &goast.BinaryExpr{
 			X:  expr,
 			Op: token.NEQ, // !=
 			Y:  goast.NewIdent("nil"),
 		}
 		return expr, nil
+	}
+
+	// Compatible integer types
+	types := []string{
+		// Integer types
+		"byte",
+		"int", "int8", "int16", "int32", "int64",
+		"uint8", "uint16", "uint32", "uint64",
+
+		// Floating-point types.
+		"float32", "float64",
+
+		// Known aliases
+		"__uint16_t", "size_t",
+
+		"noarch.SsizeT",
+	}
+	for _, v := range types {
+		if fromType == v && toType == util.GoTypeBool {
+			e := util.NewBinaryExpr(
+				expr,
+				token.NEQ, // !=
+				util.NewIntLit(0),
+				toType,
+				false,
+			)
+
+			return e, nil
+		}
+		if fromType == util.GoTypeBool && toType == v {
+			e := util.NewGoExpr(`map[bool]int{false: 0, true: 1}[replaceme]`)
+			// Swap replaceme with the current expression
+			e.(*goast.IndexExpr).Index = expr
+			return CastExpr(p, e, "int", cToType)
+		}
 	}
 
 	fromType, err := ResolveType(p, fromType)
@@ -303,7 +336,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return util.NewFloatLit(0.0), nil
 	}
 
-	if fromType == "null" && toType == "bool" {
+	if fromType == "null" && toType == util.GoTypeBool {
 		return util.NewIdent("false"), nil
 	}
 
@@ -323,41 +356,6 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 
 	if fromType == toType {
 		return expr, nil
-	}
-
-	// Compatible integer types
-	types := []string{
-		// Integer types
-		"byte",
-		"int", "int8", "int16", "int32", "int64",
-		"uint8", "uint16", "uint32", "uint64",
-
-		// Floating-point types.
-		"float32", "float64",
-
-		// Known aliases
-		"__uint16_t", "size_t",
-
-		"noarch.SsizeT",
-	}
-	for _, v := range types {
-		if fromType == v && toType == "bool" {
-			e := util.NewBinaryExpr(
-				expr,
-				token.NEQ,
-				util.NewIntLit(0),
-				toType,
-				false,
-			)
-
-			return e, nil
-		}
-		if fromType == "bool" && toType == v {
-			e := util.NewGoExpr(`map[bool]int{false: 0, true: 1}[replaceme]`)
-			// Swap replaceme with the current expression
-			e.(*goast.IndexExpr).Index = expr
-			return CastExpr(p, e, "int", cToType)
-		}
 	}
 
 	// cast size_t to int
@@ -433,13 +431,13 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	}
 
 	// Anything that is a pointer can be compared to nil
-	if fromType[0] == '*' && toType == "bool" {
+	if fromType[0] == '*' && toType == util.GoTypeBool {
 		e := util.NewBinaryExpr(expr, token.NEQ, util.NewNil(), toType, false)
 
 		return e, nil
 	}
 
-	if fromType == "[]byte" && toType == "bool" {
+	if fromType == "[]byte" && toType == util.GoTypeBool {
 		return util.NewUnaryExpr(
 			token.NOT, util.NewCallExpr("noarch.CStringIsNull", expr),
 		), nil

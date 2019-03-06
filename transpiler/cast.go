@@ -19,6 +19,8 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("Cannot transpileImplicitCastExpr. err = %v", err)
+		} else {
+			exprType = util.AvoidGoKeyword(exprType)
 		}
 	}()
 

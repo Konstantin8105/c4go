@@ -155,13 +155,13 @@ func ResolveType(p *program.Program, s string) (resolveResult string, err error)
 	}
 
 	// No need resolve typedef types
-	if _, ok := p.TypedefType[s]; ok {
+	if typT, ok := p.TypedefType[s]; ok {
 		if tt, ok := program.DefinitionType[s]; ok {
 			// "div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
 			ii := p.ImportType(tt)
 			return ii, nil
 		}
-		return s, nil
+		return ResolveType(p, typT)
 	}
 	if tt, ok := program.DefinitionType[s]; ok {
 		// "div_t":   "github.com/Konstantin8105/c4go/noarch.DivT",
@@ -301,6 +301,10 @@ func ResolveType(p *program.Program, s string) (resolveResult string, err error)
 	if search {
 		return "interface{}",
 			fmt.Errorf("function pointers are not supported [2] : '%s'", s)
+	}
+
+	if s == util.GoTypeBool {
+		return "bool", nil
 	}
 
 	errMsg := fmt.Sprintf(

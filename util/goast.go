@@ -190,14 +190,20 @@ func NewBinaryExpr(left goast.Expr, operator token.Token, right goast.Expr,
 	return b
 }
 
-// NewIdent - create a new Go ast Ident
-func NewIdent(name string) *goast.Ident {
+func AvoidGoKeyword(name string) string {
 	// TODO: The name of a variable or field cannot be a reserved word
 	// https://github.com/Konstantin8105/c4go/issues/83
 	// Search for this issue in other areas of the codebase.
 	if IsGoKeyword(name) {
 		name += "_"
 	}
+
+	return name
+}
+
+// NewIdent - create a new Go ast Ident
+func NewIdent(name string) *goast.Ident {
+	name = AvoidGoKeyword(name)
 
 	// Remove const prefix as it has no equivalent in Go.
 	name = strings.TrimPrefix(name, "const ")
@@ -275,7 +281,14 @@ func IsGoKeyword(w string) bool {
 	case "break", "default", "func", "interface", "select", "case", "defer",
 		"go", "map", "struct", "chan", "else", "goto", "package", "switch",
 		"const", "fallthrough", "if", "range", "type", "continue", "for",
-		"import", "return", "var", "_", "init":
+		"import", "return", "var", "init",
+		// Go types
+		// "int16", "int32", "int64",
+		"false", "true", "bool",
+		// "float32", "float64",
+		// "uint", "uint32", "uint64",
+		"_":
+
 		return true
 	}
 	if IsGoPackage(w) {

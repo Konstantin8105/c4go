@@ -133,10 +133,10 @@ func ParseFunction(s string) (prefix string, funcname string, f []string, r []st
 			prefix = strings.TrimSpace(prefix)
 			funcname = strings.TrimSpace(funcname)
 			for i := range r {
-				r[i] = strings.TrimSpace(r[i])
+				r[i] = AvoidGoKeyword(strings.TrimSpace(r[i]))
 			}
 			for i := range f {
-				f[i] = strings.TrimSpace(f[i])
+				f[i] = AvoidGoKeyword(strings.TrimSpace(f[i]))
 			}
 		}
 	}()
@@ -393,6 +393,7 @@ func CleanCType(s string) (out string) {
 // GenerateCorrectType - generate correct type
 // Example: 'union (anonymous union at tests/union.c:46:3)'
 func GenerateCorrectType(name string) string {
+	name = AvoidGoKeyword(name)
 	if !strings.Contains(name, "anonymous") {
 		return CleanCType(name)
 	}

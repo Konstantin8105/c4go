@@ -48,6 +48,7 @@ func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (
 
 	n.Name = util.GenerateCorrectType(n.Name)
 	n.Name = strings.TrimPrefix(n.Name, "enum ")
+	p.TypedefType[n.Name] = "int"
 
 	// For case `enum` without name
 	if n.Name == "" {
@@ -61,10 +62,7 @@ func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (
 		Tok: token.TYPE,
 		Specs: []goast.Spec{
 			&goast.TypeSpec{
-				Name: &goast.Ident{
-					Name: n.Name,
-					Obj:  goast.NewObj(goast.Typ, n.Name),
-				},
+				Name: util.NewIdent(n.Name),
 				// by defaults enum in C is INT
 				Type: util.NewTypeIdent("int"),
 			},
@@ -144,7 +142,7 @@ func transpileEnumDeclWithType(p *program.Program, n *ast.EnumDecl, enumType str
 		switch v := val.Values[0].(type) {
 		case *goast.Ident:
 			e = &goast.ValueSpec{
-				Names: []*goast.Ident{{Name: child.Name}},
+				Names: []*goast.Ident{util.NewIdent(child.Name)},
 				Values: []goast.Expr{&goast.BasicLit{
 					Kind:  token.INT,
 					Value: strconv.Itoa(counter),
@@ -164,7 +162,7 @@ func transpileEnumDeclWithType(p *program.Program, n *ast.EnumDecl, enumType str
 			}
 			if sign == -1 {
 				e = &goast.ValueSpec{
-					Names: []*goast.Ident{{Name: child.Name}},
+					Names: []*goast.Ident{util.NewIdent(child.Name)},
 					Values: []goast.Expr{&goast.UnaryExpr{
 						X: &goast.BasicLit{
 							Kind:  token.INT,
@@ -177,7 +175,7 @@ func transpileEnumDeclWithType(p *program.Program, n *ast.EnumDecl, enumType str
 				}
 			} else {
 				e = &goast.ValueSpec{
-					Names: []*goast.Ident{{Name: child.Name}},
+					Names: []*goast.Ident{util.NewIdent(child.Name)},
 					Values: []goast.Expr{&goast.BasicLit{
 						Kind:  token.INT,
 						Value: v.Value,
@@ -202,7 +200,7 @@ func transpileEnumDeclWithType(p *program.Program, n *ast.EnumDecl, enumType str
 		}
 
 		if i == 0 {
-			valSpec.Type = goast.NewIdent(enumType)
+			valSpec.Type = util.NewIdent(enumType)
 		}
 
 		d.Specs = append(d.Specs, valSpec)

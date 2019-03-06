@@ -17,6 +17,8 @@ import (
 func transpileDeclRefExpr(n *ast.DeclRefExpr, p *program.Program) (
 	expr *goast.Ident, exprType string, err error) {
 
+	n.Type = util.GenerateCorrectType(n.Type)
+
 	if n.For == "EnumConstant" {
 		// clang don`t show enum constant with enum type,
 		// so we have to use hack for repair the type

@@ -157,7 +157,7 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 			X:  e,
 			Op: token.EQL, // ==
 			Y:  goast.NewIdent("nil"),
-		}, "bool", preStmts, postStmts, nil
+		}, util.GoTypeBool, preStmts, postStmts, nil
 	}
 
 	// specific case:
@@ -188,11 +188,11 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 		eType = "int"
 	}
 
-	if eType == "bool" {
+	if eType == util.GoTypeBool {
 		return &goast.UnaryExpr{
 			X:  e,
 			Op: token.NOT,
-		}, "bool", preStmts, postStmts, nil
+		}, util.GoTypeBool, preStmts, postStmts, nil
 	}
 
 	if strings.HasSuffix(eType, "*") {
@@ -201,7 +201,7 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 			X:  e,
 			Op: token.EQL,
 			Y:  util.NewIdent("nil"),
-		}, "bool", preStmts, postStmts, nil
+		}, util.GoTypeBool, preStmts, postStmts, nil
 	}
 
 	t, err := types.ResolveType(p, eType)
@@ -210,7 +210,7 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 	if t == "[]byte" {
 		return util.NewUnaryExpr(
 			token.NOT, util.NewCallExpr("noarch.CStringIsNull", e),
-		), "bool", preStmts, postStmts, nil
+		), util.GoTypeBool, preStmts, postStmts, nil
 	}
 
 	// only if added "stdbool.h"
@@ -225,6 +225,14 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 
 	functionName := fmt.Sprintf("noarch.Not%s",
 		util.GetExportedName(t))
+
+	if t == "bool_" {
+		fmt.Println(p.EnumTypedefName)
+		fmt.Println(p.EnumConstantToEnum)
+		fmt.Println(p.TypedefType)
+		r, err := types.ResolveType(p, t)
+		fmt.Println(t, "----------------", r, err)
+	}
 
 	return util.NewCallExpr(functionName, e),
 		eType, preStmts, postStmts, nil

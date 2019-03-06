@@ -2,6 +2,7 @@ package types
 
 import (
 	"github.com/Konstantin8105/c4go/program"
+	"github.com/Konstantin8105/c4go/util"
 )
 
 // ResolveTypeForBinaryOperator determines the result Go type when performing a
@@ -13,7 +14,7 @@ func ResolveTypeForBinaryOperator(p *program.Program, operator, leftType, rightT
 		operator == ">=" ||
 		operator == "<" ||
 		operator == "<=" {
-		return "bool"
+		return util.GoTypeBool
 	}
 
 	return leftType

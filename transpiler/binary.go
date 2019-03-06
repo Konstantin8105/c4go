@@ -227,6 +227,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	}
 
 	left, leftType, newPre, newPost, err := atomicOperation(n.Children()[0], p)
+	leftType = util.AvoidGoKeyword(leftType)
 	if err != nil {
 		err = fmt.Errorf("cannot atomic for left part. %v", err)
 		return nil, "unknown52", nil, nil, err
@@ -235,6 +236,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
 	right, rightType, newPre, newPost, err := atomicOperation(n.Children()[1], p)
+	rightType = util.AvoidGoKeyword(rightType)
 	if err != nil {
 		err = fmt.Errorf("cannot atomic for right part. %v", err)
 		return nil, "unknown53", nil, nil, err
@@ -250,7 +252,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	returnType := types.ResolveTypeForBinaryOperator(p, n.Operator, leftType, rightType)
 
 	if operator == token.LAND || operator == token.LOR { // && ||
-		left, err = types.CastExpr(p, left, leftType, "bool")
+		left, err = types.CastExpr(p, left, leftType, util.GoTypeBool)
 		if err != nil {
 			p.AddMessage(p.GenerateWarningMessage(err, n))
 			// ignore error
@@ -258,7 +260,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			err = nil
 		}
 
-		right, err = types.CastExpr(p, right, rightType, "bool")
+		right, err = types.CastExpr(p, right, rightType, util.GoTypeBool)
 		if err != nil {
 			p.AddMessage(p.GenerateWarningMessage(err, n))
 			// ignore error
@@ -273,7 +275,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 
 		expr := util.NewBinaryExpr(left, operator, right, resolvedLeftType, exprIsStmt)
 
-		return expr, "bool", preStmts, postStmts, nil
+		return expr, util.GoTypeBool, preStmts, postStmts, nil
 	}
 
 	// The right hand argument of the shift left or shift right operators
@@ -358,12 +360,12 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 				operator == token.REM || // %
 				false {
 
-				if rightType == "bool" {
+				if rightType == util.GoTypeBool {
 					right, err = types.CastExpr(p, right, rightType, "int")
 					rightType = "int"
 					p.AddMessage(p.GenerateWarningMessage(err, n))
 				}
-				if leftType == "bool" {
+				if leftType == util.GoTypeBool {
 					left, err = types.CastExpr(p, left, leftType, "int")
 					leftType = "int"
 					p.AddMessage(p.GenerateWarningMessage(err, n))

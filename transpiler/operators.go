@@ -57,7 +57,7 @@ func transpileConditionalOperator(n *ast.ConditionalOperator, p *program.Program
 		aType = "int"
 	}
 
-	a, err = types.CastExpr(p, a, aType, "bool")
+	a, err = types.CastExpr(p, a, aType, util.GoTypeBool)
 	if err != nil {
 		err = fmt.Errorf("parameter `a` : %v", err)
 		return
@@ -195,7 +195,7 @@ func transpileParenExpr(n *ast.ParenExpr, p *program.Program) (
 
 	if !util.IsFunction(exprType) &&
 		exprType != "void" &&
-		exprType != "bool" &&
+		exprType != util.GoTypeBool &&
 		exprType != types.ToVoid {
 		expr, err = types.CastExpr(p, expr, exprType, n.Type)
 		if err != nil {
@@ -249,7 +249,7 @@ func pointerArithmetic(p *program.Program,
 		}
 	}
 
-	if !(types.IsCInteger(p, rightType) || rightType == "bool") {
+	if !(types.IsCInteger(p, rightType) || rightType == util.GoTypeBool) {
 		err = fmt.Errorf("right type is not C integer type : '%s'", rightType)
 		return
 	}
@@ -544,6 +544,11 @@ func findUnaryWithInteger(node ast.Node) (*ast.UnaryOperator, bool) {
 
 func atomicOperation(n ast.Node, p *program.Program) (
 	expr goast.Expr, exprType string, preStmts, postStmts []goast.Stmt, err error) {
+	defer func() {
+		if err == nil {
+			exprType = util.AvoidGoKeyword(exprType)
+		}
+	}()
 
 	expr, exprType, preStmts, postStmts, err = transpileToExpr(n, p, false)
 	if err != nil {

@@ -470,18 +470,24 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 
 	// added for support "typedef enum {...} dd" with empty name of struct
 	// Result in Go: "type dd int"
-	if strings.Contains(n.Type, "enum") {
+	if strings.HasPrefix(n.Type, "enum ") {
 		// Registration new type in program.Program
 		if !p.IsTypeAlreadyDefined(n.Name) {
 			p.DefineType(n.Name)
 			p.EnumTypedefName[n.Name] = true
 		}
+		baseType := util.AvoidGoKeyword(n.Type[len("enum "):])
+		if baseType == n.Name {
+			return
+		}
+		p.TypedefType[n.Name] = baseType
 		decls = append(decls, &goast.GenDecl{
 			Tok: token.TYPE,
 			Specs: []goast.Spec{
 				&goast.TypeSpec{
-					Name: util.NewIdent(name),
-					Type: util.NewTypeIdent("int"),
+					Name:   util.NewIdent(name),
+					Assign: 1,
+					Type:   util.NewTypeIdent(baseType),
 				},
 			},
 		})

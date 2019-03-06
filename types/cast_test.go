@@ -3,14 +3,13 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	goast "go/ast"
+	"go/token"
 	"reflect"
 	"testing"
 
 	"github.com/Konstantin8105/c4go/program"
 	"github.com/Konstantin8105/c4go/util"
-
-	goast "go/ast"
-	"go/token"
 )
 
 func toJSON(v interface{}) string {
@@ -40,11 +39,11 @@ func TestCast(t *testing.T) {
 		{args{util.NewIntLit(1), "int", "__uint16_t"}, util.NewCallExpr("uint16", util.NewIntLit(1))},
 
 		// Casting to bool
-		{args{util.NewIntLit(1), "int", "bool"}, util.NewBinaryExpr(util.NewIntLit(1), token.NEQ, util.NewIntLit(0), "bool", false)},
+		{args{util.NewIntLit(1), "int", util.GoTypeBool}, util.NewBinaryExpr(util.NewIntLit(1), token.NEQ, util.NewIntLit(0), "bool", false)},
 	}
 
-	for _, tt := range tests {
-		name := fmt.Sprintf("%#v", tt.args)
+	for index, tt := range tests {
+		name := fmt.Sprintf("%d", index)
 
 		t.Run(name, func(t *testing.T) {
 			got, err := CastExpr(p, tt.args.expr, tt.args.fromType, tt.args.toType)
@@ -55,6 +54,8 @@ func TestCast(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(got, tt.want) {
+				goast.Print(token.NewFileSet(), tt.want)
+				goast.Print(token.NewFileSet(), got)
 				t.Errorf("Cast()%s\n", util.ShowDiff(toJSON(got), toJSON(tt.want)))
 			}
 		})

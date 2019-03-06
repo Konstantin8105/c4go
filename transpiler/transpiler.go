@@ -36,6 +36,24 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 		return
 	}
 
+	// replace possible C type looks like Go types
+	{
+
+		var replacer func(ast.Node)
+		replacer = func(node ast.Node) {
+			if node == nil {
+				return
+			}
+			if t, ok := ast.GetTypeIfExist(node); ok {
+				*t = util.AvoidGoKeyword(*t)
+			}
+			for i := range node.Children() {
+				replacer(node.Children()[i])
+			}
+		}
+		replacer(root)
+	}
+
 	// replace if type name and variable name
 	{
 		var replacer func(ast.Node)

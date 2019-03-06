@@ -72,16 +72,17 @@ func transpileIfStmt(n *ast.IfStmt, p *program.Program) (
 		err = fmt.Errorf("Cannot transpile for condition. %v", err)
 		return nil, nil, nil, err
 	}
+	conditionalType = util.AvoidGoKeyword(conditionalType)
 	// null in C is false
 	if conditionalType == types.NullPointer {
 		conditional = util.NewIdent("false")
-		conditionalType = "bool"
+		conditionalType = util.GoTypeBool
 	}
 
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
 	// The condition in Go must always be a bool.
-	boolCondition, err := types.CastExpr(p, conditional, conditionalType, "bool")
+	boolCondition, err := types.CastExpr(p, conditional, conditionalType, util.GoTypeBool)
 	p.AddMessage(p.GenerateWarningMessage(err, n))
 
 	if boolCondition == nil {
@@ -308,10 +309,10 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 			var condition ast.IfStmt
 			condition.AddChild(nil)
 			var par ast.ParenExpr
-			par.Type = "bool"
+			par.Type = util.GoTypeBool
 			par.AddChild(c.Children()[len(c.Children())-1])
 			var unitary ast.UnaryOperator
-			unitary.Type = "bool"
+			unitary.Type = util.GoTypeBool
 			unitary.AddChild(&par)
 			unitary.Operator = "!"
 			condition.AddChild(&unitary)
@@ -349,15 +350,16 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 		if err != nil {
 			return nil, nil, nil, err
 		}
+		conditionType = util.AvoidGoKeyword(conditionType)
 		// null in C is false
 		if conditionType == types.NullPointer {
 			condition = util.NewIdent("false")
-			conditionType = "bool"
+			conditionType = util.GoTypeBool
 		}
 
 		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
-		condition, err = types.CastExpr(p, condition, conditionType, "bool")
+		condition, err = types.CastExpr(p, condition, conditionType, util.GoTypeBool)
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 
 		if condition == nil {
