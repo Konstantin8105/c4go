@@ -46,11 +46,6 @@ func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (
 		}
 	}()
 
-	if !p.PreprocessorFile.IsUserSource(n.Pos.File) &&
-		!strings.Contains(n.Pos.File, "ctype.h") {
-		return
-	}
-
 	n.Name = util.GenerateCorrectType(n.Name)
 	n.Name = strings.TrimPrefix(n.Name, "enum ")
 
