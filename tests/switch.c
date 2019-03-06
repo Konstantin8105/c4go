@@ -346,9 +346,27 @@ void switch_char()
     is_eq(form, 'S');
 }
 
+int value()
+{
+	return 42;
+}
+
+void switch_stat()
+{
+	int v = 15;
+	switch(v = value()) {
+	case 15:
+		fail("wrong");
+		break;
+	case 42: 
+		is_true(v == 42);
+		break;
+	}
+}
+
 int main()
 {
-    plan(29);
+    plan(30);
 
     switch_char();
     switch_bool();
@@ -371,6 +389,7 @@ int main()
     empty_switch();
     default_only_switch();
     switch_without_input();
+	switch_stat();
 
     done_testing();
 }
