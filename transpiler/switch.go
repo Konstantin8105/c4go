@@ -39,7 +39,8 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 
 	// The condition is the expression to be evaulated against each of the
 	// cases.
-	condition, conditionType, newPre, newPost, err := transpileToExpr(n.Children()[len(n.Children())-2], p, false)
+	condition, conditionType, newPre, newPost, err := atomicOperation(
+		n.Children()[len(n.Children())-2], p)
 	if err != nil {
 		return nil, nil, nil, err
 	}
