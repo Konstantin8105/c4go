@@ -20,6 +20,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"runtime/pprof"
 	"strings"
@@ -206,6 +207,111 @@ func buildTree(nodes []treeNode, depth int) []ast.Node {
 	return results
 }
 
+// Avoid Go keywords
+var goKeywords = [...]string{
+	// keywords
+	"break", "default", "func", "interface", "select", "case", "defer",
+	"go", "map", "chan", "else", "goto", "package", "switch",
+	"fallthrough", "if", "range", "type", "continue", "for",
+	"import", "return", "var", "init",
+	// "struct",
+	// "_",
+	// "const",
+	// go packages
+	"fmt", "os", "math", "testing", "unsafe", "ioutil",
+	// types
+	"string",
+	"bool", "true", "false",
+	"int8", "uint8", "byte",
+	"int16", "uint16",
+	"int32", "rune", "uint32",
+	"int64", "uint64", // int
+	"uint", "uintptr",
+	"float32", "float64",
+	"complex64", "complex128",
+}
+var letters string = "_qwertyuiopasdfghjklzxcvbnm1234567890><"
+
+func isLetter(b byte) bool {
+	for i := range letters {
+		if letters[i] == b {
+			return true
+		}
+	}
+	return false
+}
+
+func avoidGoKeywords(tree []ast.Node) {
+	if tree == nil {
+		return
+	}
+	for i := range tree {
+		if tree[i] == nil {
+			continue
+		}
+
+		// going depper
+		avoidGoKeywords(tree[i].Children())
+
+		// modify ast node : tree[i]
+		s := reflect.ValueOf(tree[i]).Elem()
+		typeOfT := s.Type()
+		for p := 0; p < s.NumField(); p++ {
+			f := s.Field(p)
+			name := typeOfT.Field(p).Name
+			if strings.Contains(name, "Value") {
+				continue
+			}
+			_, ok := f.Interface().(string)
+			if !ok {
+				continue
+			}
+			str := f.Addr().Interface().(*string)
+
+			// avoid problem with GOPATH and `go` keyword
+			*str = strings.Replace(*str, os.Getenv("GOPATH"), "GOPATH", -1)
+
+			for _, gk := range goKeywords {
+				// example *st :
+				// from:
+				// "bool (int, bool)"
+				// to:
+				// "bool_ (int, bool_)"
+				// but for:
+				// "abool" - no changes
+				if !strings.Contains(*str, gk) {
+					continue
+				}
+				// possible changes
+				index := 0
+				iter := 0 // limit of iteration
+				for ; iter < 100; iter++ {
+					indexs := strings.Index((*str)[index:], gk)
+					if indexs < 0 {
+						break
+					}
+					index += indexs
+					// change string
+					change := true
+					if pos := index - 1; pos >= 0 && isLetter((*str)[pos]) {
+						change = false
+					}
+					if pos := index + len(gk); pos < len(*str) && isLetter((*str)[pos]) {
+						change = false
+					}
+					if change {
+						y := index + len(gk)
+						st := (*str)[:y]
+						fi := (*str)[y:]
+						*str = st + "_" + fi
+					}
+					index += len(gk)
+				}
+			}
+		}
+	}
+}
+
 // Start begins transpiling an input file.
 func Start(args ProgramArgs) (err error) {
 	lines, filePP, err := generateAstLines(args)
@@ -336,6 +442,12 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 			fErr.Err.Error())
 		p.AddMessage(p.GenerateWarningMessage(errors.New(message), fErr.Node))
 	}
+
+	// avoid Go keywords
+	if args.verbose {
+		fmt.Fprintln(os.Stdout, "Modify nodes for avoid Go keywords...")
+	}
+	avoidGoKeywords(tree)
 
 	outputFilePath := args.outputFile
 
