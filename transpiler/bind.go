@@ -24,10 +24,11 @@ func generateBinding(p *program.Program) (bindHeader, bindCode string) {
 	{
 		in := map[string]bool{}
 		for i := range ds {
-			in[p.PreprocessorFile.GetBaseInclude(ds[i].IncludeFile)] = true
+			in[ds[i].IncludeFile] = true
 		}
 		for header := range in {
 			bindHeader += fmt.Sprintf("// #include <%s>\n", header)
+			bindHeader += fmt.Sprintf("// #include <%s>\n", p.PreprocessorFile.GetBaseInclude(header))
 		}
 		bindHeader += "import \"C\"\n\n"
 	}
@@ -54,8 +55,7 @@ func generateBinding(p *program.Program) (bindHeader, bindCode string) {
 		//		return float64(C.frexp(C.double(arg1), unsafe.Pointer(arg2)))
 		// }
 
-		mess := p.GenerateWarningMessage(fmt.Errorf(
-			"Add c-binding for implementate function : `%s`", ds[i].Name), nil)
+		mess := fmt.Sprintf("// Add c-binding for implementate function : `%s`", ds[i].Name)
 		bindCode += mess + "\n"
 
 		code, err := getBindFunction(p, ds[i])
@@ -158,6 +158,16 @@ func cgoTypes(goType string) (_ string, ok bool) {
 		return "int", true
 	case "float64":
 		return "double", true
+	case "byte":
+		return "char", true
+	case "uint":
+		return "ulong", true
+	case "noarch.Tm":
+		return "struct_tm", true
+	case "noarch.File":
+		return "FILE", true
+	case "uint32":
+		return "ulong", true
 	}
 	return "", false
 }
@@ -173,32 +183,49 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 		}, nil
 	}
 
-	if strings.Contains(goType, "[") {
+	t := goType
+
+	if strings.HasPrefix(goType, "[") {
 		// []int  -> * _Ctype_int
-		p.AddImport("unsafe")
-		t, ok := cgoTypes(goType[2:])
-		if ok {
-			t = "( * _Ctype_" + t + " ) "
-			return &goast.CallExpr{
-				Fun: goast.NewIdent(t),
+		t = goType[2:]
+		var ok bool
+		t, ok = cgoTypes(t)
+		if !ok {
+			// TODO: check next
+			t = goType[2:]
+		}
+		t = "( * _Ctype_" + t + " ) "
+	} else if strings.HasPrefix(goType, "*") {
+		// *int  -> * _Ctype_int
+		t = goType[1:]
+		var ok bool
+		t, ok = cgoTypes(t)
+		if !ok {
+			// TODO: check next
+			t = goType[1:]
+		}
+		t = "( * _Ctype_" + t + " ) "
+
+	}
+
+	p.AddImport("unsafe")
+
+	return &goast.CallExpr{
+		Fun: goast.NewIdent(t),
+		Args: []goast.Expr{
+			&goast.CallExpr{
+				Fun: goast.NewIdent("unsafe.Pointer"),
 				Args: []goast.Expr{
-					&goast.CallExpr{
-						Fun: goast.NewIdent("unsafe.Pointer"),
-						Args: []goast.Expr{
-							&goast.UnaryExpr{
-								Op: token.AND,
-								X: &goast.IndexExpr{
-									X:      expr,
-									Lbrack: 1,
-									Index:  goast.NewIdent("0"),
-								},
-							},
+					&goast.UnaryExpr{
+						Op: token.AND,
+						X: &goast.IndexExpr{
+							X:      expr,
+							Lbrack: 1,
+							Index:  goast.NewIdent("0"),
 						},
 					},
 				},
-			}, nil
-		}
-	}
-
-	return nil, fmt.Errorf("cannot resolve to cgo type: `%s`", goType)
+			},
+		},
+	}, nil
 }

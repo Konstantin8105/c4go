@@ -490,7 +490,7 @@ func transpileToNode(node ast.Node, p *program.Program) (
 					Name:          fd.Name,
 					ReturnType:    r[0],
 					ArgumentTypes: f,
-					IncludeFile:   p.PreprocessorFile.GetBaseInclude(fd.Position().File),
+					IncludeFile:   fd.Position().File,
 				})
 			}
 		}
