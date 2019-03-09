@@ -160,6 +160,8 @@ func cgoTypes(goType string) (_ string, ok bool) {
 	switch goType {
 	case "int":
 		return "int", true
+	case "int32":
+		return "int", true
 	case "float64":
 		return "double", true
 	case "byte":

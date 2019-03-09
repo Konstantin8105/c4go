@@ -246,7 +246,7 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 						Tok: token.VAR,
 						Specs: []goast.Spec{&goast.ValueSpec{
 							Names: []*goast.Ident{util.NewIdent("c4goVaListPosition")},
-							Type:  goast.NewIdent("int"),
+							Type:  goast.NewIdent("int32"),
 							Values: []goast.Expr{&goast.BasicLit{
 								Kind:  token.INT,
 								Value: "0",

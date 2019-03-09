@@ -105,7 +105,7 @@ var temp = func() %s {
 		// for 'rune' type
 		ret = %s(v)
 	} else {
-		ret = %s[c4goVaListPosition].(%s)
+		ret = %s(v)
 	}
 	c4goVaListPosition++
 	return ret
@@ -113,7 +113,7 @@ var temp = func() %s {
 			outType,
 			argsName,
 			outType,
-			argsName, outType)
+			outType)
 
 		// Create the AST by parsing src.
 		fset := token.NewFileSet() // positions are relative to fset
