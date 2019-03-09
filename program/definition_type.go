@@ -22,7 +22,7 @@ var DefinitionType = map[string]string{
 	"char*":                  "[]byte",
 	"double":                 "float64",
 	"float":                  "float32",
-	"int":                    "int",
+	"int":                    "int32",
 	"long double":            "float64",
 	"long int":               "int32",
 	"long long":              "int64",

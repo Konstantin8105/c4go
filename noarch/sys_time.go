@@ -18,6 +18,6 @@ type Itimeval struct {
 }
 
 // Gettimeofday - gettimeofday from <sys/time.h>
-func Gettimeofday(tv []Timeval, tz []Timezone) int {
+func Gettimeofday(tv []Timeval, tz []Timezone) int32 {
 	return -1
 }

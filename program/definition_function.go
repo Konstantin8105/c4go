@@ -290,7 +290,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"long int atol(const char*) -> noarch.Atol",
 		"long long int atoll(const char*) -> noarch.Atoll",
 		"div_t div(int, int) -> noarch.Div",
-		"void exit(int) -> os.Exit",
+		"void exit(int) -> noarch.Exit",
 		"void free(void*) -> noarch.Free",
 		"char* getenv(const char *) -> noarch.Getenv",
 		"long int labs(long int) -> noarch.Labs",

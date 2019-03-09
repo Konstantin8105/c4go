@@ -348,10 +348,15 @@ func transpileReturnStmt(n *ast.ReturnStmt, p *program.Program) (
 	if p.Function != nil && p.Function.Name == "main" {
 		litExpr, isLiteral := e.(*goast.BasicLit)
 		if !isLiteral || (isLiteral && litExpr.Value != "0") {
-			p.AddImport("os")
+			p.AddImport("github.com/Konstantin8105/c4go/noarch")
 			return util.NewExprStmt(&goast.CallExpr{
-				Fun:  goast.NewIdent("os.Exit"),
-				Args: results,
+				Fun: goast.NewIdent("noarch.Exit"),
+				Args: []goast.Expr{
+					&goast.CallExpr{
+						Fun:  goast.NewIdent("int32"),
+						Args: results,
+					},
+				},
 			}), preStmts, postStmts, nil
 		}
 		results = []goast.Expr{}
