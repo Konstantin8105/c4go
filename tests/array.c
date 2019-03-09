@@ -233,11 +233,11 @@ void test_pointer_minus_pointer()
 {
     char* left_ptr;
     char* right_ptr;
-    char arr[30];
+    char arr[40];
     left_ptr = &arr[0];
-    right_ptr = &arr[20];
+    right_ptr = &arr[32];
 
-    is_eq(right_ptr - left_ptr, 20);
+    is_eq(right_ptr - left_ptr, 32);
 }
 
 typedef unsigned char pcre_uchar;

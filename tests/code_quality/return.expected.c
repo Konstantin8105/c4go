@@ -12,12 +12,12 @@ func a() {
 }
 
 // r - transpiled function from  $GOPATH/src/github.com/Konstantin8105/c4go/tests/code_quality/return.c:5
-func r(y int) {
+func r(y int32) {
 	_ = (y)
 }
 
 // b - transpiled function from  $GOPATH/src/github.com/Konstantin8105/c4go/tests/code_quality/return.c:10
-func b() int {
+func b() int32 {
 	return 0
 }
 
