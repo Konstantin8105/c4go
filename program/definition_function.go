@@ -297,7 +297,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"ldiv_t ldiv(long int, long int) -> noarch.Ldiv",
 		"long long int llabs(long long int) -> noarch.Llabs",
 		"lldiv_t lldiv(long long int, long long int) -> noarch.Lldiv",
-		"int rand() -> math/rand.Int",
+		"int rand() -> noarch.Int32",
 		// The real definition is srand(unsigned int) however the type would be
 		// different. It's easier to change the definition than create a proxy
 		// function in stdlib.go.

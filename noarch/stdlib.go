@@ -3,6 +3,7 @@ package noarch
 import (
 	"io"
 	"math"
+	"math/rand"
 	"os"
 	"os/exec"
 	"regexp"
@@ -513,6 +514,10 @@ func AtexitRun() {
 	for i := len(AtexitFuncs) - 1; i >= 0; i-- {
 		AtexitFuncs[i]()
 	}
+}
+
+func Int32() int32 {
+	return int32(rand.Int())
 }
 
 func Exit(e int32) {
