@@ -9,7 +9,7 @@ var DefinitionType = map[string]string{
 	"__time_t":      "int32",
 	"__suseconds_t": "int32",
 
-	"fpos_t": "int",
+	"fpos_t": "int32",
 
 	// unistd.h
 	"ssize_t": "github.com/Konstantin8105/c4go/noarch.SsizeT",

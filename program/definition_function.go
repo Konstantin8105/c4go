@@ -357,7 +357,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"void exit(int) -> golang.org/x/sys/unix.Exit",
 		"ssize_t write(int, const void *, size_t) -> noarch.Write",
 		"ssize_t read(int, void *, size_t) -> noarch.Read",
-		"int close(int) -> golang.org/x/sys/unix.CloseOnExec",
+		"int close(int) -> noarch.CloseOnExec",
 		"int isatty(int) -> noarch.Isatty",
 		"int ftruncate(int , off_t ) -> noarch.Ftruncate",
 		"int unlink(const char *) -> noarch.Unlink",

@@ -21,7 +21,7 @@ func NotInt(x int32) int32 {
 }
 
 // NotInt32 performs a logical not (!) on an integer and returns an integer.
-func NotInt32(x int32) int {
+func NotInt32(x int32) int32 {
 	if x == 0 {
 		return 1
 	}
