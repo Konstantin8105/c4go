@@ -249,5 +249,11 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 		}, nil
 	}
 
-	return nil, fmt.Errorf("cannot resolve to cgo type: `%s`", goType)
+	return &goast.CallExpr{
+		Fun: &goast.SelectorExpr{
+			X:   goast.NewIdent("C"),
+			Sel: goast.NewIdent(t),
+		},
+		Args: []goast.Expr{expr},
+	}, nil
 }
