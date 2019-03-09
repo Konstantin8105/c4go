@@ -24,11 +24,15 @@ func generateBinding(p *program.Program) (bindHeader, bindCode string) {
 	{
 		in := map[string]bool{}
 		for i := range ds {
-			in[ds[i].IncludeFile] = true
+			y := ds[i].IncludeFile
+			in[y] = true
+			in[p.PreprocessorFile.GetBaseInclude(y)] = true
 		}
 		for header := range in {
+			if strings.Contains(header, "bits") {
+				continue
+			}
 			bindHeader += fmt.Sprintf("// #include <%s>\n", header)
-			bindHeader += fmt.Sprintf("// #include <%s>\n", p.PreprocessorFile.GetBaseInclude(header))
 		}
 		bindHeader += "import \"C\"\n\n"
 	}
@@ -195,6 +199,27 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 			t = goType[2:]
 		}
 		t = "( * _Ctype_" + t + " ) "
+
+		p.AddImport("unsafe")
+
+		return &goast.CallExpr{
+			Fun: goast.NewIdent(t),
+			Args: []goast.Expr{
+				&goast.CallExpr{
+					Fun: goast.NewIdent("unsafe.Pointer"),
+					Args: []goast.Expr{
+						&goast.UnaryExpr{
+							Op: token.AND,
+							X: &goast.IndexExpr{
+								X:      expr,
+								Lbrack: 1,
+								Index:  goast.NewIdent("0"),
+							},
+						},
+					},
+				},
+			},
+		}, nil
 	} else if strings.HasPrefix(goType, "*") {
 		// *int  -> * _Ctype_int
 		t = goType[1:]
@@ -206,26 +231,23 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 		}
 		t = "( * _Ctype_" + t + " ) "
 
-	}
+		p.AddImport("unsafe")
 
-	p.AddImport("unsafe")
-
-	return &goast.CallExpr{
-		Fun: goast.NewIdent(t),
-		Args: []goast.Expr{
-			&goast.CallExpr{
-				Fun: goast.NewIdent("unsafe.Pointer"),
-				Args: []goast.Expr{
-					&goast.UnaryExpr{
-						Op: token.AND,
-						X: &goast.IndexExpr{
-							X:      expr,
-							Lbrack: 1,
-							Index:  goast.NewIdent("0"),
+		return &goast.CallExpr{
+			Fun: goast.NewIdent(t),
+			Args: []goast.Expr{
+				&goast.CallExpr{
+					Fun: goast.NewIdent("unsafe.Pointer"),
+					Args: []goast.Expr{
+						&goast.UnaryExpr{
+							Op: token.AND,
+							X:  expr,
 						},
 					},
 				},
 			},
-		},
-	}, nil
+		}, nil
+	}
+
+	return nil, fmt.Errorf("cannot resolve to cgo type: `%s`", goType)
 }
