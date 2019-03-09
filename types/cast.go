@@ -452,7 +452,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return util.NewStringLit(`""`), nil
 	}
 
-	if fromType == "_Bool" && toType == "int" {
+	if fromType == "_Bool" && toType == "int32" {
 		return expr, nil
 	}
 

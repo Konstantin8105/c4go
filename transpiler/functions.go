@@ -168,7 +168,14 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 					&goast.AssignStmt{
 						Lhs: []goast.Expr{fieldList.List[0].Names[0]},
 						Tok: token.DEFINE,
-						Rhs: []goast.Expr{util.NewCallExpr("len", goast.NewIdent("os.Args"))},
+						Rhs: []goast.Expr{
+							&goast.CallExpr{
+								Fun: goast.NewIdent("int32"),
+								Args: []goast.Expr{
+									util.NewCallExpr("len", goast.NewIdent("os.Args")),
+								},
+							},
+						},
 					},
 				)
 			}

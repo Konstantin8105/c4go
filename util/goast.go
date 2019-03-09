@@ -326,47 +326,56 @@ func GetUintptrForSlice(expr goast.Expr) (goast.Expr, string) {
 	returnType := "long long"
 
 	return &goast.CallExpr{
-		Fun:    goast.NewIdent("int64"),
-		Lparen: 1,
-		Args: []goast.Expr{&goast.CallExpr{
-			Fun:    goast.NewIdent("uintptr"),
-			Lparen: 1,
-			Args: []goast.Expr{&goast.CallExpr{
-				Fun: &goast.SelectorExpr{
-					X:   goast.NewIdent("unsafe"),
-					Sel: goast.NewIdent("Pointer"),
-				},
-				Lparen: 1,
-				Args: []goast.Expr{&goast.StarExpr{
-					Star: 1,
-					X: &goast.CallExpr{
-						Fun: &goast.ParenExpr{
-							Lparen: 1,
-							X: &goast.StarExpr{
-								Star: 1,
-								X: &goast.StarExpr{
-									Star: 1,
-									X:    goast.NewIdent("int"),
-								},
-							},
-						},
-						Lparen: 1,
-						Args: []goast.Expr{&goast.CallExpr{
-							Fun: &goast.SelectorExpr{
-								X:   goast.NewIdent("unsafe"),
-								Sel: goast.NewIdent("Pointer"),
-							},
-							Lparen: 1,
-							Args: []goast.Expr{&goast.UnaryExpr{
-								Op: token.AND,
-								X:  expr,
-							}},
-						}},
-					},
-				}},
-			}},
-		}},
+		Fun: goast.NewIdent("int64"),
+		Args: []goast.Expr{
+			GetUintptr(expr),
+		},
 	}, returnType
+
+	// TODO: remove
+	//
+	// return &goast.CallExpr{
+	// 	Fun:    goast.NewIdent("int64"),
+	// 	Lparen: 1,
+	// 	Args: []goast.Expr{&goast.CallExpr{
+	// 		Fun:    goast.NewIdent("uintptr"),
+	// 		Lparen: 1,
+	// 		Args: []goast.Expr{&goast.CallExpr{
+	// 			Fun: &goast.SelectorExpr{
+	// 				X:   goast.NewIdent("unsafe"),
+	// 				Sel: goast.NewIdent("Pointer"),
+	// 			},
+	// 			Lparen: 1,
+	// 			Args: []goast.Expr{&goast.StarExpr{
+	// 				Star: 1,
+	// 				X: &goast.CallExpr{
+	// 					Fun: &goast.ParenExpr{
+	// 						Lparen: 1,
+	// 						X: &goast.StarExpr{
+	// 							Star: 1,
+	// 							X: &goast.StarExpr{
+	// 								Star: 1,
+	// 								X:    goast.NewIdent("int32"),
+	// 							},
+	// 						},
+	// 					},
+	// 					Lparen: 1,
+	// 					Args: []goast.Expr{&goast.CallExpr{
+	// 						Fun: &goast.SelectorExpr{
+	// 							X:   goast.NewIdent("unsafe"),
+	// 							Sel: goast.NewIdent("Pointer"),
+	// 						},
+	// 						Lparen: 1,
+	// 						Args: []goast.Expr{&goast.UnaryExpr{
+	// 							Op: token.AND,
+	// 							X:  expr,
+	// 						}},
+	// 					}},
+	// 				},
+	// 			}},
+	// 		}},
+	// 	}},
+	// }, returnType
 }
 
 // CreateSliceFromReference - create a slice, like :
