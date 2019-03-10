@@ -105,7 +105,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 				Op: token.QUO,
 				Y: &goast.BasicLit{
 					Kind:  token.INT,
-					Value: "8",
+					Value: "4",
 				},
 			}
 		}
