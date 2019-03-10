@@ -91,11 +91,11 @@ import "fmt"
 
 // main - transpiled function from  $GOPATH/src/github.com/Konstantin8105/c4go/examples/prime.c:3
 func main() {
-	var n int
-	var c int
+	var n int32
+	var c int32
 	fmt.Printf("Enter a number\n")
 	// get value
-	noarch.Scanf([]byte("%d\x00"), (*[100000000]int)(unsafe.Pointer(&n))[:])
+	noarch.Scanf([]byte("%d\x00"), (*[100000000]int32)(unsafe.Pointer(&n))[:])
 	noarch.Printf([]byte("The number is: %d\n\x00"), n)
 	if n == 2 {
 		// -------
