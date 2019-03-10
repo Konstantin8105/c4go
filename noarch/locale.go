@@ -5,7 +5,7 @@ type Lconv struct {
 	IntCurrSymbol   []byte
 }
 
-func Setlocale(category int, locale []byte) []byte {
+func Setlocale(category int32, locale []byte) []byte {
 	return []byte("dd")
 }
 

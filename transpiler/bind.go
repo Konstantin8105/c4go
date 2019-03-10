@@ -251,6 +251,23 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 		}, nil
 	}
 
+	if t == "interface{}" {
+		return &goast.CallExpr{
+			Fun: goast.NewIdent(t),
+			Args: []goast.Expr{
+				&goast.CallExpr{
+					Fun: goast.NewIdent("unsafe.Pointer"),
+					Args: []goast.Expr{
+						&goast.UnaryExpr{
+							Op: token.AND,
+							X:  expr,
+						},
+					},
+				},
+			},
+		}, nil
+	}
+
 	return &goast.CallExpr{
 		Fun: &goast.SelectorExpr{
 			X:   goast.NewIdent("C"),
