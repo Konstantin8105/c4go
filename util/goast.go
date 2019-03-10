@@ -355,7 +355,7 @@ func GetUintptrForSlice(expr goast.Expr) (goast.Expr, string) {
 								Star: 1,
 								X: &goast.StarExpr{
 									Star: 1,
-									X:    goast.NewIdent("int64"),
+									X:    goast.NewIdent("byte"),
 								},
 							},
 						},

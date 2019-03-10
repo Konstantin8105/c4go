@@ -138,7 +138,6 @@ int main()
         char str[] = "almost every programmer should know memset!";
         char* ptr = memset(str, '-', 6);
         is_streq(str, "------ every programmer should know memset!");
-		(void)(ptr);
         is_eq(ptr - str, 0);
     }
     {
