@@ -142,10 +142,10 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 	case "int", "float", "long int":
 		return 4, nil
 
-	case "long", "double":
+	case "long", "long long", "long long int", "double":
 		return 8, nil
 
-	case "long double", "long long", "long long int", "long long unsigned int":
+	case "long double", "long long unsigned int":
 		return 16, nil
 	}
 

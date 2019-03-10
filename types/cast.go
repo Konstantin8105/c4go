@@ -97,19 +97,6 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	cFromType = util.CleanCType(cFromType)
 	cToType = util.CleanCType(cToType)
 
-	// Only for "stddef.h"
-	if p.IncludeHeaderIsExists("stddef.h") {
-		if cFromType == "long long" && cToType == "ptrdiff_t" {
-			expr = &goast.BinaryExpr{
-				X:  expr,
-				Op: token.QUO,
-				Y: &goast.BasicLit{
-					Kind:  token.INT,
-					Value: "4",
-				},
-			}
-		}
-	}
 	fromType := cFromType
 	toType := cToType
 
