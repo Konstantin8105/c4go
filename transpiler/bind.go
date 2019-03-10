@@ -3,14 +3,14 @@ package transpiler
 import (
 	"bytes"
 	"fmt"
-	"strings"
-
 	goast "go/ast"
 	"go/format"
 	"go/token"
+	"strings"
 
 	"github.com/Konstantin8105/c4go/program"
 	"github.com/Konstantin8105/c4go/types"
+	"github.com/Konstantin8105/c4go/util"
 )
 
 func generateBinding(p *program.Program) (bindHeader, bindCode string) {
@@ -204,24 +204,16 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 
 		p.AddImport("unsafe")
 
-		return &goast.CallExpr{
-			Fun: goast.NewIdent(t),
-			Args: []goast.Expr{
-				&goast.CallExpr{
-					Fun: goast.NewIdent("unsafe.Pointer"),
-					Args: []goast.Expr{
-						&goast.UnaryExpr{
-							Op: token.AND,
-							X: &goast.IndexExpr{
-								X:      expr,
-								Lbrack: 1,
-								Index:  goast.NewIdent("0"),
-							},
-						},
-					},
+		return util.NewCallExpr(t, util.NewCallExpr("unsafe.Pointer",
+			&goast.UnaryExpr{
+				Op: token.AND,
+				X: &goast.IndexExpr{
+					X:      expr,
+					Lbrack: 1,
+					Index:  goast.NewIdent("0"),
 				},
-			},
-		}, nil
+			})), nil
+
 	} else if strings.HasPrefix(goType, "*") {
 		// *int  -> * _Ctype_int
 		t = goType[1:]
@@ -235,37 +227,22 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 
 		p.AddImport("unsafe")
 
-		return &goast.CallExpr{
-			Fun: goast.NewIdent(t),
-			Args: []goast.Expr{
-				&goast.CallExpr{
-					Fun: goast.NewIdent("unsafe.Pointer"),
-					Args: []goast.Expr{
-						&goast.UnaryExpr{
-							Op: token.AND,
-							X:  expr,
-						},
-					},
-				},
-			},
-		}, nil
+		return util.NewCallExpr(t, util.NewCallExpr("unsafe.Pointer",
+			&goast.UnaryExpr{
+				Op: token.AND,
+				X:  expr,
+			})), nil
 	}
 
 	if t == "interface{}" {
-		return &goast.CallExpr{
-			Fun: goast.NewIdent(t),
-			Args: []goast.Expr{
-				&goast.CallExpr{
-					Fun: goast.NewIdent("unsafe.Pointer"),
-					Args: []goast.Expr{
-						&goast.UnaryExpr{
-							Op: token.AND,
-							X:  expr,
-						},
-					},
-				},
-			},
-		}, nil
+
+		p.AddImport("unsafe")
+
+		return util.NewCallExpr(t, util.NewCallExpr("unsafe.Pointer",
+			&goast.UnaryExpr{
+				Op: token.AND,
+				X:  expr,
+			})), nil
 	}
 
 	return &goast.CallExpr{
