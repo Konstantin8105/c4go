@@ -6,7 +6,7 @@
 #define START_TEST(t) \
     diag(#t);         \
     test_##t();
-/*
+
 void simple(const char* fmt, ...)
 {
     char buffer[155];
@@ -101,14 +101,14 @@ void test_va_list3()
     int v2 = 23;
     is_eq(strange(2, &v1, &v2), 10 + 2 + 23 + 2);
 }
-*/
+
 int main()
 {
-    plan(0);
-/*
+    plan(6);
+
     START_TEST(va_list)
     START_TEST(va_list2)
     START_TEST(va_list3)
-*/
+
     done_testing();
 }
