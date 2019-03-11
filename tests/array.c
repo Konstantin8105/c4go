@@ -521,6 +521,15 @@ void test_string_array()
 		    putchar('\n');
 		}
 	}
+	{
+		diag("point 8");
+		int array[] = {5, 2, 9, 7, 15};
+		int i = 0;
+		array[i]++; printf("%d %d\n", i, array[i]);
+		array[i]++; printf("%d %d\n", i, array[i]);
+		array[i++]; printf("%d %d\n", i, array[i]);
+		array[i++]; printf("%d %d\n", i, array[i]);
+	}
 }
 
 int main()
@@ -1037,14 +1046,6 @@ int main()
         is_eq(*l, len);
     }
 	START_TEST(string_array);
-	{
-		diag("&pointer");
-		char c[2][10] = {"Hello","World"};
-		char *p   = &c;
-		char **pp = &c;
-		is_streq( (*(*pp)++), "H");
-		is_streq( (*(*pp)++), "W");
-	}
 
     done_testing();
 }
