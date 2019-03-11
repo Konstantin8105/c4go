@@ -115,7 +115,7 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 			Specs: []goast.Spec{
 				&goast.TypeSpec{
 					Name: goast.NewIdent("_Bool"),
-					Type: goast.NewIdent("int"),
+					Type: goast.NewIdent("int32"),
 				},
 			},
 		})
@@ -490,7 +490,7 @@ func transpileToNode(node ast.Node, p *program.Program) (
 					Name:          fd.Name,
 					ReturnType:    r[0],
 					ArgumentTypes: f,
-					IncludeFile:   p.PreprocessorFile.GetBaseInclude(fd.Position().File),
+					IncludeFile:   fd.Position().File,
 				})
 			}
 		}

@@ -9,7 +9,7 @@ var DefinitionType = map[string]string{
 	"__time_t":      "int32",
 	"__suseconds_t": "int32",
 
-	"fpos_t": "int",
+	"fpos_t": "int32",
 
 	// unistd.h
 	"ssize_t": "github.com/Konstantin8105/c4go/noarch.SsizeT",
@@ -22,7 +22,7 @@ var DefinitionType = map[string]string{
 	"char*":                  "[]byte",
 	"double":                 "float64",
 	"float":                  "float32",
-	"int":                    "int",
+	"int":                    "int32",
 	"long double":            "float64",
 	"long int":               "int32",
 	"long long":              "int64",
@@ -39,7 +39,7 @@ var DefinitionType = map[string]string{
 	"unsigned short":         "uint16",
 	"unsigned short int":     "uint16",
 	"void":                   "",
-	"_Bool":                  "int",
+	"_Bool":                  "int32",
 	"size_t":                 "uint",
 	"ptrdiff_t":              "github.com/Konstantin8105/c4go/noarch.PtrdiffT",
 	"github.com/Konstantin8105/c4go/noarch.PtrdiffT": "uint64",

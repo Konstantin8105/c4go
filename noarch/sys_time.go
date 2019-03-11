@@ -8,8 +8,8 @@ type Timeval struct {
 
 // Timezone - struct from <sys/time.h>
 type Timezone struct {
-	TzMinuteswest int // minutes west of Greenwich
-	TzDsttime     int // type of DST correction
+	TzMinuteswest int32 // minutes west of Greenwich
+	TzDsttime     int32 // type of DST correction
 }
 
 type Itimeval struct {
@@ -18,6 +18,6 @@ type Itimeval struct {
 }
 
 // Gettimeofday - gettimeofday from <sys/time.h>
-func Gettimeofday(tv []Timeval, tz []Timezone) int {
+func Gettimeofday(tv []Timeval, tz []Timezone) int32 {
 	return -1
 }

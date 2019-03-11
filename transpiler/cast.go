@@ -267,8 +267,12 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 			if t, ok := ast.GetTypeIfExist(n.Children()[0]); ok {
 				if util.IsPointer(*t) {
 					// main information	: https://go101.org/article/unsafe.html
+					sizeof, err := types.SizeOf(p, types.GetBaseType(*t))
+					if err != nil {
+						return nil, "", nil, nil, err
+					}
 					var retType string
-					expr, retType = util.GetUintptrForSlice(expr)
+					expr, retType = util.GetUintptrForSlice(expr, sizeof)
 
 					expr, err = types.CastExpr(p, expr, retType, n.Type)
 					if err != nil {

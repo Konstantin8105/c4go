@@ -99,21 +99,30 @@ func getDefaultValueForVar(p *program.Program, a *ast.VarDecl) (
 				"Expect ImplicitCastExpr for vaar, but we have %T", a)
 		}
 		src := fmt.Sprintf(`package main
-var temp = func() %s {
-	var ret %s
-	if v, ok := %s[c4goVaListPosition].(int32); ok{
-		// for 'rune' type
-		ret = %s(v)
-	} else {
-		ret = %s[c4goVaListPosition].(%s)
+var temp = func() (c4go_def %s) {
+	switch v := %s[c4goVaListPosition].(type){
+	case int: 
+		c4go_def = %s(v)
+	case int32: 
+		c4go_def = %s(v)
+	case int64: 
+		c4go_def = %s(v)
+	case float32: 
+		c4go_def= %s(v)
+	case float64: 
+		c4go_def= %s(v)
 	}
 	c4goVaListPosition++
-	return ret
-}()`, outType,
+	return 
+}()`,
 			outType,
 			argsName,
 			outType,
-			argsName, outType)
+			outType,
+			outType,
+			outType,
+			outType,
+		)
 
 		// Create the AST by parsing src.
 		fset := token.NewFileSet() // positions are relative to fset

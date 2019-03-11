@@ -3,6 +3,7 @@ package noarch
 import (
 	"io"
 	"math"
+	"math/rand"
 	"os"
 	"os/exec"
 	"regexp"
@@ -102,8 +103,8 @@ func Atof(str []byte) float64 {
 // integral number, or if no such sequence exists because either str is empty or
 // it contains only whitespace characters, no conversion is performed and zero
 // is returned.
-func Atoi(str []byte) int {
-	return int(Atol(str))
+func Atoi(str []byte) int32 {
+	return Atol(str)
 }
 
 // Atol parses the C-string str interpreting its content as an integral number,
@@ -513,4 +514,12 @@ func AtexitRun() {
 	for i := len(AtexitFuncs) - 1; i >= 0; i-- {
 		AtexitFuncs[i]()
 	}
+}
+
+func Int32() int32 {
+	return int32(rand.Int())
+}
+
+func Exit(e int32) {
+	os.Exit(int(e))
 }

@@ -9,9 +9,9 @@ package code_quality
 
 // if_1 - transpiled function from  $GOPATH/src/github.com/Konstantin8105/c4go/tests/code_quality/if.c:1
 func if_1() {
-	var a int = 5
-	var b int = 2
-	var c int = 4
+	var a int32 = 5
+	var b int32 = 2
+	var c int32 = 4
 	if a > b {
 		return
 	} else if c <= a {
@@ -20,39 +20,39 @@ func if_1() {
 	_ = (a)
 	_ = (b)
 	_ = (c)
-	var w int = func() int {
+	var w int32 = func() int32 {
 		if 2 > 1 {
 			return -1
 		}
 		return 5
 	}()
-	var r int
-	r = func() int {
+	var r int32
+	r = func() int32 {
 		if 2 > 1 {
 			return -1
 		}
 		return 5
 	}()
-	r = func() int {
+	r = func() int32 {
 		if 2 > 1 {
 			return -1
 		}
 		return 5
 	}()
-	r = func() int {
+	r = func() int32 {
 		if w > 1 {
 			return -1
 		}
 		return 5
 	}()
-	r = func() int {
+	r = func() int32 {
 		if w > 1 {
 			return -1
 		}
 		return 5
 	}()
-	r = func() int {
-		if map[bool]int{false: 0, true: 1}[(w > 1)]+map[bool]int{false: 0, true: 1}[(r == 4)] != 0 {
+	r = func() int32 {
+		if map[bool]int32{false: 0, true: 1}[(w > 1)]+map[bool]int32{false: 0, true: 1}[(r == 4)] != 0 {
 			return -1
 		}
 		return 5

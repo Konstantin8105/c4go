@@ -7,6 +7,7 @@ import (
 	"go/parser"
 	"go/token"
 	"html/template"
+	"strings"
 
 	"github.com/Konstantin8105/c4go/ast"
 	"github.com/Konstantin8105/c4go/program"
@@ -24,9 +25,9 @@ func transpileVAArgExpr(n *ast.VAArgExpr, p *program.Program) (
 			err = fmt.Errorf("Cannot transpileVAArgExpr. %v", err)
 		}
 	}()
-	// -VAArgExpr 0x3239438 <col:14, col:38> 'int'
-	//  `-ImplicitCastExpr 0x3239420 <col:31> 'struct __va_list_tag *' <ArrayToPointerDecay>
-	//    `-DeclRefExpr 0x32393e0 <col:31> 'va_list':'struct __va_list_tag [1]' lvalue Var 0x3239058 'ap' 'va_list':'struct __va_list_tag [1]'
+	// -VAArgExpr 'int'
+	//  `-ImplicitCastExpr 'struct __va_list_tag *' <ArrayToPointerDecay>
+	//    `-DeclRefExpr 'va_list':'struct __va_list_tag [1]' lvalue Var 'ap' 'va_list':'struct __va_list_tag [1]'
 
 	// Example of C code:
 	//
@@ -74,7 +75,21 @@ func main() {
 	/////////////////////////////////
 	// Begin of needed code
 	/////////////////////////////////
-	rrr := {{.Name}}[c4goVaListPosition].({{ .GoType }})
+	rrr := func () (c4go_def {{ .GoType }}) {
+		switch v := {{.Name}}[c4goVaListPosition].(type) {
+			case int:
+				return {{ .GoType }} (v)
+			case int32:
+				return {{ .GoType }} (v)
+			case int64:
+				return {{ .GoType }} (v)
+			case float32: 
+				return {{ .GoType }} (v)
+			case float64: 
+				return {{ .GoType }} (v)
+		}
+		return
+	}()
 	c4goVaListPosition++
 	/////////////////////////////////
 	// End of code
@@ -85,6 +100,28 @@ func main() {
 	un := code{
 		GoType: varType,
 		Name:   varName,
+	}
+
+	if strings.Contains(varType, "[]") {
+		src = `
+package main
+
+func main() {
+	var {{.Name}} []interface{}
+	var rr int = 10
+	{{.Name}} = append({{.Name}}, rr)
+	var c4goVaListPosition int
+	/////////////////////////////////
+	// Begin of needed code
+	/////////////////////////////////
+	rrr := {{.Name}}[c4goVaListPosition].({{ .GoType }})
+	c4goVaListPosition++
+	/////////////////////////////////
+	// End of code
+	/////////////////////////////////
+	_ = rrr
+}
+`
 	}
 
 	tmpl := template.Must(template.New("").Parse(src))

@@ -91,11 +91,11 @@ import "fmt"
 
 // main - transpiled function from  $GOPATH/src/github.com/Konstantin8105/c4go/examples/prime.c:3
 func main() {
-	var n int
-	var c int
+	var n int32
+	var c int32
 	fmt.Printf("Enter a number\n")
 	// get value
-	noarch.Scanf([]byte("%d\x00"), (*[100000000]int)(unsafe.Pointer(&n))[:])
+	noarch.Scanf([]byte("%d\x00"), (*[100000000]int32)(unsafe.Pointer(&n))[:])
 	noarch.Printf([]byte("The number is: %d\n\x00"), n)
 	if n == 2 {
 		// -------
@@ -194,7 +194,7 @@ func frexp(arg0 float64, arg1 []int) float64 {
              stdio.h	     35/46	        76.1%
             stdlib.h	     33/47	        70.2%
             string.h	     16/24	        66.7%
-              time.h	     13/15	        86.7%
+              time.h	     14/15	        93.3%
              wchar.h	      3/68	        4.41%
             wctype.h	      0/22	           0%
 ```

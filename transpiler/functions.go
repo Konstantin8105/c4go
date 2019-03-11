@@ -168,7 +168,14 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 					&goast.AssignStmt{
 						Lhs: []goast.Expr{fieldList.List[0].Names[0]},
 						Tok: token.DEFINE,
-						Rhs: []goast.Expr{util.NewCallExpr("len", goast.NewIdent("os.Args"))},
+						Rhs: []goast.Expr{
+							&goast.CallExpr{
+								Fun: goast.NewIdent("int32"),
+								Args: []goast.Expr{
+									util.NewCallExpr("len", goast.NewIdent("os.Args")),
+								},
+							},
+						},
 					},
 				)
 			}
@@ -239,7 +246,7 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 						Tok: token.VAR,
 						Specs: []goast.Spec{&goast.ValueSpec{
 							Names: []*goast.Ident{util.NewIdent("c4goVaListPosition")},
-							Type:  goast.NewIdent("int"),
+							Type:  goast.NewIdent("int32"),
 							Values: []goast.Expr{&goast.BasicLit{
 								Kind:  token.INT,
 								Value: "0",
@@ -348,10 +355,15 @@ func transpileReturnStmt(n *ast.ReturnStmt, p *program.Program) (
 	if p.Function != nil && p.Function.Name == "main" {
 		litExpr, isLiteral := e.(*goast.BasicLit)
 		if !isLiteral || (isLiteral && litExpr.Value != "0") {
-			p.AddImport("os")
+			p.AddImport("github.com/Konstantin8105/c4go/noarch")
 			return util.NewExprStmt(&goast.CallExpr{
-				Fun:  goast.NewIdent("os.Exit"),
-				Args: results,
+				Fun: goast.NewIdent("noarch.Exit"),
+				Args: []goast.Expr{
+					&goast.CallExpr{
+						Fun:  goast.NewIdent("int32"),
+						Args: results,
+					},
+				},
 			}), preStmts, postStmts, nil
 		}
 		results = []goast.Expr{}

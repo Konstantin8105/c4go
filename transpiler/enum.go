@@ -51,7 +51,7 @@ func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (
 
 	// For case `enum` without name
 	if n.Name == "" {
-		return transpileEnumDeclWithType(p, n, "int")
+		return transpileEnumDeclWithType(p, n, "int32")
 	}
 
 	// For case `enum` with name

@@ -231,13 +231,24 @@ void test_pointer_arith_size_t()
 
 void test_pointer_minus_pointer()
 {
-    char* left_ptr;
-    char* right_ptr;
-    char arr[30];
-    left_ptr = &arr[0];
-    right_ptr = &arr[20];
-
-    is_eq(right_ptr - left_ptr, 20);
+	{
+		diag("char type");
+		char* left_ptr;
+		char* right_ptr;
+		char arr[300];
+		left_ptr  = &arr[0];
+		right_ptr = &arr[200];
+		is_eq  ( right_ptr - left_ptr, 200);
+	}
+	{
+		diag("long long type");
+		long long* left_ptr;
+		long long* right_ptr;
+		long long arr[300];
+		left_ptr  = &arr[0];
+		right_ptr = &arr[200];
+		is_eq  ( right_ptr - left_ptr, 200);
+	}
 }
 
 typedef unsigned char pcre_uchar;
@@ -422,7 +433,7 @@ void test_function_array()
 
 int main()
 {
-    plan(172);
+    plan(173);
 
     test_parg_struct();
     START_TEST(struct_init);
@@ -891,7 +902,7 @@ int main()
     }
 
     test_pointer_arith_size_t();
-    test_pointer_minus_pointer();
+    START_TEST(pointer_minus_pointer);
 
     diag("calloc with struct");
     {

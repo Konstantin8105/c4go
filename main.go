@@ -233,6 +233,7 @@ var goKeywords = [...]string{
 var letters string = "_qwertyuiopasdfghjklzxcvbnm1234567890><"
 
 func isLetter(b byte) bool {
+	b = strings.ToLower(string(b))[0]
 	for i := range letters {
 		if letters[i] == b {
 			return true
