@@ -205,6 +205,6 @@ func Strdup(s []byte) []byte {
 	return s
 }
 
-func Strerror(e int) []byte {
+func Strerror(e int32) []byte {
 	return []byte("strerror")
 }

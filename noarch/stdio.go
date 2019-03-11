@@ -587,8 +587,8 @@ func Fread(ptr *[]byte, size1, size2 int32, f *File) int32 {
 // Internally, the function interprets the block pointed by ptr as if it was an
 // array of (size*count) elements of type unsigned char, and writes them
 // sequentially to stream as if fputc was called for each byte.
-func Fwrite(str []byte, size1, size2 int, stream *File) int32 {
-	n, err := stream.OsFile.Write(str[:size1*size2])
+func Fwrite(str []byte, size1, size2 int32, stream *File) int32 {
+	n, err := stream.OsFile.Write(str[:int(size1*size2)])
 	if err != nil {
 		return -1
 	}
