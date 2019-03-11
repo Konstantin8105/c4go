@@ -52,4 +52,4 @@ if [ $($C4GO ast $C4GO_DIR/examples/prime.c | wc -l) -eq 0 ]; then exit 1; fi
 echo "----------------------"
 
 # Run script sqlite
-source ./travis/sqlite.sh
+source ./scripts/sqlite.sh

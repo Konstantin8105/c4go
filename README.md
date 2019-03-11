@@ -257,7 +257,7 @@ Please run:
 
 ```bash
 # Run cpuprofiling for sqlite transpilation example
-time ./travis/sqlite.sh 
+time ./scripts/sqlite.sh 
 
 # Example of output:
 #
