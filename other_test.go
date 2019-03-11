@@ -6,10 +6,12 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -307,6 +309,7 @@ func TestFrame3dd(t *testing.T) {
 	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if err != nil {
+		parseError(stderr.String())
 		t.Errorf("cmd.Run() failed with %s : %v\n", err, stderr.String())
 	}
 }
@@ -432,14 +435,48 @@ func TestTriangle(t *testing.T) {
 		t.Log(l)
 	}
 
-	cmd := exec.Command("go", "build", "-o", folder+"triangle",
+	cmd := exec.Command("go", "build", "-o", folder+"triangle", "-gcflags", "-e",
 		args.outputFile)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if err != nil {
+		parseError(stderr.String())
 		t.Logf("cmd.Run() failed with %s : %v\n", err, stderr.String())
+	}
+}
+
+func parseError(str string) {
+	// Example:
+	// testdata/git-source/triangle/main.go:2478:41: invalid operation: (operator & not defined on slice)
+	lines := strings.Split(str, "\n")
+	codes := map[string][]string{}
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		index := strings.Index(line, ":")
+		if index < 0 {
+			continue
+		}
+		filename := line[:index]
+		if _, err := os.Stat(filename); os.IsNotExist(err) {
+			// filename does not exist
+			continue
+		}
+		if _, ok := codes[filename]; !ok {
+			dat, err := ioutil.ReadFile(filename)
+			if err != nil {
+				continue
+			}
+			codes[filename] = strings.Split(string(dat), "\n")
+		}
+		indexLine := strings.Index(line[index+1:], ":")
+		if indexLine < 0 {
+			continue
+		}
+		if s, err := strconv.Atoi(line[index+1 : index+indexLine+1]); err == nil {
+			fmt.Printf("Code line %s: %s\n", line[index+1:index+indexLine+1], codes[filename][s-1])
+		}
 	}
 }
 
