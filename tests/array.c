@@ -1037,14 +1037,14 @@ int main()
         is_eq(*l, len);
     }
 	START_TEST(string_array);
-	// {
-		// diag("&pointer");
-		// char c[2][10] = {"Hello","World"};
-		// char *p  = &c;
-		// char **pp = &c;
-		// is_streq( (*(*pp)++), "H");
-		// is_streq( (*(*pp)++), "W");
-	// }
+	{
+		diag("&pointer");
+		char c[2][10] = {"Hello","World"};
+		char *p   = &c;
+		char **pp = &c;
+		is_streq( (*(*pp)++), "H");
+		is_streq( (*(*pp)++), "W");
+	}
 
     done_testing();
 }
