@@ -304,41 +304,40 @@ func ConvertFunctionNameFromCtoGo(name string) string {
 
 // GetUintptr - return uintptr. Example : uintptr(unsafe.Pointer(&expr))
 func GetUintptr(expr goast.Expr) goast.Expr {
-	return NewAnonymousFunction(
-		[]goast.Stmt{
-			&goast.AssignStmt{
-				Lhs: []goast.Expr{goast.NewIdent("c4go_temp_name")},
-				Tok: token.DEFINE,
-				Rhs: []goast.Expr{
-					expr,
-				},
+
+	if _, ok := expr.(*goast.SelectorExpr); ok {
+		expr = &goast.IndexExpr{
+			X:     expr,
+			Index: goast.NewIdent("0"),
+		}
+	}
+
+	if sl, ok := expr.(*goast.SliceExpr); ok {
+		if c, ok := sl.X.(*goast.CallExpr); ok {
+			if fin, ok := c.Fun.(*goast.Ident); ok && strings.Contains(fin.Name, "100000") {
+				if len(c.Args) == 1 {
+					if cc, ok := c.Args[0].(*goast.CallExpr); ok {
+						if fin, ok := cc.Fun.(*goast.Ident); ok && strings.Contains(fin.Name, "unsafe.Pointer") {
+							if len(cc.Args) == 1 {
+								if un, ok := cc.Args[0].(*goast.UnaryExpr); ok && un.Op == token.AND {
+									expr = un.X
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return NewCallExpr("uintptr",
+		NewCallExpr("unsafe.Pointer",
+			&goast.UnaryExpr{
+				Op: token.AND,
+				X:  expr,
 			},
-		},
-		nil,
-		NewCallExpr("uintptr",
-			NewCallExpr("unsafe.Pointer",
-				&goast.UnaryExpr{
-					Op: token.AND,
-					X:  goast.NewIdent("c4go_temp_name"),
-				},
-			),
 		),
-		"uintptr",
 	)
-	//	return &goast.CallExpr{
-	//		Fun: goast.NewIdent("uintptr"),
-	//		Args: []goast.Expr{
-	//			&goast.CallExpr{
-	//				Fun: goast.NewIdent("unsafe.Pointer"),
-	//				Args: []goast.Expr{
-	//					&goast.UnaryExpr{
-	//						Op: token.AND,
-	//						X:  expr,
-	//					},
-	//				},
-	//			},
-	//		},
-	//	}
 }
 
 // GetUintptrForSlice - return uintptr for slice
@@ -363,10 +362,7 @@ func GetUintptrForSlice(expr goast.Expr, sizeof int) (goast.Expr, string) {
 					},
 					Lparen: 1,
 					Args: []goast.Expr{&goast.CallExpr{
-						Fun: &goast.SelectorExpr{
-							X:   goast.NewIdent("unsafe"),
-							Sel: goast.NewIdent("Pointer"),
-						},
+						Fun:    goast.NewIdent("unsafe.Pointer"),
 						Lparen: 1,
 						Args: []goast.Expr{&goast.UnaryExpr{
 							Op: token.AND,

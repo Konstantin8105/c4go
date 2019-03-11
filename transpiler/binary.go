@@ -79,13 +79,13 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	}()
 
 	// Char overflow
-	// BinaryOperator 0x2b74458 <line:506:7, col:18> 'int' '!='
-	// |-ImplicitCastExpr 0x2b74440 <col:7, col:10> 'int' <IntegralCast>
-	// | `-ImplicitCastExpr 0x2b74428 <col:7, col:10> 'char' <LValueToRValue>
+	// BinaryOperator  'int' '!='
+	// |-ImplicitCastExpr 'int' <IntegralCast>
+	// | `-ImplicitCastExpr 'char' <LValueToRValue>
 	// |   `-...
-	// `-ParenExpr 0x2b74408 <col:15, col:18> 'int'
-	//   `-UnaryOperator 0x2b743e8 <col:16, col:17> 'int' prefix '-'
-	//     `-IntegerLiteral 0x2b743c8 <col:17> 'int' 1
+	// `-ParenExpr 'int'
+	//   `-UnaryOperator 'int' prefix '-'
+	//     `-IntegerLiteral 'int' 1
 	if n.Operator == "!=" {
 		var leftOk bool
 		if l0, ok := n.ChildNodes[0].(*ast.ImplicitCastExpr); ok && l0.Type == "int" {

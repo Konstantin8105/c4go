@@ -483,7 +483,7 @@ void test_string_array()
 		for (int i = 0; i < 4; ++i) {
 		    char *pos = names[i];
 		    while (*pos != '\0') {
-		        printf("%c\n", *(pos++));
+		        printf("%c", *(pos++));
 		    }
 		    printf("\n");
 		}
@@ -495,7 +495,6 @@ void test_string_array()
 		    const char *ch = names[i]; 
 		    while(*ch) {
 		        putchar(*ch++);
-		        putchar('\n');
 		    }
 		    putchar('\n');
 		}
