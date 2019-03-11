@@ -352,16 +352,15 @@ var builtInFunctionDefinitions = map[string][]string{
 	"fcntl.h": {
 		"int open(const char *, int , ...) -> noarch.Open",
 	},
-	"unistd.h": {
-		"int pipe(int *) -> noarch.Pipe",
-		"void exit(int) -> golang.org/x/sys/unix.Exit",
-		"ssize_t write(int, const void *, size_t) -> noarch.Write",
-		"ssize_t read(int, void *, size_t) -> noarch.Read",
-		"int close(int) -> noarch.CloseOnExec",
-		"int isatty(int) -> noarch.Isatty",
-		"int ftruncate(int , off_t ) -> noarch.Ftruncate",
-		"int unlink(const char *) -> noarch.Unlink",
-	},
+	//	"unistd.h": {
+	//		"int pipe(int *) -> noarch.Pipe",
+	//		"void exit(int) -> golang.org/x/sys/unix.Exit",
+	//		"ssize_t write(int, const void *, size_t) -> noarch.Write",
+	//		"ssize_t read(int, void *, size_t) -> noarch.Read",
+	//		"int close(int) -> noarch.CloseOnExec",
+	//		"int isatty(int) -> noarch.Isatty",
+	//		"int unlink(const char *) -> noarch.Unlink",
+	//	},
 	"sys/stat.h": {
 		"int fstat(int , struct stat  *) -> noarch.Fstat",
 		"int stat(const char * , struct stat * ) -> noarch.Stat",
