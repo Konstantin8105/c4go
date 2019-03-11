@@ -304,20 +304,41 @@ func ConvertFunctionNameFromCtoGo(name string) string {
 
 // GetUintptr - return uintptr. Example : uintptr(unsafe.Pointer(&expr))
 func GetUintptr(expr goast.Expr) goast.Expr {
-	return &goast.CallExpr{
-		Fun: goast.NewIdent("uintptr"),
-		Args: []goast.Expr{
-			&goast.CallExpr{
-				Fun: goast.NewIdent("unsafe.Pointer"),
-				Args: []goast.Expr{
-					&goast.UnaryExpr{
-						Op: token.AND,
-						X:  expr,
-					},
+	return NewAnonymousFunction(
+		[]goast.Stmt{
+			&goast.AssignStmt{
+				Lhs: []goast.Expr{goast.NewIdent("c4go_temp_name")},
+				Tok: token.DEFINE,
+				Rhs: []goast.Expr{
+					expr,
 				},
 			},
 		},
-	}
+		nil,
+		NewCallExpr("uintptr",
+			NewCallExpr("unsafe.Pointer",
+				&goast.UnaryExpr{
+					Op: token.AND,
+					X:  goast.NewIdent("c4go_temp_name"),
+				},
+			),
+		),
+		"uintptr",
+	)
+	//	return &goast.CallExpr{
+	//		Fun: goast.NewIdent("uintptr"),
+	//		Args: []goast.Expr{
+	//			&goast.CallExpr{
+	//				Fun: goast.NewIdent("unsafe.Pointer"),
+	//				Args: []goast.Expr{
+	//					&goast.UnaryExpr{
+	//						Op: token.AND,
+	//						X:  expr,
+	//					},
+	//				},
+	//			},
+	//		},
+	//	}
 }
 
 // GetUintptrForSlice - return uintptr for slice
@@ -378,17 +399,13 @@ func CreateSliceFromReference(goType string, expr goast.Expr) goast.Expr {
 	//     p.AddImport("unsafe")
 	//
 	return &goast.SliceExpr{
-		X: NewCallExpr(
-			fmt.Sprintf("(*[100000000]%s)", goType),
-			&goast.CallExpr{
-				Fun: goast.NewIdent("unsafe.Pointer"),
-				Args: []goast.Expr{
-					&goast.UnaryExpr{
-						X:  expr,
-						Op: token.AND,
-					},
-				},
-			}),
+		X: NewCallExpr(fmt.Sprintf("(*[100000000]%s)", goType),
+			NewCallExpr("unsafe.Pointer",
+				&goast.UnaryExpr{
+					X:  expr,
+					Op: token.AND,
+				}),
+		),
 	}
 }
 
