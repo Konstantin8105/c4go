@@ -433,7 +433,7 @@ void test_function_array()
 
 int main()
 {
-    plan(173);
+    plan(175);
 
     test_parg_struct();
     START_TEST(struct_init);
@@ -944,6 +944,14 @@ int main()
         ssize_t* l = &len;
         is_eq(*l, len);
     }
+	{
+		diag("&pointer");
+		char c[2][10] = {"Hello","World"};
+		char *p  = &c;
+		char **pp = &c;
+		is_streq( (*(*pp)++), "H");
+		is_streq( (*(*pp)++), "W");
+	}
 
     done_testing();
 }
