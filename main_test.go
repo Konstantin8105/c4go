@@ -17,6 +17,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"testing"
 
@@ -96,17 +97,42 @@ func TestIntegrationScripts(t *testing.T) {
 				clangFlags = append(clangFlags, "-Itests/bind/bind.h")
 			}
 
+			var wg sync.WaitGroup
+			wg.Add(len(progs))
+			errProgs := make([]error, len(progs))
+
 			for i := 0; i < len(progs); i++ {
-				out, err := progs[i](file, subFolder, stdin, clangFlags, args)
-				if err != nil {
-					t.Fatalf("Error for function %d : %v", i, err)
-					return
+				go func(i int) {
+					defer func() {
+						wg.Done()
+					}()
+					var out string
+					out, errProgs[i] = progs[i](file, subFolder, stdin, clangFlags, args)
+					if errProgs[i] != nil {
+						errProgs[i] = fmt.Errorf("Error for function %d : %v", i, errProgs[i])
+						return
+					}
+					if out == "" {
+						errProgs[i] = fmt.Errorf("Result is empty for function %d: %v", i, errProgs[i])
+						return
+					}
+					results[i] = out
+				}(i)
+			}
+			wg.Wait()
+			{
+				fail := false
+				for i := range errProgs {
+					if errProgs[i] != nil {
+						fail = true
+					}
 				}
-				if out == "" {
-					t.Fatalf("Result is empty for function %d: %v", i, err)
-					return
+				if fail {
+					for i := range errProgs {
+						t.Errorf("%d: %v", i, errProgs[i])
+					}
+					t.Fail()
 				}
-				results[i] = out
 			}
 
 			var (
