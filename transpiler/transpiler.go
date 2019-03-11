@@ -8,7 +8,6 @@ import (
 	goast "go/ast"
 	"go/parser"
 	"go/token"
-	"os"
 	"strings"
 	"unicode"
 
@@ -579,7 +578,7 @@ func transpileToNode(node ast.Node, p *program.Program) (
 
 				// location of file
 				location := node.Position().GetSimpleLocation()
-				location = strings.Replace(location, os.Getenv("GOPATH"), "$GOPATH", -1)
+				location = program.PathSimplification(location)
 				doc.List = append([]*goast.Comment{{
 					Text: fmt.Sprintf("// %s - transpiled function from %s",
 						name, location),
