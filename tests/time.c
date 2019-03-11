@@ -99,9 +99,71 @@ void test_timezone()
     is_eq(tv.tz_dsttime, 75000);
 }
 
+void test_gettime()
+{
+    struct timeval tv;
+    struct timezone tz;
+    int r = gettimeofday(&tv, &tz);
+    printf("timezone: %d %d\n", tz.tz_minuteswest, tz.tz_dsttime);
+    (void)tv;
+    (void)r;
+}
+
+void test_clock()
+{
+    clock_t c = clock();
+    unsigned long l = c;
+    is_true(l > 0);
+}
+
+void test_difftime()
+{
+    time_t now;
+    struct tm newyear;
+    double seconds;
+
+    time(&now);
+
+    double d = now;
+    d /= 1000;
+    long l = d;
+    l *= 1000;
+    now = ((time_t)(l));
+
+    newyear = *localtime(&now);
+
+    newyear.tm_hour = 0;
+    newyear.tm_min = 0;
+    newyear.tm_sec = 0;
+    newyear.tm_mon = 0;
+    newyear.tm_mday = 1;
+
+    seconds = difftime(now, mktime(&newyear));
+
+    printf("%.f seconds since new year in the current timezone.\n", seconds);
+}
+
+void test_CLOCKS_PER_SEC()
+{
+    printf("%d\n", CLOCKS_PER_SEC);
+}
+
+void test_strftime()
+{
+	time_t rawtime;
+	struct tm * timeinfo;
+	char buffer [80];
+	
+	time (&rawtime);
+	timeinfo = localtime (&rawtime);
+	
+	strftime (buffer,80,"Now it's %D.",timeinfo);
+	puts (buffer);
+}
+
 int main()
 {
-    plan(23);
+    plan(24);
 
     // sorting in according to :
     // http://www.cplusplus.com/reference/ctime/
@@ -110,10 +172,15 @@ int main()
     START_TEST(gmtime);
     START_TEST(mktime);
     START_TEST(time);
+    START_TEST(clock);
+    START_TEST(difftime);
+    START_TEST(CLOCKS_PER_SEC);
+	START_TEST(strftime);
 
     // sys/time.h
     START_TEST(timeval);
     START_TEST(timezone);
+    START_TEST(gettime);
 
     done_testing();
 }

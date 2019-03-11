@@ -4,14 +4,16 @@ package program
 // c4go structures
 var DefinitionType = map[string]string{
 	// time.h
-	"time_t":        "github.com/Konstantin8105/c4go/noarch.TimeT",
+	"time_t": "github.com/Konstantin8105/c4go/noarch.TimeT",
+	"github.com/Konstantin8105/c4go/noarch.TimeT": "int32",
 	"__time_t":      "int32",
 	"__suseconds_t": "int32",
 
-	"fpos_t": "int",
+	"fpos_t": "int32",
 
 	// unistd.h
 	"ssize_t": "github.com/Konstantin8105/c4go/noarch.SsizeT",
+	"github.com/Konstantin8105/c4go/noarch.SsizeT": "long int",
 
 	// built-in
 	"bool":                   "bool",
@@ -20,7 +22,7 @@ var DefinitionType = map[string]string{
 	"char*":                  "[]byte",
 	"double":                 "float64",
 	"float":                  "float32",
-	"int":                    "int",
+	"int":                    "int32",
 	"long double":            "float64",
 	"long int":               "int32",
 	"long long":              "int64",
@@ -37,9 +39,12 @@ var DefinitionType = map[string]string{
 	"unsigned short":         "uint16",
 	"unsigned short int":     "uint16",
 	"void":                   "",
-	"_Bool":                  "int",
+	"_Bool":                  "int32",
 	"size_t":                 "uint",
 	"ptrdiff_t":              "github.com/Konstantin8105/c4go/noarch.PtrdiffT",
+	"github.com/Konstantin8105/c4go/noarch.PtrdiffT": "uint64",
+	"wchar_t": "github.com/Konstantin8105/c4go/noarch.WcharT",
+	"github.com/Konstantin8105/c4go/noarch.WcharT": "rune",
 
 	// void*
 	"void*":  "interface{}",
@@ -78,4 +83,15 @@ var DefinitionType = map[string]string{
 	// sys/resource.h
 	"__rusage_who":   "int",
 	"__rusage_who_t": "int",
+
+	// time.h
+	"clock_t": "github.com/Konstantin8105/c4go/noarch.ClockT",
+	"github.com/Konstantin8105/c4go/noarch.ClockT": "int64",
+
+	// signal.h
+	"sig_atomic_t": "int64",
+
+	// sys/types.h
+	"off_t":   "int64",
+	"__off_t": "int64",
 }

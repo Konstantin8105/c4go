@@ -257,6 +257,26 @@ func TestVarDecl(t *testing.T) {
 			IsTls:        true,
 			ChildNodes:   []Node{},
 		},
+		`0x55b0fd013750 <col:5, col:39> col:22 used range 'UA_DurationRange':'UA_DurationRange' nrvo cinit`: &VarDecl{
+			Addr: 0x55b0fd013750,
+			// Parent:       0x3dcaaf0,
+			// Prev:         0x3ec4088,
+			Pos:          NewPositionFromString("col:5, col:39"),
+			Position2:    "col:22",
+			Name:         "range",
+			Type:         "UA_DurationRange",
+			Type2:        "UA_DurationRange",
+			IsExtern:     false,
+			IsUsed:       true,
+			IsCInit:      true,
+			IsCallInit:   false,
+			IsNrvo:       true,
+			IsReferenced: false,
+			IsStatic:     false,
+			IsRegister:   false,
+			IsTls:        false,
+			ChildNodes:   []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)

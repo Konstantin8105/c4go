@@ -3,6 +3,7 @@ package ast
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -273,6 +274,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseUnaryOperator(line), nil
 	case "UnusedAttr":
 		return parseUnusedAttr(line), nil
+	case "UsedAttr":
+		return parseUsedAttr(line), nil
 	case "VAArgExpr":
 		return parseVAArgExpr(line), nil
 	case "VarDecl":
@@ -320,4 +323,26 @@ func groupsFromRegex(rx, line string) map[string]string {
 	}
 
 	return result
+}
+
+// GetTypeIfExist return string inside field Type of struct
+func GetTypeIfExist(node Node) (Type *string, ok bool) {
+	for _, typ := range []string{"Type", "Type1", "Type2"} {
+		s := reflect.ValueOf(node).Elem()
+		typeOfT := s.Type()
+		for i := 0; i < s.NumField(); i++ {
+			f := s.Field(i)
+			name := typeOfT.Field(i).Name
+			if typ != name {
+				continue
+			}
+			_, ok := f.Interface().(string)
+			if !ok {
+				continue
+			}
+			str := f.Addr().Interface().(*string)
+			return str, true
+		}
+	}
+	return nil, false
 }

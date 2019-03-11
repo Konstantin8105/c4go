@@ -85,7 +85,7 @@ var cstd = map[string][]string{
 	"iso646.h": {},
 	"limits.h": {},
 	"locale.h": {
-		"struct lconv",
+		"lconv", // "struct lconv",
 		"setlocale",
 		"localeconv",
 	},
@@ -263,7 +263,7 @@ var cstd = map[string][]string{
 		"clock_t",
 		"size_t",
 		"time_t",
-		"struct tm",
+		"tm", // "struct tm",
 	},
 	"wchar.h": {
 
@@ -328,7 +328,7 @@ var cstd = map[string][]string{
 		"wcsftime",
 		"mbstate_t",
 		"size_t",
-		"struct tm",
+		"tm", // "struct tm",
 		"wchar_t",
 		"wint_t",
 		"NULL",
@@ -383,14 +383,36 @@ func TestCSTD(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Cannot read file : %v\n", file)
 		}
+		// separate on parts
+		body = bytes.Replace(body, []byte("["), []byte(" "), -1)
+		body = bytes.Replace(body, []byte("]"), []byte(" "), -1)
+		body = bytes.Replace(body, []byte("("), []byte(" "), -1)
+		body = bytes.Replace(body, []byte(")"), []byte(" "), -1)
+		body = bytes.Replace(body, []byte("="), []byte(" "), -1)
+		body = bytes.Replace(body, []byte(";"), []byte(" "), -1)
+		body = bytes.Replace(body, []byte(","), []byte(" "), -1)
+		body = bytes.Replace(body, []byte("+"), []byte(" "), -1)
+		body = bytes.Replace(body, []byte("-"), []byte(" "), -1)
+		body = bytes.Replace(body, []byte("/"), []byte(" "), -1)
+		body = bytes.Replace(body, []byte("*"), []byte(" "), -1)
+		body = bytes.Replace(body, []byte("\n"), []byte(" "), -1)
+
+		lines := bytes.Split(body, []byte(" "))
+		for i := range lines {
+			lines[i] = bytes.TrimSpace(lines[i])
+		}
+
 		for include := range amount {
 			// check include file
 			if !bytes.Contains(body, []byte("<"+include+">")) {
 				continue
 			}
+			// finding function
 			for _, function := range cstd[include] {
-				if bytes.Contains(body, []byte(function)) {
-					amount[include][function]++
+				for i := range lines {
+					if bytes.Equal(lines[i], []byte(function)) {
+						amount[include][function]++
+					}
 				}
 			}
 		}

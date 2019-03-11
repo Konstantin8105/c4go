@@ -12,7 +12,6 @@ import (
 
 	"github.com/Konstantin8105/c4go/ast"
 	"github.com/Konstantin8105/c4go/program"
-	"github.com/Konstantin8105/c4go/types"
 	"github.com/Konstantin8105/c4go/util"
 )
 
@@ -47,17 +46,12 @@ func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (
 		}
 	}()
 
-	if !p.PreprocessorFile.IsUserSource(n.Pos.File) &&
-		!strings.Contains(n.Pos.File, "ctype.h") {
-		return
-	}
-
-	n.Name = types.GenerateCorrectType(n.Name)
+	n.Name = util.GenerateCorrectType(n.Name)
 	n.Name = strings.TrimPrefix(n.Name, "enum ")
 
 	// For case `enum` without name
 	if n.Name == "" {
-		return transpileEnumDeclWithType(p, n, "int")
+		return transpileEnumDeclWithType(p, n, "int32")
 	}
 
 	// For case `enum` with name
@@ -92,7 +86,7 @@ func transpileEnumDeclWithType(p *program.Program, n *ast.EnumDecl, enumType str
 	decls []goast.Decl, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileEnumDeclWithoutName. %v", err)
+			err = fmt.Errorf("Cannot transpileEnumDeclWithName. %v", err)
 		}
 	}()
 	preStmts := []goast.Stmt{}
@@ -164,14 +158,8 @@ func transpileEnumDeclWithType(p *program.Program, n *ast.EnumDecl, enumType str
 			var value int
 			value, err = strconv.Atoi(v.Value)
 			if err != nil {
-				err = fmt.Errorf("Cannot parse '%s' in BasicLit", v.Value)
-				return
-			}
-			if err != nil {
 				e = val
 				counter++
-				p.AddMessage(p.GenerateWarningMessage(
-					fmt.Errorf("Cannot parse '%s' in BasicLit", v.Value), n))
 				break
 			}
 			if sign == -1 {

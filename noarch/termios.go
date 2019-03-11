@@ -8,21 +8,21 @@ import (
 
 type Termios = syscall.Termios
 
-func Tcgetattr(fd int, t []Termios) int {
+func Tcgetattr(fd int32, t []Termios) int32 {
 	if err := termios.Tcgetattr(uintptr(fd), &t[0]); err != nil {
 		return -1
 	}
 	return 0
 }
 
-func Tcsetattr(fd int, opt int, t []Termios) int {
+func Tcsetattr(fd int32, opt int32, t []Termios) int32 {
 	if err := termios.Tcsetattr(uintptr(fd), uintptr(opt), &t[0]); err != nil {
 		return -1
 	}
 	return 0
 }
 
-func Tcsendbreak(fd int, dur int) int {
+func Tcsendbreak(fd int32, dur int32) int32 {
 	if err := termios.Tcsendbreak(uintptr(fd), uintptr(dur)); err != nil {
 		return -1
 	}

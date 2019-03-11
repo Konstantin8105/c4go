@@ -67,7 +67,7 @@ func transpileIfStmt(n *ast.IfStmt, p *program.Program) (
 
 	// The last parameter must be false because we are transpiling an
 	// expression - assignment operators need to be wrapped in closures.
-	conditional, conditionalType, newPre, newPost, err := transpileToExpr(children[1], p, false)
+	conditional, conditionalType, newPre, newPost, err := atomicOperation(children[1], p)
 	if err != nil {
 		err = fmt.Errorf("Cannot transpile for condition. %v", err)
 		return nil, nil, nil, err
@@ -88,16 +88,21 @@ func transpileIfStmt(n *ast.IfStmt, p *program.Program) (
 		boolCondition = util.NewNil()
 	}
 
-	body, newPre, newPost, err := transpileToBlockStmt(children[2], p)
-	if err != nil {
-		return nil, nil, nil, err
+	body := new(goast.BlockStmt)
+
+	if children[2] != nil {
+		var newPre, newPost []goast.Stmt
+		body, newPre, newPost, err = transpileToBlockStmt(children[2], p)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+
+		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+		if body == nil {
+			return nil, nil, nil, fmt.Errorf("Body of If cannot by nil")
+		}
 	}
 
-	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
-
-	if body == nil {
-		return nil, nil, nil, fmt.Errorf("Body of If cannot by nil")
-	}
 	if boolCondition == nil {
 		return nil, nil, nil, fmt.Errorf("Bool Condition in If cannot by nil")
 	}
@@ -250,7 +255,7 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 	var transpilate bool
 	if v, ok := children[3].(*ast.UnaryOperator); ok {
 		if vv, ok := v.Children()[0].(*ast.DeclRefExpr); ok {
-			if !types.IsPointer(vv.Type) && !types.IsFunction(vv.Type) {
+			if !util.IsPointer(vv.Type) && !util.IsFunction(vv.Type) {
 				switch v.Operator {
 				case "++":
 					// for case:
@@ -579,39 +584,14 @@ func createIfWithNotConditionAndBreak(condition ast.Node) (ifStmt ast.IfStmt) {
 
 	var par ast.ParenExpr
 	var unitary ast.UnaryOperator
-	switch con := condition.(type) {
-	case *ast.BinaryOperator:
-		par.Type = con.Type
-		unitary.Type = con.Type
 
-	case *ast.ImplicitCastExpr:
-		par.Type = con.Type
-		unitary.Type = con.Type
-
-	case *ast.CStyleCastExpr:
-		par.Type = con.Type
-		unitary.Type = con.Type
-
-	case *ast.ParenExpr:
-		par.Type = con.Type
-		unitary.Type = con.Type
-
-	case *ast.UnaryOperator:
-		par.Type = con.Type
-		unitary.Type = con.Type
-
-	case *ast.IntegerLiteral:
-		par.Type = con.Type
-		unitary.Type = con.Type
-
-	case *ast.CallExpr:
-		par.Type = con.Type
-		unitary.Type = con.Type
-
-	default:
-		panic(
-			fmt.Errorf("Type %T is not implemented in createIfWithNotConditionAndBreak", condition))
+	if typ, ok := ast.GetTypeIfExist(condition); ok {
+		par.Type = *typ
+		unitary.Type = *typ
+	} else {
+		panic(fmt.Errorf("Type %T is not implemented in createIfWithNotConditionAndBreak", condition))
 	}
+
 	par.AddChild(condition)
 	unitary.Operator = "!"
 	unitary.AddChild(&par)

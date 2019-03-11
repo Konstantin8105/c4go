@@ -10,6 +10,7 @@ import (
 	"go/token"
 	"os"
 	"strings"
+	"unicode"
 
 	"github.com/Konstantin8105/c4go/ast"
 	"github.com/Konstantin8105/c4go/program"
@@ -21,7 +22,9 @@ var AddOutsideStruct bool
 
 // TranspileAST iterates through the Clang AST and builds a Go AST
 func TranspileAST(fileName, packageName string, withOutsideStructs bool,
-	p *program.Program, root ast.Node) (err error) {
+	p *program.Program, root ast.Node) (
+	source string, // result Go source
+	err error) {
 	// Start by parsing an empty file.
 	p.FileSet = token.NewFileSet()
 	packageSignature := fmt.Sprintf("package %v", packageName)
@@ -30,7 +33,70 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 	AddOutsideStruct = withOutsideStructs
 
 	if err != nil {
-		return err
+		return
+	}
+
+	// replace if type name and variable name
+	{
+		var replacer func(ast.Node)
+		replacer = func(node ast.Node) {
+			if node == nil {
+				return
+			}
+			var vName *string
+			var vType *string
+			switch v := node.(type) {
+			case *ast.DeclRefExpr:
+				vName = &v.Name
+				vType = &v.Type
+			case *ast.VarDecl:
+				vName = &v.Name
+				vType = &v.Type
+			case *ast.ParmVarDecl:
+				vName = &v.Name
+				vType = &v.Type
+			}
+
+			// examples:
+			//   vName        vType
+			//   `wb`         `wb`
+			//   `wb`        `wb *`
+			//   `wb`      `struct wb`
+			//   `wb`      `struct wb *`
+			//   `wb`      `struct wb*`
+			//   `wb`      `struct wb [10]`
+			// not ok:
+			//   `wb`      `struct wba`
+			postfix := "_c4go_postfix"
+			if vType != nil && vName != nil &&
+				len(strings.TrimSpace(*vName)) > 0 &&
+				strings.Contains(*vType, *vName) {
+
+				for _, pr := range []string{*vName, "struct " + *vName, "union " + *vName} {
+					if pr == *vType {
+						*vName += postfix
+						break
+					}
+					if len(*vType) > len(pr) && pr == (*vType)[:len(pr)] && len(pr) > 0 {
+						letter := (*vType)[len(pr)]
+						if unicode.IsLetter(rune(letter)) {
+							continue
+						}
+						if unicode.IsNumber(rune(letter)) {
+							continue
+						}
+						if letter == '*' || letter == '[' || letter == ' ' {
+							*vName += postfix
+							break
+						}
+					}
+				}
+			}
+			for i := range node.Children() {
+				replacer(node.Children()[i])
+			}
+		}
+		replacer(root)
 	}
 
 	// Now begin building the Go AST.
@@ -49,7 +115,7 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 			Specs: []goast.Spec{
 				&goast.TypeSpec{
 					Name: goast.NewIdent("_Bool"),
-					Type: goast.NewIdent("int"),
+					Type: goast.NewIdent("int32"),
 				},
 			},
 		})
@@ -72,7 +138,25 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 		p.File.Decls = append([]goast.Decl{importDecl}, p.File.Decls...)
 	}
 
-	return err
+	// generate Go source
+	source = p.String()
+
+	// checking implementation for all called functions
+	bindHeader, bindCode := generateBinding(p)
+	if len(bindCode) > 0 {
+		index := strings.Index(source, "package")
+		index += strings.Index(source[index:], "\n")
+		src := source[:index]
+		src += "\n"
+		src += bindHeader
+		src += "\n"
+		src += source[index:]
+		src += "\n"
+		src += bindCode
+		source = src
+	}
+
+	return
 }
 
 func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
@@ -167,6 +251,9 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 		expr, exprType, preStmts, postStmts, err = transpileVAArgExpr(n, p)
 
 	case *ast.VisibilityAttr:
+		// ignore
+
+	case *ast.WeakAttr:
 		// ignore
 
 	default:
@@ -393,6 +480,22 @@ func transpileToNode(node ast.Node, p *program.Program) (
 		return transpileTranslationUnitDecl(p, n)
 	}
 
+	if fd, ok := node.(*ast.FunctionDecl); ok {
+		if d := p.GetFunctionDefinition(fd.Name); d == nil ||
+			p.PreprocessorFile.IsUserSource(d.IncludeFile) {
+
+			// create new definition
+			if _, _, f, r, err := util.ParseFunction(fd.Type); err == nil {
+				p.AddFunctionDefinition(program.DefinitionFunction{
+					Name:          fd.Name,
+					ReturnType:    r[0],
+					ArgumentTypes: f,
+					IncludeFile:   fd.Position().File,
+				})
+			}
+		}
+	}
+
 	if !AddOutsideStruct {
 		if node != nil {
 			if !p.PreprocessorFile.IsUserSource(node.Position().File) {
@@ -401,28 +504,95 @@ func transpileToNode(node ast.Node, p *program.Program) (
 		}
 	}
 
-	switch n := node.(type) {
-	case *ast.FunctionDecl:
-		com := p.GetComments(node.Position())
-		decls, err = transpileFunctionDecl(n, p)
-		if len(decls) > 0 {
-			if _, ok := decls[0].(*goast.FuncDecl); ok {
-				decls[0].(*goast.FuncDecl).Doc = p.GetMessageComments()
-				decls[0].(*goast.FuncDecl).Doc.List =
-					append(decls[0].(*goast.FuncDecl).Doc.List,
-						com...)
+	defer func() {
+		if len(decls) > 0 && err == nil {
+			for i := range decls {
+				if decls[i] == nil {
+					continue
+				}
+
+				var (
+					doc   *goast.CommentGroup
+					name  string
+					found bool
+				)
+
+				if p.Function != nil {
+					continue
+				}
+
+				switch decls[i].(type) {
+				case *goast.GenDecl:
+					if decls[i].(*goast.GenDecl).Doc == nil {
+						decls[i].(*goast.GenDecl).Doc = &goast.CommentGroup{}
+					}
+					doc = decls[i].(*goast.GenDecl).Doc
+					found = true
+
+					// try to find name
+					name = "c4go_name_is_not_found"
+					specs := decls[i].(*goast.GenDecl).Specs
+					if len(specs) > 0 {
+						switch v := specs[0].(type) {
+						case *goast.TypeSpec:
+							if v.Name != nil {
+								name = v.Name.Name
+							}
+
+						case *goast.ValueSpec:
+							if len(v.Names) > 0 {
+								if v.Names[0] != nil {
+									name = v.Names[0].Name
+								}
+							}
+
+						default:
+							// ignored
+						}
+					}
+
+				case *goast.FuncDecl:
+					if decls[i].(*goast.FuncDecl).Doc == nil {
+						decls[i].(*goast.FuncDecl).Doc = &goast.CommentGroup{}
+					}
+					if decls[i].(*goast.FuncDecl).Name == nil {
+						decls[i].(*goast.FuncDecl).Name = goast.NewIdent("c4go_noname")
+					}
+					doc = decls[i].(*goast.FuncDecl).Doc
+					name = decls[i].(*goast.FuncDecl).Name.Name
+					found = true
+
+				default:
+					// ignore that goast.Decl
+					found = false
+					continue
+				}
+
+				if !found {
+					continue
+				}
+
+				com := p.GetComments(node.Position())
+				msg := p.GetMessageComments().List
+				doc.List = append(doc.List, com...)
+				doc.List = append(doc.List, msg...)
 
 				// location of file
 				location := node.Position().GetSimpleLocation()
 				location = strings.Replace(location, os.Getenv("GOPATH"), "$GOPATH", -1)
-				decls[0].(*goast.FuncDecl).Doc.List =
-					append([]*goast.Comment{{
-						Text: fmt.Sprintf("// %s - transpiled function from %s",
-							decls[0].(*goast.FuncDecl).Name.Name,
-							location),
-					}}, decls[0].(*goast.FuncDecl).Doc.List...)
+				doc.List = append([]*goast.Comment{{
+					Text: fmt.Sprintf("// %s - transpiled function from %s",
+						name, location),
+				}}, doc.List...)
+
+				break
 			}
 		}
+	}()
+
+	switch n := node.(type) {
+	case *ast.FunctionDecl:
+		decls, err = transpileFunctionDecl(n, p)
 
 	case *ast.CXXRecordDecl:
 		if !strings.Contains(n.RecordDecl.Kind, "class") {

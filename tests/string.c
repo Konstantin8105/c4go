@@ -3,7 +3,7 @@
 
 int main()
 {
-    plan(39);
+    plan(43);
 
     diag("TODO: __builtin_object_size");
     // https://github.com/Konstantin8105/c4go/issues/359
@@ -157,10 +157,43 @@ int main()
     {
         diag("strstr");
         char str[] = "one two three";
+
+        printf("%s\n", strstr(str, "one"));
         is_streq(strstr(str, "one"), "one two three");
+
+        printf("%s\n", strstr(str, "two"));
         is_streq(strstr(str, "two"), "two three");
+
+        printf("%s\n", strstr(str, "three"));
         is_streq(strstr(str, "three"), "three");
         //TODO: NULL check in is_eq(strstr(str, "four") - str, 0);
+    }
+    {
+        diag("memcpy");
+        char myname[] = "Pierre de Fermat";
+        char name[40];
+        memcpy(name, myname, strlen(myname) + 1);
+        is_streq(name, myname);
+        printf("name = `%s`\n", name);
+    }
+    {
+        diag("strrchr");
+        char str[] = "This is a sample string";
+        char failData[] = "faildata";
+        char* pch = &failData;
+        pch = strrchr(str, 's');
+        is_eq(pch - str + 1, 18);
+    }
+    {
+        diag("strdup");
+        const char* s1 = "String";
+        char* s2 = strdup(s1);
+        is_streq(s1, s2);
+        is_true(s1 != s2);
+    }
+    {
+        diag("strerror");
+        strerror(0);
     }
 
     done_testing();

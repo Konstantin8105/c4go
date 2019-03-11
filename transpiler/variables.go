@@ -99,21 +99,30 @@ func getDefaultValueForVar(p *program.Program, a *ast.VarDecl) (
 				"Expect ImplicitCastExpr for vaar, but we have %T", a)
 		}
 		src := fmt.Sprintf(`package main
-var temp = func() %s {
-	var ret %s
-	if v, ok := %s[c4goVaListPosition].(int32); ok{
-		// for 'rune' type
-		ret = %s(v)
-	} else {
-		ret = %s[c4goVaListPosition].(%s)
+var temp = func() (c4go_def %s) {
+	switch v := %s[c4goVaListPosition].(type){
+	case int: 
+		c4go_def = %s(v)
+	case int32: 
+		c4go_def = %s(v)
+	case int64: 
+		c4go_def = %s(v)
+	case float32: 
+		c4go_def= %s(v)
+	case float64: 
+		c4go_def= %s(v)
 	}
 	c4goVaListPosition++
-	return ret
-}()`, outType,
+	return 
+}()`,
 			outType,
 			argsName,
 			outType,
-			argsName, outType)
+			outType,
+			outType,
+			outType,
+			outType,
+		)
 
 		// Create the AST by parsing src.
 		fset := token.NewFileSet() // positions are relative to fset
@@ -205,8 +214,8 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 	}()
 	resp := []goast.Expr{}
 	var hasArrayFiller = false
-	e.Type1 = types.GenerateCorrectType(e.Type1)
-	e.Type2 = types.GenerateCorrectType(e.Type2)
+	e.Type1 = util.GenerateCorrectType(e.Type1)
+	e.Type2 = util.GenerateCorrectType(e.Type2)
 
 	for _, node := range e.Children() {
 		// Skip ArrayFiller
@@ -219,6 +228,9 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 		var err error
 		if sl, ok := node.(*ast.StringLiteral); ok {
 			expr, _, err = transpileStringLiteral(p, sl, true)
+			if _, ok := p.Structs[e.Type1]; !ok {
+				expr, _, err = transpileStringLiteral(p, sl, false)
+			}
 		} else {
 			expr, _, _, _, err = transpileToExpr(node, p, true)
 		}
@@ -318,6 +330,12 @@ func transpileArraySubscriptExpr(n *ast.ArraySubscriptExpr, p *program.Program) 
 	}
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
+	//	index, err = types.CastExpr(p, index, indexType, "int")
+	//	if err != nil {
+	//		return nil, "", nil, nil, err
+	//	}
+	//	index = util.NewCallExpr("int", index)
+
 	return &goast.IndexExpr{
 		X:     expression,
 		Index: index,
@@ -333,8 +351,8 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 		}
 	}()
 
-	n.Type = types.GenerateCorrectType(n.Type)
-	n.Type2 = types.GenerateCorrectType(n.Type2)
+	n.Type = util.GenerateCorrectType(n.Type)
+	n.Type2 = util.GenerateCorrectType(n.Type2)
 
 	originTypes := []string{n.Type, n.Type2}
 	if n.Children()[0] != nil {
@@ -351,7 +369,7 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 	}
 
 	baseType := lhsType
-	lhsType = types.GenerateCorrectType(lhsType)
+	lhsType = util.GenerateCorrectType(lhsType)
 
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
@@ -371,7 +389,7 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 	}
 	// for anonymous structs
 	if structType == nil {
-		structType = p.GetStruct(types.CleanCType(baseType))
+		structType = p.GetStruct(util.CleanCType(baseType))
 	}
 	// typedef types
 	if structType == nil {
@@ -384,7 +402,7 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 	// other case
 	for _, t := range originTypes {
 		if structType == nil {
-			structType = p.GetStruct(types.CleanCType(t))
+			structType = p.GetStruct(util.CleanCType(t))
 		} else {
 			break
 		}
@@ -396,7 +414,7 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 	}
 
 	if n.Name == "" {
-		n.Name = generateNameFieldDecl(types.GenerateCorrectType(n.Type))
+		n.Name = generateNameFieldDecl(util.GenerateCorrectType(n.Type))
 	}
 	rhs := n.Name
 	rhsType := "void *"

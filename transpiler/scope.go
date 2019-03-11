@@ -31,6 +31,14 @@ func transpileCompoundStmt(n *ast.CompoundStmt, p *program.Program) (
 			}
 		}
 
+		// add '_ = '
+		var addPrefix bool
+		if impl, ok := x.(*ast.ImplicitCastExpr); ok && len(impl.Children()) == 1 {
+			if _, ok := impl.Children()[0].(*ast.ArraySubscriptExpr); ok {
+				addPrefix = true
+			}
+		}
+
 		var result []goast.Stmt
 		switch {
 		case isVaList:
@@ -49,6 +57,7 @@ func transpileCompoundStmt(n *ast.CompoundStmt, p *program.Program) (
 					},
 				},
 			}
+
 		default:
 			// Other cases
 			if parent, ok := x.(*ast.ParenExpr); ok {
@@ -57,6 +66,14 @@ func transpileCompoundStmt(n *ast.CompoundStmt, p *program.Program) (
 			result, err = transpileToStmts(x, p)
 			if err != nil {
 				return nil, nil, nil, err
+			}
+			if addPrefix && len(result) == 1 {
+				// goast.Print(token.NewFileSet(), result[0])
+				result[0] = &goast.AssignStmt{
+					Lhs: []goast.Expr{goast.NewIdent("_")},
+					Tok: token.ASSIGN,
+					Rhs: []goast.Expr{result[0].(*goast.ExprStmt).X},
+				}
 			}
 		}
 

@@ -5,6 +5,10 @@ package transpiler
 import (
 	"bytes"
 	"fmt"
+	goast "go/ast"
+	"go/parser"
+	"go/printer"
+	"go/token"
 	"strconv"
 	"strings"
 
@@ -12,11 +16,6 @@ import (
 	"github.com/Konstantin8105/c4go/program"
 	"github.com/Konstantin8105/c4go/types"
 	"github.com/Konstantin8105/c4go/util"
-
-	goast "go/ast"
-	"go/parser"
-	"go/printer"
-	"go/token"
 )
 
 func getMemberName(firstChild ast.Node) (name string, ok bool) {
@@ -66,6 +65,9 @@ func getName(p *program.Program, firstChild ast.Node) (name string, err error) {
 		}
 		return n + "." + fc.Name, nil
 
+	case *ast.CallExpr:
+		return getName(p, fc.Children()[0])
+
 	case *ast.ParenExpr:
 		return getName(p, fc.Children()[0])
 
@@ -93,18 +95,6 @@ func getName(p *program.Program, firstChild ast.Node) (name string, err error) {
 	}
 
 	return "", fmt.Errorf("cannot getName for: %#v", firstChild)
-}
-
-func getNameOfFunctionFromCallExpr(p *program.Program, n *ast.CallExpr) (string, error) {
-	// The first child will always contain the name of the function being
-	// called.
-	firstChild, ok := n.Children()[0].(*ast.ImplicitCastExpr)
-	if !ok {
-		err := fmt.Errorf("unable to use CallExpr: %#v", n.Children()[0])
-		return "", err
-	}
-
-	return getName(p, firstChild.Children()[0])
 }
 
 // simplificationCallExprPrintf - minimaze Go code
@@ -200,9 +190,12 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		if err != nil {
 			err = fmt.Errorf("Error in transpileCallExpr : %v", err)
 		}
+		if resultType == "" {
+			p.AddMessage(p.GenerateWarningMessage(fmt.Errorf("exprType is empty"), n))
+		}
 	}()
 
-	functionName, err := getNameOfFunctionFromCallExpr(p, n)
+	functionName, err := getName(p, n)
 	if err != nil {
 		return nil, "", nil, nil, err
 	}
@@ -219,7 +212,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		functionName == "__builtin_va_end" {
 		// ignore function __builtin_va_start, __builtin_va_end
 		// see "Variadic functions"
-		return nil, "", nil, nil, nil
+		return nil, n.Type, nil, nil, nil
 	}
 
 	// function "malloc" from stdlib.h
@@ -341,6 +334,10 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 	// defined is handled below (we haven't seen the prototype yet).
 	functionDef := p.GetFunctionDefinition(functionName)
 
+	if functionDef != nil {
+		p.SetCalled(functionName)
+	}
+
 	if functionDef == nil {
 		// We do not have a prototype for the function, but we should not exit
 		// here. Instead we will create a mock definition for it so that this
@@ -354,9 +351,33 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			Name: functionName,
 		}
 		if len(n.Children()) > 0 {
-			if v, ok := n.Children()[0].(*ast.ImplicitCastExpr); ok &&
-				(types.IsFunction(v.Type) || types.IsTypedefFunction(p, v.Type)) {
-				t := v.Type
+
+			checker := func(t string) bool {
+				return util.IsFunction(t) || types.IsTypedefFunction(p, t)
+			}
+
+			var finder func(n ast.Node) string
+			finder = func(n ast.Node) (t string) {
+				switch v := n.(type) {
+				case *ast.ImplicitCastExpr:
+					t = v.Type
+				case *ast.ParenExpr:
+					t = v.Type
+				case *ast.CStyleCastExpr:
+					t = v.Type
+				default:
+					panic(fmt.Errorf("add type %T", n))
+				}
+				if checker(t) {
+					return t
+				}
+				if len(n.Children()) == 0 {
+					return ""
+				}
+				return finder(n.Children()[0])
+			}
+
+			if t := finder(n.Children()[0]); checker(t) {
 				if v, ok := p.TypedefType[t]; ok {
 					t = v
 				} else {
@@ -365,7 +386,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 						t = p.TypedefType[t]
 					}
 				}
-				prefix, fields, returns, err := types.ParseFunction(t)
+				prefix, _, fields, returns, err := util.ParseFunction(t)
 				if err != nil {
 					p.AddMessage(p.GenerateWarningMessage(fmt.Errorf(
 						"Cannot resolve function : %v", err), n))
@@ -409,9 +430,34 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 	args := []goast.Expr{}
 	argTypes := []string{}
 	i := 0
-
 	for _, arg := range n.Children()[1:] {
-		e, eType, newPre, newPost, err := transpileToExpr(arg, p, false)
+		if bin, ok := arg.(*ast.BinaryOperator); ok && bin.Operator == "=" {
+			// example :
+			// from :
+			// call(val = 43);
+			// to:
+			// call(val = 43,val);
+			var b ast.BinaryOperator
+			b.Type = bin.Type
+			b.Operator = ","
+			b.AddChild(arg)
+			b.AddChild(bin.Children()[0])
+			arg = &b
+		}
+		if cmp, ok := arg.(*ast.CompoundAssignOperator); ok {
+			// example :
+			// from :
+			// call(val += 43);
+			// to:
+			// call(val += 43,val);
+			var b ast.BinaryOperator
+			b.Type = cmp.Type
+			b.Operator = ","
+			b.AddChild(arg)
+			b.AddChild(cmp.Children()[0])
+			arg = &b
+		}
+		e, eType, newPre, newPost, err := atomicOperation(arg, p)
 		if err != nil {
 			err = fmt.Errorf("argument position is %d. %v", i, err)
 			p.AddMessage(p.GenerateWarningMessage(err, arg))
@@ -513,7 +559,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			}
 
 			if len(functionDef.ArgumentTypes) > i {
-				if !types.IsPointer(functionDef.ArgumentTypes[i]) {
+				if !util.IsPointer(functionDef.ArgumentTypes[i]) {
 					if strings.HasPrefix(functionDef.ArgumentTypes[i], "union ") {
 						a = &goast.CallExpr{
 							Fun: &goast.SelectorExpr{
@@ -543,7 +589,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			Rhs: []goast.Expr{realArgs[0]},
 		}
 		preStmts = append(preStmts, devNull)
-		return nil, "", preStmts, postStmts, nil
+		return nil, n.Type, preStmts, postStmts, nil
 	}
 
 	return util.NewCallExpr(functionName, realArgs...),

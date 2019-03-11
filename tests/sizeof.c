@@ -38,13 +38,16 @@ int b;
 
 int main()
 {
-    plan(39);
+    plan(54);
 
     diag("Integer types");
     check_sizes(char, 1);
     check_sizes(short, 2);
     check_sizes(int, 4);
     check_sizes(long, 8);
+    check_sizes(long int, 8);
+    check_sizes(long long, 8);
+    check_sizes(long long int, 8);
 
     diag("Floating-point types");
     is_eq(sizeof(float), 4);

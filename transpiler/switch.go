@@ -39,7 +39,8 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 
 	// The condition is the expression to be evaulated against each of the
 	// cases.
-	condition, conditionType, newPre, newPost, err := transpileToExpr(n.Children()[len(n.Children())-2], p, false)
+	condition, conditionType, newPre, newPost, err := atomicOperation(
+		n.Children()[len(n.Children())-2], p)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -58,27 +59,38 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 	// default: ...
 checkAgain:
 	for i := range body.Children() {
-		if v, ok := body.Children()[i].(*ast.CaseStmt); ok {
-			if vv, ok := v.Children()[len(v.Children())-1].(*ast.CaseStmt); ok {
-				if len(body.Children()) > i+1 {
-					body.ChildNodes = append(body.ChildNodes[:i+1], append([]ast.Node{vv}, body.ChildNodes[i+1:]...)...)
-				} else {
-					up := body.ChildNodes
-					body.ChildNodes = append(up, vv)
-				}
-				v.Children()[len(v.Children())-1] = &ast.CompoundStmt{}
-				goto checkAgain
+		found := false
+		if _, ok := body.Children()[i].(*ast.CaseStmt); ok {
+			found = true
+		}
+		if _, ok := body.Children()[i].(*ast.DefaultStmt); ok {
+			found = true
+		}
+
+		if !found {
+			continue
+		}
+
+		v := body.Children()[i]
+		if vv, ok := v.Children()[len(v.Children())-1].(*ast.CaseStmt); ok {
+			if len(body.Children()) > i+1 {
+				body.ChildNodes = append(body.ChildNodes[:i+1], append([]ast.Node{vv}, body.ChildNodes[i+1:]...)...)
+			} else {
+				up := body.ChildNodes
+				body.ChildNodes = append(up, vv)
 			}
-			if vv, ok := v.Children()[len(v.Children())-1].(*ast.DefaultStmt); ok {
-				if len(body.Children()) > i+1 {
-					body.ChildNodes = append(body.ChildNodes[:i+1], append([]ast.Node{vv}, body.ChildNodes[i+1:]...)...)
-				} else {
-					up := body.ChildNodes
-					body.ChildNodes = append(up, vv)
-				}
-				v.Children()[len(v.Children())-1] = &ast.CompoundStmt{}
-				goto checkAgain
+			v.Children()[len(v.Children())-1] = &ast.CompoundStmt{}
+			goto checkAgain
+		}
+		if vv, ok := v.Children()[len(v.Children())-1].(*ast.DefaultStmt); ok {
+			if len(body.Children()) > i+1 {
+				body.ChildNodes = append(body.ChildNodes[:i+1], append([]ast.Node{vv}, body.ChildNodes[i+1:]...)...)
+			} else {
+				up := body.ChildNodes
+				body.ChildNodes = append(up, vv)
 			}
+			v.Children()[len(v.Children())-1] = &ast.CompoundStmt{}
+			goto checkAgain
 		}
 	}
 
@@ -325,7 +337,12 @@ func appendCaseOrDefaultToNormalizedCases(cases []*goast.CaseClause,
 }
 
 func transpileCaseStmt(n *ast.CaseStmt, p *program.Program) (
-	*goast.CaseClause, []goast.Stmt, []goast.Stmt, error) {
+	_ *goast.CaseClause, _ []goast.Stmt, _ []goast.Stmt, err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("Cannot transpileCaseStmt: %v", err)
+		}
+	}()
 	preStmts := []goast.Stmt{}
 	postStmts := []goast.Stmt{}
 
@@ -337,7 +354,6 @@ func transpileCaseStmt(n *ast.CaseStmt, p *program.Program) (
 		c, err = types.CastExpr(p, c, cType, "int")
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 	}
-
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
 	stmts, err := transpileStmts(n.Children()[1:], p)

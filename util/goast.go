@@ -302,52 +302,78 @@ func ConvertFunctionNameFromCtoGo(name string) string {
 	return name
 }
 
+// GetUintptr - return uintptr. Example : uintptr(unsafe.Pointer(&expr))
+func GetUintptr(expr goast.Expr) goast.Expr {
+
+	if _, ok := expr.(*goast.SelectorExpr); ok {
+		expr = &goast.IndexExpr{
+			X:     expr,
+			Index: goast.NewIdent("0"),
+		}
+	}
+
+	if sl, ok := expr.(*goast.SliceExpr); ok {
+		if c, ok := sl.X.(*goast.CallExpr); ok {
+			if fin, ok := c.Fun.(*goast.Ident); ok && strings.Contains(fin.Name, "100000") {
+				if len(c.Args) == 1 {
+					if cc, ok := c.Args[0].(*goast.CallExpr); ok {
+						if fin, ok := cc.Fun.(*goast.Ident); ok && strings.Contains(fin.Name, "unsafe.Pointer") {
+							if len(cc.Args) == 1 {
+								if un, ok := cc.Args[0].(*goast.UnaryExpr); ok && un.Op == token.AND {
+									expr = un.X
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return NewCallExpr("uintptr",
+		NewCallExpr("unsafe.Pointer",
+			&goast.UnaryExpr{
+				Op: token.AND,
+				X:  expr,
+			},
+		),
+	)
+}
+
 // GetUintptrForSlice - return uintptr for slice
 // Example : uint64(uintptr(unsafe.Pointer((*(**int)(unsafe.Pointer(& ...slice... )))))))
-func GetUintptrForSlice(expr goast.Expr) (goast.Expr, string) {
-	returnType := "long"
+func GetUintptrForSlice(expr goast.Expr, sizeof int) (goast.Expr, string) {
+	returnType := "long long"
 
-	return &goast.CallExpr{
-		Fun:    goast.NewIdent("uint64"),
-		Lparen: 1,
-		Args: []goast.Expr{&goast.CallExpr{
-			Fun:    goast.NewIdent("uintptr"),
-			Lparen: 1,
-			Args: []goast.Expr{&goast.CallExpr{
-				Fun: &goast.SelectorExpr{
-					X:   goast.NewIdent("unsafe"),
-					Sel: goast.NewIdent("Pointer"),
-				},
-				Lparen: 1,
-				Args: []goast.Expr{&goast.StarExpr{
-					Star: 1,
-					X: &goast.CallExpr{
-						Fun: &goast.ParenExpr{
-							Lparen: 1,
+	return &goast.BinaryExpr{
+		X: NewCallExpr("int64", NewCallExpr("uintptr", NewCallExpr("unsafe.Pointer",
+			&goast.StarExpr{
+				Star: 1,
+				X: &goast.CallExpr{
+					Fun: &goast.ParenExpr{
+						Lparen: 1,
+						X: &goast.StarExpr{
+							Star: 1,
 							X: &goast.StarExpr{
 								Star: 1,
-								X: &goast.StarExpr{
-									Star: 1,
-									X:    goast.NewIdent("int"),
-								},
+								X:    goast.NewIdent("byte"),
 							},
 						},
-						Lparen: 1,
-						Args: []goast.Expr{&goast.CallExpr{
-							Fun: &goast.SelectorExpr{
-								X:   goast.NewIdent("unsafe"),
-								Sel: goast.NewIdent("Pointer"),
-							},
-							Lparen: 1,
-							Args: []goast.Expr{&goast.UnaryExpr{
-								Op: token.AND,
-								X:  expr,
-							}},
-						}},
 					},
-				}},
-			}},
-		}},
+					Lparen: 1,
+					Args: []goast.Expr{&goast.CallExpr{
+						Fun:    goast.NewIdent("unsafe.Pointer"),
+						Lparen: 1,
+						Args: []goast.Expr{&goast.UnaryExpr{
+							Op: token.AND,
+							X:  expr,
+						}},
+					}},
+				},
+			},
+		))),
+		Op: token.QUO,
+		Y:  NewCallExpr("int64", goast.NewIdent(fmt.Sprintf("%d", sizeof))),
 	}, returnType
 }
 
@@ -369,17 +395,13 @@ func CreateSliceFromReference(goType string, expr goast.Expr) goast.Expr {
 	//     p.AddImport("unsafe")
 	//
 	return &goast.SliceExpr{
-		X: NewCallExpr(
-			fmt.Sprintf("(*[100000000]%s)", goType),
-			&goast.CallExpr{
-				Fun: goast.NewIdent("unsafe.Pointer"),
-				Args: []goast.Expr{
-					&goast.UnaryExpr{
-						X:  expr,
-						Op: token.AND,
-					},
-				},
-			}),
+		X: NewCallExpr(fmt.Sprintf("(*[100000000]%s)", goType),
+			NewCallExpr("unsafe.Pointer",
+				&goast.UnaryExpr{
+					X:  expr,
+					Op: token.AND,
+				}),
+		),
 	}
 }
 
@@ -453,6 +475,82 @@ func NewAnonymousFunction(body, deferBody []goast.Stmt,
 			List: append(body, &goast.ReturnStmt{
 				Results: []goast.Expr{returnValue},
 			}),
+		},
+	}}
+}
+
+// ConvertToUnsigned - return convertion from signed to unsigned type
+// s := func() uint {
+//		var x int64
+//		x = -1
+//		if x < 0 {
+//			x += 5
+//		}
+//		return uint(x)
+//	}()
+func ConvertToUnsigned(expr goast.Expr, returnType string) goast.Expr {
+
+	varName := "c4go_temp_name"
+	// maxValue := "123123123"
+
+	if u, ok := expr.(*goast.CallExpr); ok {
+		if i, ok := u.Fun.(*goast.Ident); ok {
+			switch i.Name {
+			case "uint32", "uint", "uint64":
+				expr = u.Args[0]
+			}
+		}
+	}
+
+	return &goast.CallExpr{Fun: &goast.FuncLit{
+		Type: &goast.FuncType{
+			Results: &goast.FieldList{List: []*goast.Field{
+				{Type: goast.NewIdent(returnType)},
+			}},
+		},
+		Body: &goast.BlockStmt{
+			List: []goast.Stmt{
+				&goast.DeclStmt{
+					Decl: &goast.GenDecl{
+						Tok: token.VAR,
+						Specs: []goast.Spec{
+							&goast.ValueSpec{
+								Names: []*goast.Ident{goast.NewIdent(varName)},
+								Type:  goast.NewIdent("int64"),
+							},
+						},
+					},
+				},
+				&goast.AssignStmt{
+					Lhs: []goast.Expr{goast.NewIdent(varName)},
+					Tok: token.ASSIGN,
+					Rhs: []goast.Expr{expr},
+				},
+				// &goast.IfStmt{
+				// 	Cond: &goast.BinaryExpr{
+				// 		X:  goast.NewIdent(varName),
+				// 		Op: token.LSS, // <
+				// 		Y:  goast.NewIdent("0"),
+				// 	},
+				// 	Body: &goast.BlockStmt{
+				// 		List: []goast.Stmt{
+				// 			&goast.AssignStmt{
+				// 				Lhs: []goast.Expr{goast.NewIdent(varName)},
+				// 				Tok: token.ADD_ASSIGN, // +=
+				// 				Rhs: []goast.Expr{goast.NewIdent(maxValue)},
+				// 			},
+				// 		},
+				// 	},
+				// },
+				&goast.ReturnStmt{
+					Results: []goast.Expr{
+						&goast.CallExpr{
+							Fun:  goast.NewIdent(returnType),
+							Args: []goast.Expr{goast.NewIdent(varName)},
+						},
+					},
+				},
+			},
 		},
 	}}
 }

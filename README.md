@@ -77,7 +77,7 @@ int main()
 Go code of file `prime.go`:
 ```golang
 //
-//	Package main - transpiled by c4go
+//	Package - transpiled by c4go
 //
 //	If you have found any issues, please raise an issue at:
 //	https://github.com/Konstantin8105/c4go/
@@ -91,11 +91,11 @@ import "fmt"
 
 // main - transpiled function from  $GOPATH/src/github.com/Konstantin8105/c4go/examples/prime.c:3
 func main() {
-	var n int
-	var c int
+	var n int32
+	var c int32
 	fmt.Printf("Enter a number\n")
 	// get value
-	noarch.Scanf([]byte("%d\x00"), (*[100000000]int)(unsafe.Pointer(&n))[:])
+	noarch.Scanf([]byte("%d\x00"), (*[100000000]int32)(unsafe.Pointer(&n))[:])
 	noarch.Printf([]byte("The number is: %d\n\x00"), n)
 	if n == 2 {
 		// -------
@@ -116,6 +116,66 @@ func main() {
 }
 ```
 
+# Example with binding function
+
+Run:
+
+```
+c4go transpile 
+```
+
+
+```c
+#include <stdio.h>
+#include <math.h>
+
+int main()
+{
+	int n;
+	double param = 8.0, result;
+	result = frexp(param,&n);
+	printf("result = %5.2f\n", result);
+	printf("n      = %d\n"   , n     );
+	return 0;
+}
+```
+
+`c4go` add automatically C binding for function without implementation:
+```golang
+//
+//	Package - transpiled by c4go
+//
+//	If you have found any issues, please raise an issue at:
+//	https://github.com/Konstantin8105/c4go/
+//
+
+package main
+
+// #include </usr/include/x86_64-linux-gnu/bits/mathcalls.h>
+import "C"
+
+import "github.com/Konstantin8105/c4go/noarch"
+import "unsafe"
+
+// main - transpiled function from  $GOPATH/src/github.com/Konstantin8105/c4go/examples/math.c:4
+func main() {
+	var n int
+	var param float64 = 8
+	var result float64
+	result = frexp(param, (*[100000000]int)(unsafe.Pointer(&n))[:])
+	noarch.Printf([]byte("result = %5.2f\n\x00"), result)
+	noarch.Printf([]byte("n      = %d\n\x00"), n)
+	return
+}
+
+func frexp(arg0 float64, arg1 []int) float64 {
+	return float64(C.frexp(C.double(arg0), (*_Ctype_int)(unsafe.Pointer(&arg1[0]))))
+}
+```
+
+
+
+
 # C standard library implementation
 
 ```
@@ -125,17 +185,17 @@ func main() {
              float.h	          	    undefined
             iso646.h	          	    undefined
             limits.h	          	    undefined
-            locale.h	       0/3	           0%
-              math.h	     40/58	          69%
+            locale.h	       3/3	         100%
+              math.h	     38/58	        65.5%
             setjmp.h	       0/3	           0%
-            signal.h	       0/3	           0%
+            signal.h	       3/3	         100%
             stdarg.h	       4/4	         100%
             stddef.h	       2/6	        33.3%
-             stdio.h	     33/46	        71.7%
+             stdio.h	     35/46	        76.1%
             stdlib.h	     33/47	        70.2%
-            string.h	     12/24	          50%
-              time.h	      8/15	        53.3%
-             wchar.h	      0/68	           0%
+            string.h	     16/24	        66.7%
+              time.h	     14/15	        93.3%
+             wchar.h	      3/68	        4.41%
             wctype.h	      0/22	           0%
 ```
 

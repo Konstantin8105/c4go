@@ -42,7 +42,7 @@ func transpileConditionalOperator(n *ast.ConditionalOperator, p *program.Program
 	}()
 
 	// a - condition
-	a, aType, newPre, newPost, err := transpileToExpr(n.Children()[0], p, false)
+	a, aType, newPre, newPost, err := atomicOperation(n.Children()[0], p)
 	if err != nil {
 		return
 	}
@@ -59,12 +59,14 @@ func transpileConditionalOperator(n *ast.ConditionalOperator, p *program.Program
 
 	a, err = types.CastExpr(p, a, aType, "bool")
 	if err != nil {
+		err = fmt.Errorf("parameter `a` : %v", err)
 		return
 	}
 
 	// b - body
-	b, bType, newPre, newPost, err := transpileToExpr(n.Children()[1], p, false)
+	b, bType, newPre, newPost, err := atomicOperation(n.Children()[1], p)
 	if err != nil {
+		err = fmt.Errorf("parameter `b` : %v", err)
 		return
 	}
 	// Theorephly, length is must be zero
@@ -85,6 +87,7 @@ func transpileConditionalOperator(n *ast.ConditionalOperator, p *program.Program
 	// c - else body
 	c, cType, newPre, newPost, err := transpileToExpr(n.Children()[2], p, false)
 	if err != nil {
+		err = fmt.Errorf("parameter `c` : %v", err)
 		return nil, "", nil, nil, err
 	}
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
@@ -92,6 +95,7 @@ func transpileConditionalOperator(n *ast.ConditionalOperator, p *program.Program
 	if n.Type != "void" {
 		c, err = types.CastExpr(p, c, cType, n.Type)
 		if err != nil {
+			err = fmt.Errorf("parameter `c` : %v", err)
 			return
 		}
 		cType = n.Type
@@ -189,7 +193,7 @@ func transpileParenExpr(n *ast.ParenExpr, p *program.Program) (
 		return
 	}
 
-	if !types.IsFunction(exprType) &&
+	if !util.IsFunction(exprType) &&
 		exprType != "void" &&
 		exprType != "bool" &&
 		exprType != types.ToVoid {
@@ -200,7 +204,11 @@ func transpileParenExpr(n *ast.ParenExpr, p *program.Program) (
 		exprType = n.Type
 	}
 
-	r = &goast.ParenExpr{X: expr}
+	var ok bool
+	r, ok = expr.(*goast.ParenExpr)
+	if !ok {
+		r = &goast.ParenExpr{X: expr}
+	}
 
 	return
 }
@@ -245,7 +253,7 @@ func pointerArithmetic(p *program.Program,
 		err = fmt.Errorf("right type is not C integer type : '%s'", rightType)
 		return
 	}
-	if !types.IsPointer(leftType) {
+	if !util.IsPointer(leftType) {
 		err = fmt.Errorf("left type is not a pointer : '%s'", leftType)
 		return
 	}
@@ -303,9 +311,15 @@ func main(){
 	fset := token.NewFileSet() // positions are relative to fset
 	body := strings.Replace(source.String(), "&#43;", "+", -1)
 	body = strings.Replace(body, "&amp;", "&", -1)
+	body = strings.Replace(body, "&#34;", "\"", -1)
+	body = strings.Replace(body, "&#39;", "'", -1)
+	body = strings.Replace(body, "&gt;", ">", -1)
+	body = strings.Replace(body, "&lt;", "<", -1)
+	// TODO: add unicode convertor
 	f, err := parser.ParseFile(fset, "", body, 0)
 	if err != nil {
-		err = fmt.Errorf("Cannot parse file. err = %v", err)
+		body = strings.Replace(body, "\n", "", -1)
+		err = fmt.Errorf("Cannot parse file. err = %v. body = `%s`", err, body)
 		return
 	}
 
@@ -342,10 +356,11 @@ func transpileCompoundAssignOperator(
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
 	// Pointer arithmetic
-	if types.IsPointer(n.Type) &&
+	if util.IsPointer(n.Type) &&
 		(operator == token.ADD_ASSIGN || operator == token.SUB_ASSIGN) {
 		operator = convertToWithoutAssign(operator)
-		v, vType, newPre, newPost, err := pointerArithmetic(p, left, leftType, right, rightType, operator)
+		v, vType, newPre, newPost, err := pointerArithmetic(
+			p, left, leftType, right, rightType, operator)
 		if err != nil {
 			return nil, "", nil, nil, err
 		}
@@ -358,10 +373,23 @@ func transpileCompoundAssignOperator(
 		if err != nil {
 			return nil, "", nil, nil, err
 		}
-		v = &goast.BinaryExpr{
-			X:  goast.NewIdent(name),
-			Op: token.ASSIGN,
-			Y:  v,
+		found := false
+		if sl, ok := v.(*goast.SliceExpr); ok {
+			if ind, ok := sl.X.(*goast.IndexExpr); ok {
+				v = &goast.BinaryExpr{
+					X:  ind,
+					Op: token.ASSIGN,
+					Y:  v,
+				}
+				found = true
+			}
+		}
+		if !found {
+			v = &goast.BinaryExpr{
+				X:  goast.NewIdent(name),
+				Op: token.ASSIGN,
+				Y:  v,
+			}
 		}
 		return v, vType, preStmts, postStmts, nil
 	}
@@ -524,6 +552,9 @@ func atomicOperation(n ast.Node, p *program.Program) (
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("Cannot create atomicOperation |%T|. err = %v", n, err)
+		}
+		if exprType == "" {
+			p.AddMessage(p.GenerateWarningMessage(fmt.Errorf("exprType is empty"), n))
 		}
 	}()
 
@@ -690,7 +721,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		if vv, ok := v.Children()[0].(*ast.UnaryOperator); ok && vv.IsPrefix && vv.Operator == "*" {
 			if vvv, ok := vv.Children()[0].(*ast.ImplicitCastExpr); ok {
 				if vvvv, ok := vvv.Children()[0].(*ast.DeclRefExpr); ok {
-					if types.IsPointer(vvvv.Type) {
+					if util.IsPointer(vvvv.Type) {
 						varName := vvvv.Name
 
 						var exprResolveType string
@@ -771,7 +802,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 
 	case *ast.ParenExpr:
 		// ParenExpr 0x3c42468 <col:18, col:40> 'int'
-		return atomicOperation(v.Children()[0], p)
+		return
 
 	case *ast.ImplicitCastExpr:
 		if _, ok := v.Children()[0].(*ast.MemberExpr); ok {
@@ -779,6 +810,27 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		}
 		if _, ok := v.Children()[0].(*ast.IntegerLiteral); ok {
 			return
+		}
+		if v.Kind == "IntegralToPointer" {
+			return
+		}
+
+		// avoid problem :
+		//
+		// constant -1331 overflows uint32
+		//
+		// ImplicitCastExpr 'unsigned int' <IntegralCast>
+		// `-UnaryOperator 'int' prefix '~'
+		if t, ok := ast.GetTypeIfExist(v.Children()[0]); ok && !types.IsSigned(p, v.Type) && types.IsSigned(p, *t) {
+			if un, ok := n.Children()[0].(*ast.UnaryOperator); ok && un.Operator == "~" {
+				var goType string
+				goType, err = types.ResolveType(p, v.Type)
+				if err != nil {
+					return
+				}
+				expr = util.ConvertToUnsigned(expr, goType)
+				return
+			}
 		}
 
 		// for case : overflow char
@@ -849,7 +901,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		}
 
 		var cast bool = true
-		if types.IsFunction(exprType) {
+		if util.IsFunction(exprType) {
 			cast = false
 		}
 		if v.Kind == ast.ImplicitCastExprArrayToPointerDecay {
@@ -866,6 +918,11 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		return
 
 	case *ast.BinaryOperator:
+		defer func() {
+			if err != nil {
+				err = fmt.Errorf("binary operator : `%v`. %v", v.Operator, err)
+			}
+		}()
 		switch v.Operator {
 		case ",":
 			// BinaryOperator 0x35b95e8 <col:29, col:51> 'int' ','
@@ -921,6 +978,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			var exprResolveType string
 			exprResolveType, err = types.ResolveType(p, v.Type)
 			if err != nil {
+				err = fmt.Errorf("exprResolveType error for type `%v`: %v", v.Type, err)
 				return
 			}
 
@@ -986,7 +1044,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 
 			returnValue, _, _, _, _ := transpileToExpr(decl, p, false)
 			if d, ok := decl.(*ast.DeclRefExpr); ok &&
-				types.IsPointer(d.Type) && !types.IsPointer(v.Type) {
+				util.IsPointer(d.Type) && !util.IsPointer(v.Type) {
 				returnValue = &goast.IndexExpr{
 					X: returnValue,
 					Index: &goast.BasicLit{
@@ -1027,6 +1085,8 @@ func getDeclRefExprOrArraySub(n ast.Node) (ast.Node, bool) {
 	case *ast.UnaryOperator:
 		return getDeclRefExprOrArraySub(n.Children()[0])
 	case *ast.ArraySubscriptExpr:
+		return v, true
+	case *ast.MemberExpr:
 		return v, true
 	}
 	return nil, false

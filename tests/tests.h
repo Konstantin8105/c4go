@@ -1,6 +1,7 @@
 #include <string.h> // strlen()
-#include <math.h> // signbit()
-#include <stdio.h> // printf()
+#include <math.h>   // signbit()
+#include <stdio.h>  // printf()
+#include <wchar.h>  // wcscmp()
 
 // When comparing floating-point numbers this is how many significant bits will
 // be used to calculate the epsilon.
@@ -181,6 +182,20 @@ static int last_test_was_ok = 1;
 // contain multibyte characters (eg. UTF-16, etc).
 #define is_streq(actual, expected)                                 \
     if (strcmp(actual, expected) == 0)                             \
+    {                                                              \
+        pass("%s == %s", #actual, #expected)                       \
+    }                                                              \
+    else                                                           \
+    {                                                              \
+        fail("%s (%d b) == %s (%d b) # got \"%s\"",                \
+		#actual, strlen(#actual),                                  \
+        #expected, strlen(#expected),                              \
+		actual)                                                    \
+    }
+
+// Compare two C wchars
+#define is_wchareq(actual, expected)                               \
+    if (wcscmp(actual, expected) == 0)                             \
     {                                                              \
         pass("%s == %s", #actual, #expected)                       \
     }                                                              \

@@ -5,23 +5,31 @@ type StringLiteral struct {
 	Addr       Address
 	Pos        Position
 	Type       string
+	Type2      string
 	Value      string
+	Runes      bool
 	IsLvalue   bool
 	ChildNodes []Node
 }
 
 func parseStringLiteral(line string) *StringLiteral {
 	groups := groupsFromRegex(
-		`<(?P<position>.*)> '(?P<type>.*)' lvalue (?P<value>".*")`,
+		`<(?P<position>.*)>
+		 '(?P<type1>.*?)'(:'(?P<type2>.*)')?
+		(?P<lvalue> lvalue)?
+		 (?P<runes>L)?
+		(?P<value>".*")`,
 		line,
 	)
 
 	return &StringLiteral{
 		Addr:       ParseAddress(groups["address"]),
 		Pos:        NewPositionFromString(groups["position"]),
-		Type:       groups["type"],
+		Type:       groups["type1"],
+		Type2:      groups["type2"],
 		Value:      unquote(groups["value"]),
 		IsLvalue:   true,
+		Runes:      groups["runes"] != "",
 		ChildNodes: []Node{},
 	}
 }

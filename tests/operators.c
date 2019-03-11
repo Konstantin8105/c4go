@@ -42,12 +42,24 @@ double* return_null()
 
 int f_sizeof(int i)
 {
-	return i;
+    return i;
+}
+
+int reteg(int a)
+{
+    int arr[5];
+    for (int i = 0; i < 5; i++) {
+        arr[i] = i;
+    }
+    int* ptr;
+    ptr = &arr[1];
+    (void)(ptr);
+    return *ptr = a + 1;
 }
 
 int main()
 {
-    plan(110);
+    plan(115);
 
     int i = 10;
     signed char j = 1;
@@ -423,34 +435,70 @@ int main()
         is_eq(~ - 12, 11);
     }
 
-	diag("summ of bools");
-	{
-		int u = 0;
-		is_true(u == 0);
-		u += ( 1 != 0 );
-		is_true(u == 1);
-	}
+    diag("summ of bools");
+    {
+        int u = 0;
+        is_true(u == 0);
+        u += (1 != 0);
+        is_true(u == 1);
+    }
 
-	diag("summ of sizeof");
-	{
-		int x = sizeof(char);
-		is_true(x == 1);
-		x = x + sizeof(char);
-		is_true(x == 2);
-		x += sizeof(char) + sizeof(char);
-		is_true(x == 4);
-		x = sizeof(char) * 5 + sizeof(char);
-		is_true(x == 6);
-		x = f_sizeof(sizeof(int));
-		printf("%d\n",x);
-		int y[2];
-		y[0] = 2;
-		is_true(y[0] == 2);
-		is_true(y[sizeof(char)-1] == 2);
-		y[1] = 5;
-		is_true(y[1] == 5);
-		is_true(y[sizeof(char)] == 5);
-	}
+    diag("summ of sizeof");
+    {
+        int x = sizeof(char);
+        is_true(x == 1);
+        x = x + sizeof(char);
+        is_true(x == 2);
+        x += sizeof(char) + sizeof(char);
+        is_true(x == 4);
+        x = sizeof(char) * 5 + sizeof(char);
+        is_true(x == 6);
+        x = f_sizeof(sizeof(int));
+        printf("%d\n", x);
+        int y[2];
+        y[0] = 2;
+        is_true(y[0] == 2);
+        is_true(y[sizeof(char) - 1] == 2);
+        y[1] = 5;
+        is_true(y[1] == 5);
+        is_true(y[sizeof(char)] == 5);
+    }
+    diag("function with equal in return");
+    {
+        int a = 42;
+        a = reteg(a);
+        is_eq(a, 43);
+    }
+    diag("equal in function");
+    {
+        int a[2];
+        a[0] = -1;
+        a[1] = 42;
+        int b = a[0];
+        b += reteg((*a)++);
+        is_eq(a[1], 42);
+    }
+    diag("operation Not in if");
+    {
+        int addr = 0;
+        if (!addr++) {
+            is_eq(addr, 1);
+        }
+    }
+    diag("compare char pointer");
+    {
+        char* b = "happy new code";
+        char* c = b[3];
+        if (c < b) {
+            pass("ok");
+        }
+    }
+    diag("kilo.c example");
+    {
+        unsigned int flag = 100;
+        flag &= ~(2 | 256 | 1024);
+        is_eq(flag, 100);
+    }
 
     done_testing();
 }

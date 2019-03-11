@@ -12,7 +12,7 @@ unsigned long long ullmax = 18446744073709551615ull;
 
 int main()
 {
-    plan(491);
+    plan(493);
 
     double w1 = 100;
     double w2 = 2;
@@ -768,6 +768,17 @@ int main()
     is_eq(erf(1.0), 1 - erfc(1.0));
     is_eq(erff(1.0f), 1.0f - erfcf(1.0f));
     is_eq(erfl(1.0), 1 - erfcl(1.0));
+
+
+	diag("frexp");
+	{
+		int n;
+		double param = 8.0, result;
+		result = frexp(param,&n);
+		is_eq(result, 0.5000);
+		is_eq(n     , 4);
+	}
+
 
     done_testing();
 }

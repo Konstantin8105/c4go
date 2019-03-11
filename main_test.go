@@ -17,6 +17,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"testing"
 
@@ -83,24 +84,55 @@ func TestIntegrationScripts(t *testing.T) {
 			}
 
 			// slice of program results
-			progs := [2]func(string, string, string, []string) (string, error){
+			progs := [2]func(string, string, string, []string, []string) (string, error){
 				runC,
 				runGo,
 			}
 
 			var results [2]string
+			var clangFlags []string
+
+			// specific of binding
+			if strings.Contains(file, "bind.c") {
+				clangFlags = append(clangFlags, "-Itests/bind/bind.h")
+			}
+
+			var wg sync.WaitGroup
+			wg.Add(len(progs))
+			errProgs := make([]error, len(progs))
 
 			for i := 0; i < len(progs); i++ {
-				out, err := progs[i](file, subFolder, stdin, args)
-				if err != nil {
-					t.Fatalf("Error for function %d : %v", i, err)
-					return
+				go func(i int) {
+					defer func() {
+						wg.Done()
+					}()
+					var out string
+					out, errProgs[i] = progs[i](file, subFolder, stdin, clangFlags, args)
+					if errProgs[i] != nil {
+						errProgs[i] = fmt.Errorf("Error for function %d : %v", i, errProgs[i])
+						return
+					}
+					if out == "" {
+						errProgs[i] = fmt.Errorf("Result is empty for function %d: %v", i, errProgs[i])
+						return
+					}
+					results[i] = out
+				}(i)
+			}
+			wg.Wait()
+			{
+				fail := false
+				for i := range errProgs {
+					if errProgs[i] != nil {
+						fail = true
+					}
 				}
-				if out == "" {
-					t.Fatalf("Result is empty for function %d", i)
-					return
+				if fail {
+					for i := range errProgs {
+						t.Errorf("%d: %v", i, errProgs[i])
+					}
+					t.Fail()
 				}
-				results[i] = out
 			}
 
 			var (
@@ -176,7 +208,7 @@ func TestIntegrationScripts(t *testing.T) {
 }
 
 // compile and run C code
-func runC(file, subFolder, stdin string, args []string) (string, error) {
+func runC(file, subFolder, stdin string, clangFlags, args []string) (string, error) {
 	cFileName := "a.out"
 	cPath := subFolder + cFileName
 
@@ -184,9 +216,13 @@ func runC(file, subFolder, stdin string, args []string) (string, error) {
 		strings.HasSuffix(file, "cpp"))
 
 	// Compile C.
-	out, err := exec.Command(
-		compiler, append(compilerFlag, "-lm", "-o", cPath, file)...).
-		CombinedOutput()
+	var seq []string
+	seq = append(seq, compilerFlag...)
+	seq = append(seq, "-lm")
+	seq = append(seq, "-o", cPath)
+	seq = append(seq, clangFlags...)
+	seq = append(seq, file)
+	out, err := exec.Command(compiler, seq...).CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("Cannot compile : %v\n%v", err, string(out))
 	}
@@ -199,6 +235,9 @@ func runC(file, subFolder, stdin string, args []string) (string, error) {
 	cmd.Stdout = &cProgram.stdout
 	cmd.Stderr = &cProgram.stderr
 	err = cmd.Run()
+	if err != nil {
+		fmt.Fprintf(os.Stdout, "Error: %v\n", err)
+	}
 	cProgram.isZero = err == nil
 
 	// Check for special exit codes that signal that tests have failed.
@@ -215,27 +254,41 @@ func runC(file, subFolder, stdin string, args []string) (string, error) {
 	return cProgram.stdout.String() + cProgram.stderr.String(), nil
 }
 
-func (pr ProgramArgs) runGoTest(stdin string, args []string) (string, error) {
+func (pr ProgramArgs) runGoTest(stdin string, args []string) (_ string, err error) {
 
 	// Example : programArgs.outputFile = subFolder + "main.go"
 	subFolder := pr.outputFile[:len(pr.outputFile)-len("main.go")]
 
+	// get report
+	{
+		stdoutStderr, err := exec.Command("go", "build", "-o", subFolder+"app", pr.outputFile).CombinedOutput()
+		if err != nil {
+			return "1", fmt.Errorf("Go build error: %v %v", string(stdoutStderr), err)
+		}
+	}
+	goProgram := programOut{}
+	cmd := exec.Command(subFolder+"app", append([]string{"--"}, args...)...)
+	cmd.Stdin = strings.NewReader(stdin)
+	cmd.Stdout = &goProgram.stdout
+	cmd.Stderr = &goProgram.stderr
+	err = cmd.Run()
+	goProgram.isZero = err == nil
+
 	// Write main_test.go file
-	err := ioutil.WriteFile(subFolder+"main_test.go", []byte(`package main
+	err = ioutil.WriteFile(subFolder+"main_test.go", []byte(
+		`
+package main
+
 import (
-	"io/ioutil"
 	"os"
 	"testing"
-
-	"github.com/Konstantin8105/c4go/noarch"
 )
+
 func TestApp(t *testing.T) {
 	os.Chdir("../../..")
-	ioutil.WriteFile("testdata/stdin", []byte{'7'}, 0777)
-	stdin, _ := os.Open("testdata/stdin")
-	noarch.Stdin = noarch.NewFile(stdin)
 	main()
-}`), 0644)
+}
+`), 0644)
 	if err != nil {
 		return "", fmt.Errorf("Cannot write Go test file: %v", err)
 	}
@@ -261,13 +314,11 @@ func TestApp(t *testing.T) {
 	}
 	coverArgs = append(coverArgs, "--")
 
-	goProgram := programOut{}
-	cmd := exec.Command("go", append(coverArgs, args...)...)
-	cmd.Stdin = strings.NewReader(stdin)
-	cmd.Stdout = &goProgram.stdout
-	cmd.Stderr = &goProgram.stderr
-	err = cmd.Run()
-	goProgram.isZero = err == nil
+	// test report
+	{
+		// ignore error , because the `true` report see later
+		_, _ = exec.Command("go", append(coverArgs, args...)...).CombinedOutput()
+	}
 
 	// Combine outputs
 	goCombine := goProgram.stdout.String() + goProgram.stderr.String()
@@ -275,7 +326,7 @@ func TestApp(t *testing.T) {
 	// Logs
 	logs, err := getLogs(pr.outputFile)
 	if err != nil {
-		return "", fmt.Errorf("Cannot read logs: %v", err)
+		return "3", fmt.Errorf("Cannot read logs: %v", err)
 	}
 	for _, l := range logs {
 		fmt.Fprintln(os.Stdout, l)
@@ -330,11 +381,12 @@ func TestApp(t *testing.T) {
 }
 
 // compile and run Go code
-func runGo(file, subFolder, stdin string, args []string) (string, error) {
+func runGo(file, subFolder, stdin string, clangFlags, args []string) (string, error) {
 
 	programArgs := DefaultProgramArgs()
 	programArgs.inputFiles = []string{file}
 	programArgs.outputFile = subFolder + "main.go"
+	programArgs.clangFlags = clangFlags
 	if strings.HasSuffix(file, "cpp") {
 		programArgs.cppCode = true
 	}

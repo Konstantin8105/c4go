@@ -4,6 +4,8 @@ set -e
 
 echo "" > coverage.txt
 
+mkdir -p ./testdata/
+
 # Package list
 export PKGS=$(go list ./... | grep -v c4go/testdata | grep -v c4go/examples | grep -v c4go/tests | grep -v /vendor/ | tr '\n' ' ')
 
@@ -13,9 +15,8 @@ export PKGS_DELIM=$(echo "$PKGS" | tr ' ' ',')
 echo "PKGS       : $PKGS"
 echo "PKGS_DELIM : $PKGS_DELIM"
 
-mkdir ./testdata/
-
-go test -v -cover -tags integration     \
+go test -v -cover -timeout=30m          \
+				  -tags integration     \
 	              -coverpkg=$PKGS_DELIM \
 				  -coverprofile=./testdata/pkg.coverprofile $PKGS
 

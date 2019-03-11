@@ -137,10 +137,27 @@ typedef enum {
 enum { e1 = 1,
     e2 };
 
+enum {
+    MBchar = 'U',
+    Troffchar = 'C',
+    Number = 'N',
+    Install = 'i',
+    Lookup = 'l'
+};
+
+enum Bool { false = 0, true = 1 };
+typedef enum Bool bool;
+bool Bool_test()
+{
+	return true;
+}
+
 // main function
 int main()
 {
-    plan(43);
+    plan(48);
+
+    is_eq(MBchar, 'U');
 
     test_unary();
     test_parent();
@@ -206,6 +223,18 @@ int main()
     diag("sizeof");
     is_eq(sizeof(JUMP), sizeof(int));
     is_eq(sizeof(Jan), sizeof(int));
+
+	diag("Bool");
+	is_eq(true,1);
+	is_eq(false,0);
+	is_true(Bool_test() == true);
+	bool isglobal = true;
+	if (isglobal ) {
+		pass("ok");
+	}
+	if (! isglobal ) {
+		fail("ok");
+	}
 
     done_testing();
 }

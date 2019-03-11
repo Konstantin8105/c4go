@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Konstantin8105/c4go/program"
+	"github.com/Konstantin8105/c4go/util"
 )
 
 // SizeOf returns the number of bytes for a type. This the same as using the
@@ -17,7 +18,7 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 	}()
 
 	// Remove keywords that do not effect the size.
-	cType = CleanCType(cType)
+	cType = util.CleanCType(cType)
 	cType = strings.Replace(cType, "unsigned ", "", -1)
 	cType = strings.Replace(cType, "signed ", "", -1)
 
@@ -43,7 +44,7 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 	// A structure will be the sum of its parts.
 	var isStruct, ok bool
 	var s *program.Struct
-	cType = GenerateCorrectType(cType)
+	cType = util.GenerateCorrectType(cType)
 	if s, ok = p.Structs[cType]; ok {
 		isStruct = true
 	} else if s, ok = p.Structs["struct "+cType]; ok {
@@ -65,8 +66,9 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 			}
 
 			if err != nil {
-				err = fmt.Errorf("Cannot canculate `struct` sizeof for `%T`. %v",
-					t, err)
+				err = fmt.Errorf(
+					"Cannot calculate `struct` sizeof for `%T`. bytes = '%v'. %v",
+					t, bytes, err)
 				return 0, err
 			}
 			totalBytes += bytes
@@ -137,14 +139,48 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 	case "short":
 		return 2, nil
 
-	case "int", "float":
+	case "int", "float", "long int":
 		return 4, nil
 
-	case "long", "double":
+	case "long", "long long", "long long int", "double":
 		return 8, nil
 
-	case "long double", "long long", "long long int", "long long unsigned int":
+	case "long double", "long long unsigned int":
 		return 16, nil
+	}
+
+	// definition type
+	if t, ok := program.DefinitionType[cType]; ok && cType != t {
+		return SizeOf(p, t)
+	}
+
+	// resolved type
+	conv := func(t string) (bytes int, ok bool) {
+		switch t {
+		case "byte", "int8", "uint8":
+			return 1, true
+
+		case "int16", "uint16":
+			return 2, true
+
+		case "int32", "uint32", "rune", "float32":
+			return 4, true
+
+		case "int64", "uint64", "float64", "complex64", "uintptr", "int", "uint":
+			return 8, true
+
+		case "complex128":
+			return 16, true
+		}
+		return -1, false
+	}
+	if t, ok := conv(cType); ok {
+		return t, nil
+	}
+	if r, err := ResolveType(p, cType); err != nil {
+		if t, ok := conv(r); ok {
+			return t, nil
+		}
 	}
 
 	// Get size for array types like: `base_type [count]`

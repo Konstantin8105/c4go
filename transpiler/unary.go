@@ -28,11 +28,11 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 		return
 	}
 
-	if types.IsPointer(n.Type) {
+	if util.IsPointer(n.Type) {
 		switch operator {
-		case token.INC:
+		case token.INC: // ++
 			operator = token.ADD
-		case token.DEC:
+		case token.DEC: // --
 			operator = token.SUB
 		}
 		// remove paren - ()
@@ -77,10 +77,24 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 		if err != nil {
 			return
 		}
-		expr = &goast.BinaryExpr{
-			X:  goast.NewIdent(name),
-			Op: token.ASSIGN,
-			Y:  expr,
+
+		found := false
+		if sl, ok := expr.(*goast.SliceExpr); ok {
+			if ind, ok := sl.X.(*goast.IndexExpr); ok {
+				expr = &goast.BinaryExpr{
+					X:  ind,
+					Op: token.ASSIGN,
+					Y:  expr,
+				}
+				found = true
+			}
+		}
+		if !found {
+			expr = &goast.BinaryExpr{
+				X:  goast.NewIdent(name),
+				Op: token.ASSIGN,
+				Y:  expr,
+			}
 		}
 		return
 	}
@@ -130,7 +144,7 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 
 func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 	goast.Expr, string, []goast.Stmt, []goast.Stmt, error) {
-	e, eType, preStmts, postStmts, err := transpileToExpr(n.Children()[0], p, false)
+	e, eType, preStmts, postStmts, err := atomicOperation(n.Children()[0], p)
 	if err != nil {
 		return nil, "", nil, nil, err
 	}
@@ -138,7 +152,7 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 	// UnaryOperator <> 'int' prefix '!'
 	// `-ImplicitCastExpr <> 'int (*)(int, double)' <LValueToRValue>
 	//   `-DeclRefExpr <> 'int (*)(int, double)' lvalue Var 0x2be4e80 'T' 'int (*)(int, double)'
-	if types.IsFunction(eType) {
+	if util.IsFunction(eType) {
 		return &goast.BinaryExpr{
 			X:  e,
 			Op: token.EQL, // ==
@@ -202,8 +216,8 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 	// only if added "stdbool.h"
 	if p.IncludeHeaderIsExists("stdbool.h") {
 		if t == "_Bool" {
-			t = "int"
-			e = util.NewCallExpr("int", e)
+			t = "int32"
+			e = util.NewCallExpr("int32", e)
 		}
 	}
 
@@ -218,9 +232,13 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 
 // tranpileUnaryOperatorAmpersant - operator ampersant &
 // Example of AST:
-// `-ImplicitCastExpr 0x2d0fe38 <col:9, col:10> 'int *' <BitCast>
-//   `-UnaryOperator 0x2d0fe18 <col:9, col:10> 'int (*)[5]' prefix '&'
-//     `-DeclRefExpr 0x2d0fdc0 <col:10> 'int [5]' lvalue Var 0x2d0fb20 'arr' 'int [5]'
+//
+// UnaryOperator 'int (*)[5]' prefix '&'
+// `-DeclRefExpr 'int [5]' lvalue Var 0x2d0fb20 'arr' 'int [5]'
+//
+// UnaryOperator 'char **' prefix '&'
+// `-DeclRefExpr 'char *' lvalue Var 0x39b95f0 'line' 'char *'
+//
 func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 	expr goast.Expr, eType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
@@ -238,11 +256,11 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 		return
 	}
 
-	if types.IsFunction(eType) {
+	if util.IsFunction(eType) {
 		return
 	}
 
-	if types.IsLastArray(eType) {
+	if util.IsLastArray(eType) {
 		// In : eType = 'int [5]'
 		// Out: eType = 'int *'
 		f := strings.Index(eType, "[")
@@ -431,46 +449,19 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 
 	var typesParentBefore []string
 	for i := range parents {
-		switch v := parents[i].(type) {
-		case *ast.ParenExpr:
-			typesParentBefore = append(typesParentBefore, v.Type)
-			v.Type = "int"
-		case *ast.BinaryOperator:
-			typesParentBefore = append(typesParentBefore, v.Type)
-			v.Type = "int"
-		case *ast.ImplicitCastExpr:
-			typesParentBefore = append(typesParentBefore, v.Type)
-			v.Type = "int"
-		case *ast.CStyleCastExpr:
-			typesParentBefore = append(typesParentBefore, v.Type)
-			v.Type = "int"
-		case *ast.VAArgExpr:
-			typesParentBefore = append(typesParentBefore, v.Type)
-			v.Type = "int"
-		case *ast.MemberExpr:
-			typesParentBefore = append(typesParentBefore, v.Type)
-			v.Type = "int"
-		default:
-			panic(fmt.Errorf("Not support parent type %T in pointer seaching", v))
+		if t, ok := ast.GetTypeIfExist(parents[i]); ok {
+			typesParentBefore = append(typesParentBefore, *t)
+			*t = "int"
+		} else {
+			panic(fmt.Errorf("Not support parent type %T in pointer seaching", parents[i]))
 		}
 	}
 	defer func() {
 		for i := range parents {
-			switch v := parents[i].(type) {
-			case *ast.ParenExpr:
-				v.Type = typesParentBefore[i]
-			case *ast.BinaryOperator:
-				v.Type = typesParentBefore[i]
-			case *ast.ImplicitCastExpr:
-				v.Type = typesParentBefore[i]
-			case *ast.CStyleCastExpr:
-				v.Type = typesParentBefore[i]
-			case *ast.VAArgExpr:
-				v.Type = typesParentBefore[i]
-			case *ast.MemberExpr:
-				v.Type = typesParentBefore[i]
-			default:
-				panic(fmt.Errorf("Not support parent type %T in pointer seaching", v))
+			if t, ok := ast.GetTypeIfExist(parents[i]); ok {
+				*t = typesParentBefore[i]
+			} else {
+				panic(fmt.Errorf("Not support parent type %T in pointer seaching", parents[i]))
 			}
 		}
 	}()
@@ -592,51 +583,10 @@ func transpileUnaryExprOrTypeTraitExpr(n *ast.UnaryExprOrTypeTraitExpr, p *progr
 	// It will have children if the sizeof() is referencing a variable.
 	// Fortunately clang already has the type in the AST for us.
 	if len(n.Children()) > 0 {
-		var realFirstChild interface{}
-		t = ""
-
-		switch c := n.Children()[0].(type) {
-		case *ast.ParenExpr:
-			realFirstChild = c.Children()[0]
-		case *ast.DeclRefExpr:
-			t = c.Type
-		case *ast.MemberExpr:
-			t = c.Type
-		case *ast.ArraySubscriptExpr:
-			t = c.Type
-		default:
+		if typ, ok := ast.GetTypeIfExist(n.Children()[0]); ok {
+			t = *typ
+		} else {
 			panic(fmt.Sprintf("cannot find first child from: %#v", n.Children()[0]))
-		}
-
-		if t == "" {
-			switch ty := realFirstChild.(type) {
-			case *ast.DeclRefExpr:
-				t = ty.Type2
-
-			case *ast.ArraySubscriptExpr:
-				t = ty.Type
-
-			case *ast.MemberExpr:
-				t = ty.Type
-
-			case *ast.UnaryOperator:
-				t = ty.Type
-
-			case *ast.ParenExpr:
-				t = ty.Type
-
-			case *ast.CallExpr:
-				t = ty.Type
-
-			case *ast.CharacterLiteral:
-				t = ty.Type
-
-			case *ast.StringLiteral:
-				t = ty.Type
-
-			default:
-				panic(fmt.Sprintf("cannot do unary on: %#v", ty))
-			}
 		}
 	}
 
