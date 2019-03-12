@@ -1,6 +1,35 @@
 #include "tests.h"
 #include <string.h>
 
+#define START_TEST(t) \
+    diag(#t);         \
+    test_##t();
+
+void test_strtok()
+{
+	char str[] ="- This, a sample string.";
+	char * pch;
+	printf ("Splitting string \"%s\" into tokens:\n",str);
+	pch = strtok (str," ,.-");
+	while (pch != NULL)
+	{
+	  printf ("%s\n",pch);
+	  pch = strtok (NULL, " ,.-");
+	}
+}
+
+void test_strncmp()
+{
+	char str[][5] = { "R2D2" , "C3PO" , "R2A6" };
+	int n;
+	puts ("Looking for R2 astromech droids...");
+	for (n=0 ; n<3 ; n++) {
+		if (strncmp (str[n],"R2xx",2) == 0) {
+			printf ("found %s\n",str[n]);
+		}
+	}
+}
+
 int main()
 {
     plan(43);
@@ -191,6 +220,8 @@ int main()
         is_streq(s1, s2);
         is_true(s1 != s2);
     }
+	START_TEST(strtok);
+	START_TEST(strncmp);
     {
         diag("strerror");
         strerror(0);
