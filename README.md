@@ -89,7 +89,7 @@ import "unsafe"
 import "github.com/Konstantin8105/c4go/noarch"
 import "fmt"
 
-// main - transpiled function from  $GOPATH/src/github.com/Konstantin8105/c4go/examples/prime.c:3
+// main - transpiled function from  C4GO/examples/prime.c:3
 func main() {
 	var n int32
 	var c int32
@@ -151,24 +151,26 @@ int main()
 
 package main
 
-// #include </usr/include/x86_64-linux-gnu/bits/mathcalls.h>
+// #include </usr/include/math.h>
 import "C"
 
 import "github.com/Konstantin8105/c4go/noarch"
 import "unsafe"
 
-// main - transpiled function from  $GOPATH/src/github.com/Konstantin8105/c4go/examples/math.c:4
+// main - transpiled function from  C4GO/examples/math.c:4
 func main() {
-	var n int
+	var n int32
 	var param float64 = 8
 	var result float64
-	result = frexp(param, (*[100000000]int)(unsafe.Pointer(&n))[:])
+	result = frexp(param, (*[100000000]int32)(unsafe.Pointer(&n))[:])
 	noarch.Printf([]byte("result = %5.2f\n\x00"), result)
 	noarch.Printf([]byte("n      = %d\n\x00"), n)
 	return
 }
 
-func frexp(arg0 float64, arg1 []int) float64 {
+// Add c-binding for implemention function : `frexp`
+
+func frexp(arg0 float64, arg1 []int32) float64 {
 	return float64(C.frexp(C.double(arg0), (*_Ctype_int)(unsafe.Pointer(&arg1[0]))))
 }
 ```

@@ -59,7 +59,7 @@ func generateBinding(p *program.Program) (bindHeader, bindCode string) {
 		//		return float64(C.frexp(C.double(arg1), unsafe.Pointer(arg2)))
 		// }
 
-		mess := fmt.Sprintf("// Add c-binding for implementate function : `%s`", ds[i].Name)
+		mess := fmt.Sprintf("// Add c-binding for implemention function : `%s`", ds[i].Name)
 		bindCode += mess + "\n"
 
 		code, err := getBindFunction(p, ds[i])
