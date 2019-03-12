@@ -3,6 +3,7 @@ package noarch
 import (
 	"bytes"
 	"reflect"
+	"unsafe"
 )
 
 // Strlen returns the length of a string.
@@ -146,8 +147,8 @@ func Memset(ptr []byte, value byte, num uint32) []byte {
 
 // Memmove move block of memory
 func Memmove(ptr, source interface{}, num uint32) interface{} {
-	p1 := ptr.([]byte)
-	p2 := source.([]byte)
+	p1 := (*[100000]byte)(unsafe.Pointer(&ptr))
+	p2 := (*[100000]byte)(unsafe.Pointer(&source))
 	for i := int(num); i >= 0; i-- {
 		p1[i] = p2[i]
 	}

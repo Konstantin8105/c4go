@@ -174,6 +174,8 @@ func cgoTypes(goType string) (_ string, ok bool) {
 	return "", false
 }
 
+// TODO : add implementation
+//
 // Example:
 // func write(arg0 int32, arg1 interface{}, arg2 uint) noarch.SsizeT {
 //      a := arg1.([]byte)
