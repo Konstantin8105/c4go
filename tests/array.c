@@ -431,9 +431,110 @@ void test_function_array()
 	is_eq(y , 52);
 }
 
+void test_string_array()
+{
+	{
+		diag("point 0");
+		struct line_t{
+			struct line_t *last;
+			struct line_t *next;
+			int pos;
+		};
+		struct line_t l1;
+		l1.last = NULL;
+		l1.next = NULL;
+		struct line_t l2;
+		l2.last = &l1;
+		l2.next = NULL;
+		is_true(l2.last == &l1);
+	}
+	{
+		diag("point 1");
+		char ch_arr[3][10] = { "spike", "tom", "jerry" };
+		printf("%s\n",(*(ch_arr + 0) + 0) );
+		printf("%s\n",(*(ch_arr + 0) + 1) );
+		printf("%s\n",(*(ch_arr + 1) + 2) );
+	}
+// TODO
+// {
+// 	diag("point 2");
+// 	// see https://stackoverflow.com/questions/6812242/defining-and-iterating-through-array-of-strings-in-c
+// 	char *numbers[] = {"One", "Two", "Three", ""}, **n;
+// 	n = numbers;
+// 	while (*n != "") {
+// 	  printf ("%s\n",  *n++);
+// 	}
+// }
+	{
+		diag("point 3");
+		// see https://stackoverflow.com/questions/6812242/defining-and-iterating-through-array-of-strings-in-c
+		static const char* strings[]={"asdf","asdfasdf",0};
+		const char** ptr = strings;
+		while(*ptr != 0)
+		{
+			printf("%s \n", *ptr);
+			++ptr;
+		}
+	}
+	{
+		diag("point 4");
+		// see https://codereview.stackexchange.com/questions/71119/printing-the-contents-of-a-string-array-using-pointers
+		char *names[] = { "John", "Mona", "Lisa", "Frank" };
+		for (int i = 0; i < 4; ++i) {
+		    char *pos = names[i];
+		    while (*pos != '\0') {
+		        printf("%c", *(pos++));
+		    }
+		    printf("\n");
+		}
+	}
+	{
+		diag("point 5");
+		const char *names[] = { "John", "Mona", "Lisa", "Frank", NULL };
+		for (int i=0; names[i]; ++i) {
+		    const char *ch = names[i]; 
+		    while(*ch) {
+		        putchar(*ch++);
+		    }
+		    putchar('\n');
+		}
+	}
+	{
+		diag("point 6");
+		const char *names[] = { "John", "Mona", "Lisa", "Frank", NULL };
+		for(const char** pNames = names; *pNames; pNames++) {
+			const char *pName = *pNames;
+			while (*pName) {
+			    putchar(*pName++);
+			}
+			putchar('\n');
+		}
+	}
+	{
+		diag("point 7");
+		char *names[] = { "John", "Mona", "Lisa", "Frank" };
+		int elements = sizeof (names) / sizeof (names[0]);
+		for (int i = 0; i < elements; i++) {
+		    char *p = names[i];
+		    while (*p)
+		        putchar(*p++);
+		    putchar('\n');
+		}
+	}
+	{
+		diag("point 8");
+		int array[] = {5, 2, 9, 7, 15};
+		int i = 0;
+		array[i]++; printf("%d %d\n", i, array[i]);
+		array[i]++; printf("%d %d\n", i, array[i]);
+		array[i++]; printf("%d %d\n", i, array[i]);
+		array[i++]; printf("%d %d\n", i, array[i]);
+	}
+}
+
 int main()
 {
-    plan(173);
+    plan(174);
 
     test_parg_struct();
     START_TEST(struct_init);
@@ -944,6 +1045,7 @@ int main()
         ssize_t* l = &len;
         is_eq(*l, len);
     }
+	START_TEST(string_array);
 
     done_testing();
 }

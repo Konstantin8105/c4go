@@ -330,6 +330,12 @@ func transpileArraySubscriptExpr(n *ast.ArraySubscriptExpr, p *program.Program) 
 	}
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
+	//	index, err = types.CastExpr(p, index, indexType, "int")
+	//	if err != nil {
+	//		return nil, "", nil, nil, err
+	//	}
+	//	index = util.NewCallExpr("int", index)
+
 	return &goast.IndexExpr{
 		X:     expression,
 		Index: index,
