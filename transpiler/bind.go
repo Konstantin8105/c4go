@@ -195,7 +195,6 @@ func cgoTypes(goType string) (_ string, ok bool) {
 // }
 //
 //	func read(arg0 int32, arg1 interface{}, arg2 uint) noarch.SsizeT {
-//	   fmt.Printf(">>> %T\n", arg1)
 //	   switch v := arg1.(type) {
 //	   case []byte:
 //	   	a := v
@@ -218,7 +217,6 @@ func cgoTypes(goType string) (_ string, ok bool) {
 //	}
 //
 // 	func write(arg0 int32, arg1 interface{}, arg2 uint) noarch.SsizeT {
-// 	   fmt.Printf("<<< %T\n", arg1)
 // 	   switch v := arg1.(type) {
 // 	   case []byte: // []uint8:
 // 	   	a := v

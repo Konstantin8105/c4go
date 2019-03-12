@@ -309,7 +309,7 @@ func TestFrame3dd(t *testing.T) {
 	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if err != nil {
-		parseError(stderr.String())
+		parseError(t, stderr.String())
 		t.Errorf("cmd.Run() failed with %s : %v\n", err, stderr.String())
 	}
 }
@@ -442,12 +442,12 @@ func TestTriangle(t *testing.T) {
 	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if err != nil {
-		parseError(stderr.String())
+		parseError(t, stderr.String())
 		t.Logf("cmd.Run() failed with %s : %v\n", err, stderr.String())
 	}
 }
 
-func parseError(str string) {
+func parseError(t *testing.T, str string) {
 	// Example:
 	// testdata/git-source/triangle/main.go:2478:41: invalid operation: (operator & not defined on slice)
 	lines := strings.Split(str, "\n")
@@ -475,7 +475,7 @@ func parseError(str string) {
 			continue
 		}
 		if s, err := strconv.Atoi(line[index+1 : index+indexLine+1]); err == nil {
-			fmt.Printf("Code line %s: %s\n", line[index+1:index+indexLine+1], codes[filename][s-1])
+			t.Logf("Code line %s: %s\n", line[index+1:index+indexLine+1], codes[filename][s-1])
 		}
 	}
 }

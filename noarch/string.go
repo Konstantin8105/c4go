@@ -146,9 +146,19 @@ func Memset(ptr []byte, value byte, num uint32) []byte {
 }
 
 // Memmove move block of memory
-func Memmove(ptr, source interface{}, num uint32) interface{} {
-	p1 := (*[100000]byte)(unsafe.Pointer(&ptr))
-	p2 := (*[100000]byte)(unsafe.Pointer(&source))
+func Memmove(ptr, src interface{}, num uint32) interface{} {
+	// both types is []byte
+	if p, ok := ptr.([]byte); ok {
+		if s, ok := src.([]byte); ok {
+			for i := int(num); i >= 0; i-- {
+				p[i] = s[i]
+			}
+			return s
+		}
+	}
+
+	p1 := (*[100000]byte)(unsafe.Pointer(uintptr(unsafe.Pointer(&ptr))))
+	p2 := (*[100000]byte)(unsafe.Pointer(uintptr(unsafe.Pointer(&src))))
 	for i := int(num); i >= 0; i-- {
 		p1[i] = p2[i]
 	}
