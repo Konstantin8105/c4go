@@ -175,8 +175,66 @@ func frexp(arg0 float64, arg1 []int32) float64 {
 }
 ```
 
+# Example with C-pointers and C-arrays
 
+```c
+#include <stdio.h>
 
+void a(int *v1) { printf("a: %d\n",*v1); }
+
+void b(int v1[], int size) {
+	for (size-- ; size >= 0 ; size-- ) { printf("b: %d %d\n", size,  v1[size]); }
+}
+
+int main() {
+	int i1 = 42;
+	a(&i1);
+	b(&i1, 1);
+
+	int i2[] = {11,22};
+	a(i2);
+	b(i2,2);
+
+	return 0;
+}
+```
+
+```go
+//
+//	Package - transpiled by c4go
+//
+//	If you have found any issues, please raise an issue at:
+//	https://github.com/Konstantin8105/c4go/
+//
+
+package main
+
+import "unsafe"
+import "github.com/Konstantin8105/c4go/noarch"
+
+// a - transpiled function from  C4GO/examples/ap.c:3
+func a(v1 []int32) {
+	noarch.Printf([]byte("a: %d\n\x00"), v1[0])
+}
+
+// b - transpiled function from  C4GO/examples/ap.c:5
+func b(v1 []int32, size int32) {
+	for size -= 1; size >= 0; size-- {
+		noarch.Printf([]byte("b: %d %d\n\x00"), size, v1[size])
+	}
+}
+
+// main - transpiled function from  C4GO/examples/ap.c:9
+func main() {
+	var i1 int32 = 42
+	a((*[100000000]int32)(unsafe.Pointer(&i1))[:])
+	b((*[100000000]int32)(unsafe.Pointer(&i1))[:], 1)
+	var i2 []int32 = []int32{11, 22}
+	a(i2)
+	b(i2, 2)
+	return
+}
+```
 
 # C standard library implementation
 

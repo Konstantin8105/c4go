@@ -847,6 +847,10 @@ func TestExamples(t *testing.T) {
 			in:  "./examples/math.c",
 			out: "./testdata/math.go",
 		},
+		{
+			in:  "./examples/ap.c",
+			out: "./testdata/ap.go",
+		},
 	}
 
 	for i := range tcs {
