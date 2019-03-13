@@ -30,6 +30,38 @@ void test_strncmp()
 	}
 }
 
+void test_strcspn()
+{
+	char str[] = "fcba73";
+	char keys[] = "1234567890";
+	int i;
+	i = strcspn (str,keys);
+	printf ("The first number in str is at position %d.\n",i+1);
+}
+
+void test_strpbrk()
+{
+	char str[] = "This is a sample string";
+	char key[] = "aeiou";
+	char * pch;
+	printf ("Vowels in '%s': ",str);
+	pch = strpbrk (str, key);
+	while (pch != NULL) {
+		printf ("%c " , *pch);
+		pch = strpbrk (pch+1,key);
+	}
+	printf ("\n");
+}
+
+void test_strspn()
+{
+	int i;
+	char strtext[] = "129th";
+	char cset[] = "1234567890";
+	i = strspn (strtext,cset);
+	printf ("The initial number has %d digits.\n",i);
+}
+
 int main()
 {
     plan(43);
@@ -222,6 +254,9 @@ int main()
     }
 	START_TEST(strtok);
 	START_TEST(strncmp);
+	START_TEST(strcspn);
+	START_TEST(strpbrk);
+	START_TEST(strspn);
     {
         diag("strerror");
         strerror(0);
