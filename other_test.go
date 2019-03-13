@@ -6,10 +6,12 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -307,6 +309,7 @@ func TestFrame3dd(t *testing.T) {
 	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if err != nil {
+		parseError(t, stderr.String())
 		t.Errorf("cmd.Run() failed with %s : %v\n", err, stderr.String())
 	}
 }
@@ -323,25 +326,25 @@ func TestCsparse(t *testing.T) {
 
 		// download file
 		t.Logf("Download files")
-		err := DownloadFile(
+		err := downloadFile(
 			folder+"csparse.h",
 			"https://people.sc.fsu.edu/~jburkardt/c_src/csparse/csparse.h")
 		if err != nil {
 			t.Fatalf("Cannot download : %v", err)
 		}
-		err = DownloadFile(
+		err = downloadFile(
 			folder+"csparse.c",
 			"https://people.sc.fsu.edu/~jburkardt/c_src/csparse/csparse.c")
 		if err != nil {
 			t.Fatalf("cannot download : %v", err)
 		}
-		err = DownloadFile(
+		err = downloadFile(
 			folder+"csparse_demo1.c",
 			"https://people.sc.fsu.edu/~jburkardt/c_src/csparse/csparse_demo1.c")
 		if err != nil {
 			t.Fatalf("Cannot download : %v", err)
 		}
-		err = DownloadFile(
+		err = downloadFile(
 			folder+"kershaw.st",
 			"https://people.sc.fsu.edu/~jburkardt/c_src/csparse/kershaw.st")
 		if err != nil {
@@ -396,7 +399,7 @@ func TestTriangle(t *testing.T) {
 		// download file
 		t.Logf("Download file")
 		fileUrl := "http://www.netlib.org/voronoi/triangle.zip"
-		err := DownloadFile(folder+"triangle.zip", fileUrl)
+		err := downloadFile(folder+"triangle.zip", fileUrl)
 		if err != nil {
 			t.Logf("Cannot download : %v", err)
 			return
@@ -404,7 +407,7 @@ func TestTriangle(t *testing.T) {
 
 		// extract zip
 		t.Logf("Extract")
-		_, err = Unzip(folder+"triangle.zip", folder)
+		_, err = unzip(folder+"triangle.zip", folder)
 		if err != nil {
 			t.Fatalf("Cannot unzip : %v", err)
 		}
@@ -432,20 +435,54 @@ func TestTriangle(t *testing.T) {
 		t.Log(l)
 	}
 
-	cmd := exec.Command("go", "build", "-o", folder+"triangle",
+	cmd := exec.Command("go", "build", "-o", folder+"triangle", "-gcflags", "-e",
 		args.outputFile)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if err != nil {
+		parseError(t, stderr.String())
 		t.Logf("cmd.Run() failed with %s : %v\n", err, stderr.String())
 	}
 }
 
-// Unzip will decompress a zip archive, moving all files and folders
+func parseError(t *testing.T, str string) {
+	// Example:
+	// testdata/git-source/triangle/main.go:2478:41: invalid operation: (operator & not defined on slice)
+	lines := strings.Split(str, "\n")
+	codes := map[string][]string{}
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		index := strings.Index(line, ":")
+		if index < 0 {
+			continue
+		}
+		filename := line[:index]
+		if _, err := os.Stat(filename); os.IsNotExist(err) {
+			// filename does not exist
+			continue
+		}
+		if _, ok := codes[filename]; !ok {
+			dat, err := ioutil.ReadFile(filename)
+			if err != nil {
+				continue
+			}
+			codes[filename] = strings.Split(string(dat), "\n")
+		}
+		indexLine := strings.Index(line[index+1:], ":")
+		if indexLine < 0 {
+			continue
+		}
+		if s, err := strconv.Atoi(line[index+1 : index+indexLine+1]); err == nil {
+			t.Logf("Code line %s: %s\n", line[index+1:index+indexLine+1], codes[filename][s-1])
+		}
+	}
+}
+
+// unzip will decompress a zip archive, moving all files and folders
 // within the zip file (parameter 1) to an output directory (parameter 2).
-func Unzip(src string, dest string) ([]string, error) {
+func unzip(src string, dest string) ([]string, error) {
 
 	var filenames []string
 
@@ -504,9 +541,9 @@ func Unzip(src string, dest string) ([]string, error) {
 	return filenames, nil
 }
 
-// DownloadFile will download a url to a local file. It's efficient because it will
+// downloadFile will download a url to a local file. It's efficient because it will
 // write as it downloads and not load the whole file into memory.
-func DownloadFile(filepath string, url string) error {
+func downloadFile(filepath string, url string) error {
 
 	// Create the file
 	out, err := os.Create(filepath)

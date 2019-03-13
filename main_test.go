@@ -835,39 +835,61 @@ func TestCodeStyle(t *testing.T) {
 }
 
 func TestExamples(t *testing.T) {
-	var args = DefaultProgramArgs()
-	args.inputFiles = []string{"./examples/prime.c"}
-	args.outputFile = "./testdata/main.go"
-	args.packageName = "main"
-
-	// testing
-	err := Start(args)
-	if err != nil {
-		t.Errorf(err.Error())
+	tcs := []struct {
+		in  string
+		out string
+	}{
+		{
+			in:  "./examples/prime.c",
+			out: "./testdata/prime.go",
+		},
+		{
+			in:  "./examples/math.c",
+			out: "./testdata/math.go",
+		},
+		{
+			in:  "./examples/ap.c",
+			out: "./testdata/ap.go",
+		},
 	}
 
-	var file *os.File
-	file, err = os.Open(args.outputFile)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer file.Close()
+	for i := range tcs {
+		t.Run(tcs[i].in, func(t *testing.T) {
+			var args = DefaultProgramArgs()
+			args.inputFiles = []string{tcs[i].in}
+			args.outputFile = tcs[i].out
+			args.packageName = "main"
 
-	readme, err := ioutil.ReadFile("./README.md")
-	if err != nil {
-		t.Fatal(err)
-	}
+			// testing
+			err := Start(args)
+			if err != nil {
+				t.Errorf(err.Error())
+			}
 
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if !bytes.Contains(readme, []byte(line)) {
-			t.Errorf("Cannot found line : %s", line)
-		}
-	}
+			var file *os.File
+			file, err = os.Open(args.outputFile)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer file.Close()
 
-	if err := scanner.Err(); err != nil {
-		t.Fatal(err)
+			readme, err := ioutil.ReadFile("./README.md")
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			scanner := bufio.NewScanner(file)
+			for scanner.Scan() {
+				line := scanner.Text()
+				if !bytes.Contains(readme, []byte(line)) {
+					t.Errorf("Cannot found line : %s", line)
+				}
+			}
+
+			if err := scanner.Err(); err != nil {
+				t.Fatal(err)
+			}
+		})
 	}
 }
 
