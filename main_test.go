@@ -866,28 +866,31 @@ func TestExamples(t *testing.T) {
 				t.Errorf(err.Error())
 			}
 
-			var file *os.File
-			file, err = os.Open(args.outputFile)
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer file.Close()
-
-			readme, err := ioutil.ReadFile("./README.md")
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			scanner := bufio.NewScanner(file)
-			for scanner.Scan() {
-				line := scanner.Text()
-				if !bytes.Contains(readme, []byte(line)) {
-					t.Errorf("Cannot found line : %s", line)
+			filenames := append(args.inputFiles, args.outputFile)
+			for _, filename := range filenames {
+				var file *os.File
+				file, err = os.Open(filename)
+				if err != nil {
+					t.Fatal(err)
 				}
-			}
+				defer file.Close()
 
-			if err := scanner.Err(); err != nil {
-				t.Fatal(err)
+				readme, err := ioutil.ReadFile("./README.md")
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				scanner := bufio.NewScanner(file)
+				for scanner.Scan() {
+					line := scanner.Text()
+					if !bytes.Contains(readme, []byte(line)) {
+						t.Errorf("Cannot found line : %s", line)
+					}
+				}
+
+				if err := scanner.Err(); err != nil {
+					t.Fatal(err)
+				}
 			}
 		})
 	}
