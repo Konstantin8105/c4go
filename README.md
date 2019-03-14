@@ -118,12 +118,7 @@ func main() {
 
 # Example with binding function
 
-Run:
-
-```
-c4go transpile 
-```
-
+C:
 
 ```c
 #include <stdio.h>
@@ -180,58 +175,78 @@ func frexp(arg0 float64, arg1 []int32) float64 {
 ```c
 #include <stdio.h>
 
+// input argument - C-pointer
 void a(int *v1) { printf("a: %d\n",*v1); }
 
+// input argument - C-array
 void b(int v1[], int size) {
 	for (size-- ; size >= 0 ; size-- ) { printf("b: %d %d\n", size,  v1[size]); }
 }
 
 int main() {
-	int i1 = 42;
-	a(&i1);
-	b(&i1, 1);
+	// value
+	int i1 = 42; a(&i1); b(&i1, 1);
 
-	int i2[] = {11,22};
-	a(i2);
-	b(i2,2);
+	// C-array
+	int i2[] = {11,22} ; a(i2); b(i2,2);
+
+	// C-pointer from value
+	int *i3 = &i1      ; a(i3); b(i3,1);
+
+	// C-pointer from array
+	int *i4 = i2       ; a(i4); b(i4,2);
+
+	// C-pointer from array
+	int *i5 = i2[1]    ; a(i5); b(i5,1);
 
 	return 0;
 }
 ```
 
 ```go
-//
-//	Package - transpiled by c4go
-//
-//	If you have found any issues, please raise an issue at:
-//	https://github.com/Konstantin8105/c4go/
-//
-
 package main
 
 import "unsafe"
 import "github.com/Konstantin8105/c4go/noarch"
 
-// a - transpiled function from  C4GO/examples/ap.c:3
+// a - transpiled function from  C4GO/examples/ap.c:4
 func a(v1 []int32) {
+	// input argument - C-pointer
 	noarch.Printf([]byte("a: %d\n\x00"), v1[0])
 }
 
-// b - transpiled function from  C4GO/examples/ap.c:5
+// b - transpiled function from  C4GO/examples/ap.c:7
 func b(v1 []int32, size int32) {
-	for size -= 1; size >= 0; size-- {
-		noarch.Printf([]byte("b: %d %d\n\x00"), size, v1[size])
+	{
+		// input argument - C-array
+		for size -= 1; size >= 0; size-- {
+			noarch.Printf([]byte("b: %d %d\n\x00"), size, v1[size])
+		}
 	}
 }
 
-// main - transpiled function from  C4GO/examples/ap.c:9
+// main - transpiled function from  C4GO/examples/ap.c:11
 func main() {
 	var i1 int32 = 42
+	// value
 	a((*[100000000]int32)(unsafe.Pointer(&i1))[:])
 	b((*[100000000]int32)(unsafe.Pointer(&i1))[:], 1)
 	var i2 []int32 = []int32{11, 22}
+	// C-array
 	a(i2)
 	b(i2, 2)
+	var i3 []int32 = (*[100000000]int32)(unsafe.Pointer(&i1))[:]
+	// C-pointer from value
+	a(i3)
+	b(i3, 1)
+	var i4 []int32 = i2
+	// C-pointer from array
+	a(i4)
+	b(i4, 2)
+	var i5 []int32 = *((*[]int32)(unsafe.Pointer(uintptr(i2[1]))))
+	// C-pointer from array
+	a(i5)
+	b(i5, 1)
 	return
 }
 ```
