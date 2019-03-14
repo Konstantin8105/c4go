@@ -199,10 +199,10 @@ int main() {
 	// C-pointer from array
 	int *i5 = i2[1]    ; a(i5); b(i5,1);
 
-	// pointer ariphmetic
+	// pointer arithmetic
 	int *i6 = i5 + 1   ; a(i6); b(i6,1);
 	
-	// pointer ariphmetic
+	// pointer arithmetic
 	int *i7 = 1 + 0+ i5; a(i7); b(i7,1);
 
 	return 0;
