@@ -7,7 +7,7 @@
 
 package code_quality
 
-// if_1 - transpiled function from  $GOPATH/src/github.com/Konstantin8105/c4go/tests/code_quality/if.c:1
+// if_1 - transpiled function from  C4GO/tests/code_quality/if.c:1
 func if_1() {
 	var a int32 = 5
 	var b int32 = 2
