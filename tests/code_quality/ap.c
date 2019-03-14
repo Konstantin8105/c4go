@@ -28,7 +28,13 @@ int main() {
 	int *i6 = i5 + 1   ; a(i6); b(i6,1);
 	
 	// pointer arithmetic
-	int *i7 = 1 + 0+ i5; a(i7); b(i7,1);
+	int *i7 = 1 + (1 - 1) + 0*(100-2) + i5 + 0 - 0*0; a(i7); b(i7,1);
+
+	// pointer arithmetic
+	int *i8 = i5 + 1 + 0 ; a(i8); b(i8,1);
+
+	// pointer arithmetic
+	int i9[] = {*i3, *(i3+1)} ; a(i9); b(i9,1);
 
 	return 0;
 }

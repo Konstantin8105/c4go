@@ -52,9 +52,17 @@ func main() {
 	// pointer arithmetic
 	a(i6)
 	b(i6, 1)
-	var i7 []int32 = (*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:]
+	var i7 []int32 = (*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+(1-1)+0*(100-2))*unsafe.Sizeof(i5[0]))))[:][0])) + (uintptr)(0)*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+(1-1)+0*(100-2))*unsafe.Sizeof(i5[0]))))[:][0]))))[:][0])) - (uintptr)(0*0)*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+(1-1)+0*(100-2))*unsafe.Sizeof(i5[0]))))[:][0])) + (uintptr)(0)*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+(1-1)+0*(100-2))*unsafe.Sizeof(i5[0]))))[:][0]))))[:][0]))))[:]
 	// pointer arithmetic
 	a(i7)
 	b(i7, 1)
+	var i8 []int32 = (*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[1:][0])) + (uintptr)(0)*unsafe.Sizeof(i5[1:][0]))))[:]
+	// pointer arithmetic
+	a(i8)
+	b(i8, 1)
+	var i9 []int32 = []int32{i3[0], i3[(0 + 1)]}
+	// pointer arithmetic
+	a(i9)
+	b(i9, 1)
 	return
 }
