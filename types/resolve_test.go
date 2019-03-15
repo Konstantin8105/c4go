@@ -63,3 +63,35 @@ func TestResolveError(t *testing.T) {
 		})
 	}
 }
+
+func TestGetAmountArraySize(t *testing.T) {
+	tcs := []struct {
+		cType string
+		value int
+		e     bool
+	}{
+		{
+			cType: "char [40]",
+			value: 40,
+			e:     false,
+		},
+		{
+			cType: "char",
+			e:     true,
+		},
+		{
+			cType: "unsigned char",
+			e:     true,
+		},
+	}
+
+	for _, tc := range tcs {
+		s, err := types.GetAmountArraySize(tc.cType, nil)
+		if err != nil && tc.e {
+			continue
+		}
+		if s != tc.value {
+			t.Errorf("%d != %d", s, tc.value)
+		}
+	}
+}

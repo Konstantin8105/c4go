@@ -393,7 +393,12 @@ func IsTypedefFunction(p *program.Program, s string) bool {
 // Example :
 // In  : 'char [40]'
 // Out : 40
-func GetAmountArraySize(cType string) (size int, err error) {
+func GetAmountArraySize(cType string, p *program.Program) (size int, err error) {
+	if !IsCArray(cType, p) {
+		err = fmt.Errorf("Is not array: `%s`", cType)
+		return
+	}
+
 	reg := util.GetRegex("\\[(?P<size>\\d+)\\]")
 	match := reg.FindStringSubmatch(cType)
 
@@ -437,4 +442,55 @@ func GetBaseType(s string) string {
 			strings.Replace(s, "(*)", "*", -1)))
 	}
 	return s
+}
+
+// IsCArray - check C type is array
+func IsCArray(s string, p *program.Program) bool {
+	if len(s) == 0 {
+		return false
+	}
+	for i := len(s) - 1; i >= 0; i-- {
+		switch s[i] {
+		case ' ':
+			continue
+		case ']':
+			return true
+		default:
+			break
+		}
+	}
+	if p != nil {
+		if t, ok := p.TypedefType[s]; ok {
+			return IsCArray(t, p)
+		}
+	}
+	return false
+}
+
+// IsPointer - check type is pointer
+func IsPointer(s string, p *program.Program) bool {
+	return IsCPointer(s, p) || IsCArray(s, p)
+}
+
+//IsCPointer - check C type is pointer
+func IsCPointer(s string, p *program.Program) bool {
+	if len(s) == 0 {
+		return false
+	}
+	for i := len(s) - 1; i >= 0; i-- {
+		switch s[i] {
+		case ' ':
+			continue
+		case '*':
+			return true
+		default:
+			break
+		}
+	}
+	if p != nil {
+		if t, ok := p.TypedefType[s]; ok {
+			return IsCPointer(t, p)
+		}
+	}
+	return false
 }
