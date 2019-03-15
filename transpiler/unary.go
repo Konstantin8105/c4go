@@ -294,33 +294,37 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 // pointerParts - separate to pointer and value.
 // 	* change type for all nodes to `int`
 //
-// `-BinaryOperator <col:13, col:57> 'int *' '-'
-//   |-BinaryOperator <col:13, col:40> 'int *' '+'
-//   | |-BinaryOperator <col:13, col:32> 'int *' '+'
-//   | | |-BinaryOperator <col:13, col:21> 'int *' '+'
-//   | | | |-BinaryOperator <col:13, col:17> 'int' '+'
-//   | | | | |-IntegerLiteral <col:13> 'int' 1
-//   | | | | `-IntegerLiteral <col:17> 'int' 0
-//   | | | `-ImplicitCastExpr <col:21> 'int *' <LValueToRValue>
-//   | | |   `-DeclRefExpr <col:21> 'int *' lvalue Var 0x29a91a8 'i5' 'int *'
-//   | | `-BinaryOperator <col:26, col:32> 'long' '*'
-//   | |   |-ImplicitCastExpr <col:26> 'long' <IntegralCast>
-//   | |   | `-IntegerLiteral <col:26> 'int' 5
-//   | |   `-CallExpr <col:28, col:32> 'long'
-//   | |     `-ImplicitCastExpr <col:28> 'long (*)()' <FunctionToPointerDecay>
-//   | |       `-DeclRefExpr <col:28> 'long ()' Function 0x29a8470 'get' 'long ()'
-//   | `-CallExpr <col:36, col:40> 'long'
-//   |   `-ImplicitCastExpr <col:36> 'long (*)()' <FunctionToPointerDecay>
-//   |     `-DeclRefExpr <col:36> 'long ()' Function 0x29a8470 'get' 'long ()'
-//   `-BinaryOperator <col:44, col:57> 'long' '*'
-//     |-ImplicitCastExpr <col:44, col:51> 'long' <IntegralCast>
-//     | `-ParenExpr <col:44, col:51> 'int'
-//     |   `-BinaryOperator <col:45, col:50> 'int' '+'
-//     |     |-IntegerLiteral <col:45> 'int' 12
-//     |     `-IntegerLiteral <col:50> 'int' 3
-//     `-CallExpr <col:53, col:57> 'long'
-//       `-ImplicitCastExpr <col:53> 'long (*)()' <FunctionToPointerDecay>
-//         `-DeclRefExpr <col:53> 'long ()' Function 0x29a8470 'get' 'long ()'
+// BinaryOperator <col:13, col:57> 'int *' '-'
+// |-BinaryOperator <col:13, col:40> 'int *' '+'
+// | |-BinaryOperator <col:13, col:32> 'int *' '+'
+// | | |-BinaryOperator <col:13, col:21> 'int *' '+'
+// | | | |-BinaryOperator <col:13, col:17> 'int' '+'
+// | | | | |-IntegerLiteral <col:13> 'int' 1
+// | | | | `-IntegerLiteral <col:17> 'int' 0
+// | | | `-ImplicitCastExpr <col:21> 'int *' <LValueToRValue>
+// | | |   `-DeclRefExpr <col:21> 'int *' lvalue Var 0x29a91a8 'i5' 'int *'
+// | | `-BinaryOperator <col:26, col:32> 'long' '*'
+// | |   |-ImplicitCastExpr <col:26> 'long' <IntegralCast>
+// | |   | `-IntegerLiteral <col:26> 'int' 5
+// | |   `-CallExpr <col:28, col:32> 'long'
+// | |     `-ImplicitCastExpr <col:28> 'long (*)()' <FunctionToPointerDecay>
+// | |       `-DeclRefExpr <col:28> 'long ()' Function 0x29a8470 'get' 'long ()'
+// | `-CallExpr <col:36, col:40> 'long'
+// |   `-ImplicitCastExpr <col:36> 'long (*)()' <FunctionToPointerDecay>
+// |     `-DeclRefExpr <col:36> 'long ()' Function 0x29a8470 'get' 'long ()'
+// `-BinaryOperator <col:44, col:57> 'long' '*'
+//   |-ImplicitCastExpr <col:44, col:51> 'long' <IntegralCast>
+//   | `-ParenExpr <col:44, col:51> 'int'
+//   |   `-BinaryOperator <col:45, col:50> 'int' '+'
+//   |     |-IntegerLiteral <col:45> 'int' 12
+//   |     `-IntegerLiteral <col:50> 'int' 3
+//   `-CallExpr <col:53, col:57> 'long'
+//     `-ImplicitCastExpr <col:53> 'long (*)()' <FunctionToPointerDecay>
+//       `-DeclRefExpr <col:53> 'long ()' Function 0x29a8470 'get' 'long ()'
+//
+// ParenExpr <col:25, col:31> 'char *'
+// `-UnaryOperator <col:26, col:29> 'char *' postfix '++'
+//   `-DeclRefExpr <col:26> 'char *' lvalue Var 0x3c05ae8 'pos' 'char *'
 //
 func pointerParts(node *ast.Node, p *program.Program) (
 	pnt ast.Node, value ast.Node, back func(), err error) {
@@ -376,6 +380,7 @@ func pointerParts(node *ast.Node, p *program.Program) (
 		}
 		switch (*node).(type) {
 		case *ast.UnaryOperator:
+			baseTypes = baseTypes[:len(baseTypes)-1]
 			return
 		}
 		for i := range (*node).Children() {
@@ -440,16 +445,12 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 		return
 	}
 
-	fmt.Println("00000000000000000000000000000000000000000000000000000")
 	var pnt, value ast.Node
 	var back func()
 	pnt, value, back, err = pointerParts(&(n.Children()[0]), p)
 	if err != nil {
 		return
 	}
-	defer func() {
-		back()
-	}()
 
 	e, eType, newPre, newPost, err := atomicOperation(value, p)
 	if err != nil {
@@ -458,15 +459,14 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 	eType = n.Type
 
+	// return all types
+	back()
+
 	arr, arrType, newPre, newPost, err := atomicOperation(pnt, p)
 	if err != nil {
 		return
 	}
-	fmt.Println("arrType = ", arrType)
-	fmt.Println(ast.Atos(pnt))
-	goast.Print(token.NewFileSet(), arr)
-	fmt.Println(ast.Atos(value))
-	goast.Print(token.NewFileSet(), e)
+	_ = arrType
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
 	switch v := pnt.(type) {
