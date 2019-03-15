@@ -150,7 +150,7 @@ void test_init()
 
 int main()
 {
-    plan(44);
+    plan(42);
 
     START_TEST(unsafe_pnt);
     START_TEST(bool_to_int);
@@ -282,14 +282,6 @@ int main()
 	}
 
     char_overflow();
-
-	{
-		diag("compare strings");
-		char *ch1 = "a";
-		char *ch2 = "b";
-		is_true(ch1 == "a");
-		is_true(ch1 != ch2);
-	}
 
     done_testing();
 }
