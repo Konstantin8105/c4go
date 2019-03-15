@@ -49,7 +49,7 @@ func main() {
 	// C-pointer from array
 	a(i4)
 	b(i4, 2)
-	var i5 []int32 = *((*[]int32)(unsafe.Pointer(uintptr(i2[1]))))
+	var i5 []int32 = i2[1:]
 	// C-pointer from array
 	a(i5)
 	b(i5, 1)
