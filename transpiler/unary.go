@@ -58,6 +58,26 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 		return
 	}
 
+	if !types.IsCPointer(n.Type, p) && !types.IsCArray(n.Type, p) {
+
+		binaryOperator := "+="
+		if operator == token.DEC {
+			binaryOperator = "-="
+		}
+
+		return transpileBinaryOperator(&ast.BinaryOperator{
+			Type:     n.Type,
+			Operator: binaryOperator,
+			ChildNodes: []ast.Node{
+				n.ChildNodes[0],
+				&ast.IntegerLiteral{
+					Type:  "int",
+					Value: "1",
+				},
+			},
+		}, p, false)
+	}
+
 	return transpileBinaryOperator(&ast.BinaryOperator{
 		Type:     n.Type,
 		Operator: "=",

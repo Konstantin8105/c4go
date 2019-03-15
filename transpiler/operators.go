@@ -354,6 +354,14 @@ func transpileCompoundAssignOperator(
 		return
 	}
 
+	if !types.IsCPointer(n.Type, p) && !types.IsCArray(n.Type, p) {
+		return transpileBinaryOperator(&ast.BinaryOperator{
+			Type:       n.Type,
+			Operator:   n.Opcode,
+			ChildNodes: n.ChildNodes,
+		}, p, false)
+	}
+
 	return transpileBinaryOperator(&ast.BinaryOperator{
 		Type:     n.Type,
 		Operator: "=",
