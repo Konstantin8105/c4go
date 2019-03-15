@@ -294,6 +294,36 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 // transpilePointerArith - transpile pointer aripthmetic
 // Example of using:
 // *(t + 1) = ...
+//
+// VarDecl <col:2, col:57> col:7 used i11 'int *' cinit
+// `-BinaryOperator <col:13, col:57> 'int *' '-'
+//   |-BinaryOperator <col:13, col:40> 'int *' '+'
+//   | |-BinaryOperator <col:13, col:32> 'int *' '+'
+//   | | |-BinaryOperator <col:13, col:21> 'int *' '+'
+//   | | | |-BinaryOperator <col:13, col:17> 'int' '+'
+//   | | | | |-IntegerLiteral <col:13> 'int' 1
+//   | | | | `-IntegerLiteral <col:17> 'int' 0
+//   | | | `-ImplicitCastExpr <col:21> 'int *' <LValueToRValue>
+//   | | |   `-DeclRefExpr <col:21> 'int *' lvalue Var 0x29a91a8 'i5' 'int *'
+//   | | `-BinaryOperator <col:26, col:32> 'long' '*'
+//   | |   |-ImplicitCastExpr <col:26> 'long' <IntegralCast>
+//   | |   | `-IntegerLiteral <col:26> 'int' 5
+//   | |   `-CallExpr <col:28, col:32> 'long'
+//   | |     `-ImplicitCastExpr <col:28> 'long (*)()' <FunctionToPointerDecay>
+//   | |       `-DeclRefExpr <col:28> 'long ()' Function 0x29a8470 'get' 'long ()'
+//   | `-CallExpr <col:36, col:40> 'long'
+//   |   `-ImplicitCastExpr <col:36> 'long (*)()' <FunctionToPointerDecay>
+//   |     `-DeclRefExpr <col:36> 'long ()' Function 0x29a8470 'get' 'long ()'
+//   `-BinaryOperator <col:44, col:57> 'long' '*'
+//     |-ImplicitCastExpr <col:44, col:51> 'long' <IntegralCast>
+//     | `-ParenExpr <col:44, col:51> 'int'
+//     |   `-BinaryOperator <col:45, col:50> 'int' '+'
+//     |     |-IntegerLiteral <col:45> 'int' 12
+//     |     `-IntegerLiteral <col:50> 'int' 3
+//     `-CallExpr <col:53, col:57> 'long'
+//       `-ImplicitCastExpr <col:53> 'long (*)()' <FunctionToPointerDecay>
+//         `-DeclRefExpr <col:53> 'long ()' Function 0x29a8470 'get' 'long ()'
+//
 func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 	expr goast.Expr, eType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	// pointer - expression with name of array pointer
