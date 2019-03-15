@@ -598,10 +598,38 @@ void test_same_name()
 	diag("=================");
 }
 
+typedef int pointx;
+typedef struct  {
+    pointx x;
+    int y;
+} Point2;
+const Point2 p2[] = { { .y = 4, .x = 5 } };
+const Point2* getPoint(int index) {
+    return &(p2[index]);
+}
+typedef unsigned char pcre_uchar;
+typedef unsigned char pcre_uint8;
+typedef unsigned int pcre_uint32;
+typedef struct spu {
+    pcre_uchar *hvm;
+} spu;
+
+void pointer_arithm_in_struct() {
+    pcre_uchar str[] = "abcd";
+    spu s;
+    spu *ps = &s;
+    ps->hvm = &str[1];
+    is_true(ps->hvm == &str[1]);
+    ps->hvm += 2;
+    is_true(ps->hvm == &str[3]);
+
+}
+
 int main()
 {
-    plan(98);
+    plan(100);
 
+	pointer_arithm_in_struct();
     test_extern_vec();
     test_map_resize();
     struct_typ2();

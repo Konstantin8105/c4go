@@ -313,6 +313,36 @@ func GetUintptr(expr goast.Expr) goast.Expr {
 	}
 
 	if sl, ok := expr.(*goast.SliceExpr); ok {
+		// from :
+		//
+		// 88  0: *ast.SliceExpr {
+		// 89  .  X: *ast.Ident {
+		// 91  .  .  Name: "b"
+		// 93  .  }
+		// 95  .  Low: *ast.BasicLit { ... }
+		// 99  .  }
+		// 102  }
+		//
+		// to:
+		//
+		// 0  *ast.IndexExpr {
+		// 1  .  X: *ast.Ident {
+		// 3  .  .  Name: "b"
+		// 4  .  }
+		// 6  .  Index: *ast.BasicLit { ... }
+		// 12  }
+		if sl.Low == nil {
+			sl.Low = goast.NewIdent("0")
+		}
+		PanicIfNil(sl.X, "slice is nil")
+		PanicIfNil(sl.Low, "slice low is nil")
+		expr = &goast.IndexExpr{
+			X:     sl.X,
+			Index: sl.Low,
+		}
+	}
+
+	if sl, ok := expr.(*goast.SliceExpr); ok {
 		if c, ok := sl.X.(*goast.CallExpr); ok {
 			if fin, ok := c.Fun.(*goast.Ident); ok && strings.Contains(fin.Name, "100000") {
 				if len(c.Args) == 1 {

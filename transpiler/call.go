@@ -559,7 +559,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			}
 
 			if len(functionDef.ArgumentTypes) > i {
-				if !util.IsPointer(functionDef.ArgumentTypes[i]) {
+				if !types.IsPointer(functionDef.ArgumentTypes[i], p) {
 					if strings.HasPrefix(functionDef.ArgumentTypes[i], "union ") {
 						a = &goast.CallExpr{
 							Fun: &goast.SelectorExpr{
