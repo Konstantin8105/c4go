@@ -354,7 +354,7 @@ func transpileCompoundAssignOperator(
 		return
 	}
 
-	return atomicOperation(&ast.BinaryOperator{
+	return transpileBinaryOperator(&ast.BinaryOperator{
 		Type:     n.Type,
 		Operator: "=",
 		ChildNodes: []ast.Node{
@@ -365,7 +365,7 @@ func transpileCompoundAssignOperator(
 				ChildNodes: n.ChildNodes,
 			},
 		},
-	}, p)
+	}, p, false)
 }
 
 // getTokenForOperator returns the Go operator token for the provided C

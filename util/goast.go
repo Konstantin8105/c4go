@@ -331,6 +331,11 @@ func GetUintptr(expr goast.Expr) goast.Expr {
 		// 4  .  }
 		// 6  .  Index: *ast.BasicLit { ... }
 		// 12  }
+		if sl.Low == nil {
+			sl.Low = goast.NewIdent("0")
+		}
+		PanicIfNil(sl.X, "slice is nil")
+		PanicIfNil(sl.Low, "slice low is nil")
 		expr = &goast.IndexExpr{
 			X:     sl.X,
 			Index: sl.Low,

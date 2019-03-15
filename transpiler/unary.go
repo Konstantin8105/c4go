@@ -58,7 +58,7 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 		return
 	}
 
-	return atomicOperation(&ast.BinaryOperator{
+	return transpileBinaryOperator(&ast.BinaryOperator{
 		Type:     n.Type,
 		Operator: "=",
 		ChildNodes: []ast.Node{
@@ -72,7 +72,7 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 				}),
 			},
 		},
-	}, p)
+	}, p, false)
 }
 
 func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (

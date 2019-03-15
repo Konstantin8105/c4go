@@ -333,9 +333,18 @@ type nilWalker struct {
 }
 
 func (n nilWalker) Visit(node goast.Node) (w goast.Visitor) {
-	fmt.Fprintf(os.Stdout, "---------\n")
-	fmt.Fprintf(os.Stdout, "Node: %#v", node)
+	fmt.Fprintf(os.Stdout, "\n---------\n")
+	fmt.Fprintf(os.Stdout, "Node: %#v\n", node)
 	switch v := node.(type) {
+	case *goast.IndexExpr:
+		fmt.Println("IndexExpr")
+		fmt.Printf("\tx     = %#v\n", v.X)
+		fmt.Printf("\tindex = %#v\n", v.Index)
+		if v.Index == nil {
+			goast.Print(token.NewFileSet(), v)
+			panic("")
+		}
+
 	case *goast.GenDecl:
 		fmt.Fprintf(os.Stdout, "%#v\n", v)
 		for i, s := range v.Specs {
