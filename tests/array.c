@@ -562,16 +562,6 @@ void test_typedef_pointer()
 	}
 }
 
-void fillDeck(char *wSuit[], int size)
-{
-	for (int i = 0; i < size ; i++) {
-		// printf("%s\n", *(wSuit[i]));
-		// printf("%s\n", (*wSuit)[i]);
-		// printf("%s\n", *wSuit);
-		printf("%s\n", wSuit);
-	}
-}
-
 int main()
 {
     plan(184);
@@ -1109,11 +1099,6 @@ int main()
         is_eq(*l, len);
     }
 	START_TEST(string_array);
-	{
-		diag("cards");
-		char suit[4][10] = {"Hearts", "Diamonds", "Clubs", "Spades"};
-		fillDeck(suit, 4);
-	}
 
     done_testing();
 }
