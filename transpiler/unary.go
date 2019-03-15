@@ -393,9 +393,6 @@ func pointerParts(node *ast.Node, p *program.Program) (
 	}
 
 	if counter != 1 {
-		fmt.Println("counter: ", counter)
-		fmt.Println(ast.Atos(*node))
-		panic("")
 		err = fmt.Errorf("counter is not 1: %d", counter)
 		return
 	}
