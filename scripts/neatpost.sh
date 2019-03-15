@@ -17,6 +17,10 @@ go build
     if [ ! -d $TEMP_FOLDER ]; then
 		mkdir -p $TEMP_FOLDER
 		git clone $GIT_SOURCE $TEMP_FOLDER
+		sed -i.bak '92,98d' $TEMP_FOLDER/font.c
+		sed -i.bak '163,173d;158,161d;152,156d;145,150d;139,143d;133,137d;128,131d;123,127d;109,121d;90,107d;80,88d;58,78d;47,56d;42,45d;33,40d;8d' $TEMP_FOLDER/ps.c
+		sed -i.bak '219,232d;212,217d;204,210d;196,202d;179,194d;175,177d;131,173d' $TEMP_FOLDER/ps.c
+		sed -i.bak '238,262d;123,129d;116,121d;109,114d;102,107d;95,100d;82,93d;73,80d;65,71d;57,63d' $TEMP_FOLDER/ps.c
 	fi
 
 # remove go files from last transpilation
