@@ -346,15 +346,14 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	// To handle this, cast the shift count to a uint64.
 	if operator == token.SHL || // <<
 		operator == token.SHR || // >>
+		operator == token.SHL_ASSIGN || // <<=
+		operator == token.SHR_ASSIGN || // <<=
 		false {
 		right, err = types.CastExpr(p, right, rightType, "unsigned long long")
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 		if right == nil {
 			right = util.NewNil()
 		}
-
-		return util.NewBinaryExpr(left, operator, right, "uint64", exprIsStmt),
-			leftType, preStmts, postStmts, nil
 	}
 
 	// pointer arithmetic
