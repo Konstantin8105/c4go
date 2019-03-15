@@ -625,46 +625,11 @@ void pointer_arithm_in_struct() {
 
 }
 
-typedef struct pcre_extra {
-  unsigned long int flags;
-  void *study_data;
-  unsigned long int match_limit;
-  void *callout_data;
-  const unsigned char *tables;
-  unsigned long int match_limit_recursion;
-  unsigned char **mark;
-  void *executable_jit;
-} pcre_extra;
-typedef struct pcre_study_data {
-  pcre_uint32 size;
-  pcre_uint32 flags;
-  pcre_uint8 start_bits[32];
-  pcre_uint32 minlength;
-} pcre_study_data;
-
-void test_mark()
-{
-    pcre_extra *extra = NULL;
-    pcre_study_data *study;
-    pcre_uint8 *markptr;
-    void * allocated = malloc(sizeof(pcre_extra) + sizeof(pcre_study_data));
-    extra = (pcre_extra *)allocated;
-    study = (pcre_study_data *)((char *)extra + sizeof(pcre_extra));
-    memset(study->start_bits, 0, 32 * sizeof(pcre_uint8));
-    extra->study_data = study;
-    study->size = sizeof(pcre_study_data);
-    extra->mark = &markptr;
-    is_eq(study->size, 44);
-    for (int i=0; i<32; i++)
-        is_eq(study->start_bits[i], 0);
-}
-
 int main()
 {
-    plan(133);
+    plan(100);
 
 	pointer_arithm_in_struct();
-	test_mark();
     test_extern_vec();
     test_map_resize();
     struct_typ2();

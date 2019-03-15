@@ -28,78 +28,9 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 		return
 	}
 
-	if types.IsPointer(n.Type, p) {
-		switch operator {
-		case token.INC: // ++
-			operator = token.ADD
-		case token.DEC: // --
-			operator = token.SUB
-		}
-		// remove paren - ()
-	remove_paren:
-		if p, ok := n.Children()[0].(*ast.ParenExpr); ok {
-			n.Children()[0] = p.Children()[0]
-			goto remove_paren
-		}
-
-		var left goast.Expr
-		var leftType string
-		var newPre, newPost []goast.Stmt
-		left, leftType, newPre, newPost, err = transpileToExpr(
-			n.Children()[0], p, false)
-		if err != nil {
-			return
-		}
-
-		preStmts, postStmts = combinePreAndPostStmts(
-			preStmts, postStmts, newPre, newPost)
-
-		rightType := "int"
-		right := &goast.BasicLit{
-			Kind:  token.INT,
-			Value: "1",
-		}
-
-		expr, eType, newPre, newPost, err = pointerArithmetic(
-			p, left, leftType, right, rightType, operator)
-		if err != nil {
-			return
-		}
-		if expr == nil {
-			return nil, "", nil, nil, fmt.Errorf("Expr is nil")
-		}
-
-		preStmts, postStmts = combinePreAndPostStmts(
-			preStmts, postStmts, newPre, newPost)
-
-		var name string
-		name, err = getName(p, n.Children()[0])
-		if err != nil {
-			return
-		}
-
-		found := false
-		if sl, ok := expr.(*goast.SliceExpr); ok {
-			if ind, ok := sl.X.(*goast.IndexExpr); ok {
-				expr = &goast.BinaryExpr{
-					X:  ind,
-					Op: token.ASSIGN,
-					Y:  expr,
-				}
-				found = true
-			}
-		}
-		if !found {
-			expr = &goast.BinaryExpr{
-				X:  goast.NewIdent(name),
-				Op: token.ASSIGN,
-				Y:  expr,
-			}
-		}
-		return
-	}
-
-	if v, ok := n.Children()[0].(*ast.DeclRefExpr); ok {
+	// for values
+	if v, ok := n.Children()[0].(*ast.DeclRefExpr); ok &&
+		!types.IsCArray(v.Type, p) && !types.IsCPointer(v.Type, p) {
 		switch n.Operator {
 		case "++":
 			return &goast.BinaryExpr{
@@ -116,30 +47,32 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 		}
 	}
 
-	// Unfortunately we cannot use the Go increment operators because we are not
-	// providing any position information for tokens. This means that the ++/--
-	// would be placed before the expression and would be invalid in Go.
-	//
-	// Until it can be properly fixed (can we trick Go into to placing it after
-	// the expression with a magic position?) we will have to return a
-	// BinaryExpr with the same functionality.
-
-	binaryOperator := "+="
+	// for other case
+	op := "+"
 	if operator == token.DEC {
-		binaryOperator = "-="
+		op = "-"
 	}
 
-	return transpileBinaryOperator(&ast.BinaryOperator{
+	if len(n.ChildNodes) != 1 {
+		err = fmt.Errorf("not enought ChildNodes: %d", len(n.ChildNodes))
+		return
+	}
+
+	return atomicOperation(&ast.BinaryOperator{
 		Type:     n.Type,
-		Operator: binaryOperator,
+		Operator: "=",
 		ChildNodes: []ast.Node{
-			n.Children()[0], &ast.IntegerLiteral{
-				Type:       "int",
-				Value:      "1",
-				ChildNodes: []ast.Node{},
+			n.ChildNodes[0],
+			&ast.BinaryOperator{
+				Type:     n.Type,
+				Operator: op,
+				ChildNodes: append(n.ChildNodes, &ast.IntegerLiteral{
+					Type:  "int",
+					Value: "1",
+				}),
 			},
 		},
-	}, p, false)
+	}, p)
 }
 
 func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
