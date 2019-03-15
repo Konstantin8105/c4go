@@ -2,6 +2,8 @@
 
 set -e
 
+mkdir -p ./testdata/
+
 ./scripts/9wm.sh
 # ./scripts/cis71.sh
 ./scripts/ed.sh

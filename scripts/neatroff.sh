@@ -4,6 +4,8 @@ set -e
 
 go build
 
+mkdir -p ./testdata/
+
 # prepare variables
 	export C4GO_DIR=$GOPATH/src/github.com/Konstantin8105/c4go
 	export C4GO=$C4GO_DIR/c4go
