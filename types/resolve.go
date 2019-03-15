@@ -459,8 +459,10 @@ func IsCArray(s string, p *program.Program) bool {
 			break
 		}
 	}
-	if t, ok := p.TypedefType[s]; ok {
-		return IsCArray(t, p)
+	if p != nil {
+		if t, ok := p.TypedefType[s]; ok {
+			return IsCArray(t, p)
+		}
 	}
 	return false
 }
@@ -485,8 +487,10 @@ func IsCPointer(s string, p *program.Program) bool {
 			break
 		}
 	}
-	if t, ok := p.TypedefType[s]; ok {
-		return IsCPointer(t, p)
+	if p != nil {
+		if t, ok := p.TypedefType[s]; ok {
+			return IsCPointer(t, p)
+		}
 	}
 	return false
 }
