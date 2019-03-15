@@ -374,6 +374,7 @@ func pointerParts(node *ast.Node, p *program.Program) (
 			// type is not pointer
 			switch (*node).(type) {
 			case *ast.CallExpr,
+				*ast.MemberExpr,
 				*ast.CStyleCastExpr:
 				return
 			}
