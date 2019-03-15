@@ -46,7 +46,45 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		//   `-DeclRefExpr 'long' lvalue Var 0x30e91d8 'pnt' 'long'
 		if util.IsCPointer(n.Type) {
 			if t, ok := ast.GetTypeIfExist(n.Children()[0]); ok {
-				if types.IsCInteger(p, *t) {
+				//
+				// ImplicitCastExpr 'char *' <IntegralToPointer>
+				// `-ImplicitCastExpr 'char' <LValueToRValue>
+				//   `-ArraySubscriptExpr 'char' lvalue
+				//     |-ImplicitCastExpr 'char *' <LValueToRValue>
+				//     | `-DeclRefExpr 'char *' lvalue Var 0x413c8a8 'b' 'char *'
+				//     `-IntegerLiteral 'int' 3
+				//
+				// n.Type = 'char *'
+				// *t     = 'char'
+				//
+
+				if ind, ok := expr.(*goast.IndexExpr); ok {
+					// from :
+					//
+					// 0  *ast.IndexExpr {
+					// 1  .  X: *ast.Ident {
+					// 3  .  .  Name: "b"
+					// 4  .  }
+					// 6  .  Index: *ast.BasicLit { ... }
+					// 12  }
+					//
+					// to:
+					//
+					// 88  0: *ast.SliceExpr {
+					// 89  .  X: *ast.Ident {
+					// 91  .  .  Name: "b"
+					// 93  .  }
+					// 95  .  Low: *ast.BasicLit { ... }
+					// 99  .  }
+					// 102  }
+					expr = &goast.SliceExpr{
+						X:      ind.X,
+						Low:    ind.Index,
+						Slice3: false,
+					}
+					exprType = n.Type
+					return
+				} else if types.IsCInteger(p, *t) {
 					resolveType := n.Type
 					resolveType, err = types.ResolveType(p, n.Type)
 					if err != nil {
@@ -74,43 +112,6 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 						fmt.Errorf("used unsafe convert from integer to pointer"), n)
 					exprType = n.Type
 					return
-				} else {
-					//
-					// ImplicitCastExpr 'char *' <IntegralToPointer>
-					// `-ImplicitCastExpr 'char' <LValueToRValue>
-					//   `-ArraySubscriptExpr 'char' lvalue
-					//     |-ImplicitCastExpr 'char *' <LValueToRValue>
-					//     | `-DeclRefExpr 'char *' lvalue Var 0x413c8a8 'b' 'char *'
-					//     `-IntegerLiteral 'int' 3
-					//
-					// n.Type = 'char *'
-					// *t     = 'char'
-					//
-
-					if ind, ok := expr.(*goast.IndexExpr); ok {
-						// from :
-						//
-						// 0  *ast.IndexExpr {
-						// 1  .  X: *ast.Ident {
-						// 3  .  .  Name: "b"
-						// 4  .  }
-						// 6  .  Index: *ast.BasicLit { ... }
-						// 12  }
-						//
-						// to:
-						//
-						// 88  0: *ast.SliceExpr {
-						// 89  .  X: *ast.Ident {
-						// 91  .  .  Name: "b"
-						// 93  .  }
-						// 95  .  Low: *ast.BasicLit { ... }
-						// 99  .  }
-						// 102  }
-						expr = &goast.SliceExpr{
-							X:   ind.X,
-							Low: ind.Index,
-						}
-					}
 				}
 			}
 		}

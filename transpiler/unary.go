@@ -273,6 +273,34 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 		return
 	}
 
+	if ind, ok := expr.(*goast.IndexExpr); ok {
+		// from :
+		//
+		// 0  *ast.IndexExpr {
+		// 1  .  X: *ast.Ident {
+		// 3  .  .  Name: "b"
+		// 4  .  }
+		// 6  .  Index: *ast.BasicLit { ... }
+		// 12  }
+		//
+		// to:
+		//
+		// 88  0: *ast.SliceExpr {
+		// 89  .  X: *ast.Ident {
+		// 91  .  .  Name: "b"
+		// 93  .  }
+		// 95  .  Low: *ast.BasicLit { ... }
+		// 99  .  }
+		// 102  }
+		expr = &goast.SliceExpr{
+			X:      ind.X,
+			Low:    ind.Index,
+			Slice3: false,
+		}
+		eType = n.Type
+		return
+	}
+
 	// In : eType = 'int'
 	// Out: eType = 'int *'
 	// FIXME: This will need to use a real slice to reference the original
@@ -374,6 +402,8 @@ func pointerParts(node *ast.Node, p *program.Program) (
 			// type is not pointer
 			switch (*node).(type) {
 			case *ast.CallExpr,
+				*ast.ArraySubscriptExpr,
+				*ast.MemberExpr,
 				*ast.CStyleCastExpr:
 				return
 			}

@@ -250,29 +250,19 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			}
 
 			if !haveSub {
-				var def string
-				def, err = types.GetDereferenceType(n.Type)
-				if err != nil {
-					return
-				}
 
 				fakeUnary := &ast.UnaryOperator{
 					Type:     n.Type,
-					Operator: "&",
+					Operator: "*",
 					ChildNodes: []ast.Node{
-						&ast.UnaryOperator{
-							Type:     def,
-							Operator: "*",
-							ChildNodes: []ast.Node{
-								n,
-							},
-						},
+						n,
 					},
 				}
 
 				var newPre, newPost []goast.Stmt
 				expr, eType, newPre, newPost, err =
-					transpileUnaryOperator(fakeUnary, p)
+					transpilePointerArith(fakeUnary, p)
+				eType = n.Type
 
 				if err != nil {
 					return
@@ -282,6 +272,14 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 				}
 				preStmts, postStmts =
 					combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+
+				if ind, ok := expr.(*goast.IndexExpr); ok {
+					expr = &goast.SliceExpr{
+						X:      ind.X,
+						Low:    ind.Index,
+						Slice3: false,
+					}
+				}
 
 				return
 			}

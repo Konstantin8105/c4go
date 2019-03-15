@@ -534,7 +534,7 @@ void test_string_array()
 
 int main()
 {
-    plan(174);
+    plan(180);
 
     test_parg_struct();
     START_TEST(struct_init);
@@ -749,6 +749,27 @@ int main()
             is_eq(*ptr, arr[i]);
             i++;
         }
+    }
+    diag("Pointer to Pointer. 13");
+    {
+		struct temp_str{
+			double * qwe;
+		};
+		struct temp_str t;
+		double a[5] = { 10., 20., 30., 40., 50. };
+		t.qwe = &a[0];
+        double * ptr;
+        int i = 0;
+        for (ptr = &t.qwe[0]; i < 5; ptr++) {
+            is_eq(*ptr, t.qwe[i]);
+            i++;
+        }
+        for (ptr = t.qwe; i < 5; ptr++) {
+            is_eq(*ptr, t.qwe[i]);
+            i++;
+        }
+		ptr = 0 + t.qwe + 1;
+		is_eq(*ptr, t.qwe[1]);
     }
     diag("Operation += 1 for double array");
     {
