@@ -5,16 +5,6 @@
 //	https://github.com/Konstantin8105/c4go/
 //
 
-// Warning (*ast.UnaryOperator):  :0 :Cannot transpile UnaryOperator: err = Not acceptable : change counter is more then 1. found = *ast.DeclRefExpr,*ast.CallExpr
-// Warning (*ast.UnaryOperator):  :0 :Cannot transpile UnaryOperator: err = Cannot transpileUnaryOperatorAmpersant : err = Cannot transpileToExpr. err = Cannot transpile UnaryOperator: err = Not acceptable : change counter is more then 1. found = *ast.DeclRefExpr,*ast.CallExpr
-// Warning (*ast.BinaryOperator):  C4GO/tests/code_quality/ap.c:45 :Cannot transpile BinaryOperator with type 'int *' : result type = {}. Error: operator is `+`. Cannot transpile UnaryOperator: err = Cannot transpileUnaryOperatorAmpersant : err = Cannot transpileToExpr. err = Cannot transpile UnaryOperator: err = Not acceptable : change counter is more then 1. found = *ast.DeclRefExpr,*ast.CallExpr
-// Warning (*ast.VarDecl):  C4GO/tests/code_quality/ap.c:45 :Cannot getDefaultValueForVar : err = Cannot transpileToExpr. err = Cannot transpile BinaryOperator with type 'int *' : result type = {}. Error: operator is `+`. Cannot transpile UnaryOperator: err = Cannot transpileUnaryOperatorAmpersant : err = Cannot transpileToExpr. err = Cannot transpile UnaryOperator: err = Not acceptable : change counter is more then 1. found = *ast.DeclRefExpr,*ast.CallExpr
-// Warning (*ast.UnaryOperator):  :0 :Cannot transpile UnaryOperator: err = Not acceptable : change counter is more then 1. found = *ast.DeclRefExpr,*ast.CallExpr
-// Warning (*ast.UnaryOperator):  :0 :Cannot transpile UnaryOperator: err = Cannot transpileUnaryOperatorAmpersant : err = Cannot transpileToExpr. err = Cannot transpile UnaryOperator: err = Not acceptable : change counter is more then 1. found = *ast.DeclRefExpr,*ast.CallExpr
-// Warning (*ast.BinaryOperator):  C4GO/tests/code_quality/ap.c:48 :Cannot transpile BinaryOperator with type 'int *' : result type = {}. Error: operator is `+`. Cannot transpile UnaryOperator: err = Cannot transpileUnaryOperatorAmpersant : err = Cannot transpileToExpr. err = Cannot transpile UnaryOperator: err = Not acceptable : change counter is more then 1. found = *ast.DeclRefExpr,*ast.CallExpr
-// Warning (*ast.BinaryOperator):  C4GO/tests/code_quality/ap.c:48 :Cannot transpile BinaryOperator with type 'int *' : result type = {unknown52}. Error: operator is `-`. cannot atomic for left part. Cannot transpileToExpr. err = Cannot transpile BinaryOperator with type 'int *' : result type = {}. Error: operator is `+`. Cannot transpile UnaryOperator: err = Cannot transpileUnaryOperatorAmpersant : err = Cannot transpileToExpr. err = Cannot transpile UnaryOperator: err = Not acceptable : change counter is more then 1. found = *ast.DeclRefExpr,*ast.CallExpr
-// Warning (*ast.VarDecl):  C4GO/tests/code_quality/ap.c:48 :Cannot getDefaultValueForVar : err = Cannot transpileToExpr. err = Cannot transpile BinaryOperator with type 'int *' : result type = {unknown52}. Error: operator is `-`. cannot atomic for left part. Cannot transpileToExpr. err = Cannot transpile BinaryOperator with type 'int *' : result type = {}. Error: operator is `+`. Cannot transpile UnaryOperator: err = Cannot transpileUnaryOperatorAmpersant : err = Cannot transpileToExpr. err = Cannot transpile UnaryOperator: err = Not acceptable : change counter is more then 1. found = *ast.DeclRefExpr,*ast.CallExpr
-
 package code_quality
 
 import "unsafe"
@@ -63,7 +53,7 @@ func main() {
 	// C-pointer from array
 	a(i5)
 	b(i5, 1)
-	var i6 []int32 = (*[100000000]int32)(unsafe.Pointer(&i5[0+1]))[:]
+	var i6 []int32 = i5[1:]
 	// pointer arithmetic
 	a(i6)
 	b(i6, 1)
@@ -72,7 +62,7 @@ func main() {
 	// pointer arithmetic
 	a(i7)
 	b(i7, 1)
-	var i8 []int32 = (*[100000000]int32)(unsafe.Pointer(&i5[0+1+0]))[:]
+	var i8 []int32 = (*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[1:][0])) + (uintptr)(0)*unsafe.Sizeof(i5[1:][0]))))[:]
 	// pointer arithmetic
 	a(i8)
 	b(i8, 1)
@@ -80,20 +70,11 @@ func main() {
 	// pointer arithmetic
 	a(i9)
 	b(i9, 1)
-	var // Warning (*ast.UnaryOperator):  :0 :Cannot transpile UnaryOperator: err = Not acceptable : change counter is more then 1. found = *ast.DeclRefExpr,*ast.CallExpr
-	// Warning (*ast.UnaryOperator):  :0 :Cannot transpile UnaryOperator: err = Cannot transpileUnaryOperatorAmpersant : err = Cannot transpileToExpr. err = Cannot transpile UnaryOperator: err = Not acceptable : change counter is more then 1. found = *ast.DeclRefExpr,*ast.CallExpr
-	// Warning (*ast.BinaryOperator):  C4GO/tests/code_quality/ap.c:45 :Cannot transpile BinaryOperator with type 'int *' : result type = {}. Error: operator is `+`. Cannot transpile UnaryOperator: err = Cannot transpileUnaryOperatorAmpersant : err = Cannot transpileToExpr. err = Cannot transpile UnaryOperator: err = Not acceptable : change counter is more then 1. found = *ast.DeclRefExpr,*ast.CallExpr
-	// Warning (*ast.VarDecl):  C4GO/tests/code_quality/ap.c:45 :Cannot getDefaultValueForVar : err = Cannot transpileToExpr. err = Cannot transpile BinaryOperator with type 'int *' : result type = {}. Error: operator is `+`. Cannot transpile UnaryOperator: err = Cannot transpileUnaryOperatorAmpersant : err = Cannot transpileToExpr. err = Cannot transpile UnaryOperator: err = Not acceptable : change counter is more then 1. found = *ast.DeclRefExpr,*ast.CallExpr
-	i10 []int32
+	var i10 []int32 = (*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0])) + (uintptr)(5*get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0]))))[:][0])) + (uintptr)(get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0])) + (uintptr)(5*get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0]))))[:][0]))))[:][0])) + (uintptr)((12+3)*get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0])) + (uintptr)(5*get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0]))))[:][0])) + (uintptr)(get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0])) + (uintptr)(5*get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0]))))[:][0]))))[:][0]))))[:]
 	// pointer arithmetic
 	a(i10)
 	b(i10, 1)
-	var // Warning (*ast.UnaryOperator):  :0 :Cannot transpile UnaryOperator: err = Not acceptable : change counter is more then 1. found = *ast.DeclRefExpr,*ast.CallExpr
-	// Warning (*ast.UnaryOperator):  :0 :Cannot transpile UnaryOperator: err = Cannot transpileUnaryOperatorAmpersant : err = Cannot transpileToExpr. err = Cannot transpile UnaryOperator: err = Not acceptable : change counter is more then 1. found = *ast.DeclRefExpr,*ast.CallExpr
-	// Warning (*ast.BinaryOperator):  C4GO/tests/code_quality/ap.c:48 :Cannot transpile BinaryOperator with type 'int *' : result type = {}. Error: operator is `+`. Cannot transpile UnaryOperator: err = Cannot transpileUnaryOperatorAmpersant : err = Cannot transpileToExpr. err = Cannot transpile UnaryOperator: err = Not acceptable : change counter is more then 1. found = *ast.DeclRefExpr,*ast.CallExpr
-	// Warning (*ast.BinaryOperator):  C4GO/tests/code_quality/ap.c:48 :Cannot transpile BinaryOperator with type 'int *' : result type = {unknown52}. Error: operator is `-`. cannot atomic for left part. Cannot transpileToExpr. err = Cannot transpile BinaryOperator with type 'int *' : result type = {}. Error: operator is `+`. Cannot transpile UnaryOperator: err = Cannot transpileUnaryOperatorAmpersant : err = Cannot transpileToExpr. err = Cannot transpile UnaryOperator: err = Not acceptable : change counter is more then 1. found = *ast.DeclRefExpr,*ast.CallExpr
-	// Warning (*ast.VarDecl):  C4GO/tests/code_quality/ap.c:48 :Cannot getDefaultValueForVar : err = Cannot transpileToExpr. err = Cannot transpile BinaryOperator with type 'int *' : result type = {unknown52}. Error: operator is `-`. cannot atomic for left part. Cannot transpileToExpr. err = Cannot transpile BinaryOperator with type 'int *' : result type = {}. Error: operator is `+`. Cannot transpile UnaryOperator: err = Cannot transpileUnaryOperatorAmpersant : err = Cannot transpileToExpr. err = Cannot transpile UnaryOperator: err = Not acceptable : change counter is more then 1. found = *ast.DeclRefExpr,*ast.CallExpr
-	i11 []int32
+	var i11 []int32 = (*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0])) + (uintptr)(5*get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0]))))[:][0])) + (uintptr)(get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0])) + (uintptr)(5*get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0]))))[:][0]))))[:][0])) - (uintptr)((12+3)*get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0])) + (uintptr)(5*get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0]))))[:][0])) + (uintptr)(get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0])) + (uintptr)(5*get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0]))))[:][0]))))[:][0]))))[:]
 	// pointer arithmetic
 	a(i11)
 	b(i11, 1)

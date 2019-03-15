@@ -227,66 +227,66 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	}
 
 	// pointer arithmetic
-	if util.IsPointer(n.Type) {
-		if operator == token.ADD || // +
-			false {
-
-			// not acceptable binaryOperator with operator `-`
-			haveSub := false
-			{
-				var check func(ast.Node)
-				check = func(node ast.Node) {
-					if node == nil {
-						return
-					}
-					if bin, ok := node.(*ast.BinaryOperator); ok && bin.Operator == "-" {
-						haveSub = true
-					}
-					for i := range node.Children() {
-						check(node.Children()[i])
-					}
-				}
-				check(n)
-			}
-
-			if !haveSub {
-				var def string
-				def, err = types.GetDereferenceType(n.Type)
-				if err != nil {
-					return
-				}
-
-				fakeUnary := &ast.UnaryOperator{
-					Type:     n.Type,
-					Operator: "&",
-					ChildNodes: []ast.Node{
-						&ast.UnaryOperator{
-							Type:     def,
-							Operator: "*",
-							ChildNodes: []ast.Node{
-								n,
-							},
-						},
-					},
-				}
-
-				var newPre, newPost []goast.Stmt
-				expr, eType, newPre, newPost, err =
-					transpileUnaryOperator(fakeUnary, p)
-
-				if err != nil {
-					return
-				}
-				if expr == nil {
-					return nil, "", nil, nil, fmt.Errorf("Expr is nil")
-				}
-				preStmts, postStmts =
-					combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
-
-				return
-			}
-		}
-	}
+	//if util.IsPointer(n.Type) {
+	//	if operator == token.ADD || // +
+	//		false {
+	//
+	//		// not acceptable binaryOperator with operator `-`
+	//		haveSub := false
+	//		{
+	//			var check func(ast.Node)
+	//			check = func(node ast.Node) {
+	//				if node == nil {
+	//					return
+	//				}
+	//				if bin, ok := node.(*ast.BinaryOperator); ok && bin.Operator == "-" {
+	//					haveSub = true
+	//				}
+	//				for i := range node.Children() {
+	//					check(node.Children()[i])
+	//				}
+	//			}
+	//			check(n)
+	//		}
+	//
+	//		if !haveSub {
+	//			var def string
+	//			def, err = types.GetDereferenceType(n.Type)
+	//			if err != nil {
+	//				return
+	//			}
+	//
+	//			fakeUnary := &ast.UnaryOperator{
+	//				Type:     n.Type,
+	//				Operator: "&",
+	//				ChildNodes: []ast.Node{
+	//					&ast.UnaryOperator{
+	//						Type:     def,
+	//						Operator: "*",
+	//						ChildNodes: []ast.Node{
+	//							n,
+	//						},
+	//					},
+	//				},
+	//			}
+	//
+	//			var newPre, newPost []goast.Stmt
+	//			expr, eType, newPre, newPost, err =
+	//				transpileUnaryOperator(fakeUnary, p)
+	//
+	//			if err != nil {
+	//				return
+	//			}
+	//			if expr == nil {
+	//				return nil, "", nil, nil, fmt.Errorf("Expr is nil")
+	//			}
+	//			preStmts, postStmts =
+	//				combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+	//
+	//			return
+	//		}
+	//	}
+	//}
 
 	left, leftType, newPre, newPost, err := atomicOperation(n.Children()[0], p)
 	if err != nil {
