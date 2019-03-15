@@ -253,11 +253,11 @@ func main() {
 	// C-pointer from array
 	a(i5)
 	b(i5, 1)
-	var i6 []int32 = (*[100000000]int32)(unsafe.Pointer(&i5[0+1]))[:]
+	var i6 []int32 = i5[0+1:]
 	// pointer arithmetic
 	a(i6)
 	b(i6, 1)
-	var i7 []int32 = (*[100000000]int32)(unsafe.Pointer(&i5[1+0+0+0]))[:]
+	var i7 []int32 = i5[1+0+0+0:]
 	// pointer arithmetic
 	a(i7)
 	b(i7, 1)
