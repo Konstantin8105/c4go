@@ -365,8 +365,7 @@ func pointerParts(node *ast.Node, p *program.Program) (
 			switch (*node).(type) {
 			case *ast.BinaryOperator,
 				*ast.ImplicitCastExpr,
-				*ast.ParenExpr,
-				*ast.CStyleCastExpr:
+				*ast.ParenExpr:
 				// go deeper
 			default:
 				return true
@@ -374,7 +373,8 @@ func pointerParts(node *ast.Node, p *program.Program) (
 		} else {
 			// type is not pointer
 			switch (*node).(type) {
-			case *ast.CallExpr:
+			case *ast.CallExpr,
+				*ast.CStyleCastExpr:
 				return
 			}
 		}
