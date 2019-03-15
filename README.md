@@ -203,7 +203,7 @@ int main() {
 	int *i6 = i5 + 1   ; a(i6); b(i6,1);
 	
 	// pointer arithmetic
-	int *i7 = 1 + 0+ i5; a(i7); b(i7,1);
+	int *i7 = 1 + 0 + i5 + 0; a(i7); b(i7,1);
 
 	return 0;
 }
@@ -257,7 +257,7 @@ func main() {
 	// pointer arithmetic
 	a(i6)
 	b(i6, 1)
-	var i7 []int32 = (*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:]
+	var i7 []int32 = (*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0])) + (uintptr)(0)*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0]))))[:]
 	// pointer arithmetic
 	a(i7)
 	b(i7, 1)
