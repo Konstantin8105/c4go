@@ -8,6 +8,10 @@ void b(int v1[], int size) {
 	for (size-- ; size >= 0 ; size-- ) { printf("b: %d %d\n", size,  v1[size]); }
 }
 
+long get() {
+	return (long)(0);
+}
+
 int main() {
 	// value
 	int i1 = 42; a(&i1); b(&i1, 1);
@@ -29,6 +33,12 @@ int main() {
 	
 	// pointer arithmetic
 	int *i7 = 1 + 0+ i5; a(i7); b(i7,1);
+
+	// pointer arithmetic
+	int *i8 = 1 + 0 + i5 + 5*get() + get() + (12 + 3)*get(); a(i8); b(i8,1);
+
+	// pointer arithmetic
+	int *i9 = 1 + 0 + i5 + 5*get() + get() - (12 + 3)*get(); a(i9); b(i9,1);
 
 	return 0;
 }
