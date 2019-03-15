@@ -30,15 +30,22 @@ int main() {
 
 	// pointer arithmetic
 	int *i6 = i5 + 1   ; a(i6); b(i6,1);
+
+	// pointer arithmetic
+	int val = 2-2;
+	int *i7 = 1 + (1 - 1) + val + 0*(100-2) + i5 + 0 - 0*0; a(i7); b(i7,1);
 	
 	// pointer arithmetic
-	int *i7 = 1 + 0+ i5; a(i7); b(i7,1);
+	int *i8 = i5 + 1 + 0 ; a(i8); b(i8,1);
+	
+	// pointer arithmetic
+	int i9[] = {*i3, *(i3+1)} ; a(i9); b(i9,1);
 
 	// pointer arithmetic
-	int *i8 = 1 + 0 + i5 + 5*get() + get() + (12 + 3)*get(); a(i8); b(i8,1);
+	int *i10 = 1 + 0 + i5 + 5*get() + get() + (12 + 3)*get(); a(i10); b(i10,1);
 
 	// pointer arithmetic
-	int *i9 = 1 + 0 + i5 + 5*get() + get() - (12 + 3)*get(); a(i9); b(i9,1);
+	int *i11 = 1 + 0 + i5 + 5*get() + get() - (12 + 3)*get(); a(i11); b(i11,1);
 
 	return 0;
 }

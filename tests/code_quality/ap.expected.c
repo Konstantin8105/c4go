@@ -53,21 +53,30 @@ func main() {
 	// C-pointer from array
 	a(i5)
 	b(i5, 1)
-	var i6 []int32 = i5[1:]
+	var i6 []int32 = (*[100000000]int32)(unsafe.Pointer(&i5[0+1]))[:]
 	// pointer arithmetic
 	a(i6)
 	b(i6, 1)
-	var i7 []int32 = (*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:]
+	var val int32 = 2 - 2
+	var i7 []int32 = (*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+(1-1)+val+0*(100-2))*unsafe.Sizeof(i5[0]))))[:][0])) + (uintptr)(0)*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+(1-1)+val+0*(100-2))*unsafe.Sizeof(i5[0]))))[:][0]))))[:][0])) - (uintptr)(0*0)*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+(1-1)+val+0*(100-2))*unsafe.Sizeof(i5[0]))))[:][0])) + (uintptr)(0)*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+(1-1)+val+0*(100-2))*unsafe.Sizeof(i5[0]))))[:][0]))))[:][0]))))[:]
 	// pointer arithmetic
 	a(i7)
 	b(i7, 1)
-	var i8 []int32 = (*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0])) + (uintptr)(5*get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0]))))[:][0])) + (uintptr)(get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0])) + (uintptr)(5*get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0]))))[:][0]))))[:][0])) + (uintptr)((12+3)*get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0])) + (uintptr)(5*get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0]))))[:][0])) + (uintptr)(get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0])) + (uintptr)(5*get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0]))))[:][0]))))[:][0]))))[:]
+	var i8 []int32 = (*[100000000]int32)(unsafe.Pointer(&i5[0+1+0]))[:]
 	// pointer arithmetic
 	a(i8)
 	b(i8, 1)
-	var i9 []int32 = (*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0])) + (uintptr)(5*get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0]))))[:][0])) + (uintptr)(get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0])) + (uintptr)(5*get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0]))))[:][0]))))[:][0])) - (uintptr)((12+3)*get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0])) + (uintptr)(5*get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0]))))[:][0])) + (uintptr)(get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0])) + (uintptr)(5*get())*unsafe.Sizeof((*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) + (uintptr)(1+0)*unsafe.Sizeof(i5[0]))))[:][0]))))[:][0]))))[:][0]))))[:]
+	var i9 []int32 = []int32{i3[0], i3[(0 + 1)]}
 	// pointer arithmetic
 	a(i9)
 	b(i9, 1)
+	var i10 []int32 = (*[100000000]int32)(unsafe.Pointer(&i5[1+0+0+5*get()+get()+(12+3)*get()]))[:]
+	// pointer arithmetic
+	a(i10)
+	b(i10, 1)
+	var i11 []int32 = (*(*[1000000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&(*[100000000]int32)(unsafe.Pointer(&i5[1+0+0+5*get()+get()]))[:][0])) - (uintptr)((12+3)*get())*unsafe.Sizeof((*[100000000]int32)(unsafe.Pointer(&i5[1+0+0+5*get()+get()]))[:][0]))))[:]
+	// pointer arithmetic
+	a(i11)
+	b(i11, 1)
 	return
 }
