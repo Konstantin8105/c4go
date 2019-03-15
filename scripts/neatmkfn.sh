@@ -17,6 +17,7 @@ go build
     if [ ! -d $TEMP_FOLDER ]; then
 		mkdir -p $TEMP_FOLDER
 		git clone $GIT_SOURCE $TEMP_FOLDER
+		sed -i.bak '53,57d' $TEMP_FOLDER/otf.c
 	fi
 
 # remove go files from last transpilation
