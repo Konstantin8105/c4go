@@ -17,6 +17,7 @@ go build
     if [ ! -d $TEMP_FOLDER ]; then
 		mkdir -p $TEMP_FOLDER
 		git clone $GIT_SOURCE $TEMP_FOLDER
+		sed -i.bak -e '215,233d' /tmp/neateqn/eqn.c
 	fi
 
 # remove go files from last transpilation
