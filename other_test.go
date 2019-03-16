@@ -81,10 +81,6 @@ func TestBookSources(t *testing.T) {
 			gitSource: "https://github.com/glouw/tinn.git",
 		},
 		{
-			prefix:    "kilo editor",
-			gitSource: "https://github.com/antirez/kilo.git",
-		},
-		{
 			prefix:    "brainfuck",
 			gitSource: "https://github.com/kgabis/brainfuck-c.git",
 		},
@@ -659,5 +655,49 @@ func TestMultifiles(t *testing.T) {
 				}
 			})
 		}
+	}
+}
+
+func TestKiloEditor(t *testing.T) {
+
+	prefix := "kilo editor"
+	gitSource := "https://github.com/antirez/kilo.git"
+
+	fileList, err := getFileList(prefix, gitSource)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(fileList) != 1 {
+		t.Fatalf("fileList is not correct: %v", fileList)
+	}
+
+	if !strings.Contains(fileList[0], "kilo.c") {
+		t.Fatalf("filename is not correct: %v", fileList[0])
+	}
+
+	goFile := fileList[0] + ".go"
+	args := DefaultProgramArgs()
+	args.inputFiles = []string{fileList[0]}
+	args.outputFile = goFile
+	args.ast = false
+	args.verbose = false
+
+	if err := Start(args); err != nil {
+		t.Fatalf("Cannot transpile `%v`: %v", args, err)
+	}
+
+	cmd := exec.Command("go", "build",
+		"-o", goFile+".app",
+		"-gcflags", "-e",
+		goFile)
+	cmdOutput := &bytes.Buffer{}
+	cmdErr := &bytes.Buffer{}
+	cmd.Stdout = cmdOutput
+	cmd.Stderr = cmdErr
+	err = cmd.Run()
+	if err != nil {
+		t.Fatalf("Go build test `%v` : err = %v\n%v",
+			goFile, err, cmdErr.String())
 	}
 }
