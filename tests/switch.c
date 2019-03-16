@@ -364,9 +364,48 @@ void switch_stat()
 	}
 }
 
+void goto_label(int use_goto)
+{
+    for (;;) {
+        switch (0)
+        {
+        case 3:
+            continue;
+        case 0:
+            if (use_goto) {
+                for (;;)
+                    break;
+                goto LABEL;
+                fail("code should not reach here");
+            } else if (0){
+                goto LABELX;
+                goto LABELY;
+                fail("code should not reach here");
+            }
+            /* other comment */
+            // some comment
+            /* fallthrough */
+        LABELY:
+        case 4:
+        LABEL:
+            printf("x");
+        case 1:
+            pass(__func__);
+            break;
+        case 2:
+            ;
+        LABELX:
+        default:
+            fail("code should not reach here");
+            break;
+        }
+        break;
+    }
+}
+
 int main()
 {
-    plan(30);
+    plan(32);
 
     switch_char();
     switch_bool();
@@ -376,6 +415,8 @@ int main()
     match_default();
     fallthrough_several_cases_including_default();
     test_switch();
+    goto_label(1);
+    goto_label(0);
 
     // For each of the tests above there will be identical cases that use scopes
     // for the case statements.
