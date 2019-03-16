@@ -28,7 +28,7 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 		return
 	}
 
-	if util.IsPointer(n.Type) {
+	if types.IsPointer(n.Type, p) {
 		switch operator {
 		case token.INC: // ++
 			operator = token.ADD
@@ -389,7 +389,7 @@ func pointerParts(node *ast.Node, p *program.Program) (
 		baseTypes = append(baseTypes, t)
 
 		// find
-		if util.IsCPointer(*t) || util.IsCArray(*t) {
+		if types.IsCPointer(*t, p) || types.IsCArray(*t, p) {
 			switch (*node).(type) {
 			case *ast.BinaryOperator,
 				*ast.ImplicitCastExpr,

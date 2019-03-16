@@ -86,7 +86,7 @@ func TestGetAmountArraySize(t *testing.T) {
 	}
 
 	for _, tc := range tcs {
-		s, err := types.GetAmountArraySize(tc.cType)
+		s, err := types.GetAmountArraySize(tc.cType, nil)
 		if err != nil && tc.e {
 			continue
 		}

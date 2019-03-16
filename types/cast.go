@@ -263,7 +263,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return expr, nil
 	}
 
-	if util.IsPointer(cFromType) && cToType == "bool" {
+	if IsPointer(cFromType, p) && cToType == "bool" {
 		expr = &goast.BinaryExpr{
 			X:  expr,
 			Op: token.NEQ, // !=
@@ -465,7 +465,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return expr, nil
 	}
 
-	if IsCInteger(p, cFromType) && util.IsPointer(cToType) {
+	if IsCInteger(p, cFromType) && IsPointer(cToType, p) {
 		expr = goast.NewIdent("nil")
 		return expr, nil
 	}

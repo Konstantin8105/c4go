@@ -72,7 +72,7 @@ func transpileStringLiteral(p *program.Program, n *ast.StringLiteral, arrayToArr
 		}
 	}
 	var s int
-	s, err = types.GetAmountArraySize(n.Type)
+	s, err = types.GetAmountArraySize(n.Type, p)
 	if !arrayToArray {
 		if err != nil {
 			expr = util.NewCallExpr("[]byte",

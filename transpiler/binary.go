@@ -227,7 +227,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	}
 
 	// pointer arithmetic
-	if util.IsPointer(n.Type) {
+	if types.IsPointer(n.Type, p) {
 		if operator == token.ADD || // +
 			false {
 
@@ -299,7 +299,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 		err = fmt.Errorf("cannot atomic for right part. %v", err)
 		return nil, "unknown53", nil, nil, err
 	}
-	if util.IsPointer(leftType) && util.IsPointer(rightType) && operator == token.SUB {
+	if types.IsPointer(leftType, p) && types.IsPointer(rightType, p) && operator == token.SUB {
 		p.AddImport("unsafe")
 		sizeof, err := types.SizeOf(p, types.GetBaseType(leftType))
 		if err != nil {
@@ -358,11 +358,11 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	}
 
 	// pointer arithmetic
-	if util.IsPointer(n.Type) {
+	if types.IsPointer(n.Type, p) {
 		if operator == token.ADD || // +
 			operator == token.SUB || // -
 			false {
-			if util.IsPointer(leftType) {
+			if types.IsPointer(leftType, p) {
 				expr, eType, newPre, newPost, err =
 					pointerArithmetic(p, left, leftType, right, rightType, operator)
 			} else {
@@ -444,7 +444,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			// | `-DeclRefExpr 'char *' lvalue Var 0x26ba988 'c' 'char *'
 			// `-ImplicitCastExpr 'char *' <LValueToRValue>
 			//   `-DeclRefExpr 'char *' lvalue Var 0x26ba8a8 'b' 'char *'
-			if util.IsCPointer(leftType) || util.IsCArray(leftType) {
+			if types.IsCPointer(leftType, p) || types.IsCArray(leftType, p) {
 				left = util.GetUintptr(left)
 				right = util.GetUintptr(right)
 				p.AddImport("unsafe")

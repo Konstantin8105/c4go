@@ -44,7 +44,7 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		// ImplicitCastExpr 'double *' <IntegralToPointer>
 		// `-ImplicitCastExpr 'long' <LValueToRValue>
 		//   `-DeclRefExpr 'long' lvalue Var 0x30e91d8 'pnt' 'long'
-		if util.IsCPointer(n.Type) {
+		if types.IsCPointer(n.Type, p) {
 			if t, ok := ast.GetTypeIfExist(n.Children()[0]); ok {
 				//
 				// ImplicitCastExpr 'char *' <IntegralToPointer>
@@ -155,9 +155,9 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 	// ImplicitCastExpr 'char *' <ArrayToPointerDecay>
 	// `-MemberExpr 'char [20]' lvalue .input_str 0x3662ba0
 	//   `-DeclRefExpr 'struct s_inp':'struct s_inp' lvalue Var 0x3662c50 's' 'struct s_inp':'struct s_inp'
-	if util.IsCPointer(n.Type) {
+	if types.IsCPointer(n.Type, p) {
 		if len(n.Children()) > 0 {
-			if memb, ok := n.Children()[0].(*ast.MemberExpr); ok && util.IsCArray(memb.Type) {
+			if memb, ok := n.Children()[0].(*ast.MemberExpr); ok && types.IsCArray(memb.Type, p) {
 				expr = &goast.SliceExpr{
 					X:      expr,
 					Lbrack: 1,
@@ -266,7 +266,7 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 	if len(n.Children()) > 0 {
 		if types.IsCInteger(p, n.Type) {
 			if t, ok := ast.GetTypeIfExist(n.Children()[0]); ok {
-				if util.IsPointer(*t) {
+				if types.IsPointer(*t, p) {
 					// main information	: https://go101.org/article/unsafe.html
 					sizeof, err := types.SizeOf(p, types.GetBaseType(*t))
 					if err != nil {
