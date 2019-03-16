@@ -532,9 +532,35 @@ void test_string_array()
 	}
 }
 
+void test_typedef_pointer()
+{
+	typedef double * pd;
+	double v[2] = {42.,-42.};
+	{
+		pd     p = &v[0];
+		p++;
+		is_eq(*p,v[1]);
+	}
+	{
+		pd     p = v;
+		p+=1;
+		is_eq(*p,v[1]);
+	}
+	{
+		pd     p = &v[1] - 1;
+		p = 0 + p + 0 + 1;
+		is_eq(*p,v[1]);
+	}
+	{
+		pd     p = 0 + v + 1 + 0 - 1;
+		p = 0 + p + 0 + 1 - 0 + 1 - 1;
+		is_eq(*p,v[1]);
+	}
+}
+
 int main()
 {
-    plan(180);
+    plan(184);
 
     test_parg_struct();
     START_TEST(struct_init);
@@ -559,6 +585,7 @@ int main()
     START_TEST(stringarr_init);
     START_TEST(partialarr_init);
     START_TEST(function_array);
+	START_TEST(typedef_pointer);
 
     is_eq(arrayEx[1], 2.0);
 
