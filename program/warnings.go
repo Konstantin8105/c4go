@@ -8,9 +8,11 @@ import (
 	"github.com/Konstantin8105/c4go/ast"
 )
 
+var WarningMessage string = "// Warning "
+
 // GenerateWarningMessage - generate warning message
 func (p *Program) GenerateWarningMessage(e error, n ast.Node) string {
-	message := "// Warning "
+	message := WarningMessage
 	if e == nil || len(e.Error()) == 0 {
 		return ""
 	}

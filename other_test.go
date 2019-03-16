@@ -16,6 +16,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+
+	"github.com/Konstantin8105/c4go/program"
 )
 
 func getFileList(prefix, gitSource string) (fileList []string, err error) {
@@ -79,10 +81,6 @@ func TestBookSources(t *testing.T) {
 		{
 			prefix:    "Tinn",
 			gitSource: "https://github.com/glouw/tinn.git",
-		},
-		{
-			prefix:    "kilo editor",
-			gitSource: "https://github.com/antirez/kilo.git",
 		},
 		{
 			prefix:    "brainfuck",
@@ -659,5 +657,71 @@ func TestMultifiles(t *testing.T) {
 				}
 			})
 		}
+	}
+}
+
+func TestKiloEditor(t *testing.T) {
+
+	prefix := "kilo editor"
+	gitSource := "https://github.com/antirez/kilo.git"
+
+	fileList, err := getFileList(prefix, gitSource)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(fileList) != 1 {
+		t.Fatalf("fileList is not correct: %v", fileList)
+	}
+
+	if !strings.Contains(fileList[0], "kilo.c") {
+		t.Fatalf("filename is not correct: %v", fileList[0])
+	}
+
+	goFile := fileList[0] + ".go"
+	args := DefaultProgramArgs()
+	args.inputFiles = []string{fileList[0]}
+	args.outputFile = goFile
+	args.ast = false
+	args.verbose = false
+
+	if err := Start(args); err != nil {
+		t.Fatalf("Cannot transpile `%v`: %v", args, err)
+	}
+
+	// warning is not acceptable
+	dat, err := ioutil.ReadFile(goFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if bytes.Contains(dat, []byte(program.WarningMessage)) {
+		t.Fatalf("find warning message")
+	}
+
+	// calculate amount unsafe operations
+	if count := bytes.Count(dat, []byte("unsafe.Pointer")); count > 54 {
+		t.Fatalf("too much unsafe operations: %d", count)
+	} else {
+		t.Logf("amount unsafe operations: %d", count)
+	}
+	if count := bytes.Count(dat, []byte("uintptr")); count > 12 {
+		t.Fatalf("too much uintptr operations: %d", count)
+	} else {
+		t.Logf("amount uintptr operations: %d", count)
+	}
+
+	cmd := exec.Command("go", "build",
+		"-o", goFile+".app",
+		"-gcflags", "-e",
+		goFile)
+	cmdOutput := &bytes.Buffer{}
+	cmdErr := &bytes.Buffer{}
+	cmd.Stdout = cmdOutput
+	cmd.Stderr = cmdErr
+	err = cmd.Run()
+	if err != nil {
+		t.Fatalf("Go build test `%v` : err = %v\n%v",
+			goFile, err, cmdErr.String())
 	}
 }
