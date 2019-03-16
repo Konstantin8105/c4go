@@ -394,6 +394,11 @@ func IsTypedefFunction(p *program.Program, s string) bool {
 // In  : 'char [40]'
 // Out : 40
 func GetAmountArraySize(cType string) (size int, err error) {
+	if !util.IsCArray(cType) {
+		err = fmt.Errorf("Is not array: `%s`", cType)
+		return
+	}
+
 	reg := util.GetRegex("\\[(?P<size>\\d+)\\]")
 	match := reg.FindStringSubmatch(cType)
 
