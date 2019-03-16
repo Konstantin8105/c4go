@@ -699,6 +699,18 @@ func TestKiloEditor(t *testing.T) {
 		t.Fatalf("find warning message")
 	}
 
+	// calculate amount unsafe operations
+	if count := bytes.Count(dat, []byte("unsafe.Pointer")); count > 54 {
+		t.Fatalf("too much unsafe operations: %d", count)
+	} else {
+		t.Logf("amount unsafe operations: %d", count)
+	}
+	if count := bytes.Count(dat, []byte("uintptr")); count > 12 {
+		t.Fatalf("too much uintptr operations: %d", count)
+	} else {
+		t.Logf("amount uintptr operations: %d", count)
+	}
+
 	cmd := exec.Command("go", "build",
 		"-o", goFile+".app",
 		"-gcflags", "-e",
