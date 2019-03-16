@@ -16,6 +16,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+
+	"github.com/Konstantin8105/c4go/program"
 )
 
 func getFileList(prefix, gitSource string) (fileList []string, err error) {
@@ -685,6 +687,16 @@ func TestKiloEditor(t *testing.T) {
 
 	if err := Start(args); err != nil {
 		t.Fatalf("Cannot transpile `%v`: %v", args, err)
+	}
+
+	// warning is not acceptable
+	dat, err := ioutil.ReadFile(goFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if bytes.Contains(dat, []byte(program.WarningMessage)) {
+		t.Fatalf("find warning message")
 	}
 
 	cmd := exec.Command("go", "build",
