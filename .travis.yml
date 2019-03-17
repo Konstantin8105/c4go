@@ -22,6 +22,9 @@ matrix:
     - env: SCRIPT=test CLANG=3.5
       os: linux
       if: branch = master
+    - env: SCRIPT=scripts CLANG=7
+      os: linux
+      if: branch = master
 ####################################################
 #       commented for minimaze build
 #
@@ -36,8 +39,6 @@ matrix:
 #     if: branch = master
 #
 ####################################################
-    - env: SCRIPT=scripts CLANG=7
-      os: linux
     - env: SCRIPT=test CLANG=7
       os: linux
 ####### lint checking ########
