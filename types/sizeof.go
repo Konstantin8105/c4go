@@ -187,7 +187,7 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 	totalArraySize := 1
 	arrayType, arraySize := GetArrayTypeAndSize(cType)
 	if arraySize <= 0 {
-		return 0, fmt.Errorf("error in array size")
+		return 0, nil
 	}
 
 	for arraySize != -1 {

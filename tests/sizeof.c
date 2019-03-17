@@ -36,9 +36,15 @@ union MyUnion {
 short a;
 int b;
 
+struct MyNums {
+    char name[100];
+    int size;
+    int numbers[];
+};
+
 int main()
 {
-    plan(54);
+    plan(55);
 
     diag("Integer types");
     check_sizes(char, 1);
@@ -100,6 +106,9 @@ int main()
     const char* const f[] = { "a", "b", "c", "d", "e", "f" };
     is_eq(sizeof(f), 48);
     is_streq(f[1], "b");
+
+	diag("MyNums");
+	is_eq(sizeof(struct MyNums), 104);
 
     done_testing();
 }
