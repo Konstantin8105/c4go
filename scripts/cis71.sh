@@ -12,48 +12,48 @@ go build
 # prepare C code
     if [ ! -d $TEMP_FOLDER ]; then
 		mkdir -p $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/hello.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/power2.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/homework1.c			-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/add2.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/addn.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/add.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/coins.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/factorial.c			-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/true.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/fibo.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/funcs.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/funcs2.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/scope1.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/scope2.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/array.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/array1.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/array2.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/misc.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/addresses.c			-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/codes.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/random.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/randompermute.c		-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/line.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/linear.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/shift.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/sieve.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/string1.c			-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/counts.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/cpfile.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/enum1.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/enum2.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/binary.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/selection.c			-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/bubble.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/number.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/cpintarray.c			-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/struct.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/studentarray.c		-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/merge.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/sortmerge.c			-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/clean.c				-P $TEMP_FOLDER
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/studentlist.c		-P $TEMP_FOLDER
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/hello.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/power2.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/homework1.c			-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/add2.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/addn.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/add.c					-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/coins.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/factorial.c			-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/true.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/fibo.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/funcs.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/funcs2.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/scope1.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/scope2.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/array.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/array1.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/array2.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/misc.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/addresses.c			-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/codes.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/random.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/randompermute.c		-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/line.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/linear.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/shift.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/sieve.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/string1.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/counts.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/cpfile.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/enum1.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/enum2.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/binary.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/selection.c			-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/bubble.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/number.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/cpintarray.c			-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/struct.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/studentarray.c		-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/merge.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/sortmerge.c			-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/clean.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/studentlist.c			-P $TEMP_FOLDER > /dev/null 2>&1
 	fi
 
 # remove go files from last transpilation

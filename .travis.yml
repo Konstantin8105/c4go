@@ -36,6 +36,8 @@ matrix:
 #     if: branch = master
 #
 ####################################################
+    - env: SCRIPT=scripts CLANG=6
+      os: linux
     - env: SCRIPT=test CLANG=7
       os: linux
 ####### lint checking ########
