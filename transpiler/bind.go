@@ -126,16 +126,28 @@ func getBindFunction(p *program.Program, d program.DefinitionFunction) (code str
 		arg = append(arg, cgoExpr)
 	}
 
-	f.Body = &goast.BlockStmt{
-		List: []goast.Stmt{
-			&goast.ReturnStmt{
-				Results: []goast.Expr{
-					util.NewCallExpr(returnResolvedType,
-						util.NewCallExpr(fmt.Sprintf("C.%s", d.Name), arg...),
-					),
+	if returnResolvedType != "" {
+		f.Body = &goast.BlockStmt{
+			List: []goast.Stmt{
+				&goast.ReturnStmt{
+					Results: []goast.Expr{
+						util.NewCallExpr(returnResolvedType,
+							util.NewCallExpr(fmt.Sprintf("C.%s", d.Name), arg...),
+						),
+					},
 				},
 			},
-		},
+		}
+	} else {
+		f.Body = &goast.BlockStmt{
+			List: []goast.Stmt{
+				&goast.ReturnStmt{
+					Results: []goast.Expr{
+						util.NewCallExpr(fmt.Sprintf("C.%s", d.Name), arg...),
+					},
+				},
+			},
+		}
 	}
 
 	var buf bytes.Buffer
