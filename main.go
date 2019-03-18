@@ -270,7 +270,9 @@ func avoidGoKeywords(tree []ast.Node) {
 			str := f.Addr().Interface().(*string)
 
 			// avoid problem with GOPATH and `go` keyword
-			*str = strings.Replace(*str, os.Getenv("GOPATH"), "GOPATH", -1)
+			if gopath := os.Getenv("GOPATH"); gopath != "" {
+				*str = strings.Replace(*str, gopath, "GOPATH", -1)
+			}
 
 			for _, gk := range goKeywords {
 				// example *st :
