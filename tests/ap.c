@@ -13,8 +13,17 @@ long get() {
 	return (long)(0);
 }
 
+
+double global;
+
+double * get_value()
+{
+       return &global;
+}
+
+
 int main() {
-    plan(0);
+    plan(4);
 
 	diag("value");
 	int i1 = 42; a(&i1); b(&i1, 1);
@@ -51,5 +60,23 @@ int main() {
 	diag("pointer arithmetic 6");
 	int *i11 = 1 + 0 + i5 + 5*get() + get() - (12 + 3)*get(); a(i11); b(i11,1);
 
-    done_testing();
+	diag("pointer from function");
+	global = 42;
+	double *i12 = get_value();
+	is_eq(*i12, global);
+
+	diag("pointer for some type");
+	typedef int  NUMBER;
+	typedef int* POINTER;
+	NUMBER  num;
+	POINTER pnt;
+	int num_value = 56;
+	num = num_value;
+	pnt = &num;
+	is_eq(*pnt, num_value);
+	*pnt =  123;
+	is_eq(*pnt, 123);
+	is_eq( num, 123);
+
+	done_testing();
 }

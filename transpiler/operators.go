@@ -253,13 +253,21 @@ func pointerArithmetic(p *program.Program,
 		err = fmt.Errorf("right type is not C integer type : '%s'", rightType)
 		return
 	}
-	if !util.IsPointer(leftType) {
+	if !types.IsPointer(leftType, p) {
 		err = fmt.Errorf("left type is not a pointer : '%s'", leftType)
 		return
 	}
 	right, err = types.CastExpr(p, right, rightType, "int")
 	if err != nil {
 		return
+	}
+
+	for {
+		if t, ok := p.TypedefType[leftType]; ok {
+			leftType = t
+			continue
+		}
+		break
 	}
 
 	resolvedLeftType, err := types.ResolveType(p, leftType)
@@ -339,95 +347,33 @@ func transpileCompoundAssignOperator(
 		}
 	}()
 
-	operator := getTokenForOperator(n.Opcode)
+	operator := n.Opcode[:len(n.Opcode)-1]
 
-	right, rightType, newPre, newPost, err := atomicOperation(n.Children()[1], p)
-	if err != nil {
-		return nil, "", nil, nil, err
+	if len(n.ChildNodes) != 2 {
+		err = fmt.Errorf("not enought ChildNodes: %d", len(n.ChildNodes))
+		return
 	}
 
-	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
-
-	left, leftType, newPre, newPost, err := transpileToExpr(n.Children()[0], p, false)
-	if err != nil {
-		return nil, "", nil, nil, err
+	if !types.IsCPointer(n.Type, p) && !types.IsCArray(n.Type, p) {
+		return transpileBinaryOperator(&ast.BinaryOperator{
+			Type:       n.Type,
+			Operator:   n.Opcode,
+			ChildNodes: n.ChildNodes,
+		}, p, false)
 	}
 
-	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
-
-	// Pointer arithmetic
-	if util.IsPointer(n.Type) &&
-		(operator == token.ADD_ASSIGN || operator == token.SUB_ASSIGN) {
-		operator = convertToWithoutAssign(operator)
-		v, vType, newPre, newPost, err := pointerArithmetic(
-			p, left, leftType, right, rightType, operator)
-		if err != nil {
-			return nil, "", nil, nil, err
-		}
-		if v == nil {
-			return nil, "", nil, nil, fmt.Errorf("Expr is nil")
-		}
-		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
-		var name string
-		name, err = getName(p, n.Children()[0])
-		if err != nil {
-			return nil, "", nil, nil, err
-		}
-		found := false
-		if sl, ok := v.(*goast.SliceExpr); ok {
-			if ind, ok := sl.X.(*goast.IndexExpr); ok {
-				v = &goast.BinaryExpr{
-					X:  ind,
-					Op: token.ASSIGN,
-					Y:  v,
-				}
-				found = true
-			}
-		}
-		if !found {
-			v = &goast.BinaryExpr{
-				X:  goast.NewIdent(name),
-				Op: token.ASSIGN,
-				Y:  v,
-			}
-		}
-		return v, vType, preStmts, postStmts, nil
-	}
-
-	right, err = types.CastExpr(p, right, rightType, leftType)
-	if err != nil {
-		return nil, "", nil, nil, err
-	}
-	rightType = leftType
-
-	// The right hand argument of the shift left or shift right operators
-	// in Go must be unsigned integers. In C, shifting with a negative shift
-	// count is undefined behaviour (so we should be able to ignore that case).
-	// To handle this, cast the shift count to a uint64.
-	if operator == token.SHL_ASSIGN || operator == token.SHR_ASSIGN {
-		right, err = types.CastExpr(p, right, rightType, "unsigned long long")
-		p.AddMessage(p.GenerateWarningMessage(err, n))
-		if right == nil {
-			right = util.NewNil()
-		}
-	}
-
-	resolvedLeftType, err := types.ResolveType(p, leftType)
-	if err != nil {
-		p.AddMessage(p.GenerateWarningMessage(err, n))
-	}
-
-	if right == nil {
-		err = fmt.Errorf("Right part is nil. err = %v", err)
-		return nil, "", nil, nil, err
-	}
-	if left == nil {
-		err = fmt.Errorf("Left part is nil. err = %v", err)
-		return nil, "", nil, nil, err
-	}
-
-	return util.NewBinaryExpr(left, operator, right, resolvedLeftType, exprIsStmt),
-		n.Type, preStmts, postStmts, nil
+	return transpileBinaryOperator(&ast.BinaryOperator{
+		Type:     n.Type,
+		Operator: "=",
+		ChildNodes: []ast.Node{
+			n.ChildNodes[0],
+			&ast.BinaryOperator{
+				Type:       n.Type,
+				Operator:   operator,
+				ChildNodes: n.ChildNodes,
+			},
+		},
+	}, p, false)
 }
 
 // getTokenForOperator returns the Go operator token for the provided C
@@ -721,7 +667,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		if vv, ok := v.Children()[0].(*ast.UnaryOperator); ok && vv.IsPrefix && vv.Operator == "*" {
 			if vvv, ok := vv.Children()[0].(*ast.ImplicitCastExpr); ok {
 				if vvvv, ok := vvv.Children()[0].(*ast.DeclRefExpr); ok {
-					if util.IsPointer(vvvv.Type) {
+					if types.IsPointer(vvvv.Type, p) {
 						varName := vvvv.Name
 
 						var exprResolveType string
@@ -1044,7 +990,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 
 			returnValue, _, _, _, _ := transpileToExpr(decl, p, false)
 			if d, ok := decl.(*ast.DeclRefExpr); ok &&
-				util.IsPointer(d.Type) && !util.IsPointer(v.Type) {
+				types.IsPointer(d.Type, p) && !types.IsPointer(v.Type, p) {
 				returnValue = &goast.IndexExpr{
 					X: returnValue,
 					Index: &goast.BasicLit{

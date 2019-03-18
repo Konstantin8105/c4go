@@ -70,47 +70,6 @@ func IsFunction(s string) bool {
 	return strings.Contains(s, "(")
 }
 
-//IsCPointer - check C type is pointer
-func IsCPointer(s string) bool {
-	if len(s) == 0 {
-		return false
-	}
-	for i := len(s) - 1; i >= 0; i-- {
-		switch s[i] {
-		case ' ':
-			continue
-		case '*':
-			return true
-		default:
-			break
-		}
-	}
-	return false
-}
-
-// IsCArray - check C type is array
-func IsCArray(s string) bool {
-	if len(s) == 0 {
-		return false
-	}
-	for i := len(s) - 1; i >= 0; i-- {
-		switch s[i] {
-		case ' ':
-			continue
-		case ']':
-			return true
-		default:
-			break
-		}
-	}
-	return false
-}
-
-// IsPointer - check type is pointer
-func IsPointer(s string) bool {
-	return strings.ContainsAny(s, "*[]")
-}
-
 // IsLastArray - check type have array '[]'
 func IsLastArray(s string) bool {
 	for _, b := range s {
