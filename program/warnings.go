@@ -25,7 +25,9 @@ func (p *Program) GenerateWarningMessage(e error, n ast.Node) string {
 }
 
 func PathSimplification(message string) string {
-	message = strings.Replace(message, os.Getenv("GOPATH"), "$GOPATH", -1)
-	message = strings.Replace(message, "$GOPATH/src/github.com/Konstantin8105/c4go", "C4GO", -1)
+	if gopath := os.Getenv("GOPATH"); gopath != "" {
+		message = strings.Replace(message, gopath, "GOPATH", -1)
+		message = strings.Replace(message, "GOPATH/src/github.com/Konstantin8105/c4go", "C4GO", -1)
+	}
 	return message
 }
