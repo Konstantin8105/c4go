@@ -22,6 +22,9 @@ matrix:
     - env: SCRIPT=test CLANG=3.5
       os: linux
       if: branch = master
+    - env: SCRIPT=scripts CLANG=7
+      os: linux
+      if: branch = master
 ####################################################
 #       commented for minimaze build
 #
@@ -48,6 +51,7 @@ before_install:
         wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
         sudo apt-add-repository "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-$CLANG main"
+        sudo apt-get install lzip ## Added for scripts/ed.sh
         sudo apt-get update
         sudo apt-cache search clang
         sudo apt-get install -f -y --force-yes clang-$CLANG lldb-$CLANG
