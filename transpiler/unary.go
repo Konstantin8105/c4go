@@ -525,6 +525,11 @@ func transpileUnaryOperator(n *ast.UnaryOperator, p *program.Program) (
 		return transpileUnaryOperatorAmpersant(n, p)
 	}
 
+	// Example:
+	// UnaryOperator 'int' prefix '-'
+	// `-ImplicitCastExpr 'int' <LValueToRValue>
+	//   `-DeclRefExpr 'int' lvalue Var 0x3b42898 'c' 'int'
+
 	// Otherwise handle like a unary operator.
 	e, eType, newPre, newPost, err := transpileToExpr(n.Children()[0], p, false)
 	if err != nil {
@@ -537,7 +542,6 @@ func transpileUnaryOperator(n *ast.UnaryOperator, p *program.Program) (
 		Op: operator,
 		X:  e,
 	}, eType, preStmts, postStmts, nil
-
 }
 
 func transpileUnaryExprOrTypeTraitExpr(n *ast.UnaryExprOrTypeTraitExpr, p *program.Program) (
