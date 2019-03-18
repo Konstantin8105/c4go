@@ -398,6 +398,13 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 		operator == token.MUL_ASSIGN || // *=
 		operator == token.QUO_ASSIGN || // /=
 		operator == token.REM_ASSIGN || // %=
+
+		operator == token.AND_ASSIGN || // &=
+		operator == token.OR_ASSIGN || // |=
+		operator == token.XOR_ASSIGN || // ^=
+		operator == token.SHL_ASSIGN || // <<=
+		operator == token.SHR_ASSIGN || // >>=
+		operator == token.AND_NOT_ASSIGN || // &^=
 		false {
 
 		if rightType == types.NullPointer && leftType == types.NullPointer {
@@ -500,14 +507,6 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			resolvedLeftType, err = types.ResolveType(p, rightType)
 		}
 		p.AddMessage(p.GenerateWarningMessage(err, n))
-	}
-
-	// Enum casting
-	if operator != token.ASSIGN && strings.Contains(leftType, "enum") {
-		left, err = types.CastExpr(p, left, leftType, "int")
-		if err != nil {
-			p.AddMessage(p.GenerateWarningMessage(err, n))
-		}
 	}
 
 	// Enum casting

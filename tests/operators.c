@@ -64,7 +64,7 @@ void view(int c)
 
 int main()
 {
-    plan(116);
+    plan(119);
 
     int i = 10;
     signed char j = 1;
@@ -510,6 +510,20 @@ int main()
 		view(+c);
 		view(-c);
 		is_eq(c,90);
+	}
+	diag("operation |= for enum");
+	{
+		enum Sflags {
+		  SGG = 0x01,
+		  SGP = 0x02,
+		  SGR = 0x04,
+		  SGF = 0x08
+		  } sflags = 0;
+		is_eq(sflags, 0);
+        sflags |= SGG;
+		is_eq(sflags, 1);
+        sflags |= SGR;
+		is_eq(sflags, 5);
 	}
 
     done_testing();

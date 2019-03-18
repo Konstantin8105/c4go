@@ -61,12 +61,10 @@ func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (
 		Tok: token.TYPE,
 		Specs: []goast.Spec{
 			&goast.TypeSpec{
-				Name: &goast.Ident{
-					Name: n.Name,
-					Obj:  goast.NewObj(goast.Typ, n.Name),
-				},
+				Name:   util.NewIdent(n.Name),
+				Assign: 1,
 				// by defaults enum in C is INT
-				Type: util.NewTypeIdent("int"),
+				Type: util.NewTypeIdent("int32"),
 			},
 		},
 	})
