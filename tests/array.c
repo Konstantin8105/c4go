@@ -562,6 +562,20 @@ void test_typedef_pointer()
 	}
 }
 
+void test_double_array()
+{
+	char ** bpp;
+	char words[4][10] = {"Mother", "work", "in", "Galaxy"};
+	bpp = words;
+	char *  buf;
+	char let[4][10] = {"Father", "live", "on", "Earth"};
+	buf = let[0];
+	int     i = 0;
+	if( ( buf[i++] = *(*bpp)++ ) == '\\' ) {
+		fail("cannot be");
+	}
+}
+
 int main()
 {
     plan(184);
@@ -1099,6 +1113,7 @@ int main()
         is_eq(*l, len);
     }
 	START_TEST(string_array);
+	START_TEST(double_array);
 
     done_testing();
 }
