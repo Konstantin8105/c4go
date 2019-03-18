@@ -345,11 +345,6 @@ func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.Fil
 		fmt.Fprintln(os.Stdout, "Start tanspiling ...")
 	}
 
-	if os.Getenv("GOPATH") == "" {
-		err = fmt.Errorf("The $GOPATH must be set")
-		return
-	}
-
 	// 1. Compile it first (checking for errors)
 	for _, in := range args.inputFiles {
 		_, err = os.Stat(in)
