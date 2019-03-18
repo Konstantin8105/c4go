@@ -64,6 +64,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseAccessSpecDecl(line), nil
 	case "AlignedAttr":
 		return parseAlignedAttr(line), nil
+	case "AnnotateAttr":
+		return parseAnnotateAttr(line), nil
 	case "AllocSizeAttr":
 		return parseAllocSizeAttr(line), nil
 	case "AlwaysInlineAttr":
