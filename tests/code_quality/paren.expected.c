@@ -12,7 +12,7 @@ func function() {
 	var t int32
 	t = (0)
 	var a int32
-	a = (t)
+	a = t
 	_ = (t)
 	_ = (a)
 	(function())

@@ -66,7 +66,7 @@ func main() {
 	// pointer arithmetic
 	a(i8)
 	b(i8, 1)
-	var i9 []int32 = []int32{i3[0], i3[(0 + 1)]}
+	var i9 []int32 = []int32{i3[0], i3[0+1]}
 	// pointer arithmetic
 	a(i9)
 	b(i9, 1)

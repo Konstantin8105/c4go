@@ -42,14 +42,14 @@ func operators_equals() {
 	var v1 float64
 	var v2 float32
 	var x1 int32
-	var x2 uint32 = uint32((0))
+	var x2 uint32
 	var x3 int32
-	var x4 int64 = int64((0))
-	var x5 int16 = int16((0))
-	var z1 float64 = float64((0))
-	var z2 float32 = float32((0))
+	var x4 int64
+	var x5 int16
+	var z1 float64
+	var z2 float32
 	var t1 float64
-	var t2 float32 = float32((0))
+	var t2 float32
 	var r1 []int32
 	var r2 [][]int32
 	var r3 [][][]int32

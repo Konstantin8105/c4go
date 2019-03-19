@@ -52,7 +52,7 @@ func if_1() {
 		return 5
 	}()
 	r = func() int32 {
-		if map[bool]int32{false: 0, true: 1}[(w > 1)]+map[bool]int32{false: 0, true: 1}[(r == 4)] != 0 {
+		if map[bool]int32{false: 0, true: 1}[w > 1]+map[bool]int32{false: 0, true: 1}[r == 4] != 0 {
 			return -1
 		}
 		return 5
