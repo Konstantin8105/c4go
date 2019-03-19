@@ -592,7 +592,8 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			return
 		}
 
-		if ind, ok := expr.(*goast.IndexExpr); ok && v.Operator == "++" {
+		if ind, ok := expr.(*goast.IndexExpr); ok && v.Operator == "++" &&
+			(types.IsCPointer(v.Type, p) || types.IsCArray(v.Type, p)) {
 			// expr = 'bpp[0]'
 			// example of snippet:
 			//	func  () []byte{
@@ -613,19 +614,25 @@ func atomicOperation(n ast.Node, p *program.Program) (
 				append([]goast.Stmt{
 					&goast.AssignStmt{
 						Lhs: []goast.Expr{
-							ind.X,
+							ind,
 						},
 						Tok: token.ASSIGN,
 						Rhs: []goast.Expr{
 							&goast.SliceExpr{
-								X: ind.X,
-								Low: &goast.BinaryExpr{
-									X:  ind.Index,
-									Op: token.ADD,
-									Y:  goast.NewIdent("1"),
-								},
+								X:      ind,
+								Low:    goast.NewIdent("1"),
 								Slice3: false,
 							},
+							//&goast.SliceExpr{
+							//	X:   ind.X,
+							//	Low: ind.Index,
+							//	// Low: &goast.BinaryExpr{
+							//	// X:  ind.Index,
+							//	// Op: token.ADD,
+							//	// Y:  goast.NewIdent("1"),
+							//	// },
+							//	Slice3: false,
+							//},
 						},
 					},
 				}, postStmts...),

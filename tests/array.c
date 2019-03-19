@@ -563,16 +563,65 @@ void test_typedef_pointer()
 }
 
 void test_double_array()
-{
-	char ** bpp;
-	char words[4][10] = {"Mother", "work", "in", "Galaxy"};
-	bpp = words;
-	char *  buf;
-	char let[4][10] = {"Father", "live", "on", "Earth"};
-	buf = let[0];
-	int     i = 0;
-	if( ( buf[i++] = *(*bpp)++ ) == '\\' ) {
-		fail("cannot be");
+{ 
+	// see https://forums.macrumors.com/threads/understanding-double-pointers-in-c.701091/
+	int twod[4][3] = {{2,4,6}, {8,10,12}, {14, 16, 18}, {20, 22, 24}};
+	int *twodPass[4];
+	twodPass[0]=twod[0];
+	twodPass[1]=twod[1];
+	twodPass[2]=twod[2];
+	twodPass[3]=twod[3];
+
+	int **p = twodPass;
+	printf(" p is: %d\n", **p);
+	printf("*p + 1 is: %d\n", *(*p + 1));
+	p = twodPass;
+	{
+		diag("cases 1:");
+		int *pp = *p;
+		printf("    1: %d\n", *pp++);
+		printf("    2: %d\n", *pp++);
+		printf("    3: %d\n", *pp++);
+	}
+	p = twodPass;
+	{
+		diag("cases 2:");
+		int **pp = p;
+		printf("    1: %d\n",*((*(pp))++));
+		printf("    2: %d\n",*((*(pp))++));
+		printf("    3: %d\n",*((*(pp))++));
+	}
+	p = twodPass;
+	{
+		diag("cases 3:");
+		int **pp = p;
+		printf("    1: %d\n", (*pp)[0]);
+		printf("    2: %d\n", (*pp)[1]);
+		printf("    3: %d\n", (*pp)[2]);
+	}
+	p = twodPass;
+	{
+		diag("cases 4:");
+		int **pp = p;
+		printf("    1: %d\n",*((pp)++));
+		printf("    2: %d\n",*((pp)++));
+		printf("    3: %d\n",*((pp)++));
+	}
+	p = twodPass;
+	{
+		diag("cases 5:");
+		int **pp = p;
+		printf("    1: %d\n",*(pp)++);
+		printf("    2: %d\n",*(pp)++);
+		printf("    3: %d\n",*(pp)++);
+	}
+	p = twodPass;
+	{
+		diag("cases 6:");
+		int **pp = p;
+		printf("    1: %d\n", pp[0][0]);
+		printf("    2: %d\n", pp[0][1]);
+		printf("    3: %d\n", pp[0][2]);
 	}
 }
 
