@@ -562,20 +562,34 @@ void test_typedef_pointer()
 	}
 }
 
-void test_double_array()
-{ 
-	// see https://forums.macrumors.com/threads/understanding-double-pointers-in-c.701091/
+int ** getArray()
+{
 	int twod[4][3] = {{2,4,6}, {8,10,12}, {14, 16, 18}, {20, 22, 24}};
 	int *twodPass[4];
 	twodPass[0]=twod[0];
 	twodPass[1]=twod[1];
 	twodPass[2]=twod[2];
 	twodPass[3]=twod[3];
+	return twodPass;
+}
 
-	int **p = twodPass;
+void view_matrix(int **p, int size1, int size2)
+{
+	// TODO: need fix
+	// for (int i=0;i<size1;i++) {
+		// for (int j=0;j<size2;j++){
+			// printf("      p[%d,%d] = %d\n",i,j,p[i][j]);
+		// }
+	// }
+}
+
+void test_double_array()
+{ 
+	// see https://forums.macrumors.com/threads/understanding-double-pointers-in-c.701091/
+	int **p = getArray();
 	printf(" p is: %d\n", **p);
 	printf("*p + 1 is: %d\n", *(*p + 1));
-	p = twodPass;
+	p = getArray();
 	{
 		diag("cases 1:");
 		int *pp = *p;
@@ -583,7 +597,8 @@ void test_double_array()
 		printf("    2: %d\n", *pp++);
 		printf("    3: %d\n", *pp++);
 	}
-	p = twodPass;
+	view_matrix(p,4,3);
+	p = getArray();
 	{
 		diag("cases 2:");
 		int **pp = p;
@@ -591,7 +606,8 @@ void test_double_array()
 		printf("    2: %d\n",*((*(pp))++));
 		printf("    3: %d\n",*((*(pp))++));
 	}
-	p = twodPass;
+	view_matrix(p,4,3);
+	p = getArray();
 	{
 		diag("cases 3:");
 		int **pp = p;
@@ -599,23 +615,26 @@ void test_double_array()
 		printf("    2: %d\n", (*pp)[1]);
 		printf("    3: %d\n", (*pp)[2]);
 	}
-	p = twodPass;
+	view_matrix(p,4,3);
+	p = getArray();
 	{
 		diag("cases 4:");
 		int **pp = p;
-		printf("    1: %d\n",*((pp)++));
-		printf("    2: %d\n",*((pp)++));
-		printf("    3: %d\n",*((pp)++));
+		printf("    1: %d\n",*(*((pp)++)));
+		printf("    2: %d\n",*(*((pp)++)));
+		printf("    3: %d\n",*(*((pp)++)));
 	}
-	p = twodPass;
+	view_matrix(p,4,3);
+	p = getArray();
 	{
 		diag("cases 5:");
 		int **pp = p;
-		printf("    1: %d\n",*(pp)++);
-		printf("    2: %d\n",*(pp)++);
-		printf("    3: %d\n",*(pp)++);
+		printf("    1: %d\n",*((*pp)++));
+		printf("    2: %d\n",*((*pp)++));
+		printf("    3: %d\n",*((*pp)++));
 	}
-	p = twodPass;
+	view_matrix(p,4,3);
+	p = getArray();
 	{
 		diag("cases 6:");
 		int **pp = p;
@@ -623,6 +642,7 @@ void test_double_array()
 		printf("    2: %d\n", pp[0][1]);
 		printf("    3: %d\n", pp[0][2]);
 	}
+	view_matrix(p,4,3);
 }
 
 int main()

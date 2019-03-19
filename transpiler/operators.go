@@ -592,56 +592,96 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			return
 		}
 
-		if ind, ok := expr.(*goast.IndexExpr); ok && v.Operator == "++" &&
-			(types.IsCPointer(v.Type, p) || types.IsCArray(v.Type, p)) {
-			// expr = 'bpp[0]'
-			// example of snippet:
-			//	func  () []byte{
-			//		tempVar = bpp[0]
-			//		defer func(){
-			//			bpp = bpp[1:]
-			//		}()
-			//		return tempVar
-			//	}
-			expr = util.NewAnonymousFunction(
-				// body :
-				append(preStmts, &goast.AssignStmt{
-					Lhs: []goast.Expr{util.NewIdent(varName)},
-					Tok: token.DEFINE,
-					Rhs: []goast.Expr{expr},
-				}),
-				// defer :
-				append([]goast.Stmt{
-					&goast.AssignStmt{
-						Lhs: []goast.Expr{
-							ind,
-						},
-						Tok: token.ASSIGN,
-						Rhs: []goast.Expr{
-							&goast.SliceExpr{
-								X:      ind,
-								Low:    goast.NewIdent("1"),
-								Slice3: false,
+		if types.IsCPointer(v.Type, p) || types.IsCArray(v.Type, p) {
+			switch e := expr.(type) {
+			case *goast.IndexExpr:
+				if v.Operator == "++" {
+					// expr = 'bpp[0]'
+					// example of snippet:
+					//	func  () []byte{
+					//		tempVar = bpp[0]
+					//		defer func(){
+					//			bpp = bpp[1:]
+					//		}()
+					//		return tempVar
+					//	}
+					expr = util.NewAnonymousFunction(
+						// body :
+						append(preStmts, &goast.AssignStmt{
+							Lhs: []goast.Expr{util.NewIdent(varName)},
+							Tok: token.DEFINE,
+							Rhs: []goast.Expr{expr},
+						}),
+						// defer :
+						append([]goast.Stmt{
+							&goast.AssignStmt{
+								Lhs: []goast.Expr{
+									e,
+								},
+								Tok: token.ASSIGN,
+								Rhs: []goast.Expr{
+									&goast.SliceExpr{
+										X:      e,
+										Low:    goast.NewIdent("1"),
+										Slice3: false,
+									},
+								},
 							},
-							//&goast.SliceExpr{
-							//	X:   ind.X,
-							//	Low: ind.Index,
-							//	// Low: &goast.BinaryExpr{
-							//	// X:  ind.Index,
-							//	// Op: token.ADD,
-							//	// Y:  goast.NewIdent("1"),
-							//	// },
-							//	Slice3: false,
-							//},
-						},
-					},
-				}, postStmts...),
-				// return :
-				util.NewIdent(varName),
-				exprResolveType)
-			preStmts = nil
-			postStmts = nil
-			return
+						}, postStmts...),
+						// return :
+						util.NewIdent(varName),
+						exprResolveType)
+					preStmts = nil
+					postStmts = nil
+					return
+				}
+
+			case *goast.Ident:
+				if v.Operator == "++" {
+					// expr = 'p'
+					// example of snippet:
+					//	func  () [][]byte{
+					//		tempVar = p
+					//		defer func(){
+					//			p = p[1:]
+					//		}()
+					//		return tempVar
+					//	}
+					expr = util.NewAnonymousFunction(
+						// body :
+						append(preStmts, &goast.AssignStmt{
+							Lhs: []goast.Expr{util.NewIdent(varName)},
+							Tok: token.DEFINE,
+							Rhs: []goast.Expr{expr},
+						}),
+						// defer :
+						append([]goast.Stmt{
+							&goast.AssignStmt{
+								Lhs: []goast.Expr{
+									e,
+								},
+								Tok: token.ASSIGN,
+								Rhs: []goast.Expr{
+									&goast.SliceExpr{
+										X:      e,
+										Low:    goast.NewIdent("1"),
+										Slice3: false,
+									},
+								},
+							},
+						}, postStmts...),
+						// return :
+						util.NewIdent(varName),
+						exprResolveType)
+					preStmts = nil
+					postStmts = nil
+					return
+				}
+
+			default:
+				p.AddMessage(p.GenerateWarningMessage(
+					fmt.Errorf("transpilation pointer is not support: %T", e), v))
+			}
 		}
 
 		body := append(preStmts, &goast.AssignStmt{
