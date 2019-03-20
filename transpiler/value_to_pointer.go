@@ -28,17 +28,16 @@ func ConvertValueToPointer(nodes []ast.Node, p *program.Program) (expr goast.Exp
 	if types.IsPointer(decl.Type, p) {
 		return nil, false
 	}
-	
+
 	// get base type if it typedef
 	var td string = decl.Type
 	for {
-		if t, ok :=p.TypedefType[td]; ok {
+		if t, ok := p.TypedefType[td]; ok {
 			td = t
 			continue
 		}
 		break
 	}
-
 
 	resolvedType, err := types.ResolveType(p, td)
 	if err != nil {
@@ -68,7 +67,7 @@ func GetUnsafeConvertDecls(p *program.Program) {
 	p.AddImport("unsafe")
 
 	var names []string
-	for t, _ := range p.UnsafeConvertValueToPointer {
+	for t := range p.UnsafeConvertValueToPointer {
 		names = append(names, t)
 	}
 	sort.Sort(sort.StringSlice(names))
@@ -81,7 +80,7 @@ func GetUnsafeConvertDecls(p *program.Program) {
 			Type: &goast.FuncType{
 				Params: &goast.FieldList{
 					List: []*goast.Field{
-						&goast.Field{
+						{
 							Names: []*goast.Ident{goast.NewIdent(varName)},
 							Type:  goast.NewIdent("*" + t),
 						},
@@ -89,7 +88,7 @@ func GetUnsafeConvertDecls(p *program.Program) {
 				},
 				Results: &goast.FieldList{
 					List: []*goast.Field{
-						&goast.Field{
+						{
 							Type: &goast.ArrayType{
 								Lbrack: 1,
 								Elt:    goast.NewIdent(t),
