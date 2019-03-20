@@ -46,7 +46,8 @@ func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (
 		}
 	}()
 
-	if !strings.Contains(n.Pos.File, "ctype.h") {
+	if !p.PreprocessorFile.IsUserSource(n.Pos.File) &&
+		!strings.Contains(n.Pos.File, "ctype.h") {
 		return
 	}
 
