@@ -101,6 +101,9 @@ type Program struct {
 
 	// preprocessor file
 	PreprocessorFile preprocessor.FilePP
+
+	// UnsafeConvertValueToPointer - simplification for convert value to pointer
+	UnsafeConvertValueToPointer []string
 }
 
 type commentPos struct {

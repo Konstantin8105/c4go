@@ -44,7 +44,7 @@ func (unionVar *un) d() *float64 {
 // test_char - transpiled function from  C4GO/tests/code_quality/unsafe.c:19
 func test_char() {
 	var t byte
-	var pt []byte = (*[100000000]byte)(unsafe.Pointer(&t))[:]
+	var pt []byte = c4goUnsafeConvert_byte(&t)
 	// integers
 	_ = (t)
 	_ = (pt)
@@ -53,7 +53,7 @@ func test_char() {
 // test_short - transpiled function from  C4GO/tests/code_quality/unsafe.c:20
 func test_short() {
 	var t int16
-	var pt []int16 = (*[100000000]int16)(unsafe.Pointer(&t))[:]
+	var pt []int16 = c4goUnsafeConvert_int16(&t)
 	_ = (t)
 	_ = (pt)
 }
@@ -61,7 +61,7 @@ func test_short() {
 // test_int - transpiled function from  C4GO/tests/code_quality/unsafe.c:21
 func test_int() {
 	var t int32
-	var pt []int32 = (*[100000000]int32)(unsafe.Pointer(&t))[:]
+	var pt []int32 = c4goUnsafeConvert_int32(&t)
 	_ = (t)
 	_ = (pt)
 }
@@ -69,7 +69,7 @@ func test_int() {
 // test_long - transpiled function from  C4GO/tests/code_quality/unsafe.c:22
 func test_long() {
 	var t int32
-	var pt []int32 = (*[100000000]int32)(unsafe.Pointer(&t))[:]
+	var pt []int32 = c4goUnsafeConvert_int32(&t)
 	_ = (t)
 	_ = (pt)
 }
@@ -77,7 +77,7 @@ func test_long() {
 // test_li - transpiled function from  C4GO/tests/code_quality/unsafe.c:23
 func test_li() {
 	var t int32
-	var pt []int32 = (*[100000000]int32)(unsafe.Pointer(&t))[:]
+	var pt []int32 = c4goUnsafeConvert_int32(&t)
 	_ = (t)
 	_ = (pt)
 }
@@ -85,7 +85,7 @@ func test_li() {
 // test_ll - transpiled function from  C4GO/tests/code_quality/unsafe.c:24
 func test_ll() {
 	var t int64
-	var pt []int64 = (*[100000000]int64)(unsafe.Pointer(&t))[:]
+	var pt []int64 = c4goUnsafeConvert_int64(&t)
 	_ = (t)
 	_ = (pt)
 }
@@ -93,7 +93,7 @@ func test_ll() {
 // test_lli - transpiled function from  C4GO/tests/code_quality/unsafe.c:25
 func test_lli() {
 	var t int64
-	var pt []int64 = (*[100000000]int64)(unsafe.Pointer(&t))[:]
+	var pt []int64 = c4goUnsafeConvert_int64(&t)
 	_ = (t)
 	_ = (pt)
 }
@@ -101,7 +101,7 @@ func test_lli() {
 // test_f - transpiled function from  C4GO/tests/code_quality/unsafe.c:28
 func test_f() {
 	var t float32
-	var pt []float32 = (*[100000000]float32)(unsafe.Pointer(&t))[:]
+	var pt []float32 = c4goUnsafeConvert_float32(&t)
 	// floats
 	_ = (t)
 	_ = (pt)
@@ -110,7 +110,7 @@ func test_f() {
 // test_d - transpiled function from  C4GO/tests/code_quality/unsafe.c:29
 func test_d() {
 	var t float64
-	var pt []float64 = (*[100000000]float64)(unsafe.Pointer(&t))[:]
+	var pt []float64 = c4goUnsafeConvert_float64(&t)
 	_ = (t)
 	_ = (pt)
 }
@@ -118,7 +118,7 @@ func test_d() {
 // test_ld - transpiled function from  C4GO/tests/code_quality/unsafe.c:30
 func test_ld() {
 	var t float64
-	var pt []float64 = (*[100000000]float64)(unsafe.Pointer(&t))[:]
+	var pt []float64 = c4goUnsafeConvert_float64(&t)
 	_ = (t)
 	_ = (pt)
 }
@@ -126,7 +126,7 @@ func test_ld() {
 // test_struct - transpiled function from  C4GO/tests/code_quality/unsafe.c:33
 func test_struct() {
 	var t str
-	var pt []str = (*[100000000]str)(unsafe.Pointer(&t))[:]
+	var pt []str = c4goUnsafeConvert_str(&t)
 	// struct
 	_ = (t)
 	_ = (pt)
@@ -135,8 +135,32 @@ func test_struct() {
 // test_un - transpiled function from  C4GO/tests/code_quality/unsafe.c:36
 func test_un() {
 	var t un
-	var pt []un = (*[100000000]un)(unsafe.Pointer(&t))[:]
+	var pt []un = c4goUnsafeConvert_un(&t)
 	// union
 	_ = (t)
 	_ = (pt)
+}
+func c4goUnsafeConvert_str(c4go_name str) []str {
+	return (*[100000000]str)(unsafe.Pointer(&c4go_name))[:]
+}
+func c4goUnsafeConvert_un(c4go_name un) []un {
+	return (*[100000000]un)(unsafe.Pointer(&c4go_name))[:]
+}
+func c4goUnsafeConvert_byte(c4go_name byte) []byte {
+	return (*[100000000]byte)(unsafe.Pointer(&c4go_name))[:]
+}
+func c4goUnsafeConvert_int16(c4go_name int16) []int16 {
+	return (*[100000000]int16)(unsafe.Pointer(&c4go_name))[:]
+}
+func c4goUnsafeConvert_int32(c4go_name int32) []int32 {
+	return (*[100000000]int32)(unsafe.Pointer(&c4go_name))[:]
+}
+func c4goUnsafeConvert_int64(c4go_name int64) []int64 {
+	return (*[100000000]int64)(unsafe.Pointer(&c4go_name))[:]
+}
+func c4goUnsafeConvert_float32(c4go_name float32) []float32 {
+	return (*[100000000]float32)(unsafe.Pointer(&c4go_name))[:]
+}
+func c4goUnsafeConvert_float64(c4go_name float64) []float64 {
+	return (*[100000000]float64)(unsafe.Pointer(&c4go_name))[:]
 }
