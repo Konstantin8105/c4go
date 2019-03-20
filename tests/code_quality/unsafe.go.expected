@@ -1,0 +1,142 @@
+//
+//	Package - transpiled by c4go
+//
+//	If you have found any issues, please raise an issue at:
+//	https://github.com/Konstantin8105/c4go/
+//
+
+package code_quality
+
+import "unsafe"
+
+// str - transpiled function from  C4GO/tests/code_quality/unsafe.c:9
+type str struct {
+	i int32
+}
+
+type un struct{ memory unsafe.Pointer }
+
+func (unionVar *un) copy() un {
+	var buffer [8]byte
+	for i := range // un - transpiled function from  C4GO/tests/code_quality/unsafe.c:13
+	buffer {
+		buffer[i] = (*((*[8]byte)(unionVar.memory)))[i]
+	}
+	var newUnion un
+	newUnion.memory = unsafe.Pointer(&buffer)
+	return newUnion
+}
+func (unionVar *un) i() *int32 {
+	if unionVar.memory == nil {
+		var buffer [8]byte
+		unionVar.memory = unsafe.Pointer(&buffer)
+	}
+	return (*int32)(unionVar.memory)
+}
+func (unionVar *un) d() *float64 {
+	if unionVar.memory == nil {
+		var buffer [8]byte
+		unionVar.memory = unsafe.Pointer(&buffer)
+	}
+	return (*float64)(unionVar.memory)
+}
+
+// test_char - transpiled function from  C4GO/tests/code_quality/unsafe.c:19
+func test_char() {
+	var t byte
+	var pt []byte = (*[100000000]byte)(unsafe.Pointer(&t))[:]
+	// integers
+	_ = (t)
+	_ = (pt)
+}
+
+// test_short - transpiled function from  C4GO/tests/code_quality/unsafe.c:20
+func test_short() {
+	var t int16
+	var pt []int16 = (*[100000000]int16)(unsafe.Pointer(&t))[:]
+	_ = (t)
+	_ = (pt)
+}
+
+// test_int - transpiled function from  C4GO/tests/code_quality/unsafe.c:21
+func test_int() {
+	var t int32
+	var pt []int32 = (*[100000000]int32)(unsafe.Pointer(&t))[:]
+	_ = (t)
+	_ = (pt)
+}
+
+// test_long - transpiled function from  C4GO/tests/code_quality/unsafe.c:22
+func test_long() {
+	var t int32
+	var pt []int32 = (*[100000000]int32)(unsafe.Pointer(&t))[:]
+	_ = (t)
+	_ = (pt)
+}
+
+// test_li - transpiled function from  C4GO/tests/code_quality/unsafe.c:23
+func test_li() {
+	var t int32
+	var pt []int32 = (*[100000000]int32)(unsafe.Pointer(&t))[:]
+	_ = (t)
+	_ = (pt)
+}
+
+// test_ll - transpiled function from  C4GO/tests/code_quality/unsafe.c:24
+func test_ll() {
+	var t int64
+	var pt []int64 = (*[100000000]int64)(unsafe.Pointer(&t))[:]
+	_ = (t)
+	_ = (pt)
+}
+
+// test_lli - transpiled function from  C4GO/tests/code_quality/unsafe.c:25
+func test_lli() {
+	var t int64
+	var pt []int64 = (*[100000000]int64)(unsafe.Pointer(&t))[:]
+	_ = (t)
+	_ = (pt)
+}
+
+// test_f - transpiled function from  C4GO/tests/code_quality/unsafe.c:28
+func test_f() {
+	var t float32
+	var pt []float32 = (*[100000000]float32)(unsafe.Pointer(&t))[:]
+	// floats
+	_ = (t)
+	_ = (pt)
+}
+
+// test_d - transpiled function from  C4GO/tests/code_quality/unsafe.c:29
+func test_d() {
+	var t float64
+	var pt []float64 = (*[100000000]float64)(unsafe.Pointer(&t))[:]
+	_ = (t)
+	_ = (pt)
+}
+
+// test_ld - transpiled function from  C4GO/tests/code_quality/unsafe.c:30
+func test_ld() {
+	var t float64
+	var pt []float64 = (*[100000000]float64)(unsafe.Pointer(&t))[:]
+	_ = (t)
+	_ = (pt)
+}
+
+// test_struct - transpiled function from  C4GO/tests/code_quality/unsafe.c:33
+func test_struct() {
+	var t str
+	var pt []str = (*[100000000]str)(unsafe.Pointer(&t))[:]
+	// struct
+	_ = (t)
+	_ = (pt)
+}
+
+// test_un - transpiled function from  C4GO/tests/code_quality/unsafe.c:36
+func test_un() {
+	var t un
+	var pt []un = (*[100000000]un)(unsafe.Pointer(&t))[:]
+	// union
+	_ = (t)
+	_ = (pt)
+}
