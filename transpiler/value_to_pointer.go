@@ -45,7 +45,21 @@ func ConvertValueToPointer(nodes []ast.Node, p *program.Program) (expr goast.Exp
 		return
 	}
 
-	if !types.IsGoBaseType(resolvedType) {
+	var acceptable bool
+
+	if types.IsGoBaseType(resolvedType) {
+		acceptable = true
+	}
+
+	if str, ok := p.Structs[decl.Type]; ok && str.IsGlobal {
+		acceptable = true
+	}
+
+	if str, ok := p.Unions[decl.Type]; ok && str.IsGlobal {
+		acceptable = true
+	}
+
+	if !acceptable {
 		return nil, false
 	}
 
@@ -76,6 +90,13 @@ func GetUnsafeConvertDecls(p *program.Program) {
 		functionName := fmt.Sprintf("%s%s", unsafeConvertFunctionName, t)
 		varName := "c4go_name"
 		p.File.Decls = append(p.File.Decls, &goast.FuncDecl{
+			Doc: &goast.CommentGroup{
+				List: []*goast.Comment{
+					&goast.Comment{
+						Text: fmt.Sprintf("// %s : created by c4go\n", functionName),
+					},
+				},
+			},
 			Name: goast.NewIdent(functionName),
 			Type: &goast.FuncType{
 				Params: &goast.FieldList{

@@ -20,6 +20,9 @@ type Struct struct {
 	// The name of the struct.
 	Name string
 
+	// IsGlobal is true for case global struct
+	IsGlobal bool
+
 	// This field is used to avoid to dupplicate code for union case the type is the same.
 	Type TypeOfStruct
 
@@ -82,9 +85,10 @@ func NewStruct(p *Program, n *ast.RecordDecl) (st *Struct, err error) {
 	}
 
 	return &Struct{
-		Name:   n.Name,
-		Type:   t,
-		Fields: fields,
+		Name:     n.Name,
+		IsGlobal: p.Function == nil,
+		Type:     t,
+		Fields:   fields,
 	}, nil
 }
 

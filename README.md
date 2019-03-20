@@ -114,6 +114,8 @@ func main() {
 	}
 	return
 }
+
+// c4goUnsafeConvert_int32 : created by c4go
 func c4goUnsafeConvert_int32(c4go_name *int32) []int32 {
 	return (*[1000000]int32)(unsafe.Pointer(c4go_name))[:]
 }
@@ -164,6 +166,8 @@ func main() {
 	noarch.Printf([]byte("n      = %d\n\x00"), n)
 	return
 }
+
+// c4goUnsafeConvert_int32 : created by c4go
 func c4goUnsafeConvert_int32(c4go_name *int32) []int32 {
 	return (*[1000000]int32)(unsafe.Pointer(c4go_name))[:]
 }
@@ -293,6 +297,8 @@ func main() {
 	b(i7, 1)
 	return
 }
+
+// c4goUnsafeConvert_int32 : created by c4go
 func c4goUnsafeConvert_int32(c4go_name *int32) []int32 {
 	return (*[1000000]int32)(unsafe.Pointer(c4go_name))[:]
 }

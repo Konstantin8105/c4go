@@ -129,7 +129,7 @@ func test_ld() {
 // test_struct - transpiled function from  C4GO/tests/code_quality/unsafe.c:35
 func test_struct() {
 	var t str
-	var pt []str = (*[100000000]str)(unsafe.Pointer(&t))[:]
+	var pt []str = c4goUnsafeConvert_str(&t)
 	// struct
 	_ = (t)
 	_ = (pt)
@@ -138,7 +138,7 @@ func test_struct() {
 // test_un - transpiled function from  C4GO/tests/code_quality/unsafe.c:38
 func test_un() {
 	var t un
-	var pt []un = (*[100000000]un)(unsafe.Pointer(&t))[:]
+	var pt []un = c4goUnsafeConvert_un(&t)
 	// union
 	_ = (t)
 	_ = (pt)
@@ -152,21 +152,43 @@ func test_typedef() {
 	_ = db((t))
 	_ = (pt)
 }
+
+// c4goUnsafeConvert_byte : created by c4go
 func c4goUnsafeConvert_byte(c4go_name *byte) []byte {
 	return (*[1000000]byte)(unsafe.Pointer(c4go_name))[:]
 }
+
+// c4goUnsafeConvert_float32 : created by c4go
 func c4goUnsafeConvert_float32(c4go_name *float32) []float32 {
 	return (*[1000000]float32)(unsafe.Pointer(c4go_name))[:]
 }
+
+// c4goUnsafeConvert_float64 : created by c4go
 func c4goUnsafeConvert_float64(c4go_name *float64) []float64 {
 	return (*[1000000]float64)(unsafe.Pointer(c4go_name))[:]
 }
+
+// c4goUnsafeConvert_int16 : created by c4go
 func c4goUnsafeConvert_int16(c4go_name *int16) []int16 {
 	return (*[1000000]int16)(unsafe.Pointer(c4go_name))[:]
 }
+
+// c4goUnsafeConvert_int32 : created by c4go
 func c4goUnsafeConvert_int32(c4go_name *int32) []int32 {
 	return (*[1000000]int32)(unsafe.Pointer(c4go_name))[:]
 }
+
+// c4goUnsafeConvert_int64 : created by c4go
 func c4goUnsafeConvert_int64(c4go_name *int64) []int64 {
 	return (*[1000000]int64)(unsafe.Pointer(c4go_name))[:]
+}
+
+// c4goUnsafeConvert_str : created by c4go
+func c4goUnsafeConvert_str(c4go_name *str) []str {
+	return (*[1000000]str)(unsafe.Pointer(c4go_name))[:]
+}
+
+// c4goUnsafeConvert_un : created by c4go
+func c4goUnsafeConvert_un(c4go_name *un) []un {
+	return (*[1000000]un)(unsafe.Pointer(c4go_name))[:]
 }
