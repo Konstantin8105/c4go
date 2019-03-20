@@ -120,6 +120,9 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 		})
 	}
 
+	// add convertion value to slice
+	GetUnsafeConvertDecls(p)
+
 	// Add the imports after everything else so we can ensure that they are all
 	// placed at the top.
 	for _, quotedImportPath := range p.Imports() {

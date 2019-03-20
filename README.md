@@ -95,7 +95,7 @@ func main() {
 	var c int32
 	fmt.Printf("Enter a number\n")
 	// get value
-	noarch.Scanf([]byte("%d\x00"), (*[100000000]int32)(unsafe.Pointer(&n))[:])
+	noarch.Scanf([]byte("%d\x00"), c4goUnsafeConvert_int32(&n))
 	noarch.Printf([]byte("The number is: %d\n\x00"), n)
 	if n == 2 {
 		// -------
@@ -113,6 +113,9 @@ func main() {
 		}
 	}
 	return
+}
+func c4goUnsafeConvert_int32(c4go_name *int32) []int32 {
+	return (*[1000000]int32)(unsafe.Pointer(c4go_name))[:]
 }
 ```
 
@@ -146,7 +149,6 @@ int main()
 
 package main
 
-// #include </usr/include/math.h>
 import "C"
 
 import "github.com/Konstantin8105/c4go/noarch"
@@ -157,10 +159,13 @@ func main() {
 	var n int32
 	var param float64 = 8
 	var result float64
-	result = frexp(param, (*[100000000]int32)(unsafe.Pointer(&n))[:])
+	result = frexp(param, c4goUnsafeConvert_int32(&n))
 	noarch.Printf([]byte("result = %5.2f\n\x00"), result)
 	noarch.Printf([]byte("n      = %d\n\x00"), n)
 	return
+}
+func c4goUnsafeConvert_int32(c4go_name *int32) []int32 {
+	return (*[1000000]int32)(unsafe.Pointer(c4go_name))[:]
 }
 
 // Add c-binding for implemention function : `frexp`
@@ -186,7 +191,6 @@ void b(int v1[], int size)
     }
 }
 
-// main - transpiled function from  C4GO/examples/ap.c:14
 int main()
 {
     // value
@@ -229,6 +233,13 @@ int main()
 ```
 
 ```go
+//
+//	Package - transpiled by c4go
+//
+//	If you have found any issues, please raise an issue at:
+//	https://github.com/Konstantin8105/c4go/
+//
+
 package main
 
 import "unsafe"
@@ -250,17 +261,17 @@ func b(v1 []int32, size int32) {
 	}
 }
 
-// main - transpiled function from  C4GO/examples/ap.c:11
+// main - transpiled function from  C4GO/examples/ap.c:14
 func main() {
 	var i1 int32 = 42
 	// value
-	a((*[100000000]int32)(unsafe.Pointer(&i1))[:])
-	b((*[100000000]int32)(unsafe.Pointer(&i1))[:], 1)
+	a(c4goUnsafeConvert_int32(&i1))
+	b(c4goUnsafeConvert_int32(&i1), 1)
 	var i2 []int32 = []int32{11, 22}
 	// C-array
 	a(i2)
 	b(i2, 2)
-	var i3 []int32 = (*[100000000]int32)(unsafe.Pointer(&i1))[:]
+	var i3 []int32 = c4goUnsafeConvert_int32(&i1)
 	// C-pointer from value
 	a(i3)
 	b(i3, 1)
@@ -281,6 +292,9 @@ func main() {
 	a(i7)
 	b(i7, 1)
 	return
+}
+func c4goUnsafeConvert_int32(c4go_name *int32) []int32 {
+	return (*[1000000]int32)(unsafe.Pointer(c4go_name))[:]
 }
 ```
 

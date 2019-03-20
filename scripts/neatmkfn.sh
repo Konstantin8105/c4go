@@ -46,7 +46,7 @@ mkdir -p ./testdata/
 		WARNINGS_GO=`go build -o $GO_APP -gcflags="-e" $GO_FILE 2>&1 | wc -l`
 		echo "		Go build : $WARNINGS_GO warnings"
 	# amount unsafe
-		UNSAFE=`cat $GO_FILE | grep unsafe | wc -l`
+		UNSAFE=`cat $GO_FILE | grep "unsafe\." | wc -l`
 		echo "		Unsafe   : $UNSAFE"
 
 

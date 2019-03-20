@@ -28,6 +28,26 @@ var cIntegerType = []string{
 	"ptrdiff_t",
 }
 
+var goBaseTypes = [...]string{
+	"string",
+	"bool",
+	"int8", "uint8", "byte",
+	"int16", "uint16",
+	"int32", "rune", "uint32",
+	"int64", "uint64", "int",
+	"uint", "uintptr",
+	"float32", "float64",
+	"complex64", "complex128",
+}
+
+func IsGoBaseType(ctype string) bool {
+	for _, t := range goBaseTypes {
+		if ctype == t {
+			return true
+		}
+	}
+	return false
+}
 func IsSigned(p *program.Program, cType string) bool {
 	if !strings.Contains(cType, "unsigned") {
 		return true

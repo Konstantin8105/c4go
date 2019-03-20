@@ -193,6 +193,8 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 // UnaryOperator 'char **' prefix '&'
 // `-DeclRefExpr 'char *' lvalue Var 0x39b95f0 'line' 'char *'
 //
+// UnaryOperator 'float *' prefix '&'
+// `-DeclRefExpr 'float' lvalue Var 0x409e2a0 't' 'float'
 func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 	expr goast.Expr, eType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
@@ -265,11 +267,20 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 		return
 	}
 
-	p.AddImport("unsafe")
-	expr = util.CreateSliceFromReference(resolvedType, expr)
-
 	// We now have a pointer to the original type.
 	eType += " *"
+
+	p.AddImport("unsafe")
+
+	// UnaryOperator 'float *' prefix '&'
+	// `-DeclRefExpr 'float' lvalue Var 0x409e2a0 't' 'float'
+	if e, ok := ConvertValueToPointer(n.Children(), p); ok {
+		expr = e
+		return
+	}
+
+	expr = util.CreateSliceFromReference(resolvedType, expr)
+
 	return
 }
 

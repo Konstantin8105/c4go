@@ -35,13 +35,13 @@ func get() int32 {
 func main() {
 	var i1 int32 = 42
 	// value
-	a((*[100000000]int32)(unsafe.Pointer(&i1))[:])
-	b((*[100000000]int32)(unsafe.Pointer(&i1))[:], 1)
+	a(c4goUnsafeConvert_int32(&i1))
+	b(c4goUnsafeConvert_int32(&i1), 1)
 	var i2 []int32 = []int32{11, 22}
 	// C-array
 	a(i2)
 	b(i2, 2)
-	var i3 []int32 = (*[100000000]int32)(unsafe.Pointer(&i1))[:]
+	var i3 []int32 = c4goUnsafeConvert_int32(&i1)
 	// C-pointer from value
 	a(i3)
 	b(i3, 1)
@@ -79,4 +79,7 @@ func main() {
 	a(i11)
 	b(i11, 1)
 	return
+}
+func c4goUnsafeConvert_int32(c4go_name *int32) []int32 {
+	return (*[1000000]int32)(unsafe.Pointer(c4go_name))[:]
 }

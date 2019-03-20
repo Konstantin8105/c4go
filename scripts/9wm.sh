@@ -37,7 +37,7 @@ $C4GO transpile  -s                                          \
 	WARNINGS_GO=`go build -o $TEMP_FOLDER/9wm.app -gcflags="-e" $FILE 2>&1 | wc -l`
 	echo "		Go build : $WARNINGS_GO warnings"
 # amount unsafe
-	UNSAFE=`cat $FILE | grep unsafe | wc -l`
+	UNSAFE=`cat $FILE | grep "unsafe\." | wc -l`
 	echo "		Unsafe   : $UNSAFE"
 
 
