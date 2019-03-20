@@ -41,7 +41,10 @@ func (unionVar *un) d() *float64 {
 	return (*float64)(unionVar.memory)
 }
 
-// test_char - transpiled function from  C4GO/tests/code_quality/unsafe.c:19
+// db - transpiled function from  C4GO/tests/code_quality/unsafe.c:18
+type db = float64
+
+// test_char - transpiled function from  C4GO/tests/code_quality/unsafe.c:21
 func test_char() {
 	var t byte
 	var pt []byte = c4goUnsafeConvert_byte(&t)
@@ -50,7 +53,7 @@ func test_char() {
 	_ = (pt)
 }
 
-// test_short - transpiled function from  C4GO/tests/code_quality/unsafe.c:20
+// test_short - transpiled function from  C4GO/tests/code_quality/unsafe.c:22
 func test_short() {
 	var t int16
 	var pt []int16 = c4goUnsafeConvert_int16(&t)
@@ -58,7 +61,7 @@ func test_short() {
 	_ = (pt)
 }
 
-// test_int - transpiled function from  C4GO/tests/code_quality/unsafe.c:21
+// test_int - transpiled function from  C4GO/tests/code_quality/unsafe.c:23
 func test_int() {
 	var t int32
 	var pt []int32 = c4goUnsafeConvert_int32(&t)
@@ -66,7 +69,7 @@ func test_int() {
 	_ = (pt)
 }
 
-// test_long - transpiled function from  C4GO/tests/code_quality/unsafe.c:22
+// test_long - transpiled function from  C4GO/tests/code_quality/unsafe.c:24
 func test_long() {
 	var t int32
 	var pt []int32 = c4goUnsafeConvert_int32(&t)
@@ -74,7 +77,7 @@ func test_long() {
 	_ = (pt)
 }
 
-// test_li - transpiled function from  C4GO/tests/code_quality/unsafe.c:23
+// test_li - transpiled function from  C4GO/tests/code_quality/unsafe.c:25
 func test_li() {
 	var t int32
 	var pt []int32 = c4goUnsafeConvert_int32(&t)
@@ -82,7 +85,7 @@ func test_li() {
 	_ = (pt)
 }
 
-// test_ll - transpiled function from  C4GO/tests/code_quality/unsafe.c:24
+// test_ll - transpiled function from  C4GO/tests/code_quality/unsafe.c:26
 func test_ll() {
 	var t int64
 	var pt []int64 = c4goUnsafeConvert_int64(&t)
@@ -90,7 +93,7 @@ func test_ll() {
 	_ = (pt)
 }
 
-// test_lli - transpiled function from  C4GO/tests/code_quality/unsafe.c:25
+// test_lli - transpiled function from  C4GO/tests/code_quality/unsafe.c:27
 func test_lli() {
 	var t int64
 	var pt []int64 = c4goUnsafeConvert_int64(&t)
@@ -98,7 +101,7 @@ func test_lli() {
 	_ = (pt)
 }
 
-// test_f - transpiled function from  C4GO/tests/code_quality/unsafe.c:28
+// test_f - transpiled function from  C4GO/tests/code_quality/unsafe.c:30
 func test_f() {
 	var t float32
 	var pt []float32 = c4goUnsafeConvert_float32(&t)
@@ -107,7 +110,7 @@ func test_f() {
 	_ = (pt)
 }
 
-// test_d - transpiled function from  C4GO/tests/code_quality/unsafe.c:29
+// test_d - transpiled function from  C4GO/tests/code_quality/unsafe.c:31
 func test_d() {
 	var t float64
 	var pt []float64 = c4goUnsafeConvert_float64(&t)
@@ -115,7 +118,7 @@ func test_d() {
 	_ = (pt)
 }
 
-// test_ld - transpiled function from  C4GO/tests/code_quality/unsafe.c:30
+// test_ld - transpiled function from  C4GO/tests/code_quality/unsafe.c:32
 func test_ld() {
 	var t float64
 	var pt []float64 = c4goUnsafeConvert_float64(&t)
@@ -123,7 +126,7 @@ func test_ld() {
 	_ = (pt)
 }
 
-// test_struct - transpiled function from  C4GO/tests/code_quality/unsafe.c:33
+// test_struct - transpiled function from  C4GO/tests/code_quality/unsafe.c:35
 func test_struct() {
 	var t str
 	var pt []str = (*[100000000]str)(unsafe.Pointer(&t))[:]
@@ -132,12 +135,21 @@ func test_struct() {
 	_ = (pt)
 }
 
-// test_un - transpiled function from  C4GO/tests/code_quality/unsafe.c:36
+// test_un - transpiled function from  C4GO/tests/code_quality/unsafe.c:38
 func test_un() {
 	var t un
 	var pt []un = (*[100000000]un)(unsafe.Pointer(&t))[:]
 	// union
 	_ = (t)
+	_ = (pt)
+}
+
+// test_typedef - transpiled function from  C4GO/tests/code_quality/unsafe.c:41
+func test_typedef() {
+	var t db
+	var pt []db = c4goUnsafeConvert_float64(&t)
+	// typedef
+	_ = db((t))
 	_ = (pt)
 }
 func c4goUnsafeConvert_byte(c4go_name *byte) []byte {
