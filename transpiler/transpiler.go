@@ -8,6 +8,7 @@ import (
 	goast "go/ast"
 	"go/parser"
 	"go/token"
+	"sort"
 	"strings"
 	"unicode"
 
@@ -146,11 +147,15 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 		if len(ts) > 0 {
 			p.AddImport("unsafe")
 		}
-
+		var names []string
 		for t, _ := range ts {
+			names = append(names, t)
+		}
+		sort.Sort(sort.StringSlice(names))
+
+		for _, t := range names {
 			functionName := fmt.Sprintf("%s%s", unsafeConvertFunctionName, t)
 			varName := "c4go_name"
-			fmt.Println(functionName)
 			p.File.Decls = append(p.File.Decls, &goast.FuncDecl{
 				Name: goast.NewIdent(functionName),
 				Type: &goast.FuncType{
@@ -158,7 +163,7 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 						List: []*goast.Field{
 							&goast.Field{
 								Names: []*goast.Ident{goast.NewIdent(varName)},
-								Type:  goast.NewIdent(t),
+								Type:  goast.NewIdent("*" + t),
 							},
 						},
 					},
@@ -177,8 +182,12 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 					List: []goast.Stmt{
 						&goast.ReturnStmt{
 							Results: []goast.Expr{
-								util.CreateSliceFromReference(t,
-									goast.NewIdent(varName)),
+								&goast.SliceExpr{
+									X: util.NewCallExpr(fmt.Sprintf("(*[1000000]%s)", t),
+										util.NewCallExpr("unsafe.Pointer",
+											goast.NewIdent(varName)),
+									),
+								},
 							},
 						},
 					},
