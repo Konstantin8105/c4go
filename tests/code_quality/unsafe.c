@@ -15,6 +15,8 @@ union un{
 	double d;
 };
 
+typedef double db;
+
 // integers
 unsafetype(char,test_char)
 unsafetype(short,test_short)
@@ -34,3 +36,6 @@ unsafetype(struct str, test_struct)
 
 // union
 unsafetype(union un, test_un)
+
+// typedef
+unsafetype(db, test_typedef)
