@@ -141,11 +141,11 @@ void test_unsafe_pnt()
 
 void test_init()
 {
-	char ch[4][10] = {"\"", "\n", "\\", "a"};
-	is_streq(ch[0], "\"");
-	is_streq(ch[1], "\n");
-	is_streq(ch[2], "\\");
-	is_streq(ch[3], "a");
+    char ch[4][10] = { "\"", "\n", "\\", "a" };
+    is_streq(ch[0], "\"");
+    is_streq(ch[1], "\n");
+    is_streq(ch[2], "\\");
+    is_streq(ch[3], "a");
 }
 
 int main()
@@ -267,19 +267,19 @@ int main()
             pass("long to bool")
         }
     }
-	diag("equal slice");
-	{
-		{
-			char n[10] = "hey";
-			char m[10] = "boy";
-			is_true( n != m );
-		}
-		{
-			char *n = "hey";
-			char *m = "boy";
-			is_true( n != m );
-		}
-	}
+    diag("equal slice");
+    {
+        {
+            char n[10] = "hey";
+            char m[10] = "boy";
+            is_true(n != m);
+        }
+        {
+            char* n = "hey";
+            char* m = "boy";
+            is_true(n != m);
+        }
+    }
 
     char_overflow();
 

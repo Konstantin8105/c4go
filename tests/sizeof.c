@@ -107,8 +107,8 @@ int main()
     is_eq(sizeof(f), 48);
     is_streq(f[1], "b");
 
-	diag("MyNums");
-	is_eq(sizeof(struct MyNums), 104);
+    diag("MyNums");
+    is_eq(sizeof(struct MyNums), 104);
 
     done_testing();
 }

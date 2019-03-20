@@ -178,6 +178,7 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 
 	functionName := fmt.Sprintf("noarch.Not%s",
 		util.GetExportedName(t))
+	eType = "int"
 
 	return util.NewCallExpr(functionName, e),
 		eType, preStmts, postStmts, nil

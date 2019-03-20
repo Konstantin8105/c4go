@@ -559,17 +559,129 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			break
 		}
 
-		// UnaryOperator 0x358d470 <col:28, col:40> 'int' postfix '++'
-		// `-MemberExpr 0x358d438 <col:28, col:36> 'int' lvalue .pos 0x358b538
-		//   `-ArraySubscriptExpr 0x358d410 <col:28, col:34> 'struct struct_I_A':'struct struct_I_A' lvalue
-		//     |-ImplicitCastExpr 0x358d3f8 <col:28> 'struct struct_I_A *' <ArrayToPointerDecay>
-		//     | `-DeclRefExpr 0x358d3b0 <col:28> 'struct struct_I_A [2]' lvalue Var 0x358b6e8 'siia' 'struct struct_I_A [2]'
-		//     `-IntegerLiteral 0x358d3d8 <col:33> 'int' 0
+		// UnaryOperator 'char *' postfix '++'
+		// `-ParenExpr 'char *' lvalue
+		//   `-UnaryOperator 'char *' lvalue prefix '*'
+		//     `-ImplicitCastExpr 'char **' <LValueToRValue>
+		//       `-DeclRefExpr 'char **' lvalue Var 0x2699168 'bpp' 'char **'
+		//
+		// UnaryOperator 'int' postfix '++'
+		// `-MemberExpr 'int' lvalue .pos 0x358b538
+		//   `-ArraySubscriptExpr 'struct struct_I_A':'struct struct_I_A' lvalue
+		//     |-ImplicitCastExpr 'struct struct_I_A *' <ArrayToPointerDecay>
+		//     | `-DeclRefExpr 'struct struct_I_A [2]' lvalue Var 0x358b6e8 'siia' 'struct struct_I_A [2]'
+		//     `-IntegerLiteral 'int' 0
 		varName = "tempVar"
 
-		expr, exprType, preStmts, postStmts, err = transpileToExpr(v.Children()[0], p, false)
+		nextNode := v.Children()[0]
+		for {
+			if par, ok := nextNode.(*ast.ParenExpr); ok {
+				nextNode = par.ChildNodes[0]
+				continue
+			}
+			break
+		}
+		expr, exprType, preStmts, postStmts, err = transpileToExpr(nextNode, p, false)
 		if err != nil {
 			return
+		}
+
+		var exprResolveType string
+		exprResolveType, err = types.ResolveType(p, v.Type)
+		if err != nil {
+			return
+		}
+
+		if types.IsCPointer(v.Type, p) || types.IsCArray(v.Type, p) {
+			switch e := expr.(type) {
+			case *goast.IndexExpr:
+				if v.Operator == "++" {
+					// expr = 'bpp[0]'
+					// example of snippet:
+					//	func  () []byte{
+					//		tempVar = bpp[0]
+					//		defer func(){
+					//			bpp = bpp[1:]
+					//		}()
+					//		return tempVar
+					//	}
+					expr = util.NewAnonymousFunction(
+						// body :
+						append(preStmts, &goast.AssignStmt{
+							Lhs: []goast.Expr{util.NewIdent(varName)},
+							Tok: token.DEFINE,
+							Rhs: []goast.Expr{expr},
+						}),
+						// defer :
+						append([]goast.Stmt{
+							&goast.AssignStmt{
+								Lhs: []goast.Expr{
+									e,
+								},
+								Tok: token.ASSIGN,
+								Rhs: []goast.Expr{
+									&goast.SliceExpr{
+										X:      e,
+										Low:    goast.NewIdent("1"),
+										Slice3: false,
+									},
+								},
+							},
+						}, postStmts...),
+						// return :
+						util.NewIdent(varName),
+						exprResolveType)
+					preStmts = nil
+					postStmts = nil
+					return
+				}
+
+			case *goast.Ident:
+				if v.Operator == "++" {
+					// expr = 'p'
+					// example of snippet:
+					//	func  () [][]byte{
+					//		tempVar = p
+					//		defer func(){
+					//			p = p[1:]
+					//		}()
+					//		return tempVar
+					//	}
+					expr = util.NewAnonymousFunction(
+						// body :
+						append(preStmts, &goast.AssignStmt{
+							Lhs: []goast.Expr{util.NewIdent(varName)},
+							Tok: token.DEFINE,
+							Rhs: []goast.Expr{expr},
+						}),
+						// defer :
+						append([]goast.Stmt{
+							&goast.AssignStmt{
+								Lhs: []goast.Expr{
+									e,
+								},
+								Tok: token.ASSIGN,
+								Rhs: []goast.Expr{
+									&goast.SliceExpr{
+										X:      e,
+										Low:    goast.NewIdent("1"),
+										Slice3: false,
+									},
+								},
+							},
+						}, postStmts...),
+						// return :
+						util.NewIdent(varName),
+						exprResolveType)
+					preStmts = nil
+					postStmts = nil
+					return
+				}
+
+			default:
+				p.AddMessage(p.GenerateWarningMessage(
+					fmt.Errorf("transpilation pointer is not support: %T", e), v))
+			}
 		}
 
 		body := append(preStmts, &goast.AssignStmt{
@@ -602,12 +714,6 @@ func atomicOperation(n ast.Node, p *program.Program) (
 
 		body = append(body, preStmts...)
 		deferBody = append(deferBody, postStmts...)
-
-		var exprResolveType string
-		exprResolveType, err = types.ResolveType(p, v.Type)
-		if err != nil {
-			return
-		}
 
 		// operators: ++, --
 		if v.IsPrefix {
@@ -748,6 +854,9 @@ func atomicOperation(n ast.Node, p *program.Program) (
 
 	case *ast.ParenExpr:
 		// ParenExpr 0x3c42468 <col:18, col:40> 'int'
+		if len(n.Children()) == 1 {
+			return atomicOperation(n.Children()[0], p)
+		}
 		return
 
 	case *ast.ImplicitCastExpr:

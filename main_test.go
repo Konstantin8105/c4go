@@ -607,7 +607,7 @@ func TestCodeQuality(t *testing.T) {
 	// https://github.com/Konstantin8105/c4go/issues/376
 	// t.Parallel()
 
-	suffix := ".expected.c"
+	suffix := ".go.expected"
 
 	for i, file := range files {
 		if strings.HasSuffix(file, suffix) {

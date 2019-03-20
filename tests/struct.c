@@ -566,70 +566,72 @@ void test_extern_vec()
 }
 ext_vec Re;
 
-struct wb{
-	int i;
+struct wb {
+    int i;
 };
 
-int wb_test(struct wb * wb)
+int wb_test(struct wb* wb)
 {
-	return wb->i;
+    return wb->i;
 }
 
 void test_same_name()
 {
-	diag("=== same name ===");
-	{
-		struct wb wb;
-		wb.i = 42;
-		is_eq(wb_test(&wb),42);
-	}
-	{
-		struct wb tt;
-		tt.i = 42;
-		struct wb * wb;
-		wb = &tt;
-		is_eq(wb_test(wb),42);
-	}
-	{
-		struct wb wb[2];
-		wb[0].i = 42; wb[1].i = 42;
-		is_eq(wb_test(&(wb[0])),42);
-	}
-	diag("=================");
+    diag("=== same name ===");
+    {
+        struct wb wb;
+        wb.i = 42;
+        is_eq(wb_test(&wb), 42);
+    }
+    {
+        struct wb tt;
+        tt.i = 42;
+        struct wb* wb;
+        wb = &tt;
+        is_eq(wb_test(wb), 42);
+    }
+    {
+        struct wb wb[2];
+        wb[0].i = 42;
+        wb[1].i = 42;
+        is_eq(wb_test(&(wb[0])), 42);
+    }
+    diag("=================");
 }
 
 typedef int pointx;
-typedef struct  {
+typedef struct {
     pointx x;
     int y;
 } Point2;
-const Point2 p2[] = { { .y = 4, .x = 5 } };
-const Point2* getPoint(int index) {
+const Point2 p2[] = { {.y = 4, .x = 5 } };
+const Point2* getPoint(int index)
+{
     return &(p2[index]);
 }
 typedef unsigned char pcre_uchar;
 typedef unsigned char pcre_uint8;
 typedef unsigned int pcre_uint32;
 typedef struct spu {
-    pcre_uchar *hvm;
+    pcre_uchar* hvm;
 } spu;
 
-void pointer_arithm_in_struct() {
+void pointer_arithm_in_struct()
+{
     pcre_uchar str[] = "abcd";
     spu s;
-    spu *ps = &s;
+    spu* ps = &s;
     ps->hvm = &str[1];
     is_true(ps->hvm == &str[1]);
     ps->hvm += 2;
     is_true(ps->hvm == &str[3]);
-
 }
 
 int main()
 {
     plan(100);
 
-	pointer_arithm_in_struct();
+    pointer_arithm_in_struct();
     test_extern_vec();
     test_map_resize();
     struct_typ2();
@@ -644,7 +646,7 @@ int main()
     test_sizeofArray();
     test_structUsed();
     test_emptyname();
-	test_same_name();
+    test_same_name();
 
     struct programming variable;
     char* s = "Programming in Software Development.";
