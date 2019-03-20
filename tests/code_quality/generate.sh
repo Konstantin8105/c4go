@@ -8,7 +8,7 @@ for file in $FILES
 do
   filename=$(basename "$file")
   ext="${filename#*.}"
-  if [ "$ext" = "expected.c" ];  then
+  if [ "$ext" = "go.expected" ];  then
 	  continue
   fi
 

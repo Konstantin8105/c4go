@@ -14,14 +14,14 @@ func f1() {
 	}
 }
 
-// f2 - transpiled function from  C4GO/tests/code_quality/for.c:7
+// f2 - transpiled function from  C4GO/tests/code_quality/for.c:9
 func f2() {
 	var i int32
 	for i = 10; i > 0; i-- {
 	}
 }
 
-// f3 - transpiled function from  C4GO/tests/code_quality/for.c:13
+// f3 - transpiled function from  C4GO/tests/code_quality/for.c:17
 func f3() {
 	{
 		var i int32
