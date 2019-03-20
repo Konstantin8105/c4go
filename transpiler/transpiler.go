@@ -8,7 +8,6 @@ import (
 	goast "go/ast"
 	"go/parser"
 	"go/token"
-	"sort"
 	"strings"
 	"unicode"
 
@@ -121,6 +120,9 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 		})
 	}
 
+	// add convertion value to slice
+	GetUnsafeConvertDecls(p)
+
 	// Add the imports after everything else so we can ensure that they are all
 	// placed at the top.
 	for _, quotedImportPath := range p.Imports() {
@@ -136,64 +138,6 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 
 		importDecl.Specs = append(importDecl.Specs, importSpec)
 		p.File.Decls = append([]goast.Decl{importDecl}, p.File.Decls...)
-	}
-
-	// add convertion value to slice
-	{
-		ts := map[string]bool{}
-		for i := range p.UnsafeConvertValueToPointer {
-			ts[p.UnsafeConvertValueToPointer[i]] = true
-		}
-		if len(ts) > 0 {
-			p.AddImport("unsafe")
-		}
-		var names []string
-		for t, _ := range ts {
-			names = append(names, t)
-		}
-		sort.Sort(sort.StringSlice(names))
-
-		for _, t := range names {
-			functionName := fmt.Sprintf("%s%s", unsafeConvertFunctionName, t)
-			varName := "c4go_name"
-			p.File.Decls = append(p.File.Decls, &goast.FuncDecl{
-				Name: goast.NewIdent(functionName),
-				Type: &goast.FuncType{
-					Params: &goast.FieldList{
-						List: []*goast.Field{
-							&goast.Field{
-								Names: []*goast.Ident{goast.NewIdent(varName)},
-								Type:  goast.NewIdent("*" + t),
-							},
-						},
-					},
-					Results: &goast.FieldList{
-						List: []*goast.Field{
-							&goast.Field{
-								Type: &goast.ArrayType{
-									Lbrack: 1,
-									Elt:    goast.NewIdent(t),
-								},
-							},
-						},
-					},
-				},
-				Body: &goast.BlockStmt{
-					List: []goast.Stmt{
-						&goast.ReturnStmt{
-							Results: []goast.Expr{
-								&goast.SliceExpr{
-									X: util.NewCallExpr(fmt.Sprintf("(*[1000000]%s)", t),
-										util.NewCallExpr("unsafe.Pointer",
-											goast.NewIdent(varName)),
-									),
-								},
-							},
-						},
-					},
-				},
-			})
-		}
 	}
 
 	// generate Go source
@@ -216,8 +160,6 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 
 	return
 }
-
-const unsafeConvertFunctionName string = "c4goUnsafeConvert_"
 
 func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 	expr goast.Expr,

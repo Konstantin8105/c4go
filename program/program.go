@@ -102,8 +102,8 @@ type Program struct {
 	// preprocessor file
 	PreprocessorFile preprocessor.FilePP
 
-	// UnsafeConvertValueToPointer - simplification for convert value to pointer
-	UnsafeConvertValueToPointer []string
+	// unsafeConvertValueToPointer - simplification for convert value to pointer
+	UnsafeConvertValueToPointer map[string]bool
 }
 
 type commentPos struct {
@@ -155,6 +155,7 @@ func NewProgram() (p *Program) {
 		commentLine:                              map[string]commentPos{},
 		functionDefinitions:                      map[string]DefinitionFunction{},
 		builtInFunctionDefinitionsHaveBeenLoaded: false,
+		UnsafeConvertValueToPointer:              map[string]bool{},
 	}
 }
 

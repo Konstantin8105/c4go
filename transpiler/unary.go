@@ -274,25 +274,9 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 
 	// UnaryOperator 'float *' prefix '&'
 	// `-DeclRefExpr 'float' lvalue Var 0x409e2a0 't' 'float'
-	if len(n.Children()) == 1 {
-		var simplificate bool
-		if p.Function == nil {
-			simplificate = true
-		}
-		if types.IsGoBaseType(resolvedType) {
-			simplificate = true
-		}
-		if decl, ok := n.Children()[0].(*ast.DeclRefExpr); simplificate && ok {
-			// can simplify
-			p.UnsafeConvertValueToPointer = append(p.UnsafeConvertValueToPointer,
-				resolvedType)
-			expr = util.NewCallExpr(fmt.Sprintf("%s%s", unsafeConvertFunctionName, resolvedType),
-				&goast.UnaryExpr{
-					Op: token.AND,
-					X:  goast.NewIdent(decl.Name),
-				})
-			return
-		}
+	if e, ok := ConvertValueToPointer(n.Children(), p); ok {
+		expr = e
+		return
 	}
 
 	expr = util.CreateSliceFromReference(resolvedType, expr)

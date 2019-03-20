@@ -48,7 +48,6 @@ func IsGoBaseType(ctype string) bool {
 	}
 	return false
 }
-
 func IsSigned(p *program.Program, cType string) bool {
 	if !strings.Contains(cType, "unsigned") {
 		return true
