@@ -28,8 +28,19 @@ func ConvertValueToPointer(nodes []ast.Node, p *program.Program) (expr goast.Exp
 	if types.IsPointer(decl.Type, p) {
 		return nil, false
 	}
+	
+	// get base type if it typedef
+	var td string = decl.Type
+	for {
+		if t, ok :=p.TypedefType[td]; ok {
+			td = t
+			continue
+		}
+		break
+	}
 
-	resolvedType, err := types.ResolveType(p, decl.Type)
+
+	resolvedType, err := types.ResolveType(p, td)
 	if err != nil {
 		p.AddMessage(p.GenerateWarningMessage(err, decl))
 		return
