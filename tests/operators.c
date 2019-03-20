@@ -59,7 +59,7 @@ int reteg(int a)
 
 void view(int c)
 {
-	printf("%d\n",c);
+    printf("%d\n", c);
 }
 
 int main()
@@ -504,13 +504,13 @@ int main()
         flag &= ~(2 | 256 | 1024);
         is_eq(flag, 100);
     }
-	diag("unary + - ");
-	{
-		int c = 90;
-		view(+c);
-		view(-c);
-		is_eq(c,90);
-	}
+    diag("unary + - ");
+    {
+        int c = 90;
+        view(+c);
+        view(-c);
+        is_eq(c, 90);
+    }
 
     done_testing();
 }

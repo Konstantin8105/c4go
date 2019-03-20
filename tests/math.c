@@ -760,26 +760,24 @@ int main()
 
     diag("erf, erfc");
     is_eq(erf(1.0), 0.84270079294971489414);
-    printf("%.13f\n",erff(1.0f));
+    printf("%.13f\n", erff(1.0f));
     is_eq(erfl(1.0), 0.84270079294971489414);
     is_eq(erfc(1.0), 0.15729920705028513361);
-    printf("%.13f\n",erfcf(1.0f));
+    printf("%.13f\n", erfcf(1.0f));
     is_eq(erfcl(1.0), 0.15729920705028513361);
     is_eq(erf(1.0), 1 - erfc(1.0));
     printf("%.13f\n", erff(1.0f));
     printf("%.5f\n", 1.0f - erfcf(1.0f)); // TODO - not same
     is_eq(erfl(1.0), 1 - erfcl(1.0));
 
-
-	diag("frexp");
-	{
-		int n;
-		double param = 8.0, result;
-		result = frexp(param,&n);
-		is_eq(result, 0.5000);
-		is_eq(n     , 4);
-	}
-
+    diag("frexp");
+    {
+        int n;
+        double param = 8.0, result;
+        result = frexp(param, &n);
+        is_eq(result, 0.5000);
+        is_eq(n, 4);
+    }
 
     done_testing();
 }

@@ -348,20 +348,20 @@ void switch_char()
 
 int value()
 {
-	return 42;
+    return 42;
 }
 
 void switch_stat()
 {
-	int v = 15;
-	switch(v = value()) {
-	case 15:
-		fail("wrong");
-		break;
-	case 42: 
-		is_true(v == 42);
-		break;
-	}
+    int v = 15;
+    switch (v = value()) {
+    case 15:
+        fail("wrong");
+        break;
+    case 42:
+        is_true(v == 42);
+        break;
+    }
 }
 
 int main()
@@ -389,7 +389,7 @@ int main()
     empty_switch();
     default_only_switch();
     switch_without_input();
-	switch_stat();
+    switch_stat();
 
     done_testing();
 }
