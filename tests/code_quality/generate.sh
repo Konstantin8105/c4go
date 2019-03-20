@@ -13,6 +13,6 @@ do
   fi
 
   echo "Processing $file file..."
-  filename=${file%.*}".expected.c"
+  filename=${file%.*}".go.expected"
   ./c4go transpile -o="$filename" -p="code_quality" $file
 done
