@@ -85,28 +85,42 @@ import (
 // `- ...
 // <<<NULL>>>
 //
-func caseSplitter(node []ast.Node) (cs []ast.Node) {
+func caseSplitter(nodes ...ast.Node) (cs []ast.Node) {
+	if len(nodes) == 0 {
+		return
+	}
+	if len(nodes) > 1 {
+		for i := range nodes {
+			cs = append(cs, nodes[i])
+		}
+		return
+	}
+
+	node := nodes[0]
 	if node == nil {
 		return
 	}
 
 	for i := range node.Children() {
-		switch node.Children()[i] {
-		case *ast.CaseStmt:
-
+		if node.Children()[i] == nil {
+			continue
 		}
-
-	}
-
-	switch v := node.(type) {
-	case *ast.CompoundStmt:
-		for i := range body.Children() {
-			cs = append(cs, caseSplitter(body.Children()[i])...)
+		switch node.Children()[i].(type) {
+		case *ast.CompoundAssignOperator,
+			*ast.ParenExpr,
+			*ast.UnaryOperator,
+			*ast.CallExpr,
+			*ast.ArrayFiller,
+			*ast.SwitchStmt,
+			*ast.ForStmt,
+			*ast.IntegerLiteral,
+			*ast.BinaryOperator:
+			cs = append(cs, node.Children()[i])
+			continue
+		default:
+			fmt.Printf("caseSplitter: %T\n", node.Children()[i])
+			cs = append(cs, caseSplitter(node.Children()[i])...)
 		}
-		return
-
-	case *ast.CaseStmt, *ast.DefaultStmt:
-		// TODO
 	}
 
 	return
@@ -170,7 +184,14 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 	//       |-<<<NULL>>>
 	//       `-DefaultStmt
 	//         `- ...
-	cases := caseSplitter(body.Children()[i])
+	fmt.Println("================================================")
+	fmt.Println(ast.TypesTree(body))
+	fmt.Println("------------------------------------------------")
+	parts := caseSplitter(body.Children()...)
+	for i := range parts {
+		fmt.Println(ast.TypesTree(parts[i]))
+	}
+	fmt.Println("================================================")
 
 	// The body will always be a CompoundStmt because a switch statement is not
 	// valid without curly brackets.
