@@ -662,6 +662,19 @@ void test_double_array()
     // TODO : view_matrix(p,4,3);
 }
 
+static void trans(char * p)
+{
+	printf("trans = `%s`\n",p);
+}
+
+void test_func_byte()
+{
+	char * const gameOver = "game over";
+	trans(gameOver);
+	char * gameOver2 = "game over";
+	trans(gameOver2);
+}
+
 int main()
 {
     plan(184);
@@ -1200,6 +1213,7 @@ int main()
     }
     START_TEST(string_array);
     START_TEST(double_array);
+	START_TEST(func_byte);
 
     done_testing();
 }
