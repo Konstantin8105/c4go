@@ -13,43 +13,89 @@ import (
 	"github.com/Konstantin8105/c4go/types"
 )
 
-// CompoundStmt
+// From :
+// CaseStmt
+// |-UnaryOperator 'int' prefix '-'
+// | `-IntegerLiteral 'int' 1
+// |-<<<NULL>>>
 // `-CaseStmt
-//   |-UnaryOperator 'int' prefix '-'
-//   | `-IntegerLiteral 'int' 1
+//   |-BinaryOperator 'int' '-'
+//   | |- ...
 //   |-<<<NULL>>>
 //   `-CaseStmt
-//     |-BinaryOperator 'int' '-'
-//     | |- ...
+//     |- ...
 //     |-<<<NULL>>>
-//     `-CaseStmt
-//       |- ...
-//       |-<<<NULL>>>
-//       `-DefaultStmt
-//         `- ...
+//     `-DefaultStmt
+//       `- ...
+// To:
+// CaseStmt
+// |-UnaryOperator 'int' prefix '-'
+// | `-IntegerLiteral 'int' 1
+// `-<<<NULL>>>
+// <<<NULL>>>
+// CaseStmt
+// |-BinaryOperator 'int' '-'
+// | |- ...
+// `-<<<NULL>>>
+// <<<NULL>>>
+// CaseStmt
+// |- ...
+// |-<<<NULL>>>
+// `-DefaultStmt
+//   `- ...
+// <<<NULL>>>
 //
-// CompoundStmt
+// From:
 // |-CaseStmt
 // | `- ...
 // |-NullStmt
 // |-BreakStmt 0
 // |-CaseStmt
 // | `-...
+// To:
+// CaseStmt
+// `- ...
+// <<<NULL>>>
+// NullStmt
+// <<<NULL>>>
+// BreakStmt 0
+// <<<NULL>>>
+// CaseStmt
+// `-...
+// <<<NULL>>>
 //
-// CompoundStmt
+// From:
 // |-CaseStmt
 // | `- ...
 // |-CompoundAssignOperator  'int' '+=' ComputeLHSTy='int' ComputeResultTy='int'
-// | |-MemberExpr 'int' lvalue .y 0x3d08600
-// | | `- ...
 // | `-...
 // |-BreakStmt
 // |-CaseStmt
 // | |- ...
+// To:
+// `-CaseStmt
+//   `- ...
+// <<<NULL>>>
+// CompoundAssignOperator  'int' '+=' ComputeLHSTy='int' ComputeResultTy='int'
+// `-...
+// <<<NULL>>>
+// BreakStmt
+// <<<NULL>>>
+// CaseStmt
+// `- ...
+// <<<NULL>>>
 //
-func caseSplitter(node ast.Node) (cs []ast.Node) {
+func caseSplitter(node []ast.Node) (cs []ast.Node) {
 	if node == nil {
 		return
+	}
+
+	for i := range node.Children() {
+		switch node.Children()[i] {
+		case *ast.CaseStmt:
+
+		}
+
 	}
 
 	switch v := node.(type) {
