@@ -9,23 +9,23 @@ export VERIFICATION_FILE="./scripts/scripts.txt"
 
 echo "" > $OUTPUT_FILE
 
-./scripts/9wm.sh		| grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
+./scripts/9wm.sh		2>&1 | grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
 echo "" >> $OUTPUT_FILE
-./scripts/cis71.sh	| grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
+# ./scripts/cis71.sh		2>&1 | grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
+# echo "" >> $OUTPUT_FILE
+./scripts/ed.sh			2>&1 | grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
 echo "" >> $OUTPUT_FILE
-./scripts/ed.sh			| grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
+./scripts/neateqn.sh	2>&1 | grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
 echo "" >> $OUTPUT_FILE
-./scripts/neateqn.sh	| grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
+./scripts/neatmkfn.sh	2>&1 | grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
 echo "" >> $OUTPUT_FILE
-./scripts/neatmkfn.sh	| grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
+./scripts/neatpost.sh	2>&1 | grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
 echo "" >> $OUTPUT_FILE
-./scripts/neatpost.sh	| grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
+./scripts/neatrefer.sh	2>&1 | grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
 echo "" >> $OUTPUT_FILE
-./scripts/neatrefer.sh	| grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
+./scripts/neatroff.sh	2>&1 | grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
 echo "" >> $OUTPUT_FILE
-./scripts/neatroff.sh	| grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
-echo "" >> $OUTPUT_FILE
-./scripts/neatvi.sh		| grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
+./scripts/neatvi.sh		2>&1 | grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
 echo "" >> $OUTPUT_FILE
 
 # Arguments menu
