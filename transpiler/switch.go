@@ -221,7 +221,7 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 		}, p)
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 		preStmts = append(preStmts, newPre...)
-		preStmts = append(preStmts, stmt)
+		preStmts = append(preStmts, stmt.List...)
 		preStmts = append(preStmts, newPost...)
 	}
 
@@ -234,7 +234,7 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
-	// TODO:
+	// TODO
 	//
 	// For simplification switch case:
 	// from:
@@ -248,6 +248,21 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 	// case 3:
 	// 	var c int
 	// 	return
+	//
+	// from:
+	// case 2:
+	//  {
+	//  }
+	//  fallthrough
+	// case 3:
+	//  fallthrough
+	// case 4:
+	//  break
+	// to:
+	// case 2,3:
+	//  fallthrough
+	// case 4:
+	//  break
 	//
 
 	// Convert the normalized cases back into statements so they can be children
