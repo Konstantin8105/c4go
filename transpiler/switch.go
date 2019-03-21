@@ -86,12 +86,16 @@ import (
 // <<<NULL>>>
 //
 func caseSplitter(nodes ...ast.Node) (cs []ast.Node) {
+
+	if nodes == nil {
+		return
+	}
 	if len(nodes) == 0 {
 		return
 	}
 	if len(nodes) > 1 {
 		for i := range nodes {
-			cs = append(cs, nodes[i])
+			cs = append(cs, caseSplitter(nodes[i])...)
 		}
 		return
 	}
@@ -101,26 +105,49 @@ func caseSplitter(nodes ...ast.Node) (cs []ast.Node) {
 		return
 	}
 
-	for i := range node.Children() {
-		if node.Children()[i] == nil {
+	var ns []ast.Node
+	switch node.(type) {
+	case *ast.CompoundStmt:
+		ns = node.(*ast.CompoundStmt).ChildNodes
+		node.(*ast.CompoundStmt).ChildNodes = nil
+
+	case *ast.CaseStmt:
+		ns = node.(*ast.CaseStmt).ChildNodes
+		node.(*ast.CaseStmt).ChildNodes = nil
+
+	case *ast.DefaultStmt:
+		ns = node.(*ast.DefaultStmt).ChildNodes
+		node.(*ast.DefaultStmt).ChildNodes = nil
+	}
+
+	cs = append(cs, node)
+	cs = append(cs, caseSplitter(ns...)...)
+
+	return
+}
+
+func caseMerge(nodes []ast.Node) (pre, cs []ast.Node) {
+	for i := range nodes {
+		var isCaseType bool
+
+		if _, ok := nodes[i].(*ast.CaseStmt); ok {
+			isCaseType = true
+		}
+		if _, ok := nodes[i].(*ast.DefaultStmt); ok {
+			isCaseType = true
+		}
+
+		if isCaseType {
+			cs = append(cs, nodes[i])
 			continue
 		}
-		switch node.Children()[i].(type) {
-		case *ast.CompoundAssignOperator,
-			*ast.ParenExpr,
-			*ast.UnaryOperator,
-			*ast.CallExpr,
-			*ast.ArrayFiller,
-			*ast.SwitchStmt,
-			*ast.ForStmt,
-			*ast.IntegerLiteral,
-			*ast.BinaryOperator:
-			cs = append(cs, node.Children()[i])
+
+		if len(cs) == 0 {
+			pre = append(pre, nodes[i])
 			continue
-		default:
-			fmt.Printf("caseSplitter: %T\n", node.Children()[i])
-			cs = append(cs, caseSplitter(node.Children()[i])...)
 		}
+
+		cs[len(cs)-1].AddChild(nodes[i])
 	}
 
 	return
@@ -184,14 +211,19 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 	//       |-<<<NULL>>>
 	//       `-DefaultStmt
 	//         `- ...
-	fmt.Println("================================================")
-	fmt.Println(ast.TypesTree(body))
-	fmt.Println("------------------------------------------------")
 	parts := caseSplitter(body.Children()...)
-	for i := range parts {
-		fmt.Println(ast.TypesTree(parts[i]))
+	pre, parts := caseMerge(parts)
+	body.ChildNodes = parts
+
+	if len(pre) > 0 {
+		stmt, newPre, newPost, err := transpileCompoundStmt(&ast.CompoundStmt{
+			ChildNodes: pre,
+		}, p)
+		p.AddMessage(p.GenerateWarningMessage(err, n))
+		preStmts = append(preStmts, newPre...)
+		preStmts = append(preStmts, stmt)
+		preStmts = append(preStmts, newPost...)
 	}
-	fmt.Println("================================================")
 
 	// The body will always be a CompoundStmt because a switch statement is not
 	// valid without curly brackets.
