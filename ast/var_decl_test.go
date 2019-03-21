@@ -277,6 +277,24 @@ func TestVarDecl(t *testing.T) {
 			IsTls:        false,
 			ChildNodes:   []Node{},
 		},
+		`0x31ad060 <line:70:1, col:26> col:13 used restricted 'bool':'enum Bool' static cinit`: &VarDecl{
+			Addr:         0x31ad060,
+			Pos:          NewPositionFromString("line:70:1, col:26"),
+			Position2:    "col:13",
+			Name:         "restricted",
+			Type:         "bool",
+			Type2:        "enum Bool",
+			IsExtern:     false,
+			IsUsed:       true,
+			IsCInit:      true,
+			IsCallInit:   false,
+			IsNrvo:       false,
+			IsReferenced: false,
+			IsStatic:     true,
+			IsRegister:   false,
+			IsTls:        false,
+			ChildNodes:   []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)

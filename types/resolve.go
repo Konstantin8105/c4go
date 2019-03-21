@@ -259,13 +259,12 @@ func ResolveType(p *program.Program, s string) (resolveResult string, err error)
 	if s[len(s)-1] == '*' {
 		r := strings.TrimSpace(s[:len(s)-1])
 		r, err = ResolveType(p, r)
-		if err != nil {
-			err = fmt.Errorf("Cannot resolve star `*` for %v : %v", s, err)
-			return s, err
-		}
 		prefix := "[]"
 		if strings.Contains(r, "noarch.File") {
 			prefix = "*"
+		}
+		if err != nil {
+			err = fmt.Errorf("Cannot resolve star `*` for %v : %v", s, err)
 		}
 		return prefix + r, err
 	}
@@ -325,7 +324,7 @@ func ResolveType(p *program.Program, s string) (resolveResult string, err error)
 
 	errMsg := fmt.Sprintf(
 		"I couldn't find an appropriate Go type for the C type '%s'.", s)
-	return "interface{}", errors.New(errMsg)
+	return s, errors.New(errMsg)
 }
 
 // resolveType determines the Go type from a C type.

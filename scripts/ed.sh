@@ -28,7 +28,7 @@ mkdir -p ./testdata/
 
 # tranpilation
 $C4GO transpile  -cpuprofile=./testdata/cpu.out              \
-				 -s                                          \
+				 -s 										 \
 	             -o="$TEMP_FOLDER/$VERSION.go"               \
 				 -clang-flag="-DPROGVERSION=\"$VERSION\""    \
 				 $TEMP_FOLDER/$VERSION/$VERSION/*.c

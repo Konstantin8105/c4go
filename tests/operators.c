@@ -62,9 +62,21 @@ void view(int c)
     printf("%d\n", c);
 }
 
+enum Bool { false = 0, true = 1 };
+typedef enum Bool bool;
+static bool valGlobBool     = true;
+static int valGlobInt       = 42;
+static double valGlobDouble = 45.0;
+static bool restricted      = true;
+
 int main()
 {
-    plan(119);
+    plan(123);
+
+	is_eq(valGlobInt, 42);
+	is_eq(valGlobDouble, 45);
+	is_eq(valGlobBool, 1);
+	is_eq(restricted, 1);
 
     int i = 10;
     signed char j = 1;
