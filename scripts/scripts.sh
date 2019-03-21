@@ -11,7 +11,7 @@ echo "" > $OUTPUT_FILE
 
 ./scripts/9wm.sh		| grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
 echo "" >> $OUTPUT_FILE
-# ./scripts/cis71.sh	| grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
+./scripts/cis71.sh	| grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
 echo "" >> $OUTPUT_FILE
 ./scripts/ed.sh			| grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
 echo "" >> $OUTPUT_FILE
@@ -28,14 +28,10 @@ echo "" >> $OUTPUT_FILE
 ./scripts/neatvi.sh		| grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
 echo "" >> $OUTPUT_FILE
 
-if diff $OUTPUT_FILE $VERIFICATION_FILE >/dev/null ; then
-	echo "files are same"
+# Arguments menu
+echo "    -u update scripts result"
+if [ "$1" == "-u" ]; then
+	cat $OUTPUT_FILE > $VERIFICATION_FILE
 else
-	echo "--------------------------"
-	cat $VERIFICATION_FILE
-	echo "--------------------------"
-	cat $OUTPUT_FILE
-	echo "--------------------------"
-	diff $OUTPUT_FILE $VERIFICATION_FILE >&2
-	echo "--------------------------"
+	diff $OUTPUT_FILE $VERIFICATION_FILE 2>&1
 fi

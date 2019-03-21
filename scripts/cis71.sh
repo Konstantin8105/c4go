@@ -74,7 +74,7 @@ mkdir -p ./testdata/
 					-o="$f.go" $f
 			# show warnings comments in Go source
 				export FILE="$f.go"
-				echo "	***** warnings"
+				echo "Calculate warnings : $FILE"
 				WARNINGS=`cat $FILE | grep "^// Warning" | sort | uniq | wc -l`
 				echo "		After transpiling : $WARNINGS warnings."
 			# show amount error from `go build`:
