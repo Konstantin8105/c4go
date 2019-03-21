@@ -37,7 +37,7 @@ func transpileDeclRefExpr(n *ast.DeclRefExpr, p *program.Program) (
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 		if includeFile != "" && p.IncludeHeaderIsExists(includeFile) {
 			name := p.GetFunctionDefinition(n.Name).Substitution
-			if strings.Contains(name, ".") {
+			if strings.Contains(name, ".") && !strings.Contains(name, "github") {
 				p.AddImport(strings.Split(name, ".")[0])
 			}
 			return goast.NewIdent(name), n.Type, nil
