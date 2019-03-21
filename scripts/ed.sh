@@ -33,9 +33,9 @@ $C4GO transpile  -cpuprofile=./testdata/cpu.out              \
 				 -clang-flag="-DPROGVERSION=\"$VERSION\""    \
 				 $TEMP_FOLDER/$VERSION/$VERSION/*.c
 
+echo "Calculate warnings : $TEMP_FOLDER"
 # show warnings comments in Go source
 	export FILE="$TEMP_FOLDER/$VERSION.go"
-	echo "	***** warnings"
 	WARNINGS=`cat $FILE | grep "^// Warning" | sort | uniq | wc -l`
 	echo "		After transpiling : $WARNINGS warnings."
 # show amount error from `go build`:
