@@ -9,7 +9,7 @@ mkdir -p ./testdata/
 # prepare variables
 	export C4GO_DIR=$GOPATH/src/github.com/Konstantin8105/c4go
 	export C4GO=$C4GO_DIR/c4go
-	export TEMP_FOLDER="/tmp/CIS71"
+	export TEMP_FOLDER="./testdata/CIS71"
 
 # prepare C code
     if [ ! -d $TEMP_FOLDER ]; then

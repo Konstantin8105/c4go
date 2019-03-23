@@ -11,7 +11,7 @@ mkdir -p ./testdata/
 	export C4GO=$C4GO_DIR/c4go
 	export GIT_SOURCE="https://github.com/aligrudi/neateqn.git"
 	export NAME="neateqn"
-	export TEMP_FOLDER="/tmp/$NAME"
+	export TEMP_FOLDER="./testdata/$NAME"
 	export GO_FILE="$TEMP_FOLDER/$NAME.go"
 	export GO_APP="$TEMP_FOLDER/$NAME.app"
 
@@ -19,7 +19,7 @@ mkdir -p ./testdata/
     if [ ! -d $TEMP_FOLDER ]; then
 		mkdir -p $TEMP_FOLDER
 		git clone $GIT_SOURCE $TEMP_FOLDER
-		sed -i.bak -e '215,233d' /tmp/neateqn/eqn.c
+		sed -i.bak -e '215,233d' $TEMP_FOLDER/eqn.c
 	fi
 
 # remove go files from last transpilation
