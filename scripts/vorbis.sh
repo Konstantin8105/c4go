@@ -9,9 +9,9 @@ mkdir -p ./testdata/
 # prepare variables
 	export C4GO_DIR=$GOPATH/src/github.com/Konstantin8105/c4go
 	export C4GO=$C4GO_DIR/c4go
-	export GIT_SOURCE="https://github.com/aligrudi/neatmkfn.git"
-	export NAME="neatmkfn"
-	export TEMP_FOLDER="./testdata/$NAME"
+	export GIT_SOURCE="https://github.com/nothings/stb.git"
+	export NAME="vorbis"
+	export TEMP_FOLDER="testdata/$NAME"
 	export GO_FILE="$TEMP_FOLDER/$NAME.go"
 	export GO_APP="$TEMP_FOLDER/$NAME.app"
 
@@ -19,7 +19,6 @@ mkdir -p ./testdata/
     if [ ! -d $TEMP_FOLDER ]; then
 		mkdir -p $TEMP_FOLDER
 		git clone $GIT_SOURCE $TEMP_FOLDER
-		sed -i.bak '53,57d' $TEMP_FOLDER/otf.c
 	fi
 
 # remove go files from last transpilation
@@ -38,7 +37,7 @@ mkdir -p ./testdata/
 # show warnings comments in Go source
 	echo "Calculate warnings in file: $GO_FILE"
 	WARNINGS=`cat $GO_FILE | grep "^// Warning" | sort | uniq | wc -l`
-	echo "		After transpiling : $WARNINGS warnings."
+	echo "After transpiling : $WARNINGS warnings."
 
 # show other warnings
 	# show amount error from `go build`:
@@ -59,3 +58,5 @@ if [ "$1" == "-s" ]; then
 		# show amount error from `go build`:
 			go build -o $GO_APP -gcflags="-e" $GO_FILE 2>&1 | sort 
 fi
+
+

@@ -11,7 +11,7 @@ mkdir -p ./testdata/
 	export C4GO=$C4GO_DIR/c4go
 	export GIT_SOURCE="https://github.com/aligrudi/neatpost.git"
 	export NAME="neatpost"
-	export TEMP_FOLDER="/tmp/$NAME"
+	export TEMP_FOLDER="./testdata/$NAME"
 	export GO_FILE="$TEMP_FOLDER/$NAME.go"
 	export GO_APP="$TEMP_FOLDER/$NAME.app"
 

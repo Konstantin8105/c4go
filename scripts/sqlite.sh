@@ -16,7 +16,7 @@ export C4GO=$C4GO_DIR/c4go
 export SQLITE3_FILE=sqlite-amalgamation-3250200
 
 # Variable for location of temp sqlite files
-SQLITE_TEMP_FOLDER="/tmp/SQLITE"
+SQLITE_TEMP_FOLDER="./testdata/SQLITE"
 mkdir -p $SQLITE_TEMP_FOLDER
 
 # Download/unpack SQLite if required.
