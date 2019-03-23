@@ -39,3 +39,8 @@ Calculate warnings in file: /tmp/neatvi/neatvi.go
 		Go build : 7 warnings
 		Unsafe   : 76
 
+Calculate warnings in file: testdata/vorbis/vorbis.go
+After transpiling : 5 warnings.
+		Go build : 186 warnings
+		Unsafe   : 69
+
