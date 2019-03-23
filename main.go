@@ -190,6 +190,7 @@ func buildTree(nodes []treeNode, depth int) []ast.Node {
 			*ast.InlineCommandComment, *ast.ParagraphComment,
 			*ast.ParamCommandComment, *ast.TextComment,
 			*ast.VerbatimLineComment, *ast.VerbatimBlockComment,
+			*ast.AnnotateAttr,
 			*ast.VerbatimBlockLineComment:
 			continue
 

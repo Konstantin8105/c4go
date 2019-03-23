@@ -100,7 +100,7 @@ void test_rename()
 void test_fopen()
 {
     FILE* pFile;
-    pFile = fopen("/tmp/myfile.txt", "w");
+    pFile = fopen("./testdata/myfile.txt", "w");
     if (pFile != NULL) {
         is_not_null(pFile);
         fclose(pFile);
@@ -140,20 +140,20 @@ void test_tmpnam()
 
 void test_fclose()
 {
-    remove("/tmp/myfile.txt");
+    remove("./testdata/myfile.txt");
     FILE* pFile;
-    pFile = fopen("/tmp/myfile.txt", "w");
+    pFile = fopen("./testdata/myfile.txt", "w");
     fputs("fclose example", pFile);
     fclose(pFile);
     // remove temp file
-    is_eq(remove("/tmp/myfile.txt"), 0)
+    is_eq(remove("./testdata/myfile.txt"), 0)
 }
 
 void test_fflush()
 {
     char mybuffer[80];
     FILE* pFile;
-    pFile = fopen("/tmp/example.txt", "w+");
+    pFile = fopen("./testdata/example.txt", "w+");
     is_not_null(pFile) or_return();
 
     fputs("test", pFile);
@@ -161,17 +161,17 @@ void test_fflush()
     fgets(mybuffer, 80, pFile);
     fclose(pFile);
     // remove temp file
-    is_eq(remove("/tmp/example.txt"), 0)
+    is_eq(remove("./testdata/example.txt"), 0)
 }
 
 void test_fprintf()
 {
-    remove("/tmp/myfile1.txt");
+    remove("./testdata/myfile1.txt");
     FILE* pFile;
     int n;
     char* name = "John Smith";
 
-    pFile = fopen("/tmp/myfile1.txt", "w");
+    pFile = fopen("./testdata/myfile1.txt", "w");
     is_not_null(pFile);
 
     for (n = 0; n < 3; n++) {
@@ -180,12 +180,12 @@ void test_fprintf()
 
     fclose(pFile);
     // remove temp file
-    is_eq(remove("/tmp/myfile1.txt"), 0)
+    is_eq(remove("./testdata/myfile1.txt"), 0)
 }
 
 void test_fscanf()
 {
-    remove("/tmp/myfile2.txt");
+    remove("./testdata/myfile2.txt");
 
     char str[80];
     char end[80];
@@ -193,7 +193,7 @@ void test_fscanf()
     int i;
     FILE* pFile;
 
-    pFile = fopen("/tmp/myfile2.txt", "w+");
+    pFile = fopen("./testdata/myfile2.txt", "w+");
     is_not_null(pFile);
 
     fprintf(pFile, "%f \r\n %s %d %s", 3.1416, "PI", 42, "end");
@@ -212,7 +212,7 @@ void test_fscanf()
 
     // read again
     FILE* pFile2;
-    pFile2 = fopen("/tmp/myfile2.txt", "r");
+    pFile2 = fopen("./testdata/myfile2.txt", "r");
     is_not_null(pFile2);
 
     fscanf(pFile2, "%f", &f);
@@ -228,7 +228,7 @@ void test_fscanf()
     is_streq(end, "end");
 
     // remove temp file
-    is_eq(remove("/tmp/myfile2.txt"), 0)
+    is_eq(remove("./testdata/myfile2.txt"), 0)
 }
 
 void test_fgetc()
@@ -279,11 +279,11 @@ void test_fputs()
     FILE* pFile;
     char* sentence = "Hello, World";
 
-    pFile = fopen("/tmp/mylog.txt", "w");
+    pFile = fopen("./testdata/mylog.txt", "w");
     fputs(sentence, pFile);
     fclose(pFile);
     // remove temp file
-    is_eq(remove("/tmp/mylog.txt"), 0)
+    is_eq(remove("./testdata/mylog.txt"), 0)
 }
 
 void test_getc()
@@ -309,25 +309,25 @@ void test_putc()
     FILE* pFile;
     char c;
 
-    pFile = fopen("/tmp/whatever.txt", "w");
+    pFile = fopen("./testdata/whatever.txt", "w");
     for (c = 'A'; c <= 'Z'; c++) {
         putc(c, pFile);
     }
     fclose(pFile);
     // remove temp file
-    is_eq(remove("/tmp/whatever.txt"), 0)
+    is_eq(remove("./testdata/whatever.txt"), 0)
 }
 
 void test_fseek()
 {
     FILE* pFile;
-    pFile = fopen("/tmp/example.txt", "w");
+    pFile = fopen("./testdata/example.txt", "w");
     fputs("This is an apple.", pFile);
     fseek(pFile, 9, SEEK_SET);
     fputs(" sam", pFile);
     fclose(pFile);
     // remove temp file
-    is_eq(remove("/tmp/example.txt"), 0)
+    is_eq(remove("./testdata/example.txt"), 0)
 }
 
 void test_ftell()
@@ -378,11 +378,11 @@ void test_fread()
 void test_fwrite()
 {
     FILE* pFile;
-    pFile = fopen("/tmp/myfile.bin", "w");
+    pFile = fopen("./testdata/myfile.bin", "w");
     fwrite("xyz", 1, 3, pFile);
     fclose(pFile);
     // remove temp file
-    is_eq(remove("/tmp/myfile.bin"), 0)
+    is_eq(remove("./testdata/myfile.bin"), 0)
 }
 
 void test_fgetpos()
@@ -413,14 +413,14 @@ void test_fsetpos()
     FILE* pFile;
     fpos_t position;
 
-    pFile = fopen("/tmp/myfile.txt", "w");
+    pFile = fopen("./testdata/myfile.txt", "w");
     fgetpos(pFile, &position);
     fputs("That is a sample", pFile);
     fsetpos(pFile, &position);
     fputs("This", pFile);
     fclose(pFile);
     // remove temp file
-    is_eq(remove("/tmp/myfile.txt"), 0)
+    is_eq(remove("./testdata/myfile.txt"), 0)
 }
 
 void test_rewind()
@@ -429,7 +429,7 @@ void test_rewind()
     FILE* pFile;
     char buffer[27];
 
-    pFile = fopen("/tmp/myfile.txt", "w+");
+    pFile = fopen("./testdata/myfile.txt", "w+");
     for (n = 'A'; n <= 'Z'; n++)
         fputc(n, pFile);
     rewind(pFile);
@@ -440,7 +440,7 @@ void test_rewind()
     is_eq(strlen(buffer), 26);
 
     // remove temp file
-    is_eq(remove("/tmp/myfile.txt"), 0)
+    is_eq(remove("./testdata/myfile.txt"), 0)
 }
 
 void test_feof()
