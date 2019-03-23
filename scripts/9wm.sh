@@ -29,8 +29,8 @@ $C4GO transpile  -s                                          \
 	             -o="$FILE"                                  \
 				 $FILES
 
+echo "Calculate warnings : $TEMP_FOLDER"
 # show warnings comments in Go source
-	echo "	***** warnings"
 	WARNINGS=`cat $FILE | grep "^// Warning" | sort | uniq | wc -l`
 	echo "		After transpiling : $WARNINGS warnings."
 # show amount error from `go build`:
