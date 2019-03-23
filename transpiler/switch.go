@@ -128,6 +128,11 @@ func caseSplitter(nodes ...ast.Node) (cs []ast.Node) {
 
 func caseMerge(nodes []ast.Node) (pre, cs []ast.Node) {
 	for i := range nodes {
+		// ignore empty *ast.CompountStmt
+		if comp, ok := nodes[i].(*ast.CompoundStmt); ok && len(comp.Children()) == 0 {
+			continue
+		}
+
 		var isCaseType bool
 
 		if _, ok := nodes[i].(*ast.CaseStmt); ok {

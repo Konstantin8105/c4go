@@ -21,8 +21,6 @@ func switch_function() {
 		return
 		fallthrough
 	case 3:
-		{
-		}
 		var c int32
 		return
 		fallthrough
@@ -30,17 +28,11 @@ func switch_function() {
 		break
 		fallthrough
 	case 5:
-		{
-		}
 		break
 		fallthrough
 	case 6:
-		{
-		}
 		fallthrough
 	case 7:
-		{
-		}
 		var d int32
 		break
 	}
