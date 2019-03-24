@@ -84,7 +84,6 @@ func IsLastArray(s string) bool {
 }
 
 // ParseFunction - parsing elements of C function
-// TODO: const struct wordStr *(*const)(const char *, int)
 func ParseFunction(s string) (prefix string, funcname string, f []string, r []string, err error) {
 	defer func() {
 		if err != nil {

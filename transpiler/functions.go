@@ -290,7 +290,7 @@ func getFieldList(p *program.Program, f *ast.FunctionDecl, fieldTypes []string) 
 			if len(t) > 0 {
 				r = append(r, &goast.Field{
 					Names: []*goast.Ident{util.NewIdent(v.Name)},
-					Type:  util.NewTypeIdent(t),
+					Type:  goast.NewIdent(t),
 				})
 			}
 		}

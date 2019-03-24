@@ -641,4 +641,15 @@ struct wordStr {
 static const struct wordStr * wordQImpl(const char * ch, int y) {
 	return NULL;
 }
+
 static const struct wordStr * ( * const wordQ)(const char *, int) = wordQImpl;
+
+
+int v2(
+  int *db,
+  unsigned mTrace,
+  int(*xTrace)(unsigned,void*,void*,void*),
+  void *pArg 
+){
+	return 0;
+}
