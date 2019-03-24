@@ -76,7 +76,7 @@ struct UUU000{
 
 int main()
 {
-    plan(147);
+    plan(153);
 
 	is_eq(valGlobInt, 42);
 	is_eq(valGlobDouble, 45);
@@ -629,6 +629,43 @@ int main()
 		a = (*(b->mark + 0) = (43));
 		is_eq(a,43);
 		is_eq(*(b->mark),43);
+	}
+
+
+	diag("+= paren member");
+	{
+		struct sd10 {
+			int * mark10;
+		};
+		int a10 = 900;
+		struct sd10 c10  ;
+		int F = 76;
+		c10.mark10 = &F;
+		struct sd10 * b10 = &c10;
+		a10 = (*(b10->mark10) += (43));
+		is_eq(a10,43+76);
+		is_eq(*(b10->mark10),43+76);
+	}
+	diag("+= paren member 2");
+	{
+		struct sd20 {
+			int * mark;
+		};
+		int a = 900;
+		struct sd20 c  ;
+		int F = 98;
+		c.mark = &F;
+		struct sd20 * b = &c;
+		a = (*(b->mark + 0) += (43));
+		is_eq(a,43+98);
+		is_eq(*(b->mark),43+98);
+	}
+	diag("++ conv");
+	{
+		int a = 90;
+		long b = (long)++a;
+		is_eq(a,91);
+		is_eq(b,91);
 	}
 
     done_testing();

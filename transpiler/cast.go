@@ -221,8 +221,8 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 		return
 	}
 
-	expr, exprType, preStmts, postStmts, err = transpileToExpr(
-		n.Children()[0], p, exprIsStmt)
+	expr, exprType, preStmts, postStmts, err = atomicOperation(
+		n.Children()[0], p)
 	if err != nil {
 		return nil, "", nil, nil, err
 	}
