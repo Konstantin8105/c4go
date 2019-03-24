@@ -16,7 +16,7 @@ func switch_function() {
 	case (1):
 		return
 	case (2):
-		_ = (i)
+		_ = i
 		return
 	case 3:
 		var c int32

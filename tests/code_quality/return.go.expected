@@ -13,7 +13,7 @@ func a() {
 
 // r - transpiled function from  C4GO/tests/code_quality/return.c:6
 func r(y int32) {
-	_ = (y)
+	_ = y
 }
 
 // b - transpiled function from  C4GO/tests/code_quality/return.c:12
