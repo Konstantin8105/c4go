@@ -14,27 +14,19 @@ func switch_function() {
 	case (0):
 		fallthrough
 	case (1):
-		{
-			return
-		}
+		return
 	case (2):
-		{
-			_ = (i)
-			return
-		}
+		_ = (i)
+		return
 	case 3:
-		{
-			var c int32
-			return
-		}
+		var c int32
+		return
 	case 4:
 	case 5:
 	case 6:
 		fallthrough
 	case 7:
-		{
-			var d int32
-			break
-		}
+		var d int32
+		break
 	}
 }
