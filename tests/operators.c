@@ -69,9 +69,14 @@ static int valGlobInt       = 42;
 static double valGlobDouble = 45.0;
 static bool restricted      = true;
 
+typedef unsigned int u00;
+struct UUU000{
+	u00 u[2];
+};
+
 int main()
 {
-    plan(131);
+    plan(143);
 
 	is_eq(valGlobInt, 42);
 	is_eq(valGlobDouble, 45);
@@ -556,9 +561,46 @@ int main()
 		a = b = &val;
 		is_eq(*a,val);
 		is_eq(*b,val);
+		val = 42;
 		a = (b = &val);
 		is_eq(*a,val);
 		is_eq(*b,val);
+	}
+	diag("equal paren u00");
+	{
+		u00 a,b;
+		a = b = 44;
+		is_eq(a,44);
+		is_eq(b,44);
+		a = (b = 42);
+		is_eq(a,42);
+		is_eq(b,42);
+	}
+	diag("equal paren UUU000");
+	{
+		u00 a = 150;
+		struct UUU000 bs;
+		bs.u[0] = 100;
+		a = bs.u[0] = 44;
+		is_eq(a,44);
+		is_eq(bs.u[0],44);
+		a = (bs.u[0] = 42);
+		is_eq(a,42);
+		is_eq(bs.u[0],42);
+	}
+	diag("equal paren UUU000 pointer");
+	{
+		u00 a = 150;
+		u00 b = 100;
+		u00 *pb = &b;
+		a = (*pb = 42);
+		is_eq(a,42);
+		is_eq(b,42);
+
+		// check more complex
+		a = (*(pb) = (45));
+		is_eq(a,45);
+		is_eq(b,45);
 	}
 
     done_testing();
