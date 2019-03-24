@@ -266,19 +266,6 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 
 	// TODO
 	//
-	// For simplification switch case:
-	// from:
-	// case 3:
-	// 	{
-	// 		var c int
-	// 		return
-	// 	}
-	// 	fallthrough
-	// to:
-	// case 3:
-	// 	var c int
-	// 	return
-	//
 	// from:
 	// case 2:
 	//  {
@@ -294,6 +281,87 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 	// case 4:
 	//  break
 	//
+	// from:
+	// 		fallthrough
+	//		break
+	// to:
+	//		---
+
+	// cases with 1 or 2 nodes
+	// from :
+	//		{
+	//			...
+	//		}
+	//		break or return or fallthrough
+	// to:
+	//		...
+	//		break or return or fallthrough
+	for i := range cases {
+		body := cases[i].Body
+		if len(body) != 2 {
+			continue
+		}
+		var (
+			last    = body[len(body)-1]
+			prelast = body[len(body)-2]
+		)
+		br, ok := last.(*goast.BranchStmt)
+		if !ok || !(br.Tok == token.FALLTHROUGH || br.Tok == token.BREAK) {
+			continue
+		}
+		bl, ok := prelast.(*goast.BlockStmt)
+		if !ok {
+			continue
+		}
+
+		cases[i].Body = append(bl.List, br)
+	}
+
+	// from:
+	//		return
+	//		fallthrough
+	// to:
+	//		return
+	for i := range cases {
+		body := cases[i].Body
+		if len(body) < 2 {
+			continue
+		}
+		var (
+			last    = body[len(body)-1]
+			prelast = body[len(body)-2]
+		)
+		if br, ok := last.(*goast.BranchStmt); !ok || br.Tok != token.FALLTHROUGH {
+			continue
+		}
+		if _, ok := prelast.(*goast.ReturnStmt); !ok {
+			continue
+		}
+		cases[i].Body = cases[i].Body[:len(cases[i].Body)-1]
+	}
+
+	// from:
+	//		break
+	// 		fallthrough
+	// to:
+	//		---
+	for i := range cases {
+		body := cases[i].Body
+		if len(body) < 2 {
+			continue
+		}
+		var (
+			last    = body[len(body)-1]
+			prelast = body[len(body)-2]
+		)
+		if br, ok := last.(*goast.BranchStmt); !ok || br.Tok != token.FALLTHROUGH {
+			continue
+		}
+		if br, ok := prelast.(*goast.BranchStmt); !ok || br.Tok != token.BREAK {
+			continue
+		}
+		cases[i].Body = cases[i].Body[:len(cases[i].Body)-2]
+	}
 
 	// Convert the normalized cases back into statements so they can be children
 	// of goast.SwitchStmt.
