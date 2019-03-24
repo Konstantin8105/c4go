@@ -26,9 +26,7 @@ func switch_function() {
 	case 6:
 		fallthrough
 	case 7:
-		{
-			var d int32
-			break
-		}
+		var d int32
+		break
 	}
 }

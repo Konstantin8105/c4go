@@ -287,15 +287,15 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 	// to:
 	//		---
 
-	// cases with 1 or 2 nodes
+	// cases with 2 nodes
 	// from :
 	//		{
 	//			...
 	//		}
-	//		break or return or fallthrough
+	//		break or fallthrough
 	// to:
 	//		...
-	//		break or return or fallthrough
+	//		break or fallthrough
 	for i := range cases {
 		body := cases[i].Body
 		if len(body) != 2 {
@@ -361,6 +361,29 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 			continue
 		}
 		cases[i].Body = cases[i].Body[:len(cases[i].Body)-2]
+	}
+
+	// cases with 1 node
+	// from :
+	//		{
+	//			...
+	//		}
+	// to:
+	//		...
+	for i := range cases {
+		body := cases[i].Body
+		if len(body) != 1 {
+			continue
+		}
+		var (
+			last = body[len(body)-1]
+		)
+		bl, ok := last.(*goast.BlockStmt)
+		if !ok {
+			continue
+		}
+
+		cases[i].Body = bl.List
 	}
 
 	// Convert the normalized cases back into statements so they can be children
