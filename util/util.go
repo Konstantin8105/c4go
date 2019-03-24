@@ -84,6 +84,7 @@ func IsLastArray(s string) bool {
 }
 
 // ParseFunction - parsing elements of C function
+// TODO: const struct wordStr *(*const)(const char *, int)
 func ParseFunction(s string) (prefix string, funcname string, f []string, r []string, err error) {
 	defer func() {
 		if err != nil {
@@ -327,6 +328,13 @@ func CleanCType(s string) (out string) {
 	out = strings.Replace(out, "\r", "", -1)
 	list := []string{"const", "volatile", "__restrict", "restrict", "_Nullable"}
 	for _, word := range list {
+		// example :
+		// `const`
+		if out == word {
+			out = ""
+			continue
+		}
+
 		// examples :
 		// `const char  * *`
 		// `const struct parg_option`

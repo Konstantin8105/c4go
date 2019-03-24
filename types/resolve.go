@@ -392,7 +392,7 @@ func SeparateFunction(p *program.Program, s string) (
 		}
 		returns = append(returns, t)
 	}
-	prefix = pr
+	prefix = util.CleanCType(pr)
 	return
 }
 

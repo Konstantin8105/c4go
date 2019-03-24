@@ -71,7 +71,7 @@ static bool restricted      = true;
 
 int main()
 {
-    plan(123);
+    plan(131);
 
 	is_eq(valGlobInt, 42);
 	is_eq(valGlobDouble, 45);
@@ -538,6 +538,37 @@ int main()
         sflags |= SGR;
         is_eq(sflags, 5);
     }
+	diag("equal paren");
+	{
+		int a,b;
+		a = b = 42;
+		is_eq(a,42);
+		is_eq(b,42);
+		a = (b = 42);
+		is_eq(a,42);
+		is_eq(b,42);
+	}
+	diag("equal paren pointer");
+	{
+		int * a;
+		int * b;
+		int val = 45;
+		a = b = &val;
+		is_eq(*a,val);
+		is_eq(*b,val);
+		a = (b = &val);
+		is_eq(*a,val);
+		is_eq(*b,val);
+	}
 
     done_testing();
 }
+
+struct wordStr {
+	char * w;
+};
+
+static const struct wordStr * wordQImpl(const char * ch, int y) {
+	return NULL;
+}
+static const struct wordStr * ( * const wordQ)(const char *, int) = wordQImpl;
