@@ -76,7 +76,7 @@ struct UUU000{
 
 int main()
 {
-    plan(143);
+    plan(147);
 
 	is_eq(valGlobInt, 42);
 	is_eq(valGlobDouble, 45);
@@ -601,6 +601,34 @@ int main()
 		a = (*(pb) = (45));
 		is_eq(a,45);
 		is_eq(b,45);
+	}
+	diag("equal paren member");
+	{
+		struct sd1 {
+			int * mark1;
+		};
+		int a1 = 900;
+		struct sd1 c1  ;
+		int F = 76;
+		c1.mark1 = &F;
+		struct sd1 * b1 = &c1;
+		a1 = (*(b1->mark1) = (43));
+		is_eq(a1,43);
+		is_eq(*(b1->mark1),43);
+	}
+	diag("equal paren member 2");
+	{
+		struct sd2 {
+			int * mark;
+		};
+		int a = 900;
+		struct sd2 c  ;
+		int F = 98;
+		c.mark = &F;
+		struct sd2 * b = &c;
+		a = (*(b->mark + 0) = (43));
+		is_eq(a,43);
+		is_eq(*(b->mark),43);
 	}
 
     done_testing();
