@@ -105,11 +105,36 @@ func caseSplitter(nodes ...ast.Node) (cs []ast.Node) {
 		return
 	}
 
+	var compountWithCase func(ast.Node) bool
+	compountWithCase = func(node ast.Node) bool {
+		if node == nil {
+			return false
+		}
+
+		switch node.(type) {
+		case *ast.CaseStmt, *ast.DefaultStmt:
+			return true
+		}
+
+		for i, n := range node.Children() {
+			if _, ok := n.(*ast.SwitchStmt); ok {
+				continue
+			}
+			if compountWithCase(node.Children()[i]) {
+				return true
+			}
+		}
+
+		return false
+	}
+
 	var ns []ast.Node
 	switch node.(type) {
 	case *ast.CompoundStmt:
-		ns = node.(*ast.CompoundStmt).ChildNodes
-		node.(*ast.CompoundStmt).ChildNodes = nil
+		if compountWithCase(node) {
+			ns = node.(*ast.CompoundStmt).ChildNodes
+			node.(*ast.CompoundStmt).ChildNodes = nil
+		}
 
 	case *ast.CaseStmt:
 		ns = node.(*ast.CaseStmt).ChildNodes

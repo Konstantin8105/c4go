@@ -21,19 +21,25 @@ func switch_function() {
 		return
 		fallthrough
 	case 3:
-		var c int32
-		return
+		{
+			var c int32
+			return
+		}
 		fallthrough
 	case 4:
 		break
 		fallthrough
 	case 5:
-		break
+		{
+			break
+		}
 		fallthrough
 	case 6:
 		fallthrough
 	case 7:
-		var d int32
-		break
+		{
+			var d int32
+			break
+		}
 	}
 }
