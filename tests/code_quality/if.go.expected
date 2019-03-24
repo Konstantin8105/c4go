@@ -17,9 +17,9 @@ func if_1() {
 	} else if c <= a {
 		a = 0
 	}
-	_ = (a)
-	_ = (b)
-	_ = (c)
+	_ = a
+	_ = b
+	_ = c
 	var w int32 = func() int32 {
 		if 2 > 1 {
 			return -1

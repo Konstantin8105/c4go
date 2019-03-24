@@ -477,6 +477,12 @@ func transpileToNode(node ast.Node, p *program.Program) (
 		decls = nilFilterDecl(decls)
 	}()
 
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("error - panic : %#v", r)
+		}
+	}()
+
 	switch n := node.(type) {
 	case *ast.TranslationUnitDecl:
 		return transpileTranslationUnitDecl(p, n)

@@ -9,7 +9,7 @@ package code_quality
 
 // f - transpiled function from  C4GO/tests/code_quality/operators.c:1
 func f(d uint32) {
-	_ = (d)
+	_ = d
 }
 
 // operators_equals - transpiled function from  C4GO/tests/code_quality/operators.c:8
@@ -27,11 +27,11 @@ func operators_equals() {
 	var q3 int32 = 42
 	var q4 int64 = 42
 	var q5 int16 = 42
-	var w1 int32 = int32(int64((42)))
-	var w2 uint32 = uint32(int64((42)))
-	var w3 int32 = int32(int64((42)))
-	var w4 int64 = int64((42))
-	var w5 int16 = int16(int64((42)))
+	var w1 int32 = int32(int64(42))
+	var w2 uint32 = uint32(int64(42))
+	var w3 int32 = int32(int64(42))
+	var w4 int64 = int64(42)
+	var w5 int16 = int16(int64(42))
 	var s1 int32
 	var s2 uint32
 	var s3 int32

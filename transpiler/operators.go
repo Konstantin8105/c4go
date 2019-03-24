@@ -495,6 +495,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 	if err != nil {
 		return
 	}
+
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("Cannot create atomicOperation |%T|. err = %v", n, err)
@@ -1097,15 +1098,20 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			preStmts = nil
 			postStmts = nil
 
-			returnValue, _, _, _, _ := transpileToExpr(decl, p, false)
-			if d, ok := decl.(*ast.DeclRefExpr); ok &&
-				types.IsPointer(d.Type, p) && !types.IsPointer(v.Type, p) {
-				returnValue = &goast.IndexExpr{
-					X: returnValue,
-					Index: &goast.BasicLit{
-						Kind:  token.INT,
-						Value: "0",
-					},
+			var returnValue goast.Expr
+			if bin, ok := e.(*goast.BinaryExpr); ok {
+				returnValue = bin.X
+			} else {
+				returnValue, _, _, _, _ = transpileToExpr(decl, p, false)
+				if d, ok := decl.(*ast.DeclRefExpr); ok &&
+					types.IsPointer(d.Type, p) && !types.IsPointer(v.Type, p) {
+					returnValue = &goast.IndexExpr{
+						X: returnValue,
+						Index: &goast.BasicLit{
+							Kind:  token.INT,
+							Value: "0",
+						},
+					}
 				}
 			}
 
@@ -1135,12 +1141,20 @@ func getDeclRefExprOrArraySub(n ast.Node) (ast.Node, bool) {
 	switch v := n.(type) {
 	case *ast.DeclRefExpr:
 		return v, true
+	case *ast.ParenExpr:
+		return getDeclRefExprOrArraySub(n.Children()[0])
 	case *ast.ImplicitCastExpr:
 		return getDeclRefExprOrArraySub(n.Children()[0])
 	case *ast.UnaryOperator:
 		return getDeclRefExprOrArraySub(n.Children()[0])
 	case *ast.ArraySubscriptExpr:
 		return v, true
+	case *ast.BinaryOperator:
+		for i := range v.Children() {
+			if v, ok := getDeclRefExprOrArraySub(v.Children()[i]); ok {
+				return v, true
+			}
+		}
 	case *ast.MemberExpr:
 		return v, true
 	}

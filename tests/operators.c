@@ -69,9 +69,14 @@ static int valGlobInt       = 42;
 static double valGlobDouble = 45.0;
 static bool restricted      = true;
 
+typedef unsigned int u00;
+struct UUU000{
+	u00 u[2];
+};
+
 int main()
 {
-    plan(123);
+    plan(153);
 
 	is_eq(valGlobInt, 42);
 	is_eq(valGlobDouble, 45);
@@ -538,6 +543,150 @@ int main()
         sflags |= SGR;
         is_eq(sflags, 5);
     }
+	diag("equal paren");
+	{
+		int a,b;
+		a = b = 42;
+		is_eq(a,42);
+		is_eq(b,42);
+		a = (b = 42);
+		is_eq(a,42);
+		is_eq(b,42);
+	}
+	diag("equal paren pointer");
+	{
+		int * a;
+		int * b;
+		int val = 45;
+		a = b = &val;
+		is_eq(*a,val);
+		is_eq(*b,val);
+		val = 42;
+		a = (b = &val);
+		is_eq(*a,val);
+		is_eq(*b,val);
+	}
+	diag("equal paren u00");
+	{
+		u00 a,b;
+		a = b = 44;
+		is_eq(a,44);
+		is_eq(b,44);
+		a = (b = 42);
+		is_eq(a,42);
+		is_eq(b,42);
+	}
+	diag("equal paren UUU000");
+	{
+		u00 a = 150;
+		struct UUU000 bs;
+		bs.u[0] = 100;
+		a = bs.u[0] = 44;
+		is_eq(a,44);
+		is_eq(bs.u[0],44);
+		a = (bs.u[0] = 42);
+		is_eq(a,42);
+		is_eq(bs.u[0],42);
+	}
+	diag("equal paren UUU000 pointer");
+	{
+		u00 a = 150;
+		u00 b = 100;
+		u00 *pb = &b;
+		a = (*pb = 42);
+		is_eq(a,42);
+		is_eq(b,42);
+
+		// check more complex
+		a = (*(pb) = (45));
+		is_eq(a,45);
+		is_eq(b,45);
+	}
+	diag("equal paren member");
+	{
+		struct sd1 {
+			int * mark1;
+		};
+		int a1 = 900;
+		struct sd1 c1  ;
+		int F = 76;
+		c1.mark1 = &F;
+		struct sd1 * b1 = &c1;
+		a1 = (*(b1->mark1) = (43));
+		is_eq(a1,43);
+		is_eq(*(b1->mark1),43);
+	}
+	diag("equal paren member 2");
+	{
+		struct sd2 {
+			int * mark;
+		};
+		int a = 900;
+		struct sd2 c  ;
+		int F = 98;
+		c.mark = &F;
+		struct sd2 * b = &c;
+		a = (*(b->mark + 0) = (43));
+		is_eq(a,43);
+		is_eq(*(b->mark),43);
+	}
+
+
+	diag("+= paren member");
+	{
+		struct sd10 {
+			int * mark10;
+		};
+		int a10 = 900;
+		struct sd10 c10  ;
+		int F = 76;
+		c10.mark10 = &F;
+		struct sd10 * b10 = &c10;
+		a10 = (*(b10->mark10) += (43));
+		is_eq(a10,43+76);
+		is_eq(*(b10->mark10),43+76);
+	}
+	diag("+= paren member 2");
+	{
+		struct sd20 {
+			int * mark;
+		};
+		int a = 900;
+		struct sd20 c  ;
+		int F = 98;
+		c.mark = &F;
+		struct sd20 * b = &c;
+		a = (*(b->mark + 0) += (43));
+		is_eq(a,43+98);
+		is_eq(*(b->mark),43+98);
+	}
+	diag("++ conv");
+	{
+		int a = 90;
+		long b = (long)++a;
+		is_eq(a,91);
+		is_eq(b,91);
+	}
 
     done_testing();
+}
+
+struct wordStr {
+	char * w;
+};
+
+static const struct wordStr * wordQImpl(const char * ch, int y) {
+	return NULL;
+}
+
+static const struct wordStr * ( * const wordQ)(const char *, int) = wordQImpl;
+
+
+int v2(
+  int *db,
+  unsigned mTrace,
+  int(*xTrace)(unsigned,void*,void*,void*),
+  void *pArg 
+){
+	return 0;
 }
