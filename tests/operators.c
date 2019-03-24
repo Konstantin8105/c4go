@@ -76,7 +76,7 @@ struct UUU000{
 
 int main()
 {
-    plan(153);
+    plan(158);
 
 	is_eq(valGlobInt, 42);
 	is_eq(valGlobDouble, 45);
@@ -666,6 +666,32 @@ int main()
 		long b = (long)++a;
 		is_eq(a,91);
 		is_eq(b,91);
+	}
+	diag("chars compare");
+	{
+		char *s = "building\x00";
+		char *r = "build\x00";
+		if ( *r ) {
+			pass("r is valid");
+		}
+		if ( *s ) {
+			pass("s is valid");
+		}
+		char qwe[4];
+		if ( *r && s + 2 < s + sizeof(qwe)) {
+			pass("expression is valid");
+		}
+		(void)(qwe);
+		if (*r == ' '){
+			fail("not valid comparing");
+		}
+		if (*r == 'b'){
+			pass("valid comparing");
+		}
+		while ( *r && s + 2 < s + 4){
+			pass("while pass")
+			break;
+		}
 	}
 
     done_testing();

@@ -369,6 +369,7 @@ func pointerParts(node *ast.Node, p *program.Program) (
 			case *ast.CallExpr,
 				*ast.ArraySubscriptExpr,
 				*ast.MemberExpr,
+				*ast.UnaryExprOrTypeTraitExpr, // ignore sizeof
 				*ast.CStyleCastExpr:
 				return
 			}
