@@ -495,6 +495,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 	if err != nil {
 		return
 	}
+
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("Cannot create atomicOperation |%T|. err = %v", n, err)
@@ -1135,6 +1136,8 @@ func getDeclRefExprOrArraySub(n ast.Node) (ast.Node, bool) {
 	switch v := n.(type) {
 	case *ast.DeclRefExpr:
 		return v, true
+	case *ast.ParenExpr:
+		return getDeclRefExprOrArraySub(n.Children()[0])
 	case *ast.ImplicitCastExpr:
 		return getDeclRefExprOrArraySub(n.Children()[0])
 	case *ast.UnaryOperator:
