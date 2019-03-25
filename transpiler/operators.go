@@ -294,7 +294,11 @@ func pointerArithmetic(p *program.Program,
 		_ = printer.Fprint(&buf, token.NewFileSet(), right)
 		s.Condition = buf.String()
 	}
-	s.Type = resolvedLeftType[2:]
+
+	s.Type = resolvedLeftType
+	if resolvedLeftType != "interface{}" {
+		s.Type = resolvedLeftType[2:]
+	}
 
 	s.Operator = "+"
 	if operator == token.SUB {

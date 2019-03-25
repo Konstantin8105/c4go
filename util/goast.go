@@ -375,21 +375,60 @@ func GetUintptr(expr goast.Expr) goast.Expr {
 func GetUintptrForSlice(expr goast.Expr, sizeof int) (goast.Expr, string) {
 	returnType := "long long"
 
+	if sl, ok := expr.(*goast.SliceExpr); ok {
+		expr = &goast.IndexExpr{
+			X:     sl.X,
+			Index: sl.Low,
+		}
+	}
+
+	if _, ok := expr.(*goast.CallExpr); ok {
+		name := "c4go_temp_name"
+		expr = NewAnonymousFunction(
+			// body
+			[]goast.Stmt{
+				&goast.ExprStmt{
+					X: &goast.BinaryExpr{
+						X:  goast.NewIdent(name),
+						Op: token.DEFINE,
+						Y:  expr,
+					},
+				},
+			},
+			// defer
+			nil,
+			// returnValue
+			NewCallExpr("int64", NewCallExpr("uintptr", NewCallExpr("unsafe.Pointer",
+				&goast.StarExpr{
+					Star: 1,
+					X: &goast.CallExpr{
+						Fun:    goast.NewIdent("(**byte)"),
+						Lparen: 1,
+						Args: []goast.Expr{&goast.CallExpr{
+							Fun:    goast.NewIdent("unsafe.Pointer"),
+							Lparen: 1,
+							Args: []goast.Expr{
+								&goast.UnaryExpr{
+									Op: token.AND,
+									X:  goast.NewIdent(name),
+								},
+							},
+						}},
+					},
+				},
+			))),
+			// returnType
+			"int64",
+		)
+		return expr, returnType
+	}
+
 	return &goast.BinaryExpr{
 		X: NewCallExpr("int64", NewCallExpr("uintptr", NewCallExpr("unsafe.Pointer",
 			&goast.StarExpr{
 				Star: 1,
 				X: &goast.CallExpr{
-					Fun: &goast.ParenExpr{
-						Lparen: 1,
-						X: &goast.StarExpr{
-							Star: 1,
-							X: &goast.StarExpr{
-								Star: 1,
-								X:    goast.NewIdent("byte"),
-							},
-						},
-					},
+					Fun:    goast.NewIdent("(**byte)"),
 					Lparen: 1,
 					Args: []goast.Expr{&goast.CallExpr{
 						Fun:    goast.NewIdent("unsafe.Pointer"),

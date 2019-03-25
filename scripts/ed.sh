@@ -55,6 +55,6 @@ if [ "$1" == "-s" ]; then
 			# c4go warnings
 				cat $f | grep "^// Warning" | sort | uniq
 			# show amount error from `go build`:
-				go build -o $f.app -gcflags="-e" $f 2>&1 | sort 
+				go build -o $f.app -gcflags="-e" $f 2>&1
 		done
 fi

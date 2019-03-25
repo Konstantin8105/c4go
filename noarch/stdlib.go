@@ -15,8 +15,8 @@ import (
 
 // DivT is the representation of "div_t". It is used by div().
 type DivT struct {
-	Quot int // quotient
-	Rem  int // remainder
+	Quot int32 // quotient
+	Rem  int32 // remainder
 }
 
 // LdivT is the representation of "ldiv_t". It is used by ldiv().
@@ -36,7 +36,7 @@ type LldivT struct {
 // In C++, this function is also overloaded in header <cmath> for floating-point
 // types (see cmath abs), in header <complex> for complex numbers (see complex
 // abs), and in header <valarray> for valarrays (see valarray abs).
-func Abs(n int) int {
+func Abs(n int32) int32 {
 	if n < 0 {
 		return -n
 	}
@@ -177,7 +177,7 @@ func atoll(str []byte, radix int) (int64, int) {
 // Div returns the integral quotient and remainder of the division of numer by
 // denom ( numer/denom ) as a structure of type div_t, ldiv_t or lldiv_t, which
 // has two members: quot and rem.
-func Div(numer, denom int) DivT {
+func Div(numer, denom int32) DivT {
 	return DivT{
 		Quot: numer / denom,
 		Rem:  numer % denom,
@@ -354,7 +354,7 @@ func Strtoull(str []byte, endptr [][]byte, radix int) uint64 {
 // System executes the given external command with parameters. Unlike system(3)
 // in C, System (and the underlying golang exec) do not invoke the system
 // command processor.
-func System(str []byte) int {
+func System(str []byte) int32 {
 	input := string(str)
 	if input[len(input)-1] == '\x00' {
 		input = input[:len(input)-1]
@@ -389,7 +389,7 @@ func System(str []byte) int {
 	if err != nil {
 		if strings.HasPrefix(err.Error(), "exit status ") {
 			result, _ := strconv.Atoi(strings.Split(err.Error(), " ")[2])
-			return result
+			return int32(result)
 		} else {
 			return 1
 		}
