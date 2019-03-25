@@ -1,9 +1,13 @@
 package transpiler
 
 import (
+	"bytes"
 	"fmt"
 	goast "go/ast"
+	"go/parser"
+	"go/printer"
 	"go/token"
+	"html/template"
 	"sort"
 	"strings"
 
@@ -292,4 +296,132 @@ func CreateSliceFromReference(goType string, expr goast.Expr) goast.Expr {
 				}),
 		),
 	}
+}
+
+// pointerArithmetic - operations between 'int' and pointer
+// Example C code : ptr += i
+// ptr = (*(*[1]int)(unsafe.Pointer(uintptr(unsafe.Pointer(&ptr[0])) + (i)*unsafe.Sizeof(ptr[0]))))[:]
+// , where i  - right
+//        '+' - operator
+//      'ptr' - left
+//      'int' - leftType transpiled in Go type
+// Note:
+// 1) rigthType MUST be 'int'
+// 2) pointerArithmetic - implemented ONLY right part of formula
+// 3) right is MUST be positive value, because impossible multiply uintptr to (-1)
+func pointerArithmetic(p *program.Program,
+	left goast.Expr, leftType string,
+	right goast.Expr, rightType string,
+	operator token.Token) (
+	_ goast.Expr, _ string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("Cannot transpile pointerArithmetic. err = %v", err)
+		}
+	}()
+
+	if bl, ok := right.(*goast.BasicLit); ok && operator == token.ADD {
+		if bl.Value == "1" && bl.Kind == token.INT {
+			return &goast.SliceExpr{
+				X:      left,
+				Lbrack: 1,
+				Low: &goast.BasicLit{
+					Kind:  token.INT,
+					Value: "1",
+				},
+				Slice3: false,
+			}, leftType, preStmts, postStmts, nil
+		}
+	}
+
+	if !(types.IsCInteger(p, rightType) || rightType == "bool") {
+		err = fmt.Errorf("right type is not C integer type : '%s'", rightType)
+		return
+	}
+	if !types.IsPointer(leftType, p) {
+		err = fmt.Errorf("left type is not a pointer : '%s'", leftType)
+		return
+	}
+	right, err = types.CastExpr(p, right, rightType, "int")
+	if err != nil {
+		return
+	}
+
+	for {
+		if t, ok := p.TypedefType[leftType]; ok {
+			leftType = t
+			continue
+		}
+		break
+	}
+
+	resolvedLeftType, err := types.ResolveType(p, leftType)
+	if err != nil {
+		return
+	}
+
+	type pA struct {
+		Name      string // name of variable: 'ptr'
+		Type      string // type of variable: 'int','double'
+		Condition string // condition : '-1' ,'(-1+2-2)'
+		Operator  string // operator : '+', '-'
+	}
+
+	var s pA
+
+	{
+		var buf bytes.Buffer
+		_ = printer.Fprint(&buf, token.NewFileSet(), left)
+		s.Name = buf.String()
+	}
+	{
+		var buf bytes.Buffer
+		_ = printer.Fprint(&buf, token.NewFileSet(), right)
+		s.Condition = buf.String()
+	}
+
+	s.Type = resolvedLeftType
+	if resolvedLeftType != "interface{}" {
+		s.Type = resolvedLeftType[2:]
+	}
+
+	s.Operator = "+"
+	if operator == token.SUB {
+		s.Operator = "-"
+	}
+
+	src := `package main
+func main(){
+	a := (*(*[1000000000]{{ .Type }})(unsafe.Pointer(uintptr(
+			unsafe.Pointer(&{{ .Name }}[0])) {{ .Operator }}
+			(uintptr)({{ .Condition }})*unsafe.Sizeof({{ .Name }}[0]))))[:]
+}`
+	tmpl := template.Must(template.New("").Parse(src))
+	var source bytes.Buffer
+	err = tmpl.Execute(&source, s)
+	if err != nil {
+		err = fmt.Errorf("Cannot execute template. err = %v", err)
+		return
+	}
+
+	// Create the AST by parsing src.
+	fset := token.NewFileSet() // positions are relative to fset
+	body := strings.Replace(source.String(), "&#43;", "+", -1)
+	body = strings.Replace(body, "&amp;", "&", -1)
+	body = strings.Replace(body, "&#34;", "\"", -1)
+	body = strings.Replace(body, "&#39;", "'", -1)
+	body = strings.Replace(body, "&gt;", ">", -1)
+	body = strings.Replace(body, "&lt;", "<", -1)
+	// TODO: add unicode convertor
+	f, err := parser.ParseFile(fset, "", body, 0)
+	if err != nil {
+		body = strings.Replace(body, "\n", "", -1)
+		err = fmt.Errorf("Cannot parse file. err = %v. body = `%s`", err, body)
+		return
+	}
+
+	p.AddImport("unsafe")
+
+	return f.Decls[0].(*goast.FuncDecl).Body.List[0].(*goast.AssignStmt).Rhs[0],
+		leftType, preStmts, postStmts, nil
 }
