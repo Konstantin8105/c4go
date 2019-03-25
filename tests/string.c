@@ -1,12 +1,31 @@
 #include "tests.h"
 #include <string.h>
 
+static int clrcomp(char *s, int len)
+{
+	static char *digs = "0123456789abcdef";
+	int n = 0;
+	int i;
+	for (i = 0; i < len; i++)
+		if (strchr(digs, tolower(s[i])))
+			n = n * 16 + (strchr(digs, tolower(s[i])) - digs);
+	return len == 1 ? n * 255 / 15 : n;
+}
+
 int main()
 {
-    plan(43);
+    plan(45);
 
     diag("TODO: __builtin_object_size");
     // https://github.com/Konstantin8105/c4go/issues/359
+
+	diag("clrcomp");
+	{
+		char *word1 = "12";
+		is_eq(clrcomp(word1,2),18);
+		char *word2 = "qwe12";
+		is_eq(clrcomp(word2,5),3602);
+	}
 
     {
         diag("strcpy");
