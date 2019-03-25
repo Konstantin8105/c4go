@@ -171,42 +171,6 @@ func GetUnsafeConvertDecls(p *program.Program) {
 //		            Each stmt has `defer` functions.
 func GetPointerAddress(pnt goast.Expr, sizeof int) (rs goast.Expr, postStmts []goast.Stmt) {
 
-}
-
-//	SubTwoPnts function for implementation : (pointer1 - pointer2)
-func SubTwoPnts(pnt1, pnt2 goast.Expr, sizeof int) goast.Expr {
-	return &goast.BinaryExpr{
-		X:  GetPointerAddress(pnt1, sizeof),
-		Op: token.SUB,
-		Y:  GetPointerAddress(pnt2, sizeof),
-	}
-}
-
-func PntMorePnt(pnt1, pnt2 goast.Expr, sizeof int) goast.Expr {
-	return &goast.BinaryExpr{
-		X:  SubTwoPnts(pnt1, pnt2, sizeof),
-		Op: token.GTR, // >
-		Y:  goast.NewIdent("0"),
-	}
-}
-
-func PntLessPnt(pnt1, pnt2 goast.Expr, sizeof int) goast.Expr {
-	return PntMorePnt(pnt2, pnt1, sizeof)
-}
-
-func PntEqualPnt(pnt1, pnt2 goast.Expr, sizeof int) goast.Expr {
-	return &goast.BinaryExpr{
-		X:  SubTwoPnts(pnt1, pnt2, sizeof),
-		Op: token.EQL, // ==
-		Y:  goast.NewIdent("0"),
-	}
-}
-
-// GetUintptrForSlice - return uintptr for slice
-// Example : int64(uintptr(unsafe.Pointer((*(**int)(unsafe.Pointer(& ...slice... )))))))
-func GetUintptrForSlice(expr goast.Expr, sizeof int) (goast.Expr, string) {
-	returnType := "long long"
-
 	if _, ok := expr.(*goast.SelectorExpr); ok {
 		expr = &goast.IndexExpr{
 			X:     expr,
@@ -303,27 +267,55 @@ func GetUintptrForSlice(expr goast.Expr, sizeof int) (goast.Expr, string) {
 		return expr, returnType
 	}
 
-	return &goast.BinaryExpr{
-		X: util.NewCallExpr("int64", util.NewCallExpr("uintptr", util.NewCallExpr("unsafe.Pointer",
-			&goast.StarExpr{
-				Star: 1,
-				X: &goast.CallExpr{
-					Fun:    goast.NewIdent("(**byte)"),
-					Lparen: 1,
-					Args: []goast.Expr{&goast.CallExpr{
-						Fun:    goast.NewIdent("unsafe.Pointer"),
-						Lparen: 1,
-						Args: []goast.Expr{&goast.UnaryExpr{
-							Op: token.AND,
-							X:  expr,
-						}},
-					}},
+	// prepare postStmts
+
+	// main result expression
+	rs = &goast.BinaryExpr{
+		X: util.NewCallExpr("int64", util.NewCallExpr("uintptr",
+			util.NewCallExpr("unsafe.Pointer",
+				&goast.StarExpr{
+					Star: 1,
+					X: util.NewCallExpr("(**byte)", util.NewCallExpr("unsafe.Pointer",
+						&goast.UnaryExpr{Op: token.AND, X: expr},
+					)),
 				},
-			},
-		))),
+			),
+		)),
 		Op: token.QUO,
 		Y:  util.NewCallExpr("int64", goast.NewIdent(fmt.Sprintf("%d", sizeof))),
-	}, returnType
+	}
+
+	// return results
+	return
+}
+
+//	SubTwoPnts function for implementation : (pointer1 - pointer2)
+func SubTwoPnts(pnt1, pnt2 goast.Expr, sizeof int) goast.Expr {
+	return &goast.BinaryExpr{
+		X:  GetPointerAddress(pnt1, sizeof),
+		Op: token.SUB,
+		Y:  GetPointerAddress(pnt2, sizeof),
+	}
+}
+
+func PntMorePnt(pnt1, pnt2 goast.Expr, sizeof int) goast.Expr {
+	return &goast.BinaryExpr{
+		X:  SubTwoPnts(pnt1, pnt2, sizeof),
+		Op: token.GTR, // >
+		Y:  goast.NewIdent("0"),
+	}
+}
+
+func PntLessPnt(pnt1, pnt2 goast.Expr, sizeof int) goast.Expr {
+	return PntMorePnt(pnt2, pnt1, sizeof)
+}
+
+func PntEqualPnt(pnt1, pnt2 goast.Expr, sizeof int) goast.Expr {
+	return &goast.BinaryExpr{
+		X:  SubTwoPnts(pnt1, pnt2, sizeof),
+		Op: token.EQL, // ==
+		Y:  goast.NewIdent("0"),
+	}
 }
 
 // CreateSliceFromReference - create a slice, like :
