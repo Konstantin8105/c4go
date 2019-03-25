@@ -288,7 +288,7 @@ func CreateSliceFromReference(goType string, expr goast.Expr) goast.Expr {
 	//     p.AddImport("unsafe")
 	//
 	return &goast.SliceExpr{
-		X: util.NewCallExpr(fmt.Sprintf("(*[100000000]%s)", goType),
+		X: util.NewCallExpr(fmt.Sprintf("(*[1000000]%s)", goType),
 			util.NewCallExpr("unsafe.Pointer",
 				&goast.UnaryExpr{
 					X:  expr,
@@ -392,7 +392,7 @@ func pointerArithmetic(p *program.Program,
 
 	src := `package main
 func main(){
-	a := (*(*[1000000000]{{ .Type }})(unsafe.Pointer(uintptr(
+	a := (*(*[1000000]{{ .Type }})(unsafe.Pointer(uintptr(
 			unsafe.Pointer(&{{ .Name }}[0])) {{ .Operator }}
 			(uintptr)({{ .Condition }})*unsafe.Sizeof({{ .Name }}[0]))))[:]
 }`
