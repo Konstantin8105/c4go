@@ -675,9 +675,21 @@ void test_func_byte()
 	trans(gameOver2);
 }
 
+void test_negative_index()
+{
+	double ad[5] = {1.,2., 4., 5.,6.0};
+	is_eq(ad[0], 1.0);
+	double *p = ad;
+	p += 3;
+	is_eq(*p,5.0);
+	is_eq(p[-1],4.0);
+	double *ds = &(p[-1]);
+	is_eq(ds[-1], 2.0);
+}
+
 int main()
 {
-    plan(184);
+    plan(188);
 
     test_parg_struct();
     START_TEST(struct_init);
@@ -1214,6 +1226,7 @@ int main()
     START_TEST(string_array);
     START_TEST(double_array);
 	START_TEST(func_byte);
+	START_TEST(negative_index);
 
     done_testing();
 }
