@@ -273,7 +273,7 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 						return nil, "", nil, nil, err
 					}
 					var retType string
-					expr, retType = util.GetUintptrForSlice(expr, sizeof)
+					expr, retType = GetUintptrForSlice(expr, sizeof)
 
 					expr, err = types.CastExpr(p, expr, retType, n.Type)
 					if err != nil {

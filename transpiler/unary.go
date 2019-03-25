@@ -279,7 +279,7 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 		return
 	}
 
-	expr = util.CreateSliceFromReference(resolvedType, expr)
+	expr = CreateSliceFromReference(resolvedType, expr)
 
 	return
 }

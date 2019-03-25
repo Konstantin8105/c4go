@@ -76,7 +76,7 @@ struct UUU000{
 
 int main()
 {
-    plan(158);
+    plan(160);
 
 	is_eq(valGlobInt, 42);
 	is_eq(valGlobDouble, 45);
@@ -510,10 +510,9 @@ int main()
     diag("compare char pointer");
     {
         char* b = "happy new code";
-        char* c = b[3];
-        if (c < b) {
-            pass("ok");
-        }
+		is_true(&b[3] >  &b[0]);
+		is_true(&b[3] == &b[3]);
+		is_true(&b[3] <  &b[4]);
     }
     diag("kilo.c example");
     {

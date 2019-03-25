@@ -305,8 +305,8 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 		if err != nil {
 			return nil, "unknown53", nil, nil, err
 		}
-		left, leftType = util.GetUintptrForSlice(left, sizeof)
-		right, rightType = util.GetUintptrForSlice(right, sizeof)
+		left, leftType = GetUintptrForSlice(left, sizeof)
+		right, rightType = GetUintptrForSlice(right, sizeof)
 	}
 
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
@@ -455,8 +455,8 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 				if err != nil {
 					return nil, "unknown53a", nil, nil, err
 				}
-				left, _ = util.GetUintptrForSlice(left, sizeof)
-				right, _ = util.GetUintptrForSlice(right, sizeof)
+				left, _ = GetUintptrForSlice(left, sizeof)
+				right, _ = GetUintptrForSlice(right, sizeof)
 				p.AddImport("unsafe")
 			}
 		}
@@ -491,7 +491,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 
 					if !p.AddMessage(p.GenerateWarningMessage(err, n)) {
 						p.AddImport("unsafe")
-						right = util.CreateSliceFromReference(resolvedDeref, right)
+						right = CreateSliceFromReference(resolvedDeref, right)
 					}
 				}
 			}
