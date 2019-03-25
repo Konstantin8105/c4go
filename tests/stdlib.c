@@ -543,6 +543,12 @@ int main()
     test_strtol("123abc", 16, 1194684, "");
     test_strtol("123abc", 8, 83, "abc");
 
+	diag("abs int");
+	{
+		int h = -1000;
+		printf("%d %d\n", abs(h)/100, abs(h) %100);
+	}
+
     test_system();
 
     q_sort();
