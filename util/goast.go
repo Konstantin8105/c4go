@@ -375,6 +375,13 @@ func GetUintptr(expr goast.Expr) goast.Expr {
 func GetUintptrForSlice(expr goast.Expr, sizeof int) (goast.Expr, string) {
 	returnType := "long long"
 
+	if sl, ok := expr.(*goast.SliceExpr); ok {
+		expr = &goast.IndexExpr{
+			X:     sl.X,
+			Index: sl.Low,
+		}
+	}
+
 	return &goast.BinaryExpr{
 		X: NewCallExpr("int64", NewCallExpr("uintptr", NewCallExpr("unsafe.Pointer",
 			&goast.StarExpr{
