@@ -186,7 +186,7 @@ func GetUintptrForSlice(expr goast.Expr, sizeof int) (goast.Expr, string) {
 
 	if sl, ok := expr.(*goast.SliceExpr); ok {
 		if c, ok := sl.X.(*goast.CallExpr); ok {
-			if fin, ok := c.Fun.(*goast.Ident); ok && strings.Contains(fin.Name, "100000") {
+			if fin, ok := c.Fun.(*goast.Ident); ok && strings.Contains(fin.Name, "1000000") {
 				if len(c.Args) == 1 {
 					if cc, ok := c.Args[0].(*goast.CallExpr); ok {
 						if fin, ok := cc.Fun.(*goast.Ident); ok && strings.Contains(fin.Name, "unsafe.Pointer") {
