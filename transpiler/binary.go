@@ -451,8 +451,12 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			// `-ImplicitCastExpr 'char *' <LValueToRValue>
 			//   `-DeclRefExpr 'char *' lvalue Var 0x26ba8a8 'b' 'char *'
 			if types.IsCPointer(leftType, p) || types.IsCArray(leftType, p) {
-				left = util.GetUintptr(left)
-				right = util.GetUintptr(right)
+				sizeof, err := types.SizeOf(p, types.GetBaseType(leftType))
+				if err != nil {
+					return nil, "unknown53a", nil, nil, err
+				}
+				left, _ = util.GetUintptrForSlice(left, sizeof)
+				right, _ = util.GetUintptrForSlice(right, sizeof)
 				p.AddImport("unsafe")
 			}
 		}

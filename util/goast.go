@@ -302,8 +302,10 @@ func ConvertFunctionNameFromCtoGo(name string) string {
 	return name
 }
 
-// GetUintptr - return uintptr. Example : uintptr(unsafe.Pointer(&expr))
-func GetUintptr(expr goast.Expr) goast.Expr {
+// GetUintptrForSlice - return uintptr for slice
+// Example : int64(uintptr(unsafe.Pointer((*(**int)(unsafe.Pointer(& ...slice... )))))))
+func GetUintptrForSlice(expr goast.Expr, sizeof int) (goast.Expr, string) {
+	returnType := "long long"
 
 	if _, ok := expr.(*goast.SelectorExpr); ok {
 		expr = &goast.IndexExpr{
@@ -357,28 +359,6 @@ func GetUintptr(expr goast.Expr) goast.Expr {
 					}
 				}
 			}
-		}
-	}
-
-	return NewCallExpr("uintptr",
-		NewCallExpr("unsafe.Pointer",
-			&goast.UnaryExpr{
-				Op: token.AND,
-				X:  expr,
-			},
-		),
-	)
-}
-
-// GetUintptrForSlice - return uintptr for slice
-// Example : uint64(uintptr(unsafe.Pointer((*(**int)(unsafe.Pointer(& ...slice... )))))))
-func GetUintptrForSlice(expr goast.Expr, sizeof int) (goast.Expr, string) {
-	returnType := "long long"
-
-	if sl, ok := expr.(*goast.SliceExpr); ok {
-		expr = &goast.IndexExpr{
-			X:     sl.X,
-			Index: sl.Low,
 		}
 	}
 
