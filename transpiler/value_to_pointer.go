@@ -142,6 +142,66 @@ func GetUnsafeConvertDecls(p *program.Program) {
 	return
 }
 
+// ---------------- POINTER OPERATIONS ---------------------------------------
+// Examples:
+//	1) pointer + integer - integer
+//	2) pointer1 > pointer2
+//	3) pointer1 == pointer2
+//	4) pointer1 - pointer2
+//	5) pointer to integer address
+//	6) integer address to pointer
+//	7) pointerType1 to pointerType2
+//
+// Simplification:
+//	1) pointer +/- integer
+//	2) (pointer1 - pointer2) >  0
+//	3) (pointer1 - pointer2) == 0
+//	4) (pointer1 - pointer2)
+//	5) pointer to integer address
+//	6) integer address to pointer
+//	7) pointerType1 to integer address to pointerType2
+//
+
+// GetPointerAddress - return goast expression with pointer address.
+// 		pnt       - goast expression. Foe example: `&a`, `&a[11]`.
+//		sizeof    - sizeof of C type.
+//		rs        - result goast expression.
+//		postStmts - slice of goast.Stmt for runtime.KeepAlive of pointer,
+//		            the best way kept that stmts at the end of function.
+//		            Each stmt has `defer` functions.
+func GetPointerAddress(pnt goast.Expr, sizeof int) (rs goast.Expr, postStmts []goast.Stmt) {
+
+}
+
+//	SubTwoPnts function for implementation : (pointer1 - pointer2)
+func SubTwoPnts(pnt1, pnt2 goast.Expr, sizeof int) goast.Expr {
+	return &goast.BinaryExpr{
+		X:  GetPointerAddress(pnt1, sizeof),
+		Op: token.SUB,
+		Y:  GetPointerAddress(pnt2, sizeof),
+	}
+}
+
+func PntMorePnt(pnt1, pnt2 goast.Expr, sizeof int) goast.Expr {
+	return &goast.BinaryExpr{
+		X:  SubTwoPnts(pnt1, pnt2, sizeof),
+		Op: token.GTR, // >
+		Y:  goast.NewIdent("0"),
+	}
+}
+
+func PntLessPnt(pnt1, pnt2 goast.Expr, sizeof int) goast.Expr {
+	return PntMorePnt(pnt2, pnt1, sizeof)
+}
+
+func PntEqualPnt(pnt1, pnt2 goast.Expr, sizeof int) goast.Expr {
+	return &goast.BinaryExpr{
+		X:  SubTwoPnts(pnt1, pnt2, sizeof),
+		Op: token.EQL, // ==
+		Y:  goast.NewIdent("0"),
+	}
+}
+
 // GetUintptrForSlice - return uintptr for slice
 // Example : int64(uintptr(unsafe.Pointer((*(**int)(unsafe.Pointer(& ...slice... )))))))
 func GetUintptrForSlice(expr goast.Expr, sizeof int) (goast.Expr, string) {
