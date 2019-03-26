@@ -230,6 +230,11 @@ var goKeywords = [...]string{
 	"uint", "uintptr",
 	"float32", "float64",
 	"complex64", "complex128",
+	// built-in
+	"len", "copy", "append", "cap", "close", "delete",
+	"make", "new", "panic", "recover", "real", "complex",
+	"imag", "print", "println", "error", "Type", "Type1",
+	"IntegerType", "FloatType", "ComplexType",
 }
 var letters string = "_qwertyuiopasdfghjklzxcvbnm1234567890><"
 

@@ -493,7 +493,7 @@ func PntBitCast(expr goast.Expr, cFrom, cTo string, p *program.Program) (
 		return
 	}
 
-	resolvedType = strings.Replace(resolvedType, "[]", "[1000000]", -1)
+	resolvedType = strings.Replace(resolvedType, "[]", "[1000000]", 1)
 
 	p.AddImport("unsafe")
 	rs = util.NewCallExpr("(*"+resolvedType+")", util.NewCallExpr("unsafe.Pointer",
