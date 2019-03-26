@@ -84,9 +84,11 @@ int main()
 
     diag("Structures");
     is_eq(sizeof(struct MyStruct), 16);
+    // TODO : is_eq(sizeof(struct MyStruct *), 8);
 
     diag("Unions");
     is_eq(sizeof(union MyUnion), 8);
+    // TODO : is_eq(sizeof(union MyUnion *), 8);
 
     diag("Function pointers");
     is_eq(sizeof(main), 1);

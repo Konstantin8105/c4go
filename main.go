@@ -216,7 +216,7 @@ var goKeywords = [...]string{
 	"fallthrough", "if", "range", "type", "continue", "for",
 	"import", "return", "var", "init",
 	// "struct",
-	// "_",
+	"_",
 	// "const",
 	// go packages
 	"fmt", "os", "math", "testing", "unsafe", "ioutil",

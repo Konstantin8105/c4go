@@ -309,12 +309,17 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			if err != nil {
 				return nil, "PointerOperation_unknown01", nil, nil, err
 			}
-			e, newPost := SubTwoPnts(left, leftType, right, rightType, sizeof)
+			var e goast.Expr
+			var newPost []goast.Stmt
+			e, newPost, err = SubTwoPnts(left, leftType, right, rightType, sizeof)
+			if err != nil {
+				return nil, "PointerOperation_unknown02", nil, nil, err
+			}
 			postStmts = append(postStmts, newPost...)
 
 			expr, err = types.CastExpr(p, e, "long long", n.Type)
 			if err != nil {
-				return nil, "PointerOperation_unknown01", nil, nil, err
+				return nil, "PointerOperation_unknown03", nil, nil, err
 			}
 			eType = n.Type
 			return
@@ -328,17 +333,23 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			var sizeof int
 			sizeof, err = types.SizeOf(p, types.GetBaseType(leftType))
 			if err != nil {
-				return nil, "PointerOperation_unknown02", nil, nil, err
+				return nil, "PointerOperation_unknown04", nil, nil, err
 			}
-			e, newPost := PntCmpPnt(
+			var e goast.Expr
+			var newPost []goast.Stmt
+			e, newPost, err = PntCmpPnt(
 				p,
 				left, leftType,
 				right, rightType,
 				sizeof, operator,
 			)
+			if err != nil {
+				return nil, "PointerOperation_unknown05", nil, nil, err
+			}
 			postStmts = append(postStmts, newPost...)
 			expr = e
 			eType = "bool"
+
 			return
 
 		case token.ASSIGN: // =

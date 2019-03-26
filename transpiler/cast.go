@@ -303,7 +303,10 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 					}
 					var retType string = "long long"
 					var newPost []goast.Stmt
-					expr, newPost = GetPointerAddress(expr, *t, sizeof)
+					expr, newPost, err = GetPointerAddress(expr, *t, sizeof)
+					if err != nil {
+						return nil, "", nil, nil, err
+					}
 					postStmts = append(postStmts, newPost...)
 
 					expr, err = types.CastExpr(p, expr, retType, n.Type)
