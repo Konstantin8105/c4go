@@ -363,7 +363,7 @@ func PntCmpPnt(
 			// val1  > nil
 			switch {
 			case isExprNil(val2):
-				if !util.IsFunction(val1Type) && val1Type != "void *" {
+				if !util.IsFunction(val1Type) && val1Type != "void *" && val1Type != "FILE *" {
 					val1 = util.NewCallExpr("len", val1)
 					val2 = goast.NewIdent("0")
 				}
@@ -375,7 +375,7 @@ func PntCmpPnt(
 				return
 
 			case isExprNil(val1):
-				if !util.IsFunction(val2Type) && val2Type != "void *" {
+				if !util.IsFunction(val2Type) && val2Type != "void *" && val2Type != "FILE *" {
 					val1 = goast.NewIdent("0")
 					val2 = util.NewCallExpr("len", val2)
 				}
