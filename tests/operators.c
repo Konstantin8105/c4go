@@ -692,6 +692,14 @@ int main()
 			break;
 		}
 	}
+	diag("pointer with & ");
+	{
+		double a = 43;
+		double * ptr = &a;
+		int pos = (int)((unsigned long) (ptr) & (unsigned long) 3l);
+		(void) pos;
+		(void) ptr;
+	}
 
     done_testing();
 }
