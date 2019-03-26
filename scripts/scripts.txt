@@ -1,13 +1,13 @@
 
 Calculate warnings : ./testdata/9wm
-		After transpiling : 5 warnings.
+		After transpiling : 4 warnings.
 		Go build : 12 warnings
-		Unsafe   : 409
+		Unsafe   : 413
 
 Calculate warnings : ./testdata/ed
-		After transpiling : 4 warnings.
+		After transpiling : 3 warnings.
 		Go build : 2 warnings
-		Unsafe   : 165
+		Unsafe   : 169
 
 Calculate warnings in file: ./testdata/neateqn/neateqn.go
 		After transpiling : 0 warnings.
@@ -20,9 +20,9 @@ Calculate warnings in file: ./testdata/neatmkfn/neatmkfn.go
 		Unsafe   : 34
 
 Calculate warnings in file: ./testdata/neatpost/neatpost.go
-		After transpiling : 2 warnings.
-		Go build : 47 warnings
-		Unsafe   : 34
+		After transpiling : 4 warnings.
+		Go build : 46 warnings
+		Unsafe   : 33
 
 Calculate warnings in file: ./testdata/neatrefer/neatrefer.go
 		After transpiling : 2 warnings.
@@ -30,9 +30,9 @@ Calculate warnings in file: ./testdata/neatrefer/neatrefer.go
 		Unsafe   : 14
 
 Calculate warnings in file: ./testdata/neatroff/neatroff.go
-		After transpiling : 4 warnings.
-		Go build : 24 warnings
-		Unsafe   : 203
+		After transpiling : 9 warnings.
+		Go build : 21 warnings
+		Unsafe   : 201
 
 Calculate warnings in file: ./testdata/neatvi/neatvi.go
 		After transpiling : 34 warnings.
