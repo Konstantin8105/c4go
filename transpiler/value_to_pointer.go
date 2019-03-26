@@ -334,11 +334,30 @@ func PntCmpPnt(
 	postStmts []goast.Stmt,
 ) {
 
-	// pointer operations
-	if operator == token.SUB { // -
+	switch operator {
+	case token.SUB: // -
 		sub, newPost := SubTwoPnts(val1, val2, sizeof)
 		postStmts = append(postStmts, newPost...)
 		return sub, postStmts
+	case token.LAND, token.LOR: // && ||
+		// TODO: add tests
+		var newPost []goast.Stmt
+		val1, newPost = PntCmpPnt(
+			val1, val1Type,
+			goast.NewIdent("nil"), types.NullPointer,
+			sizeof, token.EQL)
+		postStmts = append(postStmts, newPost...)
+		val2, newPost = PntCmpPnt(
+			val2, val2Type,
+			goast.NewIdent("nil"), types.NullPointer,
+			sizeof, token.EQL)
+		postStmts = append(postStmts, newPost...)
+		rs = &goast.BinaryExpr{
+			X:  val1,
+			Op: operator,
+			Y:  val2,
+		}
+		return
 	}
 
 	// > >= > <= ==
@@ -363,7 +382,7 @@ func PntCmpPnt(
 			// val1  > nil
 			switch {
 			case isExprNil(val2):
-				if !util.IsFunction(val1Type) && val1Type != "void *" && val1Type != "FILE *" {
+				if !util.IsFunction(val1Type) && val1Type != types.NullPointer && val1Type != "FILE *" {
 					val1 = util.NewCallExpr("len", val1)
 					val2 = goast.NewIdent("0")
 				}
@@ -375,7 +394,7 @@ func PntCmpPnt(
 				return
 
 			case isExprNil(val1):
-				if !util.IsFunction(val2Type) && val2Type != "void *" && val2Type != "FILE *" {
+				if !util.IsFunction(val2Type) && val2Type != types.NullPointer && val2Type != "FILE *" {
 					val1 = goast.NewIdent("0")
 					val2 = util.NewCallExpr("len", val2)
 				}

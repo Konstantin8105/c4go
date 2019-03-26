@@ -320,6 +320,8 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			return
 
 		case token.GTR, token.GEQ, // >  >=
+			token.LOR,            // ||
+			token.LAND,           // &&
 			token.LSS, token.LEQ, // <  <=
 			token.EQL, token.NEQ: // == !=
 
