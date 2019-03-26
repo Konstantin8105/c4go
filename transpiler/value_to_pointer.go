@@ -169,7 +169,7 @@ func GetUnsafeConvertDecls(p *program.Program) {
 //		postStmts - slice of goast.Stmt for runtime.KeepAlive of pointer,
 //		            the best way kept that stmts at the end of function.
 //		            Each stmt has `defer` functions.
-func GetPointerAddress(pnt goast.Expr, sizeof int) (rs goast.Expr, postStmts []goast.Stmt) {
+func GetPointerAddress(expr goast.Expr, sizeof int) (rs goast.Expr, postStmts []goast.Stmt) {
 
 	if _, ok := expr.(*goast.SelectorExpr); ok {
 		expr = &goast.IndexExpr{
@@ -228,7 +228,7 @@ func GetPointerAddress(pnt goast.Expr, sizeof int) (rs goast.Expr, postStmts []g
 
 	if _, ok := expr.(*goast.CallExpr); ok {
 		name := "c4go_temp_name"
-		expr = util.NewAnonymousFunction(
+		rs = util.NewAnonymousFunction(
 			// body
 			[]goast.Stmt{
 				&goast.ExprStmt{
@@ -264,7 +264,7 @@ func GetPointerAddress(pnt goast.Expr, sizeof int) (rs goast.Expr, postStmts []g
 			// returnType
 			"int64",
 		)
-		return expr, returnType
+		return
 	}
 
 	// prepare postStmts
@@ -290,32 +290,44 @@ func GetPointerAddress(pnt goast.Expr, sizeof int) (rs goast.Expr, postStmts []g
 }
 
 //	SubTwoPnts function for implementation : (pointer1 - pointer2)
-func SubTwoPnts(pnt1, pnt2 goast.Expr, sizeof int) goast.Expr {
-	return &goast.BinaryExpr{
-		X:  GetPointerAddress(pnt1, sizeof),
-		Op: token.SUB,
-		Y:  GetPointerAddress(pnt2, sizeof),
-	}
+func SubTwoPnts(val1, val2 goast.Expr, sizeof int) (rs goast.Expr, postStmts []goast.Stmt) {
+	x, newPost := GetPointerAddress(val1, sizeof)
+	postStmts = append(postStmts, newPost...)
+
+	y, newPost := GetPointerAddress(val2, sizeof)
+	postStmts = append(postStmts, newPost...)
+
+	rs = &goast.ParenExpr{X: &goast.BinaryExpr{X: x, Op: token.SUB, Y: y}}
+
+	return
 }
 
-func PntMorePnt(pnt1, pnt2 goast.Expr, sizeof int) goast.Expr {
-	return &goast.BinaryExpr{
-		X:  SubTwoPnts(pnt1, pnt2, sizeof),
-		Op: token.GTR, // >
+//		postStmts - slice of goast.Stmt for runtime.KeepAlive of pointer,
+//		            the best way kept that stmts at the end of function.
+//		            Each stmt has `defer` functions.
+func PntCmpPnt(val1, val2 goast.Expr, sizeof int, operator token.Token) (
+	rs goast.Expr,
+	postStmts []goast.Stmt,
+) {
+	// generate postStmts
+
+	// TODO: runtime.KeepAlive()
+
+	// pointer operations
+	if operator == token.SUB { // -
+	}
+
+	// > >= > <= ==
+	sub, newPost := SubTwoPnts(val1, val2, sizeof)
+	postStmts = append(postStmts, newPost...)
+
+	rs = &goast.BinaryExpr{
+		X:  sub,
+		Op: operator,
 		Y:  goast.NewIdent("0"),
 	}
-}
 
-func PntLessPnt(pnt1, pnt2 goast.Expr, sizeof int) goast.Expr {
-	return PntMorePnt(pnt2, pnt1, sizeof)
-}
-
-func PntEqualPnt(pnt1, pnt2 goast.Expr, sizeof int) goast.Expr {
-	return &goast.BinaryExpr{
-		X:  SubTwoPnts(pnt1, pnt2, sizeof),
-		Op: token.EQL, // ==
-		Y:  goast.NewIdent("0"),
-	}
+	return
 }
 
 // CreateSliceFromReference - create a slice, like :

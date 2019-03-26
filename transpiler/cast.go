@@ -263,28 +263,28 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 	// `-ParenExpr 'long *'
 	//   `-UnaryOperator 'long *' prefix '&'
 	//     `-DeclRefExpr 'long' lvalue Var 0x38cb568 'l' 'long'
-	if len(n.Children()) > 0 {
-		if types.IsCInteger(p, n.Type) {
-			if t, ok := ast.GetTypeIfExist(n.Children()[0]); ok {
-				if types.IsPointer(*t, p) {
-					// main information	: https://go101.org/article/unsafe.html
-					sizeof, err := types.SizeOf(p, types.GetBaseType(*t))
-					if err != nil {
-						return nil, "", nil, nil, err
-					}
-					var retType string
-					expr, retType = GetUintptrForSlice(expr, sizeof)
-
-					expr, err = types.CastExpr(p, expr, retType, n.Type)
-					if err != nil {
-						return nil, "", nil, nil, err
-					}
-
-					exprType = n.Type
-				}
-			}
-		}
-	}
+	// 	if len(n.Children()) > 0 {
+	// 		if types.IsCInteger(p, n.Type) {
+	// 			if t, ok := ast.GetTypeIfExist(n.Children()[0]); ok {
+	// 				if types.IsPointer(*t, p) {
+	// 					// main information	: https://go101.org/article/unsafe.html
+	// 					sizeof, err := types.SizeOf(p, types.GetBaseType(*t))
+	// 					if err != nil {
+	// 						return nil, "", nil, nil, err
+	// 					}
+	// 					var retType string
+	// 					expr, retType = GetUintptrForSlice(expr, sizeof)
+	//
+	// 					expr, err = types.CastExpr(p, expr, retType, n.Type)
+	// 					if err != nil {
+	// 						return nil, "", nil, nil, err
+	// 					}
+	//
+	// 					exprType = n.Type
+	// 				}
+	// 			}
+	// 		}
+	// 	}
 
 	return
 }

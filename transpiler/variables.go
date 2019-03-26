@@ -318,6 +318,38 @@ func transpileArraySubscriptExpr(n *ast.ArraySubscriptExpr, p *program.Program) 
 
 	children := n.Children()
 
+	if un, ok := children[1].(*ast.UnaryOperator); ok && un.Operator == "-" && un.IsPrefix {
+		// from:
+		//  ArraySubscriptExpr 'double' lvalue
+		//  |-ImplicitCastExpr 'double *' <LValueToRValue>
+		//  | `-DeclRefExpr 'double *' lvalue Var 0x2d19e58 'p' 'double *'
+		//  `-UnaryOperator 'int' prefix '-'
+		//    `-IntegerLiteral 'int' 1
+		// to:
+		//  BinaryOperator 'double *' '-'
+		//  |-ImplicitCastExpr 'double *' <LValueToRValue>
+		//  | `-DeclRefExpr 'double *' lvalue Var 0x2d19e58 'p' 'double *'
+		//  `-IntegerLiteral 'int' 1
+
+		t, ok := ast.GetTypeIfExist(children[0])
+		if ok {
+			bin := &ast.BinaryOperator{
+				Type:     *t,
+				Operator: "-",
+			}
+			bin.AddChild(n.Children()[0])
+			bin.AddChild(un.Children()[0])
+
+			expression, _, newPre, newPost, err := atomicOperation(bin, p)
+			preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+
+			return &goast.IndexExpr{
+				X:     expression,
+				Index: goast.NewIdent("0"),
+			}, n.Type, preStmts, postStmts, err
+		}
+	}
+
 	expression, _, newPre, newPost, err := transpileToExpr(children[0], p, false)
 	if err != nil {
 		return nil, "", nil, nil, err

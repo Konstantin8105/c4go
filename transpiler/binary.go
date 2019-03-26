@@ -299,14 +299,35 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 		err = fmt.Errorf("cannot atomic for right part. %v", err)
 		return nil, "unknown53", nil, nil, err
 	}
-	if types.IsPointer(leftType, p) && types.IsPointer(rightType, p) && operator == token.SUB {
-		p.AddImport("unsafe")
-		sizeof, err := types.SizeOf(p, types.GetBaseType(leftType))
-		if err != nil {
-			return nil, "unknown53", nil, nil, err
+
+	if types.IsPointer(leftType, p) && types.IsPointer(rightType, p) {
+		switch operator {
+		case token.SUB: // -
+			p.AddImport("unsafe")
+			var sizeof int
+			sizeof, err = types.SizeOf(p, types.GetBaseType(leftType))
+			if err != nil {
+				return nil, "PointerOperation_unknown01", nil, nil, err
+			}
+			e, newPost := SubTwoPnts(left, right, sizeof)
+			postStmts = append(postStmts, newPost...)
+			expr = e
+			eType = n.Type
+			return
+
+		case token.GTR, token.GEQ, token.LSS, token.LEQ, token.EQL: // >  >= <  <= ==
+			p.AddImport("unsafe")
+			var sizeof int
+			sizeof, err = types.SizeOf(p, types.GetBaseType(leftType))
+			if err != nil {
+				return nil, "PointerOperation_unknown02", nil, nil, err
+			}
+			e, newPost := PntCmpPnt(left, right, sizeof, operator)
+			postStmts = append(postStmts, newPost...)
+			expr = e
+			eType = "bool"
+			return
 		}
-		left, leftType = GetUintptrForSlice(left, sizeof)
-		right, rightType = GetUintptrForSlice(right, sizeof)
 	}
 
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
@@ -451,13 +472,16 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			// `-ImplicitCastExpr 'char *' <LValueToRValue>
 			//   `-DeclRefExpr 'char *' lvalue Var 0x26ba8a8 'b' 'char *'
 			if types.IsCPointer(leftType, p) || types.IsCArray(leftType, p) {
-				sizeof, err := types.SizeOf(p, types.GetBaseType(leftType))
-				if err != nil {
-					return nil, "unknown53a", nil, nil, err
-				}
-				left, _ = GetUintptrForSlice(left, sizeof)
-				right, _ = GetUintptrForSlice(right, sizeof)
-				p.AddImport("unsafe")
+
+				panic(n.Operator)
+
+				// sizeof, err := types.SizeOf(p, types.GetBaseType(leftType))
+				// if err != nil {
+				// return nil, "unknown53a", nil, nil, err
+				// }
+				// left, _ = GetUintptrForSlice(left, sizeof)
+				// right, _ = GetUintptrForSlice(right, sizeof)
+				// p.AddImport("unsafe")
 			}
 		}
 	}
