@@ -182,6 +182,9 @@ func GetPointerAddress(expr goast.Expr, sizeof int) (rs goast.Expr, postStmts []
 			rs = goast.NewIdent("0")
 			return
 		}
+	}
+
+	if _, ok := expr.(*goast.Ident); ok {
 		expr = &goast.IndexExpr{
 			X:     expr,
 			Index: goast.NewIdent("0"),
@@ -303,6 +306,7 @@ func GetPointerAddress(expr goast.Expr, sizeof int) (rs goast.Expr, postStmts []
 
 //	SubTwoPnts function for implementation : (pointer1 - pointer2)
 func SubTwoPnts(val1, val2 goast.Expr, sizeof int) (rs goast.Expr, postStmts []goast.Stmt) {
+
 	x, newPost := GetPointerAddress(val1, sizeof)
 	postStmts = append(postStmts, newPost...)
 
@@ -327,9 +331,38 @@ func PntCmpPnt(val1, val2 goast.Expr, sizeof int, operator token.Token) (
 
 	// pointer operations
 	if operator == token.SUB { // -
+		sub, newPost := SubTwoPnts(val1, val2, sizeof)
+		postStmts = append(postStmts, newPost...)
+		return sub, postStmts
 	}
 
 	// > >= > <= ==
+
+	// TODO:
+	//	{
+	//		// specific for operations with nil
+	//
+	//		xid, xok := val1.(*goast.Ident)
+	//		yid, yok := val2.(*goast.Ident)
+	//
+	//		if xok || yok {
+	//			var xnil, ynil bool
+	//			if xok {
+	//				xnil = xid.Name == "nil"
+	//			}
+	//			if yok {
+	//				ynil = yid.Name == "nil"
+	//			}
+	//
+	//			switch {
+	//			case xnil && ynil: // x is nil, y is nil - no need to do any
+	//
+	//			case xnil: // x is nil, y is not nil
+	//
+	//			case ynil: // x is not nil, y is nil
+	//			}
+	//		}
+	//	}
 	sub, newPost := SubTwoPnts(val1, val2, sizeof)
 	postStmts = append(postStmts, newPost...)
 

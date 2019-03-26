@@ -315,7 +315,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			eType = n.Type
 			return
 
-		case token.GTR, token.GEQ, token.LSS, token.LEQ, token.EQL: // >  >= <  <= ==
+		case token.GTR, token.GEQ, token.LSS, token.LEQ, token.EQL, token.NEQ: // >  >= <  <= == !=
 			p.AddImport("unsafe")
 			var sizeof int
 			sizeof, err = types.SizeOf(p, types.GetBaseType(leftType))
@@ -472,16 +472,8 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			// `-ImplicitCastExpr 'char *' <LValueToRValue>
 			//   `-DeclRefExpr 'char *' lvalue Var 0x26ba8a8 'b' 'char *'
 			if types.IsCPointer(leftType, p) || types.IsCArray(leftType, p) {
-
-				panic(n.Operator)
-
-				// sizeof, err := types.SizeOf(p, types.GetBaseType(leftType))
-				// if err != nil {
-				// return nil, "unknown53a", nil, nil, err
-				// }
-				// left, _ = GetUintptrForSlice(left, sizeof)
-				// right, _ = GetUintptrForSlice(right, sizeof)
-				// p.AddImport("unsafe")
+				err = fmt.Errorf("need add pointer operator : %v", n.Operator)
+				return
 			}
 		}
 	}
