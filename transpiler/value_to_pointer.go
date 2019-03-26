@@ -171,6 +171,10 @@ func GetUnsafeConvertDecls(p *program.Program) {
 //		            Each stmt has `defer` functions.
 func GetPointerAddress(expr goast.Expr, sizeof int) (rs goast.Expr, postStmts []goast.Stmt) {
 
+	// generate postStmts
+
+	// TODO: runtime.KeepAlive()
+
 	if par, ok := expr.(*goast.ParenExpr); ok {
 		// ignore parens
 		return GetPointerAddress(par.X, sizeof)
@@ -325,9 +329,6 @@ func PntCmpPnt(val1, val2 goast.Expr, sizeof int, operator token.Token) (
 	rs goast.Expr,
 	postStmts []goast.Stmt,
 ) {
-	// generate postStmts
-
-	// TODO: runtime.KeepAlive()
 
 	// pointer operations
 	if operator == token.SUB { // -
@@ -338,31 +339,49 @@ func PntCmpPnt(val1, val2 goast.Expr, sizeof int, operator token.Token) (
 
 	// > >= > <= ==
 
-	// TODO:
-	//	{
-	//		// specific for operations with nil
-	//
-	//		xid, xok := val1.(*goast.Ident)
-	//		yid, yok := val2.(*goast.Ident)
-	//
-	//		if xok || yok {
-	//			var xnil, ynil bool
-	//			if xok {
-	//				xnil = xid.Name == "nil"
-	//			}
-	//			if yok {
-	//				ynil = yid.Name == "nil"
-	//			}
-	//
-	//			switch {
-	//			case xnil && ynil: // x is nil, y is nil - no need to do any
-	//
-	//			case xnil: // x is nil, y is not nil
-	//
-	//			case ynil: // x is not nil, y is nil
-	//			}
-	//		}
-	//	}
+	{
+		// specific for operations with nil
+		isExprNil := func(node goast.Expr) bool {
+			id, ok := node.(*goast.Ident)
+			if !ok {
+				return false
+			}
+			if id.Name != "nil" {
+				return false
+			}
+			return true
+		}
+
+		if !(isExprNil(val1) && isExprNil(val2)) {
+			switch {
+			case isExprNil(val2):
+				// Examples:
+				// val1 != nil
+				// val1 == nil
+				// val1  > nil
+				val1 = util.NewCallExpr("len", val1)
+				val2 = goast.NewIdent("0")
+				rs = &goast.BinaryExpr{
+					X:  val1,
+					Op: operator,
+					Y:  val2,
+				}
+				return
+
+			case isExprNil(val1):
+				val1 = goast.NewIdent("0")
+				val2 = util.NewCallExpr("len", val2)
+				rs = &goast.BinaryExpr{
+					X:  val1,
+					Op: operator,
+					Y:  val2,
+				}
+				return
+				return
+			}
+		}
+	}
+
 	sub, newPost := SubTwoPnts(val1, val2, sizeof)
 	postStmts = append(postStmts, newPost...)
 
