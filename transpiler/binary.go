@@ -311,7 +311,11 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			}
 			e, newPost := SubTwoPnts(left, right, sizeof)
 			postStmts = append(postStmts, newPost...)
-			expr = e
+
+			expr, err = types.CastExpr(p, e, "long long", n.Type)
+			if err != nil {
+				return nil, "PointerOperation_unknown01", nil, nil, err
+			}
 			eType = n.Type
 			return
 
