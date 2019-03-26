@@ -329,7 +329,11 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			if err != nil {
 				return nil, "PointerOperation_unknown02", nil, nil, err
 			}
-			e, newPost := PntCmpPnt(left, right, sizeof, operator)
+			e, newPost := PntCmpPnt(
+				left, leftType,
+				right, rightType,
+				sizeof, operator,
+			)
 			postStmts = append(postStmts, newPost...)
 			expr = e
 			eType = "bool"

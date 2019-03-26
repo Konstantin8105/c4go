@@ -325,7 +325,11 @@ func SubTwoPnts(val1, val2 goast.Expr, sizeof int) (rs goast.Expr, postStmts []g
 //		postStmts - slice of goast.Stmt for runtime.KeepAlive of pointer,
 //		            the best way kept that stmts at the end of function.
 //		            Each stmt has `defer` functions.
-func PntCmpPnt(val1, val2 goast.Expr, sizeof int, operator token.Token) (
+func PntCmpPnt(
+	val1 goast.Expr, val1Type string,
+	val2 goast.Expr, val2Type string,
+	sizeof int, operator token.Token,
+) (
 	rs goast.Expr,
 	postStmts []goast.Stmt,
 ) {
@@ -353,14 +357,16 @@ func PntCmpPnt(val1, val2 goast.Expr, sizeof int, operator token.Token) (
 		}
 
 		if !(isExprNil(val1) && isExprNil(val2)) {
+			// Examples:
+			// val1 != nil
+			// val1 == nil
+			// val1  > nil
 			switch {
 			case isExprNil(val2):
-				// Examples:
-				// val1 != nil
-				// val1 == nil
-				// val1  > nil
-				val1 = util.NewCallExpr("len", val1)
-				val2 = goast.NewIdent("0")
+				if !util.IsFunction(val1Type) && val1Type != "void *" {
+					val1 = util.NewCallExpr("len", val1)
+					val2 = goast.NewIdent("0")
+				}
 				rs = &goast.BinaryExpr{
 					X:  val1,
 					Op: operator,
@@ -369,8 +375,10 @@ func PntCmpPnt(val1, val2 goast.Expr, sizeof int, operator token.Token) (
 				return
 
 			case isExprNil(val1):
-				val1 = goast.NewIdent("0")
-				val2 = util.NewCallExpr("len", val2)
+				if !util.IsFunction(val2Type) && val2Type != "void *" {
+					val1 = goast.NewIdent("0")
+					val2 = util.NewCallExpr("len", val2)
+				}
 				rs = &goast.BinaryExpr{
 					X:  val1,
 					Op: operator,
