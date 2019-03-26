@@ -444,24 +444,31 @@ func PntBitCast(expr goast.Expr, cFrom, cTo string, p *program.Program) (
 		}
 	}()
 
+	cFrom = util.GenerateCorrectType(cFrom)
+	cTo = util.GenerateCorrectType(cTo)
+	toCtype = cTo
+
 	if !types.IsPointer(cFrom, p) || !types.IsPointer(cTo, p) {
 		err = fmt.Errorf("Some type is not pointer `%s` or `%s`", cFrom, cTo)
 		return
 	}
 
-	toCtype = cTo
+	rs = expr
 
 	if cFrom == cTo {
-		rs = expr
 		return
 	}
 
-	resolvedType, err := types.ResolveType(p, cTo)
-	if err != nil {
+	if cTo == "void *" {
+		// no need cast
 		return
 	}
 
 	rs, postStmts = GetPointerAddress(expr, 1)
+	resolvedType, err := types.ResolveType(p, cTo)
+	if err != nil {
+		return
+	}
 
 	resolvedType = strings.Replace(resolvedType, "[]", "[1000000]", -1)
 

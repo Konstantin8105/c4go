@@ -500,7 +500,17 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	}
 
 	if operator == token.ASSIGN { // =
+
+		// BinaryOperator 'double *' '='
+		// |-DeclRefExpr 'double *' lvalue Var 0x2a7fa48 'd' 'double *'
+		// `-ImplicitCastExpr 'double *' <BitCast>
+		//   `-CStyleCastExpr 'char *' <BitCast>
+		//     `-...
 		right, err = types.CastExpr(p, right, rightType, returnType)
+		rightType = returnType
+		if err != nil {
+			return
+		}
 
 		if _, ok := right.(*goast.UnaryExpr); ok && types.IsDereferenceType(rightType) {
 			deref, err := types.GetDereferenceType(rightType)

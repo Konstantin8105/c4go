@@ -20,6 +20,9 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		if err != nil {
 			err = fmt.Errorf("Cannot transpileImplicitCastExpr. err = %v", err)
 		}
+		if exprType == "" {
+			exprType = "ImplicitCastExprWrongType"
+		}
 	}()
 
 	n.Type = util.GenerateCorrectType(n.Type)
@@ -40,6 +43,18 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		expr = goast.NewIdent("nil")
 		return
 	}
+
+	// type casting
+	if n.Kind == "BitCast" && types.IsPointer(exprType, p) && types.IsPointer(n.Type, p) {
+		var newPost []goast.Stmt
+		expr, exprType, newPost, err = PntBitCast(expr, exprType, n.Type, p)
+		postStmts = append(postStmts, newPost...)
+		if err != nil {
+			return nil, "BitCastWrongType", nil, nil, err
+		}
+		return
+	}
+
 	if n.Kind == "IntegralToPointer" {
 		// ImplicitCastExpr 'double *' <IntegralToPointer>
 		// `-ImplicitCastExpr 'long' <LValueToRValue>
@@ -180,6 +195,9 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 		if err != nil {
 			err = fmt.Errorf("Cannot transpileImplicitCastExpr. err = %v", err)
 		}
+		if exprType == "" {
+			exprType = "CStyleCastExpr"
+		}
 	}()
 
 	n.Type = util.GenerateCorrectType(n.Type)
@@ -238,7 +256,7 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 		expr, exprType, newPost, err = PntBitCast(expr, exprType, n.Type, p)
 		postStmts = append(postStmts, newPost...)
 		if err != nil {
-			return nil, "", nil, nil, err
+			return nil, "BitCastWrongType", nil, nil, err
 		}
 		return
 	}

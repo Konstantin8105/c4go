@@ -740,6 +740,9 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		if v.Kind == "IntegralToPointer" {
 			return
 		}
+		if v.Kind == "BitCast" {
+			return
+		}
 
 		// avoid problem :
 		//
