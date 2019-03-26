@@ -169,7 +169,7 @@ func GetUnsafeConvertDecls(p *program.Program) {
 //		postStmts - slice of goast.Stmt for runtime.KeepAlive of pointer,
 //		            the best way kept that stmts at the end of function.
 //		            Each stmt has `defer` functions.
-func GetPointerAddress(expr goast.Expr, sizeof int) (rs goast.Expr, postStmts []goast.Stmt) {
+func GetPointerAddress(expr goast.Expr, cType string, sizeof int) (rs goast.Expr, postStmts []goast.Stmt) {
 
 	// generate postStmts
 
@@ -177,7 +177,7 @@ func GetPointerAddress(expr goast.Expr, sizeof int) (rs goast.Expr, postStmts []
 
 	if par, ok := expr.(*goast.ParenExpr); ok {
 		// ignore parens
-		return GetPointerAddress(par.X, sizeof)
+		return GetPointerAddress(par.X, cType, sizeof)
 	}
 
 	if id, ok := expr.(*goast.Ident); ok {
@@ -309,12 +309,15 @@ func GetPointerAddress(expr goast.Expr, sizeof int) (rs goast.Expr, postStmts []
 }
 
 //	SubTwoPnts function for implementation : (pointer1 - pointer2)
-func SubTwoPnts(val1, val2 goast.Expr, sizeof int) (rs goast.Expr, postStmts []goast.Stmt) {
+func SubTwoPnts(
+	val1 goast.Expr, val1Type string,
+	val2 goast.Expr, val2Type string,
+	sizeof int) (rs goast.Expr, postStmts []goast.Stmt) {
 
-	x, newPost := GetPointerAddress(val1, sizeof)
+	x, newPost := GetPointerAddress(val1, val1Type, sizeof)
 	postStmts = append(postStmts, newPost...)
 
-	y, newPost := GetPointerAddress(val2, sizeof)
+	y, newPost := GetPointerAddress(val2, val2Type, sizeof)
 	postStmts = append(postStmts, newPost...)
 
 	rs = &goast.ParenExpr{X: &goast.BinaryExpr{X: x, Op: token.SUB, Y: y}}
@@ -338,7 +341,7 @@ func PntCmpPnt(
 	switch operator {
 	case token.SUB: // -
 		p.AddImport("unsafe")
-		sub, newPost := SubTwoPnts(val1, val2, sizeof)
+		sub, newPost := SubTwoPnts(val1, val1Type, val2, val2Type, sizeof)
 		postStmts = append(postStmts, newPost...)
 		return sub, postStmts
 	case token.LAND, token.LOR: // && ||
@@ -422,7 +425,7 @@ func PntCmpPnt(
 	}
 
 	p.AddImport("unsafe")
-	sub, newPost := SubTwoPnts(val1, val2, sizeof)
+	sub, newPost := SubTwoPnts(val1, val1Type, val2, val2Type, sizeof)
 	postStmts = append(postStmts, newPost...)
 
 	rs = &goast.BinaryExpr{
@@ -456,7 +459,21 @@ func PntBitCast(expr goast.Expr, cFrom, cTo string, p *program.Program) (
 	rs = expr
 
 	if cFrom == cTo {
+		// no need cast
 		return
+	}
+
+	if util.IsFunction(cFrom) {
+		return
+	}
+
+	{
+		from, errf := types.ResolveType(p, cFrom)
+		to, errto := types.ResolveType(p, cTo)
+		if from == to && errf == nil && errto == nil {
+			// no need cast
+			return
+		}
 	}
 
 	if cTo == "void *" {
@@ -470,7 +487,7 @@ func PntBitCast(expr goast.Expr, cFrom, cTo string, p *program.Program) (
 		return
 	}
 
-	rs, postStmts = GetPointerAddress(expr, 1)
+	rs, postStmts = GetPointerAddress(expr, cFrom, 1)
 	resolvedType, err := types.ResolveType(p, cTo)
 	if err != nil {
 		return
@@ -478,6 +495,7 @@ func PntBitCast(expr goast.Expr, cFrom, cTo string, p *program.Program) (
 
 	resolvedType = strings.Replace(resolvedType, "[]", "[1000000]", -1)
 
+	p.AddImport("unsafe")
 	rs = util.NewCallExpr("(*"+resolvedType+")", util.NewCallExpr("unsafe.Pointer",
 		util.NewCallExpr("uintptr", rs)))
 
