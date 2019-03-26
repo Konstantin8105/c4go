@@ -325,13 +325,13 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			token.LSS, token.LEQ, // <  <=
 			token.EQL, token.NEQ: // == !=
 
-			p.AddImport("unsafe")
 			var sizeof int
 			sizeof, err = types.SizeOf(p, types.GetBaseType(leftType))
 			if err != nil {
 				return nil, "PointerOperation_unknown02", nil, nil, err
 			}
 			e, newPost := PntCmpPnt(
+				p,
 				left, leftType,
 				right, rightType,
 				sizeof, operator,
@@ -500,43 +500,28 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	}
 
 	if operator == token.ASSIGN { // =
-		// Memory allocation is translated into the Go-style.
-		allocSize := getAllocationSizeNode(p, n.Children()[1])
+		right, err = types.CastExpr(p, right, rightType, returnType)
 
-		if allocSize != nil {
-			right, newPre, newPost, err = generateAlloc(p, allocSize, leftType)
-			if err != nil {
-				p.AddMessage(p.GenerateWarningMessage(err, n))
-				return nil, "", nil, nil, err
-			}
+		if _, ok := right.(*goast.UnaryExpr); ok && types.IsDereferenceType(rightType) {
+			deref, err := types.GetDereferenceType(rightType)
 
-			preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+			if !p.AddMessage(p.GenerateWarningMessage(err, n)) {
+				resolvedDeref, err := types.ResolveType(p, deref)
 
-		} else {
-			right, err = types.CastExpr(p, right, rightType, returnType)
-
-			if _, ok := right.(*goast.UnaryExpr); ok && types.IsDereferenceType(rightType) {
-				deref, err := types.GetDereferenceType(rightType)
+				// FIXME: I'm not sure how this situation arises.
+				if resolvedDeref == "" {
+					resolvedDeref = "interface{}"
+				}
 
 				if !p.AddMessage(p.GenerateWarningMessage(err, n)) {
-					resolvedDeref, err := types.ResolveType(p, deref)
-
-					// FIXME: I'm not sure how this situation arises.
-					if resolvedDeref == "" {
-						resolvedDeref = "interface{}"
-					}
-
-					if !p.AddMessage(p.GenerateWarningMessage(err, n)) {
-						p.AddImport("unsafe")
-						right = CreateSliceFromReference(resolvedDeref, right)
-					}
+					p.AddImport("unsafe")
+					right = CreateSliceFromReference(resolvedDeref, right)
 				}
 			}
+		}
 
-			if p.AddMessage(p.GenerateWarningMessage(err, n)) && right == nil {
-				right = util.NewNil()
-			}
-
+		if p.AddMessage(p.GenerateWarningMessage(err, n)) && right == nil {
+			right = util.NewNil()
 		}
 	}
 

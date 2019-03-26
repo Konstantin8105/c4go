@@ -232,6 +232,17 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 		return
 	}
 
+	// type casting
+	if n.Kind == "BitCast" && types.IsPointer(exprType, p) && types.IsPointer(n.Type, p) {
+		var newPost []goast.Stmt
+		expr, exprType, newPost, err = PntBitCast(expr, exprType, n.Type, p)
+		postStmts = append(postStmts, newPost...)
+		if err != nil {
+			return nil, "", nil, nil, err
+		}
+		return
+	}
+
 	if len(n.Type) != 0 && len(n.Type2) != 0 && n.Type != n.Type2 {
 		var tt string
 		tt, err = types.ResolveType(p, n.Type)

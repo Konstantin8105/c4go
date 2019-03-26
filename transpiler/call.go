@@ -603,6 +603,9 @@ func transpileCallExprCalloc(n *ast.CallExpr, p *program.Program) (
 			err = fmt.Errorf("Function: calloc. err = %v", err)
 		}
 	}()
+
+	var cReturnType string = n.Type
+
 	size, sizeType, preStmts, postStmts, err := transpileToExpr(n.Children()[1], p, false)
 	if err != nil {
 		return nil, "", nil, nil, err
@@ -645,6 +648,7 @@ func transpileCallExprCalloc(n *ast.CallExpr, p *program.Program) (
 		} else {
 			t = v.Type2
 		}
+		cReturnType = t + "*"
 		t, err := types.ResolveType(p, t)
 		if err != nil {
 			return nil, "", nil, nil, err
@@ -668,7 +672,7 @@ func transpileCallExprCalloc(n *ast.CallExpr, p *program.Program) (
 	}
 
 	return util.NewCallExpr("make", goType, size),
-		n.Type, preStmts, postStmts, nil
+		cReturnType, preStmts, postStmts, nil
 }
 
 func transpileCallExprQsort(n *ast.CallExpr, p *program.Program) (

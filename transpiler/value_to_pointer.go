@@ -326,6 +326,7 @@ func SubTwoPnts(val1, val2 goast.Expr, sizeof int) (rs goast.Expr, postStmts []g
 //		            the best way kept that stmts at the end of function.
 //		            Each stmt has `defer` functions.
 func PntCmpPnt(
+	p *program.Program,
 	val1 goast.Expr, val1Type string,
 	val2 goast.Expr, val2Type string,
 	sizeof int, operator token.Token,
@@ -336,18 +337,22 @@ func PntCmpPnt(
 
 	switch operator {
 	case token.SUB: // -
+		p.AddImport("unsafe")
 		sub, newPost := SubTwoPnts(val1, val2, sizeof)
 		postStmts = append(postStmts, newPost...)
 		return sub, postStmts
 	case token.LAND, token.LOR: // && ||
 		// TODO: add tests
+		p.AddImport("unsafe")
 		var newPost []goast.Stmt
 		val1, newPost = PntCmpPnt(
+			p,
 			val1, val1Type,
 			goast.NewIdent("nil"), types.NullPointer,
 			sizeof, token.EQL)
 		postStmts = append(postStmts, newPost...)
 		val2, newPost = PntCmpPnt(
+			p,
 			val2, val2Type,
 			goast.NewIdent("nil"), types.NullPointer,
 			sizeof, token.EQL)
@@ -380,9 +385,17 @@ func PntCmpPnt(
 			// val1 != nil
 			// val1 == nil
 			// val1  > nil
+
+			ignoreList := func(Type string) bool {
+				return util.IsFunction(Type) ||
+					Type == types.NullPointer ||
+					Type == "void *" ||
+					Type == "FILE *"
+			}
+
 			switch {
 			case isExprNil(val2):
-				if !util.IsFunction(val1Type) && val1Type != types.NullPointer && val1Type != "FILE *" {
+				if !ignoreList(val1Type) {
 					val1 = util.NewCallExpr("len", val1)
 					val2 = goast.NewIdent("0")
 				}
@@ -394,7 +407,7 @@ func PntCmpPnt(
 				return
 
 			case isExprNil(val1):
-				if !util.IsFunction(val2Type) && val2Type != types.NullPointer && val2Type != "FILE *" {
+				if !ignoreList(val2Type) {
 					val1 = goast.NewIdent("0")
 					val2 = util.NewCallExpr("len", val2)
 				}
@@ -408,6 +421,7 @@ func PntCmpPnt(
 		}
 	}
 
+	p.AddImport("unsafe")
 	sub, newPost := SubTwoPnts(val1, val2, sizeof)
 	postStmts = append(postStmts, newPost...)
 
@@ -415,6 +429,48 @@ func PntCmpPnt(
 		X:  sub,
 		Op: operator,
 		Y:  goast.NewIdent("0"),
+	}
+
+	return
+}
+
+// PntBitCast - casting pointers
+func PntBitCast(expr goast.Expr, cFrom, cTo string, p *program.Program) (
+	rs goast.Expr, toCtype string, postStmts []goast.Stmt, err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("Cannot PntBitCast : %v", err)
+			p.AddMessage(p.GenerateWarningMessage(err, nil))
+		}
+	}()
+
+	if !types.IsPointer(cFrom, p) || !types.IsPointer(cTo, p) {
+		err = fmt.Errorf("Some type is not pointer `%s` or `%s`", cFrom, cTo)
+		return
+	}
+
+	toCtype = cTo
+
+	if cFrom == cTo {
+		rs = expr
+		return
+	}
+
+	resolvedType, err := types.ResolveType(p, cTo)
+	if err != nil {
+		return
+	}
+
+	rs, postStmts = GetPointerAddress(expr, 1)
+
+	resolvedType = strings.Replace(resolvedType, "[]", "[1000000]", -1)
+
+	rs = util.NewCallExpr("(*"+resolvedType+")", util.NewCallExpr("unsafe.Pointer",
+		util.NewCallExpr("uintptr", rs)))
+
+	rs = &goast.SliceExpr{
+		X:      rs,
+		Slice3: false,
 	}
 
 	return

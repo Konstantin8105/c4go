@@ -44,7 +44,7 @@ struct MyNums {
 
 int main()
 {
-    plan(55);
+    plan(56);
 
     diag("Integer types");
     check_sizes(char, 1);
@@ -67,6 +67,7 @@ int main()
     is_eq(sizeof(char*), 8);
     is_eq(sizeof(char*), 8);
     is_eq(sizeof(short**), 8);
+    is_eq(sizeof(long double**), 8);
 
     diag("Variables");
     a = 123;
