@@ -464,6 +464,12 @@ func PntBitCast(expr goast.Expr, cFrom, cTo string, p *program.Program) (
 		return
 	}
 
+	if cFrom == "void *" {
+		// no need cast
+		rs, err = types.CastExpr(p, expr, cFrom, cTo)
+		return
+	}
+
 	rs, postStmts = GetPointerAddress(expr, 1)
 	resolvedType, err := types.ResolveType(p, cTo)
 	if err != nil {
