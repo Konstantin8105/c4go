@@ -353,32 +353,22 @@ func PntCmpPnt(val1, val2 goast.Expr, sizeof int, operator token.Token) (
 		}
 
 		if !(isExprNil(val1) && isExprNil(val2)) {
+			// Examples:
+			// val != nil
+			// val == nil
+			// val  > nil
 			switch {
 			case isExprNil(val2):
-				// Examples:
-				// val1 != nil
-				// val1 == nil
-				// val1  > nil
-				val1 = util.NewCallExpr("len", val1)
-				val2 = goast.NewIdent("0")
-				rs = &goast.BinaryExpr{
-					X:  val1,
-					Op: operator,
-					Y:  val2,
-				}
-				return
-
+				val1, val2 = util.NewCallExpr("len", val1), goast.NewIdent("0")
 			case isExprNil(val1):
-				val1 = goast.NewIdent("0")
-				val2 = util.NewCallExpr("len", val2)
-				rs = &goast.BinaryExpr{
-					X:  val1,
-					Op: operator,
-					Y:  val2,
-				}
-				return
-				return
+				val1, val2 = goast.NewIdent("0"), util.NewCallExpr("len", val2)
 			}
+			rs = &goast.BinaryExpr{
+				X:  val1,
+				Op: operator,
+				Y:  val2,
+			}
+			return
 		}
 	}
 
