@@ -212,8 +212,14 @@ func Strrchr(source []byte, c32 int32) []byte {
 	return source
 }
 
-func Strdup(s []byte) []byte {
-	return s
+func Strdup(s []byte) (rs []byte) {
+	for i := range s {
+		if s[i] == '\x00' {
+			break
+		}
+		rs = append(rs, s[i])
+	}
+	return
 }
 
 func Strerror(e int32) []byte {
