@@ -231,7 +231,7 @@ var goKeywords = [...]string{
 	"float32", "float64",
 	"complex64", "complex128",
 	// built-in
-	"len", "copy", "append", "cap", "close", "delete",
+	"len", "append", "cap", "delete", "copy", // "close",
 	"make", "new", "panic", "recover", "real", "complex",
 	"imag", "print", "println", "error", "Type", "Type1",
 	"IntegerType", "FloatType", "ComplexType",

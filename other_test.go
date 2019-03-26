@@ -700,12 +700,14 @@ func TestKiloEditor(t *testing.T) {
 	}
 
 	// calculate amount unsafe operations
-	if count := bytes.Count(dat, []byte("unsafe.Pointer")); count > 54 {
+	unsafeLimit := 29
+	uintptrLimit := 18
+	if count := bytes.Count(dat, []byte("unsafe.Pointer")); count > unsafeLimit {
 		t.Fatalf("too much unsafe operations: %d", count)
 	} else {
 		t.Logf("amount unsafe operations: %d", count)
 	}
-	if count := bytes.Count(dat, []byte("uintptr")); count > 12 {
+	if count := bytes.Count(dat, []byte("uintptr")); count > uintptrLimit {
 		t.Fatalf("too much uintptr operations: %d", count)
 	} else {
 		t.Logf("amount uintptr operations: %d", count)
