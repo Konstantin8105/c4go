@@ -330,6 +330,13 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			expr = e
 			eType = "bool"
 			return
+
+		case token.ASSIGN: // =
+			// ignore
+
+		default:
+			err = fmt.Errorf("Not implemented pointer operation: %v", operator)
+			return
 		}
 	}
 
