@@ -171,6 +171,23 @@ func GetUnsafeConvertDecls(p *program.Program) {
 //		            Each stmt has `defer` functions.
 func GetPointerAddress(expr goast.Expr, sizeof int) (rs goast.Expr, postStmts []goast.Stmt) {
 
+	if par, ok := expr.(*goast.ParenExpr); ok {
+		// ignore parens
+		return GetPointerAddress(par.X, sizeof)
+	}
+
+	if id, ok := expr.(*goast.Ident); ok {
+		if id.Name == "nil" {
+			// nil pointer
+			rs = goast.NewIdent("0")
+			return
+		}
+		expr = &goast.IndexExpr{
+			X:     expr,
+			Index: goast.NewIdent("0"),
+		}
+	}
+
 	if _, ok := expr.(*goast.SelectorExpr); ok {
 		expr = &goast.IndexExpr{
 			X:     expr,
@@ -273,12 +290,7 @@ func GetPointerAddress(expr goast.Expr, sizeof int) (rs goast.Expr, postStmts []
 	rs = &goast.BinaryExpr{
 		X: util.NewCallExpr("int64", util.NewCallExpr("uintptr",
 			util.NewCallExpr("unsafe.Pointer",
-				&goast.StarExpr{
-					Star: 1,
-					X: util.NewCallExpr("(**byte)", util.NewCallExpr("unsafe.Pointer",
-						&goast.UnaryExpr{Op: token.AND, X: expr},
-					)),
-				},
+				&goast.UnaryExpr{Op: token.AND, X: expr},
 			),
 		)),
 		Op: token.QUO,
@@ -337,10 +349,6 @@ func CreateSliceFromReference(goType string, expr goast.Expr) goast.Expr {
 	if goType == "" {
 		goType = "interface{}"
 	}
-
-	// TODO remove
-	fmt.Printf("%#v\n", expr)
-	goast.Print(token.NewFileSet(), expr)
 
 	// This is a hack to convert a reference to a variable into a slice that
 	// points to the same location. It will look similar to:
