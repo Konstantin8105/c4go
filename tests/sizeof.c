@@ -22,13 +22,13 @@
     printf("%s = (%d) %d bytes\n", #v, p, sizeof(v));
 
 struct MyStruct {
-    double a;
+    double a,aa,aaa,aaaa;
     char b;
     char c;
 };
 
 union MyUnion {
-    double a;
+    long double a;
     char b;
     int c;
 };
@@ -44,7 +44,7 @@ struct MyNums {
 
 int main()
 {
-    plan(56);
+    plan(58);
 
     diag("Integer types");
     check_sizes(char, 1);
@@ -79,16 +79,16 @@ int main()
 
     is_eq(sizeof(a), 2);
     is_eq(sizeof(b), 4);
-    is_eq(sizeof(s1), 16);
-    is_eq(sizeof(u1), 8);
+    is_eq(sizeof(s1), 40);
+    is_eq(sizeof(u1), 16);
 
     diag("Structures");
-    is_eq(sizeof(struct MyStruct), 16);
-    // TODO : is_eq(sizeof(struct MyStruct *), 8);
+    is_eq(sizeof(struct MyStruct), 40);
+    is_eq(sizeof(struct MyStruct *), 8);
 
     diag("Unions");
-    is_eq(sizeof(union MyUnion), 8);
-    // TODO : is_eq(sizeof(union MyUnion *), 8);
+    is_eq(sizeof(union MyUnion), 16);
+    is_eq(sizeof(union MyUnion *), 8);
 
     diag("Function pointers");
     is_eq(sizeof(main), 1);

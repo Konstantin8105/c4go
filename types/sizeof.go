@@ -84,7 +84,14 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 	}
 
 	// An union will be the max size of its parts.
-	if strings.HasPrefix(cType, "union ") {
+	var isUnion bool
+	cType = util.GenerateCorrectType(cType)
+	if _, ok := p.Unions[cType]; ok {
+		isUnion = true
+	} else if _, ok := p.Unions["union "+cType]; ok {
+		isUnion = true
+	}
+	if isUnion {
 		byteCount := 0
 
 		s := p.Unions[cType]
