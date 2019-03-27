@@ -70,11 +70,20 @@ func ConvertValueToPointer(nodes []ast.Node, p *program.Program) (expr goast.Exp
 	// can simplify
 	p.UnsafeConvertValueToPointer[resolvedType] = true
 
-	return util.NewCallExpr(fmt.Sprintf("%s%s", unsafeConvertFunctionName, resolvedType),
+	return util.NewCallExpr(fmt.Sprintf("%s%s", unsafeConvertFunctionName,
+		typeToFuncname(resolvedType)),
 		&goast.UnaryExpr{
 			Op: token.AND,
 			X:  goast.NewIdent(decl.Name),
 		}), true
+}
+
+func typeToFuncname(typeName string) (functionName string) {
+	functionName = typeName
+	if index := strings.Index(functionName, "."); index > -1 {
+		functionName = functionName[index+1:]
+	}
+	return
 }
 
 func GetUnsafeConvertDecls(p *program.Program) {
@@ -91,7 +100,8 @@ func GetUnsafeConvertDecls(p *program.Program) {
 	sort.Sort(sort.StringSlice(names))
 
 	for _, t := range names {
-		functionName := fmt.Sprintf("%s%s", unsafeConvertFunctionName, t)
+		functionName := fmt.Sprintf("%s%s", unsafeConvertFunctionName,
+			typeToFuncname(t))
 		varName := "c4go_name"
 		p.File.Decls = append(p.File.Decls, &goast.FuncDecl{
 			Doc: &goast.CommentGroup{
