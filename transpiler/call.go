@@ -640,6 +640,25 @@ func transpileCallExprCalloc(n *ast.CallExpr, p *program.Program) (
 	//   `-ImplicitCastExpr <> 'int' <LValueToRValue>
 	//     `-DeclRefExpr <> 'int' lvalue Var 0x3bc4268 'sizeT' 'int'
 	var goType goast.Expr
+
+	var foundUEOTTE func(ast.Node)
+
+	foundUEOTTE = func(node ast.Node) (u *ast.UnaryExprOrTypeTraitExpr, ok bool) {
+		if node == nil {
+			return
+		}
+		if u, ok = node.(*ast.UnaryExprOrTypeTraitExpr); ok {
+			return
+		}
+		for i := range node.Children() {
+			if u, ok = foundUEOTTE(node.Children()); ok {
+				return
+			}
+		}
+		заменить на 1 а возвращать тип 
+		return false
+	}
+
 	switch v := n.Children()[2].(type) {
 	case *ast.UnaryExprOrTypeTraitExpr:
 		var t string

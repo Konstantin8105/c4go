@@ -687,9 +687,36 @@ void test_negative_index()
 	is_eq(ds[-1], 2.0);
 }
 
+void test_matrix_init()
+{
+	int rows = 2;
+	int cols = 3;
+	int      i,j;
+	double   **m;
+
+	m = (double **) malloc( (unsigned) rows * sizeof(double *) );
+	for (i = 0; i < rows ; i++)
+	{
+		m[i] = (double *) malloc( (unsigned) cols * sizeof(double) );
+	}
+
+	for (i = 0; i < rows ; i++){
+		for (j = 0; j < cols; j++){
+			printf("init [%d , %d]\n",i,j);
+			m[i][j] = i*cols + j;
+		}
+	}
+
+	for (i = 0; i < rows ; i++){
+		for (j = 0; j < cols; j++){
+			is_eq(m[i][j] , i*cols + j);
+		}
+	}
+}
+
 int main()
 {
-    plan(188);
+    plan(194);
 
     test_parg_struct();
     START_TEST(struct_init);
@@ -1227,6 +1254,7 @@ int main()
     START_TEST(double_array);
 	START_TEST(func_byte);
 	START_TEST(negative_index);
+	START_TEST(matrix_init);
 
     done_testing();
 }
