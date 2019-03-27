@@ -203,6 +203,7 @@ void* cs_calloc(int n)
 {
     int sizeT = sizeof(int);
     return (n < 2 ? NULL : calloc(n, sizeT));
+	(void) sizeT;
 }
 
 void test_calloc2()

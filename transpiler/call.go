@@ -237,7 +237,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			unary, expression, back, err := findAndReplaceUnaryExprOrTypeTraitExpr(&n.Children()[1])
 			if err != nil {
 				back()
-				return transpileCallExprCalloc(expression,
+				return transpileCallExprCalloc(n.Children()[1],
 					&ast.UnaryExprOrTypeTraitExpr{
 						Function: "sizeof",
 						Type1:    "unsigned long",
@@ -248,7 +248,6 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		}
 	}
 
-	// TODO : function "realloc" from stdlib.h
 	//
 	// Change from "realloc" to "calloc"
 	//
@@ -276,11 +275,61 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 	// `-UnaryExprOrTypeTraitExpr <> 'unsigned long' sizeof 'char'
 	//
 	// function "realloc" from stdlib.h
+	if p.IncludeHeaderIsExists("stdlib.h") {
+		if functionName == "realloc" && len(n.Children()) == 3 {
+			n.ChildNodes[0] = &ast.ImplicitCastExpr{
+				Type: "void *(*)(unsigned long, unsigned long)",
+			}
+			n.ChildNodes[0].(*ast.ImplicitCastExpr).AddChild(&ast.DeclRefExpr{
+				Type: "void *(unsigned long, unsigned long)",
+				Name: "calloc",
+			})
+			sizeofType := "char"
+			if impl, ok := n.Children()[1].(*ast.ImplicitCastExpr); ok {
+				switch v := impl.Children()[0].(type) {
+				case *ast.ImplicitCastExpr:
+					sizeofType = v.Type
+				case *ast.CStyleCastExpr:
+					sizeofType = v.Type
+				}
+			}
+			sizeofType = types.GetBaseType(sizeofType)
+			n.AddChild(&ast.UnaryExprOrTypeTraitExpr{
+				Type1:    "unsigned long",
+				Function: "sizeof",
+				Type2:    sizeofType,
+			})
+			n.ChildNodes = []ast.Node{n.ChildNodes[0], n.ChildNodes[2], n.ChildNodes[3]}
+			return transpileCallExpr(n, p)
+		}
+	}
 
 	// function "calloc" from stdlib.h
 	if p.IncludeHeaderIsExists("stdlib.h") {
 		if functionName == "calloc" && len(n.Children()) == 3 {
-			return transpileCallExprCalloc(n.Children()[1], n.Children()[2].(*ast.UnaryExprOrTypeTraitExpr), p)
+			if unary, ok := n.Children()[2].(*ast.UnaryExprOrTypeTraitExpr); ok {
+				return transpileCallExprCalloc(n.Children()[1], unary, p)
+			}
+
+			call := &ast.CallExpr{}
+
+			call.AddChild(&ast.ImplicitCastExpr{
+				Type: "void *(*)(unsigned long)",
+			})
+			call.ChildNodes[0].(*ast.ImplicitCastExpr).AddChild(&ast.DeclRefExpr{
+				Type: "void *(unsigned long)",
+				Name: "malloc",
+			})
+
+			bin := &ast.BinaryOperator{
+				Operator: "*",
+				Type:     "unsigned long",
+			}
+			bin.AddChild(n.ChildNodes[1])
+			bin.AddChild(n.ChildNodes[2])
+			call.AddChild(bin)
+
+			return transpileCallExpr(call, p)
 		}
 	}
 
@@ -598,6 +647,7 @@ func findAndReplaceUnaryExprOrTypeTraitExpr(node *ast.Node) (
 		for i := range (*node).Children() {
 			if searcher(&((*node).Children()[i])) {
 				replacer(&((*node).Children()[i]))
+				return true
 			}
 		}
 		return false
@@ -609,6 +659,13 @@ func findAndReplaceUnaryExprOrTypeTraitExpr(node *ast.Node) (
 		counter++
 	}
 
+	back = func() {
+		// return back node
+		if unary != nil {
+			*lastNode = unary
+		}
+	}
+
 	if counter != 1 {
 		err = fmt.Errorf("counter is not 1: %d", counter)
 		return
@@ -616,11 +673,6 @@ func findAndReplaceUnaryExprOrTypeTraitExpr(node *ast.Node) (
 	if unary == nil {
 		err = fmt.Errorf("pointer is nil")
 		return
-	}
-
-	back = func() {
-		// return back node
-		*lastNode = unary
 	}
 
 	tree = *node
