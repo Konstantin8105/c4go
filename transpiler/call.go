@@ -647,7 +647,6 @@ func findAndReplaceUnaryExprOrTypeTraitExpr(node *ast.Node) (
 		for i := range (*node).Children() {
 			if searcher(&((*node).Children()[i])) {
 				replacer(&((*node).Children()[i]))
-				return true
 			}
 		}
 		return false
