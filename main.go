@@ -216,7 +216,7 @@ var goKeywords = [...]string{
 	"fallthrough", "if", "range", "type", "continue", "for",
 	"import", "return", "var", "init",
 	// "struct",
-	// "_",
+	"_",
 	// "const",
 	// go packages
 	"fmt", "os", "math", "testing", "unsafe", "ioutil",
@@ -230,6 +230,11 @@ var goKeywords = [...]string{
 	"uint", "uintptr",
 	"float32", "float64",
 	"complex64", "complex128",
+	// built-in
+	"len", "append", "cap", "delete", "copy", // "close",
+	"make", "new", "panic", "recover", "real", "complex",
+	"imag", "print", "println", "error", "Type", "Type1",
+	"IntegerType", "FloatType", "ComplexType",
 }
 var letters string = "_qwertyuiopasdfghjklzxcvbnm1234567890><"
 

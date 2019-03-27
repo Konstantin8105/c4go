@@ -60,27 +60,6 @@ func getDefaultValueForVar(p *program.Program, a *ast.VarDecl) (
 		return nil, "", nil, nil, nil
 	}
 
-	// Memory allocation is translated into the Go-style.
-	if allocSize := getAllocationSizeNode(p, a.Children()[0]); allocSize != nil {
-		// type
-		var t string
-		if v, ok := a.Children()[0].(*ast.ImplicitCastExpr); ok {
-			t = v.Type
-		}
-		if v, ok := a.Children()[0].(*ast.CStyleCastExpr); ok {
-			t = v.Type
-		}
-		if t != "" {
-			right, newPre, newPost, err := generateAlloc(p, allocSize, t)
-			if err != nil {
-				p.AddMessage(p.GenerateWarningMessage(err, a))
-				return nil, "", nil, nil, err
-			}
-
-			return []goast.Expr{right}, t, newPre, newPost, nil
-		}
-	}
-
 	if va, ok := a.Children()[0].(*ast.VAArgExpr); ok {
 		outType, err := types.ResolveType(p, va.Type)
 		if err != nil {
@@ -317,6 +296,38 @@ func transpileArraySubscriptExpr(n *ast.ArraySubscriptExpr, p *program.Program) 
 	}()
 
 	children := n.Children()
+
+	if un, ok := children[1].(*ast.UnaryOperator); ok && un.Operator == "-" && un.IsPrefix {
+		// from:
+		//  ArraySubscriptExpr 'double' lvalue
+		//  |-ImplicitCastExpr 'double *' <LValueToRValue>
+		//  | `-DeclRefExpr 'double *' lvalue Var 0x2d19e58 'p' 'double *'
+		//  `-UnaryOperator 'int' prefix '-'
+		//    `-IntegerLiteral 'int' 1
+		// to:
+		//  BinaryOperator 'double *' '-'
+		//  |-ImplicitCastExpr 'double *' <LValueToRValue>
+		//  | `-DeclRefExpr 'double *' lvalue Var 0x2d19e58 'p' 'double *'
+		//  `-IntegerLiteral 'int' 1
+
+		t, ok := ast.GetTypeIfExist(children[0])
+		if ok {
+			bin := &ast.BinaryOperator{
+				Type:     *t,
+				Operator: "-",
+			}
+			bin.AddChild(n.Children()[0])
+			bin.AddChild(un.Children()[0])
+
+			expression, _, newPre, newPost, err := atomicOperation(bin, p)
+			preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+
+			return &goast.IndexExpr{
+				X:     expression,
+				Index: goast.NewIdent("0"),
+			}, n.Type, preStmts, postStmts, err
+		}
+	}
 
 	expression, _, newPre, newPost, err := transpileToExpr(children[0], p, false)
 	if err != nil {

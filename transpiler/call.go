@@ -234,23 +234,20 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 	if p.IncludeHeaderIsExists("stdlib.h") {
 		if functionName == "malloc" && len(n.Children()) == 2 {
 			// Change from "malloc" to "calloc"
-			n.ChildNodes[0] = &ast.ImplicitCastExpr{
-				Type: "void *(*)(unsigned long, unsigned long)",
+			unary, expression, back, err := findAndReplaceUnaryExprOrTypeTraitExpr(&n.Children()[1])
+			if err != nil {
+				back()
+				return transpileCallExprCalloc(n.Children()[1],
+					&ast.UnaryExprOrTypeTraitExpr{
+						Function: "sizeof",
+						Type1:    "unsigned long",
+						Type2:    "char",
+					}, p)
 			}
-			n.ChildNodes[0].(*ast.ImplicitCastExpr).AddChild(&ast.DeclRefExpr{
-				Type: "void *(unsigned long, unsigned long)",
-				Name: "calloc",
-			})
-			n.AddChild(&ast.UnaryExprOrTypeTraitExpr{
-				Type1:    "unsigned long",
-				Function: "sizeof",
-				Type2:    "char",
-			})
-			return transpileCallExprCalloc(n, p)
+			return transpileCallExprCalloc(expression, unary.(*ast.UnaryExprOrTypeTraitExpr), p)
 		}
 	}
 
-	// function "realloc" from stdlib.h
 	//
 	// Change from "realloc" to "calloc"
 	//
@@ -303,14 +300,36 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 				Type2:    sizeofType,
 			})
 			n.ChildNodes = []ast.Node{n.ChildNodes[0], n.ChildNodes[2], n.ChildNodes[3]}
-			return transpileCallExprCalloc(n, p)
+			return transpileCallExpr(n, p)
 		}
 	}
 
 	// function "calloc" from stdlib.h
 	if p.IncludeHeaderIsExists("stdlib.h") {
 		if functionName == "calloc" && len(n.Children()) == 3 {
-			return transpileCallExprCalloc(n, p)
+			if unary, ok := n.Children()[2].(*ast.UnaryExprOrTypeTraitExpr); ok {
+				return transpileCallExprCalloc(n.Children()[1], unary, p)
+			}
+
+			call := &ast.CallExpr{}
+
+			call.AddChild(&ast.ImplicitCastExpr{
+				Type: "void *(*)(unsigned long)",
+			})
+			call.ChildNodes[0].(*ast.ImplicitCastExpr).AddChild(&ast.DeclRefExpr{
+				Type: "void *(unsigned long)",
+				Name: "malloc",
+			})
+
+			bin := &ast.BinaryOperator{
+				Operator: "*",
+				Type:     "unsigned long",
+			}
+			bin.AddChild(n.ChildNodes[1])
+			bin.AddChild(n.ChildNodes[2])
+			call.AddChild(bin)
+
+			return transpileCallExpr(call, p)
 		}
 	}
 
@@ -596,79 +615,102 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		functionDef.ReturnType, preStmts, postStmts, nil
 }
 
-func transpileCallExprCalloc(n *ast.CallExpr, p *program.Program) (
+func findAndReplaceUnaryExprOrTypeTraitExpr(node *ast.Node) (
+	unary ast.Node, tree ast.Node, back func(), err error) {
+
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("Cannot findAndReplaceUnaryExprOrTypeTraitExpr: err = %v", err)
+			if (*node) != nil {
+				err = fmt.Errorf("Code line: %d. %v", (*node).Position().Line, err)
+			}
+		}
+	}()
+
+	var counter int
+	var lastNode *ast.Node
+	one := &ast.IntegerLiteral{Type: "int", Value: "1"}
+
+	var searcher func(*ast.Node) bool
+	replacer := func(node *ast.Node) {
+		unary = *node
+		lastNode = node
+		*node = one
+		counter++
+	}
+	searcher = func(node *ast.Node) (modify bool) {
+		// find
+		if u, ok := (*node).(*ast.UnaryExprOrTypeTraitExpr); ok &&
+			u.Function == "sizeof" {
+			return true
+		}
+		for i := range (*node).Children() {
+			if searcher(&((*node).Children()[i])) {
+				replacer(&((*node).Children()[i]))
+			}
+		}
+		return false
+	}
+	if searcher(node) {
+		unary = *node
+		lastNode = node
+		*node = one
+		counter++
+	}
+
+	back = func() {
+		// return back node
+		if unary != nil {
+			*lastNode = unary
+		}
+	}
+
+	if counter != 1 {
+		err = fmt.Errorf("counter is not 1: %d", counter)
+		return
+	}
+	if unary == nil {
+		err = fmt.Errorf("pointer is nil")
+		return
+	}
+
+	tree = *node
+
+	return
+}
+
+//
+// calloc nodes:
+// [0] - function identification
+// [1] - expression
+// [2] - type UnaryExprOrTypeTraitExpr always
+func transpileCallExprCalloc(expression ast.Node, unary *ast.UnaryExprOrTypeTraitExpr, p *program.Program) (
 	expr *goast.CallExpr, resultType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("Function: calloc. err = %v", err)
 		}
 	}()
-	size, sizeType, preStmts, postStmts, err := transpileToExpr(n.Children()[1], p, false)
-	if err != nil {
-		return nil, "", nil, nil, err
-	}
-	size, err = types.CastExpr(p, size, sizeType, "unsigned long")
-	if err != nil {
-		return nil, "", nil, nil, err
-	}
 
-	//
-	// -UnaryExprOrTypeTraitExpr 0x24e0498 <col:27, col:39> 'unsigned long' sizeof 'float'
-	//
-	// OR
-	//
-	// t.w = (float*) calloc(t.nw, sizeof(*t.w));
-	// -UnaryExprOrTypeTraitExpr <> 'unsigned long' sizeof
-	//  `-ParenExpr <> 'float' lvalue
-	//    `-UnaryOperator <> 'float' lvalue prefix '*'
-	//      `-ImplicitCastExpr <> 'float *' <LValueToRValue>
-	//        `-MemberExpr <> 'float *' lvalue .w 0x2548b38
-	//          `-DeclRefExpr <> 'struct cws':'struct cws' lvalue Var 0x2548c40 't' 'struct cws': 'struct cws'
-	//
-	// OR
-	//
-	// CallExpr <> 'void *'
-	// |-ImplicitCastExpr <> 'void *(*)(unsigned long, unsigned long)' <FunctionToPointerDecay>
-	// | `-DeclRefExpr <> 'void *(unsigned long, unsigned long)' Function 0x3b9b048 'calloc' 'void *(unsigned long, unsigned long)'
-	// |-ImplicitCastExpr <> 'unsigned long' <IntegralCast>
-	// | `-ImplicitCastExpr <> 'int' <LValueToRValue>
-	// |   `-DeclRefExpr <> 'int' lvalue ParmVar 0x3bc40d8 'n' 'int'
-	// `-ImplicitCastExpr <> 'unsigned long' <IntegralCast>
-	//   `-ImplicitCastExpr <> 'int' <LValueToRValue>
-	//     `-DeclRefExpr <> 'int' lvalue Var 0x3bc4268 'sizeT' 'int'
-	var goType goast.Expr
-	switch v := n.Children()[2].(type) {
-	case *ast.UnaryExprOrTypeTraitExpr:
-		var t string
-		if v.Type2 == "" {
-			_, t, _, _, _ = transpileToExpr(v.Children()[0], p, false)
-		} else {
-			t = v.Type2
-		}
-		t, err := types.ResolveType(p, t)
-		if err != nil {
-			return nil, "", nil, nil, err
-		}
-		goType = &goast.ArrayType{Elt: goast.NewIdent(t)}
-	default:
-		var goTypeT string
-		goType, goTypeT, _, _, _ = transpileToExpr(v.Children()[0], p, false)
-		size, err = types.CastExpr(p, size, sizeType, goTypeT)
-		if err != nil {
-			return nil, "", nil, nil, err
-		}
-		size = &goast.BinaryExpr{
-			X:  &goast.ParenExpr{X: goType},
-			Op: token.MUL,
-			Y:  &goast.ParenExpr{X: size},
-		}
-		goType = &goast.ArrayType{
-			Elt: goast.NewIdent("byte"),
-		}
+	size, _, newPre, newPost, err := atomicOperation(expression, p)
+	if err != nil {
+		return
 	}
+	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+
+	var t string = unary.Type2
+	if t == "" {
+		_, t, _, _, _ = transpileToExpr(unary, p, false)
+	}
+	resultType = t + "*"
+	t, err = types.ResolveType(p, t)
+	if err != nil {
+		return nil, "", nil, nil, err
+	}
+	goType := &goast.ArrayType{Elt: goast.NewIdent(t)}
 
 	return util.NewCallExpr("make", goType, size),
-		n.Type, preStmts, postStmts, nil
+		resultType, preStmts, postStmts, nil
 }
 
 func transpileCallExprQsort(n *ast.CallExpr, p *program.Program) (

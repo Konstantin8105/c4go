@@ -1,5 +1,6 @@
 #include "tests.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 #define START_TEST(t) \
     diag(#t);         \

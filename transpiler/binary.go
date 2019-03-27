@@ -299,14 +299,66 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 		err = fmt.Errorf("cannot atomic for right part. %v", err)
 		return nil, "unknown53", nil, nil, err
 	}
-	if types.IsPointer(leftType, p) && types.IsPointer(rightType, p) && operator == token.SUB {
-		p.AddImport("unsafe")
-		sizeof, err := types.SizeOf(p, types.GetBaseType(leftType))
-		if err != nil {
-			return nil, "unknown53", nil, nil, err
+
+	if types.IsPointer(leftType, p) && types.IsPointer(rightType, p) {
+		switch operator {
+		case token.SUB: // -
+			p.AddImport("unsafe")
+			var sizeof int
+			sizeof, err = types.SizeOf(p, types.GetBaseType(leftType))
+			if err != nil {
+				return nil, "PointerOperation_unknown01", nil, nil, err
+			}
+			var e goast.Expr
+			var newPost []goast.Stmt
+			e, newPost, err = SubTwoPnts(left, leftType, right, rightType, sizeof)
+			if err != nil {
+				return nil, "PointerOperation_unknown02", nil, nil, err
+			}
+			postStmts = append(postStmts, newPost...)
+
+			expr, err = types.CastExpr(p, e, "long long", n.Type)
+			if err != nil {
+				return nil, "PointerOperation_unknown03", nil, nil, err
+			}
+			eType = n.Type
+			return
+
+		case token.GTR, token.GEQ, // >  >=
+			token.LOR,            // ||
+			token.LAND,           // &&
+			token.LSS, token.LEQ, // <  <=
+			token.EQL, token.NEQ: // == !=
+
+			var sizeof int
+			sizeof, err = types.SizeOf(p, types.GetBaseType(leftType))
+			if err != nil {
+				return nil, "PointerOperation_unknown04", nil, nil, err
+			}
+			var e goast.Expr
+			var newPost []goast.Stmt
+			e, newPost, err = PntCmpPnt(
+				p,
+				left, leftType,
+				right, rightType,
+				sizeof, operator,
+			)
+			if err != nil {
+				return nil, "PointerOperation_unknown05", nil, nil, err
+			}
+			postStmts = append(postStmts, newPost...)
+			expr = e
+			eType = "bool"
+
+			return
+
+		case token.ASSIGN: // =
+			// ignore
+
+		default:
+			err = fmt.Errorf("Not implemented pointer operation: %v", operator)
+			return
 		}
-		left, leftType = util.GetUintptrForSlice(left, sizeof)
-		right, rightType = util.GetUintptrForSlice(right, sizeof)
 	}
 
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
@@ -450,52 +502,47 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			// | `-DeclRefExpr 'char *' lvalue Var 0x26ba988 'c' 'char *'
 			// `-ImplicitCastExpr 'char *' <LValueToRValue>
 			//   `-DeclRefExpr 'char *' lvalue Var 0x26ba8a8 'b' 'char *'
-			if types.IsCPointer(leftType, p) || types.IsCArray(leftType, p) {
-				left = util.GetUintptr(left)
-				right = util.GetUintptr(right)
-				p.AddImport("unsafe")
+			if types.IsPointer(leftType, p) || types.IsPointer(rightType, p) {
+				err = fmt.Errorf("need add pointer operator : %s %v %s",
+					leftType, n.Operator, rightType)
+				return
 			}
 		}
 	}
 
 	if operator == token.ASSIGN { // =
-		// Memory allocation is translated into the Go-style.
-		allocSize := getAllocationSizeNode(p, n.Children()[1])
 
-		if allocSize != nil {
-			right, newPre, newPost, err = generateAlloc(p, allocSize, leftType)
-			if err != nil {
-				p.AddMessage(p.GenerateWarningMessage(err, n))
-				return nil, "", nil, nil, err
-			}
+		// BinaryOperator 'double *' '='
+		// |-DeclRefExpr 'double *' lvalue Var 0x2a7fa48 'd' 'double *'
+		// `-ImplicitCastExpr 'double *' <BitCast>
+		//   `-CStyleCastExpr 'char *' <BitCast>
+		//     `-...
+		right, err = types.CastExpr(p, right, rightType, returnType)
+		rightType = returnType
+		if err != nil {
+			return
+		}
 
-			preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+		if _, ok := right.(*goast.UnaryExpr); ok && types.IsDereferenceType(rightType) {
+			deref, err := types.GetDereferenceType(rightType)
 
-		} else {
-			right, err = types.CastExpr(p, right, rightType, returnType)
+			if !p.AddMessage(p.GenerateWarningMessage(err, n)) {
+				resolvedDeref, err := types.ResolveType(p, deref)
 
-			if _, ok := right.(*goast.UnaryExpr); ok && types.IsDereferenceType(rightType) {
-				deref, err := types.GetDereferenceType(rightType)
+				// FIXME: I'm not sure how this situation arises.
+				if resolvedDeref == "" {
+					resolvedDeref = "interface{}"
+				}
 
 				if !p.AddMessage(p.GenerateWarningMessage(err, n)) {
-					resolvedDeref, err := types.ResolveType(p, deref)
-
-					// FIXME: I'm not sure how this situation arises.
-					if resolvedDeref == "" {
-						resolvedDeref = "interface{}"
-					}
-
-					if !p.AddMessage(p.GenerateWarningMessage(err, n)) {
-						p.AddImport("unsafe")
-						right = util.CreateSliceFromReference(resolvedDeref, right)
-					}
+					p.AddImport("unsafe")
+					right = CreateSliceFromReference(resolvedDeref, right)
 				}
 			}
+		}
 
-			if p.AddMessage(p.GenerateWarningMessage(err, n)) && right == nil {
-				right = util.NewNil()
-			}
-
+		if p.AddMessage(p.GenerateWarningMessage(err, n)) && right == nil {
+			right = util.NewNil()
 		}
 	}
 
@@ -542,89 +589,4 @@ func foundCallExpr(n ast.Node) *ast.CallExpr {
 		return v
 	}
 	return nil
-}
-
-// getAllocationSizeNode returns the node that, if evaluated, would return the
-// size (in bytes) of a memory allocation operation. For example:
-//
-//     (int *)malloc(sizeof(int))
-//
-// Would return the node that represents the "sizeof(int)".
-//
-// If the node does not represent an allocation operation (such as calling
-// malloc, calloc, realloc, etc.) then nil is returned.
-//
-// In the case of calloc() it will return a new BinaryExpr that multiplies both
-// arguments.
-func getAllocationSizeNode(p *program.Program, node ast.Node) ast.Node {
-	expr := foundCallExpr(node)
-
-	if expr == nil || expr == (*ast.CallExpr)(nil) {
-		return nil
-	}
-
-	functionName, err := getName(p, expr)
-	p.AddMessage(p.GenerateWarningMessage(err, node))
-
-	if functionName == "malloc" {
-		// Is 1 always the body in this case? Might need to be more careful
-		// to find the correct node.
-		return expr.Children()[1]
-	}
-
-	if functionName == "calloc" {
-		return &ast.BinaryOperator{
-			Type:       "int",
-			Operator:   "*",
-			ChildNodes: expr.Children()[1:],
-		}
-	}
-
-	// TODO: realloc() is not supported
-	// https://github.com/Konstantin8105/c4go/issues/118
-	//
-	// Realloc will be treated as calloc which will almost certainly cause
-	// bugs in your code.
-	if functionName == "realloc" {
-		return expr.Children()[2]
-	}
-
-	return nil
-}
-
-func generateAlloc(p *program.Program, allocSize ast.Node, leftType string) (
-	right goast.Expr, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
-
-	allocSizeExpr, _, newPre, newPost, err := transpileToExpr(allocSize, p, false)
-
-	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
-
-	if err != nil {
-		return nil, preStmts, postStmts, err
-	}
-
-	derefType, err := types.GetDereferenceType(leftType)
-	if err != nil {
-		return nil, preStmts, postStmts, err
-	}
-
-	toType, err := types.ResolveType(p, leftType)
-	if err != nil {
-		return nil, preStmts, postStmts, err
-	}
-	if toType == "interface{}" {
-		toType = "[]byte"
-	}
-
-	elementSize, err := types.SizeOf(p, derefType)
-	if err != nil {
-		return nil, preStmts, postStmts, err
-	}
-
-	right = util.NewCallExpr(
-		"make",
-		util.NewTypeIdent(toType),
-		util.NewBinaryExpr(allocSizeExpr, token.QUO, util.NewIntLit(elementSize), "int", false),
-	)
-	return
 }
