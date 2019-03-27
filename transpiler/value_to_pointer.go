@@ -91,7 +91,11 @@ func GetUnsafeConvertDecls(p *program.Program) {
 	sort.Sort(sort.StringSlice(names))
 
 	for _, t := range names {
-		functionName := fmt.Sprintf("%s%s", unsafeConvertFunctionName, t)
+		nx := t
+		if i := strings.Index(nx, "."); i > -1 {
+			nx = nx[i+1:]
+		}
+		functionName := fmt.Sprintf("%s%s", unsafeConvertFunctionName, nx)
 		varName := "c4go_name"
 		p.File.Decls = append(p.File.Decls, &goast.FuncDecl{
 			Doc: &goast.CommentGroup{
