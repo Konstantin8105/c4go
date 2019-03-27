@@ -463,7 +463,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			return
 		}
 
-		if types.IsCPointer(v.Type, p) || types.IsCArray(v.Type, p) {
+		if types.IsPointer(v.Type, p) {
 			switch e := expr.(type) {
 			case *goast.IndexExpr:
 				if v.Operator == "++" {
@@ -550,6 +550,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 				}
 
 			default:
+				// TODO add here
 				p.AddMessage(p.GenerateWarningMessage(
 					fmt.Errorf("transpilation pointer is not support: %T", e), v))
 			}
