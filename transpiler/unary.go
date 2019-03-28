@@ -33,7 +33,7 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 
 	// for values
 	if v, ok := n.Children()[0].(*ast.DeclRefExpr); ok &&
-		!types.IsCArray(v.Type, p) && !types.IsCPointer(v.Type, p) {
+		!types.IsPointer(v.Type, p) {
 		switch n.Operator {
 		case "++":
 			return &goast.BinaryExpr{
@@ -61,7 +61,7 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 		return
 	}
 
-	if !types.IsCPointer(n.Type, p) && !types.IsCArray(n.Type, p) {
+	if !types.IsPointer(n.Type, p) {
 
 		binaryOperator := "+="
 		if operator == token.DEC {

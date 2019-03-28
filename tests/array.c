@@ -714,9 +714,28 @@ void test_matrix_init()
 	}
 }
 
+struct someR{
+	unsigned long * ul;
+};
+
+void test_post_pointer()
+{
+	struct someR R;
+	unsigned long ull[6] = {2,4,8,10,12,34};
+	R.ul = ull;
+	struct someR * pR = &R;
+	for (int i=0;i <5;i++) {
+		printf("%d\n",(int)(*pR->ul));
+		is_eq(ull[i], *pR->ul);
+		if (i < 4) {
+			pR->ul++;
+		}
+	}
+}
+
 int main()
 {
-    plan(194);
+    plan(199);
 
     test_parg_struct();
     START_TEST(struct_init);
@@ -1255,6 +1274,7 @@ int main()
 	START_TEST(func_byte);
 	START_TEST(negative_index);
 	START_TEST(matrix_init);
+	START_TEST(post_pointer);
 
     done_testing();
 }
