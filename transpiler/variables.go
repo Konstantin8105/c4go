@@ -205,7 +205,19 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 
 		var expr goast.Expr
 		var err error
-		if sl, ok := node.(*ast.StringLiteral); ok {
+
+		var isStringLiteral bool
+		var sl *ast.StringLiteral
+
+		sl, isStringLiteral = node.(*ast.StringLiteral)
+
+		if !isStringLiteral {
+			if impl, ok := node.(*ast.ImplicitCastExpr); ok {
+				sl, isStringLiteral = impl.ChildNodes[0].(*ast.StringLiteral)
+			}
+		}
+
+		if isStringLiteral {
 			expr, _, err = transpileStringLiteral(p, sl, true)
 			if _, ok := p.Structs[e.Type1]; !ok {
 				expr, _, err = transpileStringLiteral(p, sl, false)
@@ -216,6 +228,22 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 		if err != nil {
 			p.AddMessage(p.GenerateWarningMessage(err, node))
 			return nil, "", err
+		}
+
+		if cl, ok := expr.(*goast.CompositeLit); ok {
+			if id, ok := cl.Type.(*goast.Ident); ok {
+				clName := id.Name
+				if len(cl.Elts) == 1 {
+					if call, ok := cl.Elts[0].(*goast.CallExpr); ok {
+						if id, ok := call.Fun.(*goast.Ident); ok {
+							callName := id.Name
+							if clName == callName {
+								expr = call
+							}
+						}
+					}
+				}
+			}
 		}
 
 		resp = append(resp, expr)

@@ -21,6 +21,9 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 		if err != nil {
 			err = fmt.Errorf("Cannot transpileUnaryOperatorInc. err = %v", err)
 		}
+		if eType == "" {
+			eType = "EmptyTypeInUnaryOperatorInc"
+		}
 	}()
 
 	if !(operator == token.INC || operator == token.DEC) {
@@ -78,7 +81,20 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 		}, p, false)
 	}
 
-	return transpileBinaryOperator(&ast.BinaryOperator{
+	// from:
+	// 		*w++
+	// to:
+	// 		func () []byte {
+	//			defer func(){
+	//				*w = *w + 1 // binary
+	//			}()
+	//			tempVar := *w
+	//			return tempVar
+	// 		}
+	varName := "tempVarUnary"
+
+	v, vType, _, _, _ := transpileToExpr(n.ChildNodes[0], p, false)
+	incExpr, _, newPre, newPost, err := transpileBinaryOperator(&ast.BinaryOperator{
 		Type:     n.Type,
 		Operator: "=",
 		ChildNodes: []ast.Node{
@@ -93,6 +109,35 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 			},
 		},
 	}, p, false)
+	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+	if err != nil {
+		return
+	}
+
+	var exprResolveType string
+	exprResolveType, err = types.ResolveType(p, vType)
+	if err != nil {
+		return
+	}
+
+	expr = util.NewAnonymousFunction(
+		// body :
+		append(preStmts, &goast.AssignStmt{
+			Lhs: []goast.Expr{util.NewIdent(varName)},
+			Tok: token.DEFINE,
+			Rhs: []goast.Expr{v},
+		}),
+		// defer :
+		[]goast.Stmt{
+			&goast.ExprStmt{X: incExpr},
+		},
+		// return :
+		util.NewIdent(varName),
+		exprResolveType)
+
+	eType = n.Type
+
+	return
 }
 
 func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
