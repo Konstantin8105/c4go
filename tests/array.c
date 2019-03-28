@@ -725,16 +725,17 @@ void test_post_pointer()
 	R.ul = ull;
 	struct someR * pR = &R;
 	for (int i=0;i <5;i++) {
+		printf("%d\n",(int)(*pR->ul));
 		is_eq(ull[i], *pR->ul);
 		if (i < 4) {
-			*pR->ul++;
+			pR->ul++;
 		}
 	}
 }
 
 int main()
 {
-    plan(200);
+    plan(199);
 
     test_parg_struct();
     START_TEST(struct_init);

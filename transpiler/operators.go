@@ -507,7 +507,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 					return
 				}
 
-			case *goast.Ident:
+			case *goast.Ident, *goast.SelectorExpr:
 				if v.Operator == "++" {
 					// expr = 'p'
 					// example of snippet:
