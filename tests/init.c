@@ -97,28 +97,37 @@ void test_options()
 	is_not_null(options[1].var);
 }
 
-// int ec_print(char *s){
-	// printf("%s\n",s);
-	// return 32;
-// }
-// 
-// int ec_insert(char *s){
-	// printf("%s\n",s);
-	// return 42;
-// }
-// 
-// static struct excmd {
-	// char *abbr;
-	// char *name;
-	// int (*ec)(char *s);
-// } excmds[] = {
-	// {"p", "print", ec_print},
-	// {"a", "append", ec_insert},
-// };
+int ec_print(char *s){
+	printf("%s\n",s);
+	return 32;
+}
+int ec_insert(char *s){
+	printf("%s\n",s);
+	return 42;
+}
+static struct excmd {
+	char *abbr;
+	char *name;
+	int (*ec)(char *s);
+} excmds[] = {
+	{"p", "print", ec_print},
+	{"a", "append", ec_insert},
+};
+
+void test_ex()
+{
+	is_streq(excmds[0].abbr, "p")
+	is_streq(excmds[0].name, "print")
+	is_eq(excmds[0].ec("0"), 32);
+	
+	is_streq(excmds[1].abbr, "a")
+	is_streq(excmds[1].name, "append")
+	is_eq(excmds[1].ec("1"), 42);
+}
 
 int main()
 {
-    plan(30);
+    plan(36);
 
     START_TEST(array_float);
     START_TEST(array_char);
@@ -127,6 +136,7 @@ int main()
 	START_TEST(equals_chars);
 	START_TEST(di);
 	START_TEST(options);
+	START_TEST(ex);
 
     done_testing();
 }
