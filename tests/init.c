@@ -125,9 +125,30 @@ void test_ex()
 	is_eq(excmds[1].ec("1"), 42);
 }
 
+static struct hig{
+	char *ft;		/* the filetype of this pattern */
+	int att[16];		/* attributes of the matched groups */
+	char *pat;		/* regular expression */
+	int end;		/* the group ending this pattern */
+} higs[] = {
+	{"c", {5}, "q"},
+	{"2", {4}, "w"},
+};
+void test_hig()
+{
+	is_streq(higs[0].ft    , "c");
+	is_eq   (higs[0].att[0],  5 );
+	is_streq(higs[0].pat   , "q");
+
+	is_streq(higs[1].ft    , "2");
+	is_eq   (higs[1].att[0],  4 );
+	is_streq(higs[1].pat   , "w");
+}
+
+
 int main()
 {
-    plan(36);
+    plan(42);
 
     START_TEST(array_float);
     START_TEST(array_char);
@@ -137,6 +158,7 @@ int main()
 	START_TEST(di);
 	START_TEST(options);
 	START_TEST(ex);
+	START_TEST(hig);
 
     done_testing();
 }
