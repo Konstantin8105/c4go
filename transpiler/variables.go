@@ -230,10 +230,10 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 		}
 
 		if isStringLiteral {
-			expr, _, err = transpileStringLiteral(p, sl, true)
-			if _, ok := p.Structs[e.Type1]; !ok {
-				expr, _, err = transpileStringLiteral(p, sl, false)
-			}
+			// expr, _, err = transpileStringLiteral(p, sl, true)
+			// if _, ok := p.Structs[e.Type1]; !ok {
+			expr, _, err = transpileStringLiteral(p, sl, false)
+			// }
 		} else {
 			expr, _, _, _, err = transpileToExpr(node, p, true)
 		}

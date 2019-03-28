@@ -59,24 +59,44 @@ void test_equals_chars()
 	is_streq(kmap_fa['1'], "abc");
 }
 
-// static char *digraphs[][2] = {
-	// {"cq", "’"},
-	// {"pl", "+"},
-	// {"hy", "-"},
-	// {"sl", "/"},
-// };
-// 
-// static int xai, xaw;
-// 
-// static struct option {
-	// char *abbr;
-	// char *name;
-	// int *var;
-// } options[] = {
-	// {"ai", "autoindent", &xai},
-	// {"aw", "autowrite", &xaw},
-// };
-// 
+static char *di[][2] = {
+	{"cq", ";"},
+	{"pl", "+"},
+	{"hy", "-"},
+	{"sl", "/"},
+};
+void test_di()
+{
+	is_streq(di[0][0], "cq");
+	is_streq(di[1][0], "pl");
+	is_streq(di[2][0], "hy");
+	is_streq(di[3][0], "sl");
+	is_streq(di[0][1], ";");
+	is_streq(di[1][1], "+");
+	is_streq(di[2][1], "-");
+	is_streq(di[3][1], "/");
+}
+
+static int xai, xaw;
+static struct option {
+	char *abbr;
+	char *name;
+	int *var;
+} options[] = {
+	{"ai", "autoindent", &xai},
+	{"aw", "autowrite", &xaw},
+};
+void test_options()
+{
+	is_streq(options[0].abbr, "ai");
+	is_streq(options[0].name, "autoindent");
+	is_not_null(options[0].var);
+
+	is_streq(options[1].abbr, "aw");
+	is_streq(options[1].name, "autowrite");
+	is_not_null(options[1].var);
+}
+
 // int ec_print(char *s){
 	// printf("%s\n",s);
 	// return 32;
@@ -98,13 +118,15 @@ void test_equals_chars()
 
 int main()
 {
-    plan(16);
+    plan(30);
 
     START_TEST(array_float);
     START_TEST(array_char);
     START_TEST(struct_init);
     START_TEST(matrix_double);
 	START_TEST(equals_chars);
+	START_TEST(di);
+	START_TEST(options);
 
     done_testing();
 }
