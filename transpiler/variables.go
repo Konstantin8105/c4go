@@ -208,7 +208,7 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 	e.Type1 = util.GenerateCorrectType(e.Type1)
 	e.Type2 = util.GenerateCorrectType(e.Type2)
 
-	for _, node := range e.Children() {
+	for fieldPos, node := range e.Children() {
 		// Skip ArrayFiller
 		if _, ok := node.(*ast.ArrayFiller); ok {
 			hasArrayFiller = true
@@ -230,10 +230,18 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 		}
 
 		if isStringLiteral {
-			// expr, _, err = transpileStringLiteral(p, sl, true)
-			// if _, ok := p.Structs[e.Type1]; !ok {
-			expr, _, err = transpileStringLiteral(p, sl, false)
-			// }
+			// fieldName, fieldType, ok := p.GetFieldOfStruct(e.Type1, fieldPos)
+			var needArray bool
+			if st, ok := p.Structs[e.Type1]; ok {
+				if fieldType, ok := st.Fields[st.FieldNames[fieldPos]]; ok {
+					if name, ok := fieldType.(string); ok {
+						if types.IsCArray(name, p) {
+							needArray = true
+						}
+					}
+				}
+			}
+			expr, _, err = transpileStringLiteral(p, sl, needArray)
 		} else {
 			expr, _, _, _, err = transpileToExpr(node, p, true)
 		}
