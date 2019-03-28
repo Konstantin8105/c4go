@@ -47,12 +47,18 @@ void test_matrix_double()
 }
 
 
-// static char *kmap_fa[256] = {
-	// [0] = "fa",
-	// ['`'] = "‍",
-	// ['1'] = "۱",
-// };
-// 
+static char *kmap_fa[256] = {
+	[ 0 ] = "fa",
+	['`'] = "@",
+	['1'] = "abc",
+};
+void test_equals_chars()
+{
+	is_streq(kmap_fa[ 0 ], "fa" );
+	is_streq(kmap_fa['`'], "@"  );
+	is_streq(kmap_fa['1'], "abc");
+}
+
 // static char *digraphs[][2] = {
 	// {"cq", "’"},
 	// {"pl", "+"},
@@ -92,12 +98,13 @@ void test_matrix_double()
 
 int main()
 {
-    plan(13);
+    plan(16);
 
     START_TEST(array_float);
     START_TEST(array_char);
     START_TEST(struct_init);
     START_TEST(matrix_double);
+	START_TEST(equals_chars);
 
     done_testing();
 }
