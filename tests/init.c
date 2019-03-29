@@ -80,27 +80,8 @@ void test_di()
 	is_streq(di[3][1], "/");
 }
 
+
 /*
-static int xai, xaw;
-static struct option {
-	char *abbr;
-	char *name;
-	int *var;
-} options[] = {
-	{"ai", "autoindent", &xai},
-	{"aw", "autowrite", &xaw},
-};
-void test_options()
-{
-	is_streq(options[0].abbr, "ai");
-	is_streq(options[0].name, "autoindent");
-	is_not_null(options[0].var);
-
-	is_streq(options[1].abbr, "aw");
-	is_streq(options[1].name, "autowrite");
-	is_not_null(options[1].var);
-}
-
 int ec_print(char *s){
 	printf("%s\n",s);
 	return 32;
@@ -246,10 +227,34 @@ void test_void()
 	is_eq(*(double *)(v[1]) , r);
 }
 
+static int xai, xaw;
+static struct option {
+	char *abbr;
+	char *name;
+	int  * var;
+} options[] = {
+	{"ai", "autoindent", &xai},
+	{"aw", "autowrite", &xaw},
+	{},
+};
+void test_options()
+{
+	is_streq(options[0].abbr, "ai");
+	is_streq(options[0].name, "autoindent");
+	is_not_null(options[0].var);
+
+	is_streq(options[1].abbr, "aw");
+	is_streq(options[1].name, "autowrite");
+	is_not_null(options[1].var);
+
+	is_true(options[2].abbr == NULL);
+	is_true(options[2].name == NULL);
+	is_true(options[2].var  == NULL);
+}
 
 int main()
 {
-    plan(100);
+    plan(109);
 
 	// Test partly initialization of array
 	test_part_array(char            );
@@ -284,7 +289,7 @@ int main()
     START_TEST(matrix_double);
 	START_TEST(equals_chars);
 	START_TEST(di);
-	// START_TEST(options);
+	START_TEST(options);
 	// START_TEST(ex);
 	// START_TEST(hig);
 	// START_TEST(hug);

@@ -284,21 +284,8 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 
 	arrayType, arraySize := types.GetArrayTypeAndSize(e.Type1)
 	if arraySize > 0 && len(resp) < arraySize {
-		elementType, err := types.ResolveType(p, arrayType)
-		if err != nil {
-			return nil, "", err
-		}
 		for i := len(resp); i < arraySize; i++ {
-			var zeroValue goast.Expr
-			switch {
-			case elementType == "byte":
-				zeroValue = goast.NewIdent("'\\x00'")
-			case types.IsCPointer(arrayType, p):
-				zeroValue = goast.NewIdent("nil")
-			default:
-				zeroValue = goast.NewIdent("0")
-			}
-			resp = append(resp, zeroValue)
+			resp = append(resp, zeroValue(p, arrayType))
 		}
 	}
 
@@ -306,6 +293,56 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 		Type: goast.NewIdent(goType),
 		Elts: resp,
 	}, e.Type1, nil
+}
+
+func zeroValue(p *program.Program, cType string) (zero goast.Expr) {
+	goType, err := types.ResolveType(p, cType)
+	p.AddMessage(p.GenerateWarningMessage(err, nil))
+	switch {
+	case goType == "byte":
+		zero = goast.NewIdent("'\\x00'")
+	case types.IsCPointer(cType, p):
+		zero = goast.NewIdent("nil")
+	default:
+		zero = goast.NewIdent("0")
+	}
+
+	// exprType = n.Type1
+	//
+	// var t string
+	// t = n.Type1
+	// t, err = types.ResolveType(p, t)
+	// p.AddMessage(p.GenerateWarningMessage(err, n))
+	//
+	// var isStruct bool
+	// if _, ok := p.Structs[t]; ok {
+	// isStruct = true
+	// }
+	// if _, ok := p.Structs["struct "+t]; ok {
+	// isStruct = true
+	// }
+	// if isStruct {
+	// expr = &goast.CompositeLit{
+	// Type:   util.NewIdent(t),
+	// Lbrace: 1,
+	// }
+	// return
+	// }
+	//
+
+	// if t == "[]byte" {
+	// expr = util.NewCallExpr(t, goast.NewIdent("\"\\x00\""))
+	// return
+	// }
+	//
+	// expr = util.NewCallExpr(t,
+	// &goast.BasicLit{
+	// Kind:  token.INT,
+	// Value: "0",
+	// })
+	// return
+
+	return
 }
 
 func transpileDeclStmt(n *ast.DeclStmt, p *program.Program) (
@@ -554,39 +591,7 @@ func transpileImplicitValueInitExpr(n *ast.ImplicitValueInitExpr, p *program.Pro
 			err = fmt.Errorf("Cannot transpileImplicitValueInitExpr. err = %v", err)
 		}
 	}()
-
-	exprType = n.Type1
-
-	var t string
-	t = n.Type1
-	t, err = types.ResolveType(p, t)
-	p.AddMessage(p.GenerateWarningMessage(err, n))
-
-	var isStruct bool
-	if _, ok := p.Structs[t]; ok {
-		isStruct = true
-	}
-	if _, ok := p.Structs["struct "+t]; ok {
-		isStruct = true
-	}
-	if isStruct {
-		expr = &goast.CompositeLit{
-			Type:   util.NewIdent(t),
-			Lbrace: 1,
-		}
-		return
-	}
-
-	//
-	if t == "[]byte" {
-		expr = util.NewCallExpr(t, goast.NewIdent("\"\\x00\""))
-		return
-	}
-
-	expr = util.NewCallExpr(t,
-		&goast.BasicLit{
-			Kind:  token.INT,
-			Value: "0",
-		})
+	expr = zeroValue(p, n.Type1)
 	return
+
 }
