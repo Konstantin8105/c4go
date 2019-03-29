@@ -221,6 +221,11 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 	//	}
 
 	structType, isStruct := p.Structs[e.Type1]
+	if !isStruct {
+		if tt, ok := p.GetBaseTypeOfTypedef(e.Type1); ok {
+			structType, isStruct = p.Structs[tt]
+		}
+	}
 	// fmt.Println("----- STRUCT ----> ", isStruct, structType, " ::: ", e.Type1)
 
 	for fieldPos, node := range e.Children() {
@@ -323,6 +328,19 @@ func zeroValue(p *program.Program, cType string) (zero goast.Expr, zeroType stri
 	zeroType = cType
 	goType, err := types.ResolveType(p, cType)
 	p.AddMessage(p.GenerateWarningMessage(err, nil))
+
+	// for structs
+	if tt, ok := p.GetBaseTypeOfTypedef(cType); ok {
+		if _, ok := p.Structs[tt]; ok {
+			zero = goast.NewIdent(fmt.Sprintf("%s{}", goType))
+			return
+		}
+	}
+	if _, ok := p.Structs[cType]; ok {
+		zero = goast.NewIdent(fmt.Sprintf("%s{}", goType))
+		return
+	}
+
 	switch {
 	case goType == "byte":
 		zero = goast.NewIdent("'\\x00'")
