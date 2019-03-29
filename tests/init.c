@@ -161,31 +161,31 @@ void test_hug()
 	is_streq(hugs[1].pat   , "w");
 }
 
-struct pos{
+struct poz{
 	char           y[5];
 	char          *c   ;
 	double         d[2];
-	struct pos    *ppt ;
+	struct poz    *ppt ;
 	struct hig  parr[3];
 	hug            h[9];
-} poses[] = {
+} pozes[] = {
 	{"dream","home", {1, 2}},
 	{"hold" ,"a"   , {0,42}},
 	{},
 };
-void test_pos()
+void test_poz()
 {
-	is_streq(poses[0].y   , "dream");
-	is_streq(poses[0].c   , "home" );
-	is_eq   (poses[0].d[0], 1      );
-	is_eq   (poses[0].d[1], 2      );
+	is_streq(pozes[0].y   , "dream");
+	is_streq(pozes[0].c   , "home" );
+	is_eq   (pozes[0].d[0], 1      );
+	is_eq   (pozes[0].d[1], 2      );
 	
-	is_streq(poses[1].y   , "hold" );
-	is_streq(poses[1].c   , "a"    );
-	is_eq   (poses[1].d[0], 0      );
-	is_eq   (poses[1].d[1], 42     );
+	is_streq(pozes[1].y   , "hold" );
+	is_streq(pozes[1].c   , "a"    );
+	is_eq   (pozes[1].d[0], 0      );
+	is_eq   (pozes[1].d[1], 42     );
 
-	is_not_null(&poses[2]);
+	is_not_null(&pozes[2]);
 }
 
 void test_part_array()
@@ -214,7 +214,7 @@ int main()
 	START_TEST(ex);
 	START_TEST(hig);
 	START_TEST(hug);
-	START_TEST(pos);
+	START_TEST(poz);
 	START_TEST(part_array);
 
     done_testing();

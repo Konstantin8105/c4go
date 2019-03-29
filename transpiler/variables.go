@@ -239,35 +239,37 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 		}
 
 		fmt.Println("*")
+		_ = hasArrayFiller
 
-		arrayType, arraySize := types.GetArrayTypeAndSize(e.Type1)
-		fmt.Println(e.Position().Line, "    ", arrayType, arraySize)
-		if arraySize != -1 {
-			goArrayType, err := types.ResolveType(p, arrayType)
-			p.AddMessage(p.GenerateWarningMessage(err, e))
+		//	arrayType, arraySize := types.GetArrayTypeAndSize(e.Type1)
+		//	fmt.Println(e.Position().Line, "    ", arrayType, arraySize)
+		//	if arraySize != -1 {
+		//		goArrayType, err := types.ResolveType(p, arrayType)
+		//		p.AddMessage(p.GenerateWarningMessage(err, e))
 
-			eType = fmt.Sprintf("%s[%d]", arrayType, arraySize)
+		//		eType = fmt.Sprintf("%s[%d]", arrayType, arraySize)
 
-			_ = hasArrayFiller
-			// if hasArrayFiller {
+		//		_ = hasArrayFiller
+		//		// if hasArrayFiller {
 
-			// Array fillers do not work with slices.
-			// We initialize the array first, then convert to a slice.
-			// For example: (&[4]int{1,2})[:]
+		//		// Array fillers do not work with slices.
+		//		// We initialize the array first, then convert to a slice.
+		//		// For example: (&[4]int{1,2})[:]
 
-			fmt.Println("change to array")
+		//		fmt.Println("change to array")
 
-			expr = &goast.CompositeLit{
-				Type: &goast.ArrayType{
-					Elt: &goast.Ident{
-						Name: goArrayType,
-					},
-					Len: util.NewIntLit(arraySize),
-				},
-				Elts: resp,
-			}
-			///	}
-		}
+		//		fmt.Println("------------------------------------>>>>>>>>", goArrayType)
+		//		expr = &goast.CompositeLit{
+		//			Type: &goast.ArrayType{
+		//				Elt: &goast.Ident{
+		//					Name: goArrayType,
+		//				},
+		//				Len: util.NewIntLit(arraySize),
+		//			},
+		//			Elts: resp,
+		//		}
+		//		///	}
+		//	}
 
 		//}
 
