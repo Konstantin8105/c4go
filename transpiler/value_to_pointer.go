@@ -199,10 +199,19 @@ func GetPointerAddress(expr goast.Expr, cType string, sizeof int) (
 		}
 	}
 
+	isRealPointer := func() bool {
+		if cType == "FILE *" || cType == "struct _IO_FILE *" {
+			return true
+		}
+		return false
+	}
+
 	if _, ok := expr.(*goast.Ident); ok {
-		expr = &goast.IndexExpr{
-			X:     expr,
-			Index: goast.NewIdent("0"),
+		if !isRealPointer() {
+			expr = &goast.IndexExpr{
+				X:     expr,
+				Index: goast.NewIdent("0"),
+			}
 		}
 	}
 
@@ -310,14 +319,26 @@ func GetPointerAddress(expr goast.Expr, cType string, sizeof int) (
 	}
 
 	// main result expression
-	rs = &goast.BinaryExpr{
-		X: util.NewCallExpr("int64", util.NewCallExpr("uintptr",
-			util.NewCallExpr("unsafe.Pointer",
-				&goast.UnaryExpr{Op: token.AND, X: expr},
-			),
-		)),
-		Op: token.QUO,
-		Y:  util.NewCallExpr("int64", goast.NewIdent(fmt.Sprintf("%d", sizeof))),
+	if !isRealPointer() {
+		rs = &goast.BinaryExpr{
+			X: util.NewCallExpr("int64", util.NewCallExpr("uintptr",
+				util.NewCallExpr("unsafe.Pointer",
+					&goast.UnaryExpr{Op: token.AND, X: expr},
+				),
+			)),
+			Op: token.QUO,
+			Y:  util.NewCallExpr("int64", goast.NewIdent(fmt.Sprintf("%d", sizeof))),
+		}
+	} else {
+		rs = &goast.BinaryExpr{
+			X: util.NewCallExpr("int64", util.NewCallExpr("uintptr",
+				util.NewCallExpr("unsafe.Pointer",
+					expr,
+				),
+			)),
+			Op: token.QUO,
+			Y:  util.NewCallExpr("int64", goast.NewIdent(fmt.Sprintf("%d", sizeof))),
+		}
 	}
 
 	// return results
