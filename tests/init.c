@@ -171,6 +171,7 @@ struct pos{
 } poses[] = {
 	{"dream","home", {1, 2}},
 	{"hold" ,"a"   , {0,42}},
+	{},
 };
 void test_pos()
 {
@@ -183,12 +184,25 @@ void test_pos()
 	is_streq(poses[1].c   , "a"    );
 	is_eq   (poses[1].d[0], 0      );
 	is_eq   (poses[1].d[1], 42     );
+
+	is_not_null(&poses[2]);
 }
 
+void test_part_array()
+{
+	long double d[5] = { 1 , 3 };
+	is_eq(d[0], 1);
+	is_eq(d[1], 3);
+	for (int i = 0; i < 5; i++) {
+		d[i] = (float) i;
+	}
+	is_eq(d[0], 0);
+	is_eq(d[1], 1);
+}
 
 int main()
 {
-    plan(56);
+    plan(61);
 
     START_TEST(array_float);
     START_TEST(array_char);
@@ -201,6 +215,7 @@ int main()
 	START_TEST(hig);
 	START_TEST(hug);
 	START_TEST(pos);
+	START_TEST(part_array);
 
     done_testing();
 }
