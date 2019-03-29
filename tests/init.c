@@ -6,7 +6,7 @@
 #define START_TEST(t) \
     diag(#t);         \
     test_##t();
-/*
+
 void test_array_float()
 {
     float a[] = { 2.2, 3.3, 4.4 };
@@ -46,7 +46,7 @@ void test_matrix_double()
     int a[2][3] = { { 5, 6, 7 }, { 50, 60, 70 } };
     is_eq(a[1][2], 70);
 }
-
+/*
 
 static char *kmap_fa[256] = {
 	[ 0 ] = "fa",
@@ -190,8 +190,6 @@ void test_poz()
 }
 */
 
-struct some_struct{int u;};
-
 #define test_part_array_pointer(type)		\
 {											\
 	diag("test_part_array_pointer");		\
@@ -248,12 +246,12 @@ void test_void()
 
 int main()
 {
-    plan(76);
+    plan(89);
 
-    // START_TEST(array_float);
-    // START_TEST(array_char);
-    // START_TEST(struct_init);
-    // START_TEST(matrix_double);
+    START_TEST(array_float);
+    START_TEST(array_char);
+    START_TEST(struct_init);
+    START_TEST(matrix_double);
 	// START_TEST(equals_chars);
 	// START_TEST(di);
 	// START_TEST(options);

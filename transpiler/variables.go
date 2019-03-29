@@ -218,7 +218,7 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 	//		}
 	//	}
 
-	structType, isStruct := p.Structs[e.Type1]
+	// structType, isStruct := p.Structs[e.Type1]
 
 	for fieldPos, node := range e.Children() {
 		// Skip ArrayFiller
@@ -229,13 +229,15 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 
 		expr, eType, _, _, err := atomicOperation(node, p)
 
-		if isStruct {
-			if fieldType, ok := structType.Fields[structType.FieldNames[fieldPos]]; ok {
-				fmt.Println(eType, " ---- ", fieldType)
-			}
-		}
+		// if isStruct {
+		// if fieldType, ok := structType.Fields[structType.FieldNames[fieldPos]]; ok {
+		// fmt.Println(eType, " ---- ", fieldType)
+		// }
+		// }
 
 		_ = hasArrayFiller
+		_ = fieldPos
+		_ = eType
 
 		//	fmt.Println(e.Position().Line, "    ", arrayType, arraySize)
 		//	if arraySize != -1 {
