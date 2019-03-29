@@ -1,11 +1,12 @@
 // Initialization structs, arrays, ...
 
 #include "tests.h"
+#include <stdio.h>
 
 #define START_TEST(t) \
     diag(#t);         \
     test_##t();
-
+/*
 void test_array_float()
 {
     float a[] = { 2.2, 3.3, 4.4 };
@@ -187,35 +188,106 @@ void test_poz()
 
 	is_not_null(&pozes[2]);
 }
+*/
 
-void test_part_array()
-{
-	long double d[5] = { 1 , 3 };
-	is_eq(d[0], 1);
-	is_eq(d[1], 3);
-	for (int i = 0; i < 5; i++) {
-		d[i] = (float) i;
-	}
-	is_eq(d[0], 0);
-	is_eq(d[1], 1);
+struct some_struct{int u;};
+
+#define test_part_array_pointer(type)		\
+{											\
+	diag("test_part_array_pointer");		\
+    diag(#type);							\
+	type a0 = 1;							\
+	type a1 = 3;							\
+	type aZ = 4;							\
+	type * d[5] = { &a0 , &a1 };			\
+	is_eq(*d[0], a0);						\
+	is_eq(*d[1], a1);						\
+	is_true(d[4] == NULL);					\
+	for (int i = 0; i < 5; i++) {			\
+		d[i] = &aZ;							\
+	}										\
+	is_eq(*d[0], aZ);						\
+	is_eq(*d[1], aZ);						\
 }
+
+#define test_part_array(type)		\
+{									\
+    diag("test_part_array");		\
+	diag(#type); 					\
+	type d[5] = { 1 , 3 };			\
+	is_eq(d[0], 1);					\
+	is_eq(d[1], 3);					\
+	for (int i = 0; i < 5; i++) {	\
+		d[i] = (float) i;			\
+	}								\
+	is_eq(d[0], 0);					\
+	is_eq(d[1], 1);					\
+}
+
+void test_FILE()
+{
+	FILE * F[3] = {stderr};
+	is_true(F[0] == stderr);
+	for (int i = 0; i < 3;i++) {
+		F[i] = stdout;	
+	}
+	is_true(F[1] == stdout);
+}
+
+void test_void()
+{
+	void * v[3] = {stderr};
+	is_true((FILE *)(v[0]) == stderr);
+	double r = 42;
+	for (int i = 0; i < 3;i++) {
+		v[i] = &r;	
+	}
+	is_eq(*(double *)(v[1]) , r);
+}
+
 
 int main()
 {
-    plan(61);
+    plan(76);
 
-    START_TEST(array_float);
-    START_TEST(array_char);
-    START_TEST(struct_init);
-    START_TEST(matrix_double);
-	START_TEST(equals_chars);
-	START_TEST(di);
-	START_TEST(options);
-	START_TEST(ex);
-	START_TEST(hig);
-	START_TEST(hug);
-	START_TEST(poz);
-	START_TEST(part_array);
+    // START_TEST(array_float);
+    // START_TEST(array_char);
+    // START_TEST(struct_init);
+    // START_TEST(matrix_double);
+	// START_TEST(equals_chars);
+	// START_TEST(di);
+	// START_TEST(options);
+	// START_TEST(ex);
+	// START_TEST(hig);
+	// START_TEST(hug);
+	// START_TEST(poz);
+	
+	// Test partly initialization of array
+	test_part_array(char            );
+	test_part_array(double          );
+	test_part_array(float           );
+	test_part_array(int             );
+	test_part_array(long double     );
+	test_part_array(long long       );
+	test_part_array(signed char     );
+	test_part_array(unsigned long   );
+
+	// Test partly initialization of array pointer
+	test_part_array_pointer(char               );
+	test_part_array_pointer(double             );
+	test_part_array_pointer(float              );
+	test_part_array_pointer(int                );
+	test_part_array_pointer(long double        );
+	test_part_array_pointer(long long          );
+	test_part_array_pointer(signed char        );
+	test_part_array_pointer(unsigned long      );
+
+	// Test partly initialization of FILE
+	START_TEST(FILE)
+
+	// Test partly initialization of void
+	START_TEST(void)
+
 
     done_testing();
 }

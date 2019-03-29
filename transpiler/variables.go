@@ -220,9 +220,6 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 
 	structType, isStruct := p.Structs[e.Type1]
 
-	fmt.Println("===========================")
-	fmt.Println(e.Position().Line, "    ", isStruct)
-
 	for fieldPos, node := range e.Children() {
 		// Skip ArrayFiller
 		if _, ok := node.(*ast.ArrayFiller); ok {
@@ -238,10 +235,8 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 			}
 		}
 
-		fmt.Println("*")
 		_ = hasArrayFiller
 
-		//	arrayType, arraySize := types.GetArrayTypeAndSize(e.Type1)
 		//	fmt.Println(e.Position().Line, "    ", arrayType, arraySize)
 		//	if arraySize != -1 {
 		//		goArrayType, err := types.ResolveType(p, arrayType)
@@ -283,6 +278,26 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 	goType, err := types.ResolveType(p, e.Type1)
 	if err != nil {
 		return nil, "", err
+	}
+
+	arrayType, arraySize := types.GetArrayTypeAndSize(e.Type1)
+	if arraySize > 0 && len(resp) < arraySize {
+		elementType, err := types.ResolveType(p, arrayType)
+		if err != nil {
+			return nil, "", err
+		}
+		for i := len(resp); i < arraySize; i++ {
+			var zeroValue goast.Expr
+			switch {
+			case elementType == "byte":
+				zeroValue = goast.NewIdent("'\\x00'")
+			case types.IsCPointer(arrayType, p):
+				zeroValue = goast.NewIdent("nil")
+			default:
+				zeroValue = goast.NewIdent("0")
+			}
+			resp = append(resp, zeroValue)
+		}
 	}
 
 	return &goast.CompositeLit{
