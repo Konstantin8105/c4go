@@ -112,28 +112,8 @@ void test_ex()
 	is_true(excmds[2].name == NULL);
 	is_true(excmds[2].ec   == NULL);
 }
+
 /*
-
-static struct hig{
-	char *ft;
-	int att[16];
-	char *pat;	
-	int end;	
-} higs[] = {
-	{"c", {5}, "q"},
-	{"2", {4}, "w"},
-};
-void test_hig()
-{
-	is_streq(higs[0].ft    , "c");
-	is_eq   (higs[0].att[0],  5 );
-	is_streq(higs[0].pat   , "q");
-
-	is_streq(higs[1].ft    , "2");
-	is_eq   (higs[1].att[0],  4 );
-	is_streq(higs[1].pat   , "w");
-}
-
 typedef struct hig hug;
 void test_hug()
 {
@@ -235,7 +215,7 @@ static int xai, xaw;
 static struct option {
 	char *abbr;
 	char *name;
-	int  * var;
+	int  *vars;
 } options[] = {
 	{"ai", "autoindent", &xai},
 	{"aw", "autowrite", &xaw},
@@ -245,57 +225,87 @@ void test_options()
 {
 	is_streq(options[0].abbr, "ai");
 	is_streq(options[0].name, "autoindent");
-	is_not_null(options[0].var);
+	is_not_null(options[0].vars);
 
 	is_streq(options[1].abbr, "aw");
 	is_streq(options[1].name, "autowrite");
-	is_not_null(options[1].var);
+	is_not_null(options[1].vars);
 
 	is_true(options[2].abbr == NULL);
 	is_true(options[2].name == NULL);
-	is_true(options[2].var  == NULL);
+	is_true(options[2].vars == NULL);
+}
+
+static struct hig{
+	char *ft;
+	int att[16];
+	char *pat;	
+	int end;	
+} higs[] = {
+	{},
+	{"c", {5}, "q"},
+	{"2", {4}, "w"},
+	{},
+};
+void test_hig()
+{
+	is_true  (higs[0].ft     == NULL);
+	is_true  (higs[0].att[0] == NULL);
+	is_true  (higs[0].pat    == NULL);
+
+	is_streq(higs[1].ft    , "c");
+	is_eq   (higs[1].att[0],  5 );
+	is_streq(higs[1].pat   , "q");
+
+	is_streq(higs[2].ft    , "2");
+	is_eq   (higs[2].att[0],  4 );
+	is_streq(higs[2].pat   , "w");
+
+	is_true  (higs[3].ft     == NULL);
+	is_true  (higs[3].att[0] == NULL);
+	is_true  (higs[3].pat    == NULL);
 }
 
 int main()
 {
-    plan(118);
+    plan(12);
 
 	// Test partly initialization of array
-	test_part_array(char            );
-	test_part_array(double          );
-	test_part_array(float           );
-	test_part_array(int             );
-	test_part_array(long double     );
-	test_part_array(long long       );
-	test_part_array(signed char     );
-	test_part_array(unsigned long   );
+	// test_part_array(char            );
+	// test_part_array(double          );
+	// test_part_array(float           );
+	// test_part_array(int             );
+	// test_part_array(long double     );
+	// test_part_array(long long       );
+	// test_part_array(signed char     );
+	// test_part_array(unsigned long   );
 
 	// Test partly initialization of array pointer
-	test_part_array_pointer(char               );
-	test_part_array_pointer(double             );
-	test_part_array_pointer(float              );
-	test_part_array_pointer(int                );
-	test_part_array_pointer(long double        );
-	test_part_array_pointer(long long          );
-	test_part_array_pointer(signed char        );
-	test_part_array_pointer(unsigned long      );
+	// test_part_array_pointer(char               );
+	// test_part_array_pointer(double             );
+	// test_part_array_pointer(float              );
+	// test_part_array_pointer(int                );
+	// test_part_array_pointer(long double        );
+	// test_part_array_pointer(long long          );
+	// test_part_array_pointer(signed char        );
+	// test_part_array_pointer(unsigned long      );
 
 	// Test partly initialization of FILE
-	START_TEST(FILE)
+	// START_TEST(FILE)
 
 	// Test partly initialization of void
-	START_TEST(void)
+	// START_TEST(void)
 
 
-    START_TEST(array_float);
-    START_TEST(array_char);
-    START_TEST(struct_init);
-    START_TEST(matrix_double);
-	START_TEST(equals_chars);
-	START_TEST(di);
-	START_TEST(options);
-	START_TEST(ex);
-	// START_TEST(hig);
+    // START_TEST(array_float);
+    // START_TEST(array_char);
+    // START_TEST(struct_init);
+    // START_TEST(matrix_double);
+	// START_TEST(equals_chars);
+	// START_TEST(di);
+	// START_TEST(options);
+	// START_TEST(ex);
+	START_TEST(hig);
 	// START_TEST(hug);
 	// START_TEST(poz);
 	

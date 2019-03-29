@@ -208,6 +208,8 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 	e.Type1 = util.GenerateCorrectType(e.Type1)
 	e.Type2 = util.GenerateCorrectType(e.Type2)
 
+	exprType = e.Type1
+
 	//	if st, ok := p.Structs[e.Type1]; ok {
 	//		if fieldType, ok := st.Fields[st.FieldNames[fieldPos]]; ok {
 	//			if name, ok := fieldType.(string); ok {
@@ -218,7 +220,8 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 	//		}
 	//	}
 
-	// structType, isStruct := p.Structs[e.Type1]
+	structType, isStruct := p.Structs[e.Type1]
+	// fmt.Println("----- STRUCT ----> ", isStruct, structType, " ::: ", e.Type1)
 
 	for fieldPos, node := range e.Children() {
 		// Skip ArrayFiller
@@ -227,13 +230,31 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 			continue
 		}
 
-		expr, eType, _, _, err := atomicOperation(node, p)
+		expr, eType, _, _, err := transpileToExpr(node, p, true)
 
-		// if isStruct {
-		// if fieldType, ok := structType.Fields[structType.FieldNames[fieldPos]]; ok {
-		// fmt.Println(eType, " ---- ", fieldType)
-		// }
-		// }
+		if isStruct {
+			if fieldType, ok := structType.Fields[structType.FieldNames[fieldPos]]; ok {
+				if ft, ok := fieldType.(string); ok {
+					// fmt.Println(fieldType, " ---- ", eType)
+
+					arr, arrFieldSize := types.GetArrayTypeAndSize(ft)
+					_, arrExprSize := types.GetArrayTypeAndSize(eType)
+
+					// fmt.Println(arrFieldSize, " ++++ ", arrExprSize)
+					if arrFieldSize > 0 && arrExprSize < 0 {
+						// fmt.Println("NEED FIX")
+						// goast.Print(token.NewFileSet(), expr)
+						if comp, ok := expr.(*goast.CompositeLit); ok {
+							if id, ok := comp.Type.(*goast.Ident); ok {
+								goType, err := types.ResolveType(p, arr)
+								p.AddMessage(p.GenerateWarningMessage(err, nil))
+								id.Name = fmt.Sprintf("[%d]%s", arrFieldSize, goType)
+							}
+						}
+					}
+				}
+			}
+		}
 
 		_ = hasArrayFiller
 		_ = fieldPos
@@ -285,17 +306,21 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 	arrayType, arraySize := types.GetArrayTypeAndSize(e.Type1)
 	if arraySize > 0 && len(resp) < arraySize {
 		for i := len(resp); i < arraySize; i++ {
-			resp = append(resp, zeroValue(p, arrayType))
+			zero, _ := zeroValue(p, arrayType)
+			resp = append(resp, zero)
 		}
+		exprType = arrayType + "[]"
 	}
 
 	return &goast.CompositeLit{
 		Type: goast.NewIdent(goType),
 		Elts: resp,
-	}, e.Type1, nil
+	}, exprType, nil
 }
 
-func zeroValue(p *program.Program, cType string) (zero goast.Expr) {
+func zeroValue(p *program.Program, cType string) (zero goast.Expr, zeroType string) {
+	// fmt.Println("zerovalue fo : ", cType)
+	zeroType = cType
 	goType, err := types.ResolveType(p, cType)
 	p.AddMessage(p.GenerateWarningMessage(err, nil))
 	switch {
@@ -303,6 +328,11 @@ func zeroValue(p *program.Program, cType string) (zero goast.Expr) {
 		zero = goast.NewIdent("'\\x00'")
 	case types.IsCPointer(cType, p):
 		zero = goast.NewIdent("nil")
+	case types.IsCArray(cType, p):
+		arr, arrFieldSize := types.GetArrayTypeAndSize(cType)
+		goType, err := types.ResolveType(p, arr)
+		p.AddMessage(p.GenerateWarningMessage(err, nil))
+		zero = goast.NewIdent(fmt.Sprintf("[%d]%s{}", arrFieldSize, goType))
 	default:
 		zero = goast.NewIdent("0")
 	}
@@ -591,7 +621,7 @@ func transpileImplicitValueInitExpr(n *ast.ImplicitValueInitExpr, p *program.Pro
 			err = fmt.Errorf("Cannot transpileImplicitValueInitExpr. err = %v", err)
 		}
 	}()
-	expr = zeroValue(p, n.Type1)
+	expr, exprType = zeroValue(p, n.Type1)
 	return
 
 }
