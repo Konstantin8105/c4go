@@ -241,9 +241,9 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 		// }
 		// expr, _, err = transpileStringLiteral(p, sl, needArray)
 		// } else {
-		var eType string
-		expr, eType, _, _, err = atomicOperation(node, p)
-		fmt.Println(eType)
+		// var eType string
+		expr, _, _, _, err = atomicOperation(node, p)
+		// fmt.Println(eType)
 		// }
 		if err != nil {
 			p.AddMessage(p.GenerateWarningMessage(err, node))
