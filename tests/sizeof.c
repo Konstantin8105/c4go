@@ -42,9 +42,13 @@ struct MyNums {
     int numbers[];
 };
 
+struct s{
+	FILE * p;
+};
+
 int main()
 {
-    plan(58);
+    plan(60);
 
     diag("Integer types");
     check_sizes(char, 1);
@@ -112,6 +116,10 @@ int main()
 
     diag("MyNums");
     is_eq(sizeof(struct MyNums), 104);
+
+	diag("FILE *");
+	is_eq(sizeof(FILE   *), 8);
+	is_eq(sizeof(struct s), 8);
 
     done_testing();
 }
