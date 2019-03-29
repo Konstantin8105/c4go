@@ -46,7 +46,6 @@ void test_matrix_double()
     int a[2][3] = { { 5, 6, 7 }, { 50, 60, 70 } };
     is_eq(a[1][2], 70);
 }
-/*
 
 static char *kmap_fa[256] = {
 	[ 0 ] = "fa",
@@ -58,6 +57,9 @@ void test_equals_chars()
 	is_streq(kmap_fa[ 0 ], "fa" );
 	is_streq(kmap_fa['`'], "@"  );
 	is_streq(kmap_fa['1'], "abc");
+	for (int i=0;i < 256;i++) {
+			kmap_fa[i] = "Y";
+	}
 }
 
 static char *di[][2] = {
@@ -78,6 +80,7 @@ void test_di()
 	is_streq(di[3][1], "/");
 }
 
+/*
 static int xai, xaw;
 static struct option {
 	char *abbr;
@@ -246,20 +249,8 @@ void test_void()
 
 int main()
 {
-    plan(89);
+    plan(100);
 
-    START_TEST(array_float);
-    START_TEST(array_char);
-    START_TEST(struct_init);
-    START_TEST(matrix_double);
-	// START_TEST(equals_chars);
-	// START_TEST(di);
-	// START_TEST(options);
-	// START_TEST(ex);
-	// START_TEST(hig);
-	// START_TEST(hug);
-	// START_TEST(poz);
-	
 	// Test partly initialization of array
 	test_part_array(char            );
 	test_part_array(double          );
@@ -287,5 +278,17 @@ int main()
 	START_TEST(void)
 
 
+    START_TEST(array_float);
+    START_TEST(array_char);
+    START_TEST(struct_init);
+    START_TEST(matrix_double);
+	START_TEST(equals_chars);
+	START_TEST(di);
+	// START_TEST(options);
+	// START_TEST(ex);
+	// START_TEST(hig);
+	// START_TEST(hug);
+	// START_TEST(poz);
+	
     done_testing();
 }
