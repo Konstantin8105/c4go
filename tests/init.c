@@ -126,10 +126,10 @@ void test_ex()
 }
 
 static struct hig{
-	char *ft;		/* the filetype of this pattern */
-	int att[16];		/* attributes of the matched groups */
-	char *pat;		/* regular expression */
-	int end;		/* the group ending this pattern */
+	char *ft;
+	int att[16];
+	char *pat;	
+	int end;	
 } higs[] = {
 	{"c", {5}, "q"},
 	{"2", {4}, "w"},
@@ -146,18 +146,24 @@ void test_hig()
 }
 
 struct pos{
-	char    y[5];
-	double  d[2];
+	char           y[5];
+	char          *c   ;
+	double         d[2];
+	struct pos    *ppt ;
+	struct hig  parr[3];
 } poses[] = {
-	{"dream", {1, 2}},
-	{"hold" , {0,42}},
+	{"dream","home", {1, 2}},
+	{"hold" ,"a", {0,42}},
 };
 void test_pos()
 {
 	is_streq(poses[0].y   , "dream");
+	is_streq(poses[0].c   , "home" );
 	is_eq   (poses[0].d[0], 1      );
 	is_eq   (poses[0].d[1], 2      );
+	
 	is_streq(poses[1].y   , "hold" );
+	is_streq(poses[1].c   , "a"    );
 	is_eq   (poses[1].d[0], 0      );
 	is_eq   (poses[1].d[1], 42     );
 }
@@ -165,7 +171,7 @@ void test_pos()
 
 int main()
 {
-    plan(48);
+    plan(50);
 
     START_TEST(array_float);
     START_TEST(array_char);

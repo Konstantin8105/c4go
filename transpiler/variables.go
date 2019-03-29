@@ -250,22 +250,6 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 			return nil, "", err
 		}
 
-		if cl, ok := expr.(*goast.CompositeLit); ok {
-			if id, ok := cl.Type.(*goast.Ident); ok {
-				clName := id.Name
-				if len(cl.Elts) == 1 {
-					if call, ok := cl.Elts[0].(*goast.CallExpr); ok {
-						if id, ok := call.Fun.(*goast.Ident); ok {
-							callName := id.Name
-							if clName == callName {
-								expr = call
-							}
-						}
-					}
-				}
-			}
-		}
-
 		resp = append(resp, expr)
 	}
 
