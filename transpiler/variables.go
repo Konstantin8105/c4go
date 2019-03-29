@@ -216,32 +216,35 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 		var expr goast.Expr
 		var err error
 
-		var isStringLiteral bool
-		var sl *ast.StringLiteral
-
-		sl, isStringLiteral = node.(*ast.StringLiteral)
-
-		if !isStringLiteral {
-			if impl, ok := node.(*ast.ImplicitCastExpr); ok {
-				sl, isStringLiteral = impl.ChildNodes[0].(*ast.StringLiteral)
-			}
-		}
-
-		if isStringLiteral {
-			var needArray bool
-			if st, ok := p.Structs[e.Type1]; ok {
-				if fieldType, ok := st.Fields[st.FieldNames[fieldPos]]; ok {
-					if name, ok := fieldType.(string); ok {
-						if types.IsCArray(name, p) {
-							needArray = true
-						}
-					}
-				}
-			}
-			expr, _, err = transpileStringLiteral(p, sl, needArray)
-		} else {
-			expr, _, _, _, err = transpileToExpr(node, p, true)
-		}
+		_ = fieldPos
+		// var isStringLiteral bool
+		// var sl *ast.StringLiteral
+		//
+		// sl, isStringLiteral = node.(*ast.StringLiteral)
+		//
+		// if !isStringLiteral {
+		// if impl, ok := node.(*ast.ImplicitCastExpr); ok {
+		// sl, isStringLiteral = impl.ChildNodes[0].(*ast.StringLiteral)
+		// }
+		// }
+		//
+		// if isStringLiteral {
+		// var needArray bool
+		// if st, ok := p.Structs[e.Type1]; ok {
+		// if fieldType, ok := st.Fields[st.FieldNames[fieldPos]]; ok {
+		// if name, ok := fieldType.(string); ok {
+		// if types.IsCArray(name, p) {
+		// needArray = true
+		// }
+		// }
+		// }
+		// }
+		// expr, _, err = transpileStringLiteral(p, sl, needArray)
+		// } else {
+		var eType string
+		expr, eType, _, _, err = atomicOperation(node, p)
+		fmt.Println(eType)
+		// }
 		if err != nil {
 			p.AddMessage(p.GenerateWarningMessage(err, node))
 			return nil, "", err
