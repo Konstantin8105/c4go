@@ -145,10 +145,27 @@ void test_hig()
 	is_streq(higs[1].pat   , "w");
 }
 
+struct pos{
+	char    y[5];
+	double  d[2];
+} poses[] = {
+	{"dream", {1, 2}},
+	{"hold" , {0,42}},
+};
+void test_pos()
+{
+	is_streq(poses[0].y   , "dream");
+	is_eq   (poses[0].d[0], 1      );
+	is_eq   (poses[0].d[1], 2      );
+	is_streq(poses[1].y   , "hold" );
+	is_eq   (poses[1].d[0], 0      );
+	is_eq   (poses[1].d[1], 42     );
+}
+
 
 int main()
 {
-    plan(42);
+    plan(48);
 
     START_TEST(array_float);
     START_TEST(array_char);
@@ -159,6 +176,7 @@ int main()
 	START_TEST(options);
 	START_TEST(ex);
 	START_TEST(hig);
+	START_TEST(pos);
 
     done_testing();
 }
