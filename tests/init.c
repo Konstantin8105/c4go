@@ -145,15 +145,32 @@ void test_hig()
 	is_streq(higs[1].pat   , "w");
 }
 
+typedef struct hig hug;
+void test_hug()
+{
+	hug hugs[] = {
+		{"c", {5}, "q"},
+		{"2", {4}, "w"},
+	};
+	is_streq(hugs[0].ft    , "c");
+	is_eq   (hugs[0].att[0],  5 );
+	is_streq(hugs[0].pat   , "q");
+
+	is_streq(hugs[1].ft    , "2");
+	is_eq   (hugs[1].att[0],  4 );
+	is_streq(hugs[1].pat   , "w");
+}
+
 struct pos{
 	char           y[5];
 	char          *c   ;
 	double         d[2];
 	struct pos    *ppt ;
 	struct hig  parr[3];
+	hug            h[9];
 } poses[] = {
 	{"dream","home", {1, 2}},
-	{"hold" ,"a", {0,42}},
+	{"hold" ,"a"   , {0,42}},
 };
 void test_pos()
 {
@@ -171,7 +188,7 @@ void test_pos()
 
 int main()
 {
-    plan(50);
+    plan(56);
 
     START_TEST(array_float);
     START_TEST(array_char);
@@ -182,6 +199,7 @@ int main()
 	START_TEST(options);
 	START_TEST(ex);
 	START_TEST(hig);
+	START_TEST(hug);
 	START_TEST(pos);
 
     done_testing();
