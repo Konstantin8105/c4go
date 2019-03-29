@@ -566,9 +566,17 @@ void test_sscanf()
     is_streq(str, "Rudolph");
 }
 
+void test_FILE()
+{
+	FILE * p = stdout;
+	is_true( p != stderr );
+	is_true( p == stdout );
+	(void) p;
+}
+
 int main()
 {
-    plan(65);
+    plan(67);
 
     START_TEST(putchar)
     START_TEST(puts)
@@ -604,6 +612,7 @@ int main()
     START_TEST(eof)
     START_TEST(getline)
     START_TEST(sscanf)
+	START_TEST(FILE)
 
     // that test must be last test
     START_TEST(perror)

@@ -26,6 +26,10 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 	// should find out the correct size at runtime.
 	pointerSize := 8
 
+	if cType == "FILE *" || cType == "FILE" || cType == "struct _IO_FILE *" {
+		return pointerSize, nil
+	}
+
 	// Enum with name
 	if strings.HasPrefix(cType, "enum") {
 		return SizeOf(p, "int")
