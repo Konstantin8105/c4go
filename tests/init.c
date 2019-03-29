@@ -81,7 +81,6 @@ void test_di()
 }
 
 
-/*
 int ec_print(char *s){
 	printf("%s\n",s);
 	return 32;
@@ -97,8 +96,8 @@ static struct excmd {
 } excmds[] = {
 	{"p", "print", ec_print},
 	{"a", "append", ec_insert},
+	{},
 };
-
 void test_ex()
 {
 	is_streq(excmds[0].abbr, "p")
@@ -108,7 +107,12 @@ void test_ex()
 	is_streq(excmds[1].abbr, "a")
 	is_streq(excmds[1].name, "append")
 	is_eq(excmds[1].ec("1"), 42);
+
+	is_true(excmds[2].abbr == NULL);
+	is_true(excmds[2].name == NULL);
+	is_true(excmds[2].ec   == NULL);
 }
+/*
 
 static struct hig{
 	char *ft;
@@ -254,7 +258,7 @@ void test_options()
 
 int main()
 {
-    plan(109);
+    plan(118);
 
 	// Test partly initialization of array
 	test_part_array(char            );
@@ -290,7 +294,7 @@ int main()
 	START_TEST(equals_chars);
 	START_TEST(di);
 	START_TEST(options);
-	// START_TEST(ex);
+	START_TEST(ex);
 	// START_TEST(hig);
 	// START_TEST(hug);
 	// START_TEST(poz);
