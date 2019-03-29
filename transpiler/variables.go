@@ -204,14 +204,12 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 		}
 	}()
 	resp := []goast.Expr{}
-	var hasArrayFiller = false
 	e.Type1 = util.GenerateCorrectType(e.Type1)
 	e.Type2 = util.GenerateCorrectType(e.Type2)
 
 	for fieldPos, node := range e.Children() {
 		// Skip ArrayFiller
 		if _, ok := node.(*ast.ArrayFiller); ok {
-			hasArrayFiller = true
 			continue
 		}
 
@@ -230,7 +228,6 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 		}
 
 		if isStringLiteral {
-			// fieldName, fieldType, ok := p.GetFieldOfStruct(e.Type1, fieldPos)
 			var needArray bool
 			if st, ok := p.Structs[e.Type1]; ok {
 				if fieldType, ok := st.Fields[st.FieldNames[fieldPos]]; ok {
@@ -251,41 +248,6 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 		}
 
 		resp = append(resp, expr)
-	}
-
-	var t goast.Expr
-	var cTypeString string
-
-	arrayType, arraySize := types.GetArrayTypeAndSize(e.Type1)
-	if arraySize != -1 {
-		goArrayType, err := types.ResolveType(p, arrayType)
-		p.AddMessage(p.GenerateWarningMessage(err, e))
-
-		cTypeString = fmt.Sprintf("%s[%d]", arrayType, arraySize)
-
-		if hasArrayFiller {
-			t = &goast.ArrayType{
-				Elt: &goast.Ident{
-					Name: goArrayType,
-				},
-				Len: util.NewIntLit(arraySize),
-			}
-
-			// Array fillers do not work with slices.
-			// We initialize the array first, then convert to a slice.
-			// For example: (&[4]int{1,2})[:]
-			return &goast.SliceExpr{
-				X: &goast.ParenExpr{
-					X: &goast.UnaryExpr{
-						Op: token.AND,
-						X: &goast.CompositeLit{
-							Type: t,
-							Elts: resp,
-						},
-					},
-				},
-			}, cTypeString, nil
-		}
 	}
 
 	goType, err := types.ResolveType(p, e.Type1)
