@@ -2,16 +2,16 @@ package transpiler
 
 import (
 	"fmt"
+	goast "go/ast"
+	"go/parser"
+	"go/token"
+	"strconv"
 	"strings"
 
 	"github.com/Konstantin8105/c4go/ast"
 	"github.com/Konstantin8105/c4go/program"
 	"github.com/Konstantin8105/c4go/types"
 	"github.com/Konstantin8105/c4go/util"
-
-	goast "go/ast"
-	"go/parser"
-	"go/token"
 )
 
 func transpileDeclRefExpr(n *ast.DeclRefExpr, p *program.Program) (
@@ -208,71 +208,17 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 	e.Type2 = util.GenerateCorrectType(e.Type2)
 	exprType = e.Type1
 
-	structType, isStruct := p.Structs[e.Type1]
-	if !isStruct {
-		if tt, ok := p.GetBaseTypeOfTypedef(e.Type1); ok {
-			structType, isStruct = p.Structs[tt]
-		}
-	}
-
-	for fieldPos, node := range e.Children() {
+	for _, node := range e.Children() {
 		// Skip ArrayFiller
 		if _, ok := node.(*ast.ArrayFiller); ok {
 			continue
 		}
 
-		var expr goast.Expr
-		var eType string
-		var err error
+		// var expr goast.Expr
+		// var eType string
+		// var err error
 
-		var isStringLiteral bool
-		var sl *ast.StringLiteral
-
-		sl, isStringLiteral = node.(*ast.StringLiteral)
-		if !isStringLiteral {
-			if impl, ok := node.(*ast.ImplicitCastExpr); ok && len(impl.Children()) > 0 {
-				sl, isStringLiteral = impl.Children()[0].(*ast.StringLiteral)
-			}
-		}
-
-		expr, eType, _, _, err = transpileToExpr(node, p, true)
-		p.AddMessage(p.GenerateWarningMessage(err, node))
-
-		if isStruct {
-			if fieldType, ok := structType.Fields[structType.FieldNames[fieldPos]]; ok {
-				if ft, ok := fieldType.(string); ok {
-
-					arr, arrFieldSize := types.GetArrayTypeAndSize(ft)
-					_, arrExprSize := types.GetArrayTypeAndSize(eType)
-
-					if isStringLiteral && arrFieldSize > 0 {
-						expr, eType, err = transpileStringLiteral(p, sl, true)
-					} else if arrFieldSize > 0 && arrExprSize < 0 {
-						var fixed bool
-						switch v := expr.(type) {
-						case *goast.CompositeLit:
-							if id, ok := v.Type.(*goast.Ident); ok {
-								goType, err := types.ResolveType(p, arr)
-								p.AddMessage(p.GenerateWarningMessage(err, nil))
-								id.Name = fmt.Sprintf("[%d]%s", arrFieldSize, goType)
-								fixed = true
-							}
-						case *goast.CallExpr:
-							if id, ok := v.Fun.(*goast.Ident); ok {
-								goType, err := types.ResolveType(p, arr)
-								p.AddMessage(p.GenerateWarningMessage(err, nil))
-								id.Name = fmt.Sprintf("[%d]%s", arrFieldSize, goType)
-								fixed = true
-							}
-						}
-						if !fixed {
-							err = fmt.Errorf("cannot fix slice to array for type : %T", expr)
-						}
-					}
-				}
-			}
-		}
-
+		expr, _, _, _, err := transpileToExpr(node, p, true)
 		p.AddMessage(p.GenerateWarningMessage(err, node))
 
 		resp = append(resp, expr)
@@ -292,13 +238,75 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 		exprType = arrayType + "[]"
 	}
 
+	structType, isStruct := p.Structs[e.Type1]
+	if !isStruct {
+		if tt, ok := p.GetBaseTypeOfTypedef(e.Type1); ok {
+			structType, isStruct = p.Structs[tt]
+		}
+	}
+	if isStruct {
+		for fieldPos, node := range resp {
+			if fieldType, ok := structType.Fields[structType.FieldNames[fieldPos]]; ok {
+				if ft, ok := fieldType.(string); ok {
+
+					arr, arrFieldSize := types.GetArrayTypeAndSize(ft)
+					if arrFieldSize > 0 {
+
+						var fixed bool
+						switch v := node.(type) {
+						case *goast.CompositeLit:
+							if id, ok := v.Type.(*goast.Ident); ok {
+								goType, err := types.ResolveType(p, arr)
+								p.AddMessage(p.GenerateWarningMessage(err, nil))
+								id.Name = fmt.Sprintf("[%d]%s", arrFieldSize, goType)
+								fixed = true
+							}
+						case *goast.CallExpr:
+							// From:
+							// 0  *ast.CallExpr {
+							// 1  .  Fun: *ast.Ident {
+							// 3  .  .  Name: "[]byte"
+							// 4  .  }
+							// 6  .  Args: []ast.Expr (len = 1) {
+							// 7  .  .  0: *ast.BasicLit {
+							// 9  .  .  .  Kind: STRING
+							// 10  .  .  .  Value: "\"dream\\x00\""
+							// 11  .  .  }
+							// 12  .  }
+							// 15  }
+							if id, ok := v.Fun.(*goast.Ident); ok && id.Name == "[]byte" {
+								if len(v.Args) == 1 {
+									if bl, ok := v.Args[0].(*goast.BasicLit); ok && bl.Kind == token.STRING {
+										var sl ast.StringLiteral
+										sl.Type = ft
+										sl.Value, err = strconv.Unquote(bl.Value)
+										p.AddMessage(p.GenerateWarningMessage(err, e))
+										var ex goast.Expr
+										ex, _, err = transpileStringLiteral(p, &sl, true)
+										p.AddMessage(p.GenerateWarningMessage(err, e))
+										resp[fieldPos] = ex
+										fixed = true
+									}
+								}
+							}
+						}
+						if !fixed {
+							err = fmt.Errorf("cannot fix slice to array for type : %T", expr)
+						}
+					}
+				}
+			}
+		}
+	}
+
 	if len(resp) == 1 && goType == "[]byte" {
 		return resp[0], exprType, nil
 	}
 
 	return &goast.CompositeLit{
-		Type: goast.NewIdent(goType),
-		Elts: resp,
+		Lbrace: 1,
+		Type:   goast.NewIdent(goType),
+		Elts:   resp,
 	}, exprType, nil
 }
 
@@ -325,10 +333,12 @@ func zeroValue(p *program.Program, cType string) (zero goast.Expr, zeroType stri
 	case types.IsCPointer(cType, p):
 		zero = goast.NewIdent("nil")
 	case types.IsCArray(cType, p):
-		arr, arrFieldSize := types.GetArrayTypeAndSize(cType)
-		goType, err := types.ResolveType(p, arr)
+		goType, err := types.ResolveType(p, cType)
 		p.AddMessage(p.GenerateWarningMessage(err, nil))
-		zero = goast.NewIdent(fmt.Sprintf("[%d]%s{}", arrFieldSize, goType))
+		zero = &goast.CompositeLit{
+			Lbrace: 1,
+			Type:   goast.NewIdent(goType),
+		}
 	default:
 		zero = goast.NewIdent("0")
 	}
