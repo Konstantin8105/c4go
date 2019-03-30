@@ -21,6 +21,14 @@ func TestAllocSizeAttr(t *testing.T) {
 			B:           0,
 			ChildNodes:  []Node{},
 		},
+		`0xb8abfd90 <col:100, col:116> 2`: &AllocSizeAttr{
+			Addr:        0xb8abfd90,
+			Pos:         NewPositionFromString("col:100, col:116"),
+			IsInherited: false,
+			A:           2,
+			B:           0,
+			ChildNodes:  []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)
