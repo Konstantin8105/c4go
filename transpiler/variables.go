@@ -224,14 +224,18 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 		var expr goast.Expr
 		var eType string
 		var err error
-		if sl, ok := node.(*ast.StringLiteral); ok {
-			expr, eType, err = transpileStringLiteral(p, sl, true)
-			if _, ok := p.Structs[e.Type1]; !ok {
-				expr, eType, err = transpileStringLiteral(p, sl, false)
+
+		var isStringLiteral bool
+		var sl *ast.StringLiteral
+
+		sl, isStringLiteral = node.(*ast.StringLiteral)
+		if !isStringLiteral {
+			if impl, ok := node.(*ast.ImplicitCastExpr); ok && len(impl.Children()) > 0 {
+				sl, isStringLiteral = impl.Children()[0].(*ast.StringLiteral)
 			}
-		} else {
-			expr, eType, _, _, err = transpileToExpr(node, p, true)
 		}
+
+		expr, eType, _, _, err = transpileToExpr(node, p, true)
 		p.AddMessage(p.GenerateWarningMessage(err, node))
 
 		if isStruct {
@@ -241,7 +245,9 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 					arr, arrFieldSize := types.GetArrayTypeAndSize(ft)
 					_, arrExprSize := types.GetArrayTypeAndSize(eType)
 
-					if arrFieldSize > 0 && arrExprSize < 0 {
+					if isStringLiteral && arrFieldSize > 0 {
+						expr, eType, err = transpileStringLiteral(p, sl, true)
+					} else if arrFieldSize > 0 && arrExprSize < 0 {
 						var fixed bool
 						switch v := expr.(type) {
 						case *goast.CompositeLit:
@@ -260,7 +266,7 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 							}
 						}
 						if !fixed {
-							goast.Print(token.NewFileSet(), expr)
+							err = fmt.Errorf("cannot fix slice to array for type : %T", expr)
 						}
 					}
 				}
@@ -284,6 +290,10 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 			resp = append(resp, zero)
 		}
 		exprType = arrayType + "[]"
+	}
+
+	if len(resp) == 1 && goType == "[]byte" {
+		return resp[0], exprType, nil
 	}
 
 	return &goast.CompositeLit{

@@ -145,6 +145,29 @@ void test_ex()
 	is_eq(d[1], 1);					\
 }
 
+void test_partly()
+{
+	// Test partly initialization of array
+	test_part_array(char            );
+	test_part_array(double          );
+	test_part_array(float           );
+	test_part_array(int             );
+	test_part_array(long double     );
+	test_part_array(long long       );
+	test_part_array(signed char     );
+	test_part_array(unsigned long   );
+
+	// Test partly initialization of array pointer
+	test_part_array_pointer(char               );
+	test_part_array_pointer(double             );
+	test_part_array_pointer(float              );
+	test_part_array_pointer(int                );
+	test_part_array_pointer(long double        );
+	test_part_array_pointer(long long          );
+	test_part_array_pointer(signed char        );
+	test_part_array_pointer(unsigned long      );
+}
+
 void test_FILE()
 {
 	FILE * F[3] = {stderr};
@@ -264,36 +287,31 @@ void test_poz()
 	is_not_null(&pozes[2]);
 }
 
+void test_ab()
+{
+	char * num[3] = {{"123"},{"987"},{"456"}};
+	is_streq(num[0], "123");
+	is_streq(num[1], "987");
+	is_streq(num[2], "456");
+}
+
+void test_vti()
+{
+    int aqq[1][1] = { { 5 } };
+	is_eq(aqq[0][0], 5);
+}
+
 int main()
 {
-    plan(143);
+    plan(147);
 
-	// Test partly initialization of array
-	test_part_array(char            );
-	test_part_array(double          );
-	test_part_array(float           );
-	test_part_array(int             );
-	test_part_array(long double     );
-	test_part_array(long long       );
-	test_part_array(signed char     );
-	test_part_array(unsigned long   );
-
-	// Test partly initialization of array pointer
-	test_part_array_pointer(char               );
-	test_part_array_pointer(double             );
-	test_part_array_pointer(float              );
-	test_part_array_pointer(int                );
-	test_part_array_pointer(long double        );
-	test_part_array_pointer(long long          );
-	test_part_array_pointer(signed char        );
-	test_part_array_pointer(unsigned long      );
+	START_TEST(partly);
 
 	// Test partly initialization of FILE
 	START_TEST(FILE)
 
 	// Test partly initialization of void
 	START_TEST(void)
-
 
     START_TEST(array_float);
     START_TEST(array_char);
@@ -306,6 +324,8 @@ int main()
 	START_TEST(hig);
 	START_TEST(hug);
 	START_TEST(poz);
+	START_TEST(ab);
+	START_TEST(vti);
 	
     done_testing();
 }
