@@ -302,6 +302,8 @@ func setPosition(node Node, position Position) {
 		n.Pos = position
 	case *EmptyDecl:
 		n.Pos = position
+	case *EnableIfAttr:
+		n.Pos = position
 	case *EnumConstantDecl:
 		n.Pos = position
 	case *EnumDecl:
@@ -365,6 +367,8 @@ func setPosition(node Node, position Position) {
 	case *NonNullAttr:
 		n.Pos = position
 	case *OffsetOfExpr:
+		n.Pos = position
+	case *OverloadableAttr:
 		n.Pos = position
 	case *PackedAttr:
 		n.Pos = position
