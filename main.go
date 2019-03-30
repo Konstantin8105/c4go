@@ -493,7 +493,7 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 
 	// simplify Go code by `gofmt`
 	// error ignored, because it is not change the workflow
-	_, _ = exec.Command("gofmt", "-w", outputFilePath).Output()
+	_, _ = exec.Command("gofmt", "-s", "-w", outputFilePath).Output()
 
 	return nil
 }

@@ -134,19 +134,27 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 
 	// casting
 	if fromType == "void *" && toType[len(toType)-1] == '*' &&
-		!strings.Contains(toType, "FILE") && toType[len(toType)-2] != '*' {
+		toType[len(toType)-2] != '*' {
 		toType = strings.Replace(toType, "*", " ", -1)
 		t, err := ResolveType(p, toType)
 		if err != nil {
 			return nil, err
 		}
-		return &goast.TypeAssertExpr{
-			X:      expr,
-			Lparen: 1,
-			Type: &goast.ArrayType{
-				Lbrack: 1,
-				Elt:    util.NewIdent(t),
-			}}, nil
+		if strings.Contains(toType, "FILE") {
+			return &goast.TypeAssertExpr{
+				X:      expr,
+				Lparen: 1,
+				Type:   goast.NewIdent("*noarch.File"),
+			}, nil
+		} else {
+			return &goast.TypeAssertExpr{
+				X:      expr,
+				Lparen: 1,
+				Type: &goast.ArrayType{
+					Lbrack: 1,
+					Elt:    util.NewIdent(t),
+				}}, nil
+		}
 	}
 
 	// Checking amount recursive typedef element

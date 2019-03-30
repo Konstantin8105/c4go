@@ -267,9 +267,27 @@ void struct_with_define()
     is_eq(a.im, 12);
 }
 
+void test_atoi_post()
+{
+	char * num[3] = {{"123"},{"987"},{"456"}};
+	char **w = &num;
+	int n;
+	n = atoi(*w);
+	is_streq(*w, "123");
+	is_eq(n,123);
+
+	n = atoi((*w)++);
+	is_streq(*w, "23");
+	is_eq(n,123);
+	
+	n = atoi((*w));
+	is_streq(*w, "23");
+	is_eq(n,23);
+}
+
 int main()
 {
-    plan(757);
+    plan(763);
 
     struct_with_define();
 
@@ -550,8 +568,13 @@ int main()
 		printf("%d %d\n", abs(h)/100, abs(h) %100);
 	}
 
+	diag("atoi_post");
+	test_atoi_post();
+
+	diag("system");
     test_system();
 
+	diag("q_sort");
     q_sort();
 
     done_testing();

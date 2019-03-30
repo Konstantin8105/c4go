@@ -29,6 +29,10 @@ type Struct struct {
 	// Each of the fields and their C type. The field may be a string or an
 	// instance of Struct for nested structures.
 	Fields map[string]interface{}
+
+	// int    - position of field
+	// string - name of field
+	FieldNames map[int]string
 }
 
 // NewStruct creates a new Struct definition from an ast.RecordDecl.
@@ -42,14 +46,18 @@ func NewStruct(p *Program, n *ast.RecordDecl) (st *Struct, err error) {
 		}
 	}()
 	fields := make(map[string]interface{})
+	names := map[int]string{}
 
+	counter := 0
 	for _, field := range n.Children() {
 		switch f := field.(type) {
 		case *ast.FieldDecl:
 			fields[f.Name] = f.Type
+			names[counter] = f.Name
 
 		case *ast.IndirectFieldDecl:
 			fields[f.Name] = f.Type
+			names[counter] = f.Name
 
 		case *ast.RecordDecl:
 			fields[f.Name], err = NewStruct(p, f)
@@ -69,6 +77,7 @@ func NewStruct(p *Program, n *ast.RecordDecl) (st *Struct, err error) {
 			err = fmt.Errorf("cannot decode: %#v", f)
 			return
 		}
+		counter++
 	}
 
 	var t TypeOfStruct
@@ -85,10 +94,11 @@ func NewStruct(p *Program, n *ast.RecordDecl) (st *Struct, err error) {
 	}
 
 	return &Struct{
-		Name:     n.Name,
-		IsGlobal: p.Function == nil,
-		Type:     t,
-		Fields:   fields,
+		Name:       n.Name,
+		IsGlobal:   p.Function == nil,
+		Type:       t,
+		Fields:     fields,
+		FieldNames: names,
 	}, nil
 }
 

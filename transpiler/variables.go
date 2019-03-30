@@ -184,6 +184,18 @@ func GenerateFuncType(fields, returns []string) *goast.FuncType {
 	return &ft
 }
 
+// tranpileInitListExpr.
+//
+// Examples:
+//
+// -InitListExpr 0x3cea0f0 <col:29, line:54:1> 'char *[256]'
+//  |-array filler
+//  | `-ImplicitValueInitExpr 0x3cea488 <<invalid sloc>> 'char *'
+//  |-ImplicitCastExpr 0x3cea138 <line:51:10> 'char *' <ArrayToPointerDecay>
+//  | `-StringLiteral 0x3ce9f00 <col:10> 'char [3]' lvalue "fa"
+//  |-ImplicitValueInitExpr 0x3cea488 <<invalid sloc>> 'char *'
+//  |-ImplicitValueInitExpr 0x3cea488 <<invalid sloc>> 'char *'
+//
 func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 	expr goast.Expr, exprType string, err error) {
 	defer func() {
@@ -192,68 +204,78 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 		}
 	}()
 	resp := []goast.Expr{}
-	var hasArrayFiller = false
 	e.Type1 = util.GenerateCorrectType(e.Type1)
 	e.Type2 = util.GenerateCorrectType(e.Type2)
+	exprType = e.Type1
 
-	for _, node := range e.Children() {
+	structType, isStruct := p.Structs[e.Type1]
+	if !isStruct {
+		if tt, ok := p.GetBaseTypeOfTypedef(e.Type1); ok {
+			structType, isStruct = p.Structs[tt]
+		}
+	}
+
+	for fieldPos, node := range e.Children() {
 		// Skip ArrayFiller
 		if _, ok := node.(*ast.ArrayFiller); ok {
-			hasArrayFiller = true
 			continue
 		}
 
 		var expr goast.Expr
+		var eType string
 		var err error
-		if sl, ok := node.(*ast.StringLiteral); ok {
-			expr, _, err = transpileStringLiteral(p, sl, true)
-			if _, ok := p.Structs[e.Type1]; !ok {
-				expr, _, err = transpileStringLiteral(p, sl, false)
+
+		var isStringLiteral bool
+		var sl *ast.StringLiteral
+
+		sl, isStringLiteral = node.(*ast.StringLiteral)
+		if !isStringLiteral {
+			if impl, ok := node.(*ast.ImplicitCastExpr); ok && len(impl.Children()) > 0 {
+				sl, isStringLiteral = impl.Children()[0].(*ast.StringLiteral)
 			}
-		} else {
-			expr, _, _, _, err = transpileToExpr(node, p, true)
 		}
-		if err != nil {
-			p.AddMessage(p.GenerateWarningMessage(err, node))
-			return nil, "", err
+
+		expr, eType, _, _, err = transpileToExpr(node, p, true)
+		p.AddMessage(p.GenerateWarningMessage(err, node))
+
+		if isStruct {
+			if fieldType, ok := structType.Fields[structType.FieldNames[fieldPos]]; ok {
+				if ft, ok := fieldType.(string); ok {
+
+					arr, arrFieldSize := types.GetArrayTypeAndSize(ft)
+					_, arrExprSize := types.GetArrayTypeAndSize(eType)
+
+					if isStringLiteral && arrFieldSize > 0 {
+						expr, eType, err = transpileStringLiteral(p, sl, true)
+					} else if arrFieldSize > 0 && arrExprSize < 0 {
+						var fixed bool
+						switch v := expr.(type) {
+						case *goast.CompositeLit:
+							if id, ok := v.Type.(*goast.Ident); ok {
+								goType, err := types.ResolveType(p, arr)
+								p.AddMessage(p.GenerateWarningMessage(err, nil))
+								id.Name = fmt.Sprintf("[%d]%s", arrFieldSize, goType)
+								fixed = true
+							}
+						case *goast.CallExpr:
+							if id, ok := v.Fun.(*goast.Ident); ok {
+								goType, err := types.ResolveType(p, arr)
+								p.AddMessage(p.GenerateWarningMessage(err, nil))
+								id.Name = fmt.Sprintf("[%d]%s", arrFieldSize, goType)
+								fixed = true
+							}
+						}
+						if !fixed {
+							err = fmt.Errorf("cannot fix slice to array for type : %T", expr)
+						}
+					}
+				}
+			}
 		}
+
+		p.AddMessage(p.GenerateWarningMessage(err, node))
 
 		resp = append(resp, expr)
-	}
-
-	var t goast.Expr
-	var cTypeString string
-
-	arrayType, arraySize := types.GetArrayTypeAndSize(e.Type1)
-	if arraySize != -1 {
-		goArrayType, err := types.ResolveType(p, arrayType)
-		p.AddMessage(p.GenerateWarningMessage(err, e))
-
-		cTypeString = fmt.Sprintf("%s[%d]", arrayType, arraySize)
-
-		if hasArrayFiller {
-			t = &goast.ArrayType{
-				Elt: &goast.Ident{
-					Name: goArrayType,
-				},
-				Len: util.NewIntLit(arraySize),
-			}
-
-			// Array fillers do not work with slices.
-			// We initialize the array first, then convert to a slice.
-			// For example: (&[4]int{1,2})[:]
-			return &goast.SliceExpr{
-				X: &goast.ParenExpr{
-					X: &goast.UnaryExpr{
-						Op: token.AND,
-						X: &goast.CompositeLit{
-							Type: t,
-							Elts: resp,
-						},
-					},
-				},
-			}, cTypeString, nil
-		}
 	}
 
 	goType, err := types.ResolveType(p, e.Type1)
@@ -261,10 +283,57 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 		return nil, "", err
 	}
 
+	arrayType, arraySize := types.GetArrayTypeAndSize(e.Type1)
+	if arraySize > 0 {
+		for i := len(resp); i < arraySize; i++ {
+			zero, _ := zeroValue(p, arrayType)
+			resp = append(resp, zero)
+		}
+		exprType = arrayType + "[]"
+	}
+
+	if len(resp) == 1 && goType == "[]byte" {
+		return resp[0], exprType, nil
+	}
+
 	return &goast.CompositeLit{
 		Type: goast.NewIdent(goType),
 		Elts: resp,
-	}, e.Type1, nil
+	}, exprType, nil
+}
+
+func zeroValue(p *program.Program, cType string) (zero goast.Expr, zeroType string) {
+	zeroType = cType
+	goType, err := types.ResolveType(p, cType)
+	p.AddMessage(p.GenerateWarningMessage(err, nil))
+
+	// for structs
+	if tt, ok := p.GetBaseTypeOfTypedef(cType); ok {
+		if _, ok := p.Structs[tt]; ok {
+			zero = goast.NewIdent(fmt.Sprintf("%s{}", goType))
+			return
+		}
+	}
+	if _, ok := p.Structs[cType]; ok {
+		zero = goast.NewIdent(fmt.Sprintf("%s{}", goType))
+		return
+	}
+
+	switch {
+	case goType == "byte":
+		zero = goast.NewIdent("'\\x00'")
+	case types.IsCPointer(cType, p):
+		zero = goast.NewIdent("nil")
+	case types.IsCArray(cType, p):
+		arr, arrFieldSize := types.GetArrayTypeAndSize(cType)
+		goType, err := types.ResolveType(p, arr)
+		p.AddMessage(p.GenerateWarningMessage(err, nil))
+		zero = goast.NewIdent(fmt.Sprintf("[%d]%s{}", arrFieldSize, goType))
+	default:
+		zero = goast.NewIdent("0")
+	}
+
+	return
 }
 
 func transpileDeclStmt(n *ast.DeclStmt, p *program.Program) (
@@ -500,6 +569,11 @@ Selector:
 	}, n.Type, preStmts, postStmts, nil
 }
 
+// transpileImplicitValueInitExpr.
+//
+// Examples:
+//
+//  |-ImplicitValueInitExpr 0x3cea488 <<invalid sloc>> 'char *'
 func transpileImplicitValueInitExpr(n *ast.ImplicitValueInitExpr, p *program.Program) (
 	expr goast.Expr, exprType string, _ []goast.Stmt, _ []goast.Stmt, err error) {
 
@@ -508,33 +582,7 @@ func transpileImplicitValueInitExpr(n *ast.ImplicitValueInitExpr, p *program.Pro
 			err = fmt.Errorf("Cannot transpileImplicitValueInitExpr. err = %v", err)
 		}
 	}()
-
-	exprType = n.Type1
-
-	var t string
-	t = n.Type1
-	t, err = types.ResolveType(p, t)
-	p.AddMessage(p.GenerateWarningMessage(err, n))
-
-	var isStruct bool
-	if _, ok := p.Structs[t]; ok {
-		isStruct = true
-	}
-	if _, ok := p.Structs["struct "+t]; ok {
-		isStruct = true
-	}
-	if isStruct {
-		expr = &goast.CompositeLit{
-			Type:   util.NewIdent(t),
-			Lbrace: 1,
-		}
-		return
-	}
-
-	expr = util.NewCallExpr(t,
-		&goast.BasicLit{
-			Kind:  token.INT,
-			Value: "0",
-		})
+	expr, exprType = zeroValue(p, n.Type1)
 	return
+
 }
