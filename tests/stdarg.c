@@ -102,34 +102,30 @@ void test_va_list3()
     is_eq(strange(2, &v1, &v2), 10 + 2 + 23 + 2);
 }
 
-
-int summarizy(int num_args, va_list ap)
+void out(int num_args, va_list ap)
 {
-       int val = 0;
     for (int i = 0; i < num_args; i++) {
-        val += *va_arg(ap, int*);
+		int Y = va_arg(ap, int);
+		printf("%d -> %d\n", i, Y);
     }
-       return val;
 }
 
-int red(int num_args, ...)
+void red(int num_args, ...)
 {
-    int val = 0;
     va_list ap;
     va_start(ap, num_args);
-       val = summarizy(num_args,ap);
+	out(num_args, ap);
     va_end(ap);
-       return val;
 }
 
 void test_va_list4()
 {
-       is_eq(red(12,23,45), 12+23+45);
+    red(3,12,23,34);
 }
 
 int main()
 {
-    plan(7);
+    plan(6);
 
     START_TEST(va_list)
     START_TEST(va_list2)
