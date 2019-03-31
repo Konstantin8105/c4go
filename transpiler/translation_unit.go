@@ -30,60 +30,47 @@ func transpileTranslationUnitDecl(p *program.Program, n *ast.TranslationUnitDecl
 		}
 	}
 
-	for i := 0; i < len(n.Children()); i++ {
-		presentNode := n.Children()[i]
-		if rec, ok := presentNode.(*ast.RecordDecl); ok {
-			// ignore RecordDecl if haven`t definition
-			if rec.Name == "" && !rec.IsDefinition {
-				continue
-			}
-		}
-
-		var breaking bool
-		switch presentNode.(type) {
+	isSpecific := func(node ast.Node) bool {
+		switch node.(type) {
 		case *ast.RecordDecl, *ast.Typedef:
-			// do it
-		default:
-			breaking = true
+			return true
 		}
-		if breaking {
-			continue
-		}
-
-		var d []goast.Decl
-		d, err = transpileToNode(presentNode, p)
-		if err != nil {
-			p.AddMessage(p.GenerateWarningMessage(err, n))
-			continue
-		}
-		decls = append(decls, d...)
+		return false
 	}
 
 	var tryLaterRecordDecl []*ast.RecordDecl
-	for i := 0; i < len(n.Children()); i++ {
-		presentNode := n.Children()[i]
-		if rec, ok := presentNode.(*ast.RecordDecl); ok {
-			// ignore RecordDecl if haven`t definition
-			if rec.Name == "" && !rec.IsDefinition {
+	for _, sp := range []bool{true, false} {
+		for i := 0; i < len(n.Children()); i++ {
+			presentNode := n.Children()[i]
+			if rec, ok := presentNode.(*ast.RecordDecl); ok {
+				// ignore RecordDecl if haven`t definition
+				if rec.Name == "" && !rec.IsDefinition {
+					continue
+				}
+			}
+
+			if isSpecific(presentNode) != sp {
 				continue
 			}
-		}
 
-		var d []goast.Decl
-		d, err = transpileToNode(presentNode, p)
-		if err != nil {
-			if rec, ok := presentNode.(*ast.RecordDecl); ok {
-				tryLaterRecordDecl = append(tryLaterRecordDecl, rec)
-			} else {
-				p.AddMessage(p.GenerateWarningMessage(err, n))
-				err = nil // ignore error
+			var d []goast.Decl
+			d, err = transpileToNode(presentNode, p)
+			if err != nil {
+				if rec, ok := presentNode.(*ast.RecordDecl); ok {
+					tryLaterRecordDecl = append(tryLaterRecordDecl, rec)
+				} else {
+					p.AddMessage(p.GenerateWarningMessage(err, n))
+					err = nil // ignore error
+				}
+				continue
 			}
-			continue
+			decls = append(decls, d...)
 		}
-		decls = append(decls, d...)
-
 	again:
 		for i := range tryLaterRecordDecl {
+			if tryLaterRecordDecl[i] == nil {
+				continue
+			}
 			// try again later
 			recDecl, err := transpileRecordDecl(p, tryLaterRecordDecl[i])
 			if err == nil {
