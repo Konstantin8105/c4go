@@ -113,6 +113,11 @@ void out(int num_args, va_list ap)
 void red(int num_args, ...)
 {
     va_list ap;
+	// base test
+    va_start(ap, num_args);
+	out(num_args, ap);
+    va_end(ap);
+	// repeat test
     va_start(ap, num_args);
 	out(num_args, ap);
     va_end(ap);
