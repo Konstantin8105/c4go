@@ -17,20 +17,6 @@ func transpileCompoundStmt(n *ast.CompoundStmt, p *program.Program) (
 	stmts := []goast.Stmt{}
 
 	for _, x := range n.Children() {
-		// Implementation va_start
-		var isVaList bool
-		if call, ok := x.(*ast.CallExpr); ok && call.Type == "void" {
-			if impl, ok := call.Children()[0].(*ast.ImplicitCastExpr); ok {
-				if impl.Type == "void (*)(struct __va_list_tag *, ...)" {
-					if decl, ok := impl.Children()[0].(*ast.DeclRefExpr); ok {
-						if decl.Name == "__builtin_va_start" {
-							isVaList = true
-						}
-					}
-				}
-			}
-		}
-
 		// add '_ = '
 		var addPrefix bool
 		if impl, ok := x.(*ast.ImplicitCastExpr); ok && len(impl.Children()) == 1 {
@@ -40,40 +26,20 @@ func transpileCompoundStmt(n *ast.CompoundStmt, p *program.Program) (
 		}
 
 		var result []goast.Stmt
-		switch {
-		case isVaList:
-			// Implementation va_start
-			result = []goast.Stmt{
-				&goast.AssignStmt{
-					Lhs: []goast.Expr{
-						goast.NewIdent("c4goVaListPosition"),
-					},
-					Tok: token.ASSIGN,
-					Rhs: []goast.Expr{
-						&goast.BasicLit{
-							Kind:  token.INT,
-							Value: "0",
-						},
-					},
-				},
-			}
-
-		default:
-			// Other cases
-			if parent, ok := x.(*ast.ParenExpr); ok {
-				x = parent.Children()[0]
-			}
-			result, err = transpileToStmts(x, p)
-			if err != nil {
-				return nil, nil, nil, err
-			}
-			if addPrefix && len(result) == 1 {
-				// goast.Print(token.NewFileSet(), result[0])
-				result[0] = &goast.AssignStmt{
-					Lhs: []goast.Expr{goast.NewIdent("_")},
-					Tok: token.ASSIGN,
-					Rhs: []goast.Expr{result[0].(*goast.ExprStmt).X},
-				}
+		// Other cases
+		if parent, ok := x.(*ast.ParenExpr); ok {
+			x = parent.Children()[0]
+		}
+		result, err = transpileToStmts(x, p)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		if addPrefix && len(result) == 1 {
+			// goast.Print(token.NewFileSet(), result[0])
+			result[0] = &goast.AssignStmt{
+				Lhs: []goast.Expr{goast.NewIdent("_")},
+				Tok: token.ASSIGN,
+				Rhs: []goast.Expr{result[0].(*goast.ExprStmt).X},
 			}
 		}
 
