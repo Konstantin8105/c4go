@@ -11,7 +11,7 @@ Calculate warnings : ./testdata/ed
 
 Calculate warnings in file: ./testdata/neateqn/neateqn.go
 		After transpiling : 0 warnings.
-		Go build : 5 warnings
+		Go build : 0 warnings
 		Unsafe   : 22
 
 Calculate warnings in file: ./testdata/neatmkfn/neatmkfn.go
@@ -31,7 +31,7 @@ Calculate warnings in file: ./testdata/neatrefer/neatrefer.go
 
 Calculate warnings in file: ./testdata/neatroff/neatroff.go
 		After transpiling : 4 warnings.
-		Go build : 25 warnings
+		Go build : 21 warnings
 		Unsafe   : 203
 
 Calculate warnings in file: ./testdata/neatvi/neatvi.go

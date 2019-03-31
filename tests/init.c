@@ -301,9 +301,15 @@ void test_vti()
 	is_eq(aqq[0][0], 5);
 }
 
+void test_bm()
+{
+	char brac[4][3][2] = { {"1", "2"} };
+	is_streq(brac[0][1], "2");
+}
+
 int main()
 {
-    plan(147);
+    plan(148);
 
 	START_TEST(partly);
 
@@ -326,6 +332,7 @@ int main()
 	START_TEST(poz);
 	START_TEST(ab);
 	START_TEST(vti);
+	START_TEST(bm);
 	
     done_testing();
 }
