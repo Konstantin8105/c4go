@@ -32,10 +32,10 @@ func transpileTranslationUnitDecl(p *program.Program, n *ast.TranslationUnitDecl
 
 	isSpecific := func(node ast.Node) bool {
 		switch node.(type) {
-		case *ast.RecordDecl, *ast.Typedef:
-			return true
+		case *ast.FunctionDecl:
+			return false
 		}
-		return false
+		return true
 	}
 
 	var tryLaterRecordDecl []*ast.RecordDecl
