@@ -12,8 +12,7 @@ import (
 func transpileTranslationUnitDecl(p *program.Program, n *ast.TranslationUnitDecl) (
 	decls []goast.Decl, err error) {
 
-	var tryLaterRecordDecl []*ast.RecordDecl
-
+	// create name for anonymous ast.RecordDecl
 	for i := 0; i < len(n.Children()); i++ {
 		presentNode := n.Children()[i]
 		if rec, ok := presentNode.(*ast.RecordDecl); ok && rec.Name == "" {
@@ -29,6 +28,40 @@ func transpileTranslationUnitDecl(p *program.Program, n *ast.TranslationUnitDecl
 				}
 			}
 		}
+	}
+
+	for i := 0; i < len(n.Children()); i++ {
+		presentNode := n.Children()[i]
+		if rec, ok := presentNode.(*ast.RecordDecl); ok {
+			// ignore RecordDecl if haven`t definition
+			if rec.Name == "" && !rec.IsDefinition {
+				continue
+			}
+		}
+
+		var breaking bool
+		switch presentNode.(type) {
+		case *ast.RecordDecl, *ast.Typedef:
+			// do it
+		default:
+			breaking = true
+		}
+		if breaking {
+			continue
+		}
+
+		var d []goast.Decl
+		d, err = transpileToNode(presentNode, p)
+		if err != nil {
+			p.AddMessage(p.GenerateWarningMessage(err, n))
+			continue
+		}
+		decls = append(decls, d...)
+	}
+
+	var tryLaterRecordDecl []*ast.RecordDecl
+	for i := 0; i < len(n.Children()); i++ {
+		presentNode := n.Children()[i]
 		if rec, ok := presentNode.(*ast.RecordDecl); ok {
 			// ignore RecordDecl if haven`t definition
 			if rec.Name == "" && !rec.IsDefinition {
