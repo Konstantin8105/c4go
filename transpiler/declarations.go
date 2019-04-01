@@ -62,6 +62,9 @@ func transpileFieldDecl(p *program.Program, n *ast.FieldDecl) (
 					n, field, err)
 				field.Type = util.NewIdent(n.Type)
 			}
+			if id, ok := field.Type.(*goast.Ident); ok && id.Name == "" {
+				id.Name = "C4GO_FIELD_DECL_NAME_EMPTY"
+			}
 		}
 	}()
 	if util.IsFunction(n.Type) {
@@ -236,7 +239,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			var declsIn []goast.Decl
 			declsIn, err = transpileToNode(field, p)
 			if err != nil {
-				err = fmt.Errorf("Cannot transpile %T", field)
+				err = fmt.Errorf("Cannot transpile %T : %v", field, err)
 				// p.AddMessage(p.GenerateWarningMessage(err, field))
 				return
 			}

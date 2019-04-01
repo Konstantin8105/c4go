@@ -53,6 +53,10 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 		isStruct = true
 	} else if s, ok = p.Structs["struct "+cType]; ok {
 		isStruct = true
+	} else if strings.HasPrefix(cType, "struct ") {
+		if s, ok = p.Structs[cType[len("struct "):]]; ok {
+			isStruct = true
+		}
 	}
 	if isStruct {
 		totalBytes := 0
@@ -98,8 +102,8 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 	if isUnion {
 		byteCount := 0
 
-		s := p.Unions[cType]
-		if s == nil {
+		s, ok := p.Unions[cType]
+		if !ok {
 			return 0, fmt.Errorf("error in union")
 		}
 
