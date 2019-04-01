@@ -23,12 +23,22 @@ func parseAllocSizeAttr(line string) *AllocSizeAttr {
 		line,
 	)
 
+	var av, bv int
+	a := strings.TrimSpace(groups["a"])
+	if a != "" {
+		av = util.Atoi(a)
+	}
+	b := strings.TrimSpace(groups["b"])
+	if b != "" {
+		bv = util.Atoi(b)
+	}
+
 	return &AllocSizeAttr{
 		Addr:        ParseAddress(groups["address"]),
 		Pos:         NewPositionFromString(groups["position"]),
 		IsInherited: len(groups["inherited"]) > 0,
-		A:           util.Atoi(strings.TrimSpace(groups["a"])),
-		B:           util.Atoi(strings.TrimSpace(groups["b"])),
+		A:           av,
+		B:           bv,
 		ChildNodes:  []Node{},
 	}
 }

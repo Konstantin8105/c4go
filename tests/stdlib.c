@@ -203,6 +203,7 @@ void* cs_calloc(int n)
 {
     int sizeT = sizeof(int);
     return (n < 2 ? NULL : calloc(n, sizeT));
+	(void) sizeT;
 }
 
 void test_calloc2()
@@ -296,6 +297,7 @@ void test_pointer_malloc2() {
 	is_eq(p[2][2], 13);
     free(p);
 }
+
 void test_pointer_malloc2const() {
     int (*p)[5];
     p = malloc(3 * 5 * sizeof(int));
@@ -310,6 +312,7 @@ void test_pointer_malloc2const() {
 	is_eq(p[2][2], 13);
     free(p);
 }
+
 void test_pointer_malloc3() {
     int m = 3;
     int (*p)[5];
@@ -326,9 +329,27 @@ void test_pointer_malloc3() {
     free(p);
 }
 
+void test_atoi_post()
+{
+	char * num[3] = {{"123"},{"987"},{"456"}};
+	char **w = &num;
+	int n;
+	n = atoi(*w);
+	is_streq(*w, "123");
+	is_eq(n,123);
+
+	n = atoi((*w)++);
+	is_streq(*w, "23");
+	is_eq(n,123);
+	
+	n = atoi((*w));
+	is_streq(*w, "23");
+	is_eq(n,23);
+}
+
 int main()
 {
-    plan(765);
+    plan(771);
 
     struct_with_define();
 
@@ -603,8 +624,19 @@ int main()
     test_strtol("123abc", 16, 1194684, "");
     test_strtol("123abc", 8, 83, "abc");
 
+	diag("abs int");
+	{
+		int h = -1000;
+		printf("%d %d\n", abs(h)/100, abs(h) %100);
+	}
+
+	diag("atoi_post");
+	test_atoi_post();
+
+	diag("system");
     test_system();
 
+	diag("q_sort");
     q_sort();
 
 	diag("pointer array (*)[]");

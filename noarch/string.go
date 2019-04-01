@@ -3,6 +3,7 @@ package noarch
 import (
 	"bytes"
 	"reflect"
+	"unsafe"
 )
 
 // Strlen returns the length of a string.
@@ -145,9 +146,19 @@ func Memset(ptr []byte, value byte, num uint32) []byte {
 }
 
 // Memmove move block of memory
-func Memmove(ptr, source interface{}, num uint32) interface{} {
-	p1 := ptr.([]byte)
-	p2 := source.([]byte)
+func Memmove(ptr, src interface{}, num uint32) interface{} {
+	// both types is []byte
+	if p, ok := ptr.([]byte); ok {
+		if s, ok := src.([]byte); ok {
+			for i := int(num); i >= 0; i-- {
+				p[i] = s[i]
+			}
+			return s
+		}
+	}
+
+	p1 := (*[100000]byte)(unsafe.Pointer(uintptr(unsafe.Pointer(&ptr))))
+	p2 := (*[100000]byte)(unsafe.Pointer(uintptr(unsafe.Pointer(&src))))
 	for i := int(num); i >= 0; i-- {
 		p1[i] = p2[i]
 	}
@@ -156,7 +167,7 @@ func Memmove(ptr, source interface{}, num uint32) interface{} {
 
 // Memcmp - compare two buffers
 // Compares the first count characters of the objects pointed to be lhs and rhs
-func Memcmp(lhs []byte, rhs []byte, count uint32) int {
+func Memcmp(lhs []byte, rhs []byte, count uint32) int32 {
 	for i := 0; uint32(i) < count; i++ {
 		if int(lhs[i]) < int(rhs[i]) {
 			return -1
@@ -201,8 +212,14 @@ func Strrchr(source []byte, c32 int32) []byte {
 	return source
 }
 
-func Strdup(s []byte) []byte {
-	return s
+func Strdup(s []byte) (rs []byte) {
+	for i := range s {
+		if s[i] == '\x00' {
+			break
+		}
+		rs = append(rs, s[i])
+	}
+	return
 }
 
 func Strerror(e int32) []byte {

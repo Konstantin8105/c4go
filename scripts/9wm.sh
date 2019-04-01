@@ -4,10 +4,12 @@ set -e
 
 go build
 
+mkdir -p ./testdata/
+
 # prepare variables
 	export C4GO_DIR=$GOPATH/src/github.com/Konstantin8105/c4go
 	export C4GO=$C4GO_DIR/c4go
-	export TEMP_FOLDER="/tmp/9wm"
+	export TEMP_FOLDER="./testdata/9wm"
 
 # prepare C code
     if [ ! -d $TEMP_FOLDER ]; then
@@ -27,15 +29,15 @@ $C4GO transpile  -s                                          \
 	             -o="$FILE"                                  \
 				 $FILES
 
+echo "Calculate warnings : $TEMP_FOLDER"
 # show warnings comments in Go source
-	echo "	***** warnings"
 	WARNINGS=`cat $FILE | grep "^// Warning" | sort | uniq | wc -l`
 	echo "		After transpiling : $WARNINGS warnings."
 # show amount error from `go build`:
 	WARNINGS_GO=`go build -o $TEMP_FOLDER/9wm.app -gcflags="-e" $FILE 2>&1 | wc -l`
 	echo "		Go build : $WARNINGS_GO warnings"
 # amount unsafe
-	UNSAFE=`cat $FILE | grep unsafe | wc -l`
+	UNSAFE=`cat $FILE | grep "unsafe\." | wc -l`
 	echo "		Unsafe   : $UNSAFE"
 
 

@@ -8,7 +8,6 @@ import (
 	goast "go/ast"
 	"go/parser"
 	"go/token"
-	"os"
 	"strings"
 	"unicode"
 
@@ -121,6 +120,9 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 		})
 	}
 
+	// add convertion value to slice
+	GetUnsafeConvertDecls(p)
+
 	// Add the imports after everything else so we can ensure that they are all
 	// placed at the top.
 	for _, quotedImportPath := range p.Imports() {
@@ -154,6 +156,11 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 		src += "\n"
 		src += bindCode
 		source = src
+	}
+
+	// only for "stdarg.h"
+	if p.IncludeHeaderIsExists("stdarg.h") && p.IsHaveVaList {
+		source += getVaListStruct()
 	}
 
 	return
@@ -475,6 +482,12 @@ func transpileToNode(node ast.Node, p *program.Program) (
 		decls = nilFilterDecl(decls)
 	}()
 
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("error - panic : %#v", r)
+		}
+	}()
+
 	switch n := node.(type) {
 	case *ast.TranslationUnitDecl:
 		return transpileTranslationUnitDecl(p, n)
@@ -579,7 +592,7 @@ func transpileToNode(node ast.Node, p *program.Program) (
 
 				// location of file
 				location := node.Position().GetSimpleLocation()
-				location = strings.Replace(location, os.Getenv("GOPATH"), "$GOPATH", -1)
+				location = program.PathSimplification(location)
 				doc.List = append([]*goast.Comment{{
 					Text: fmt.Sprintf("// %s - transpiled function from %s",
 						name, location),

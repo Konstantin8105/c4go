@@ -13,6 +13,176 @@ import (
 	"github.com/Konstantin8105/c4go/types"
 )
 
+// From :
+// CaseStmt
+// |-UnaryOperator 'int' prefix '-'
+// | `-IntegerLiteral 'int' 1
+// |-<<<NULL>>>
+// `-CaseStmt
+//   |-BinaryOperator 'int' '-'
+//   | |- ...
+//   |-<<<NULL>>>
+//   `-CaseStmt
+//     |- ...
+//     |-<<<NULL>>>
+//     `-DefaultStmt
+//       `- ...
+// To:
+// CaseStmt
+// |-UnaryOperator 'int' prefix '-'
+// | `-IntegerLiteral 'int' 1
+// `-<<<NULL>>>
+// <<<NULL>>>
+// CaseStmt
+// |-BinaryOperator 'int' '-'
+// | |- ...
+// `-<<<NULL>>>
+// <<<NULL>>>
+// CaseStmt
+// |- ...
+// |-<<<NULL>>>
+// `-DefaultStmt
+//   `- ...
+// <<<NULL>>>
+//
+// From:
+// |-CaseStmt
+// | `- ...
+// |-NullStmt
+// |-BreakStmt 0
+// |-CaseStmt
+// | `-...
+// To:
+// CaseStmt
+// `- ...
+// <<<NULL>>>
+// NullStmt
+// <<<NULL>>>
+// BreakStmt 0
+// <<<NULL>>>
+// CaseStmt
+// `-...
+// <<<NULL>>>
+//
+// From:
+// |-CaseStmt
+// | `- ...
+// |-CompoundAssignOperator  'int' '+=' ComputeLHSTy='int' ComputeResultTy='int'
+// | `-...
+// |-BreakStmt
+// |-CaseStmt
+// | |- ...
+// To:
+// `-CaseStmt
+//   `- ...
+// <<<NULL>>>
+// CompoundAssignOperator  'int' '+=' ComputeLHSTy='int' ComputeResultTy='int'
+// `-...
+// <<<NULL>>>
+// BreakStmt
+// <<<NULL>>>
+// CaseStmt
+// `- ...
+// <<<NULL>>>
+//
+func caseSplitter(nodes ...ast.Node) (cs []ast.Node) {
+
+	if nodes == nil {
+		return
+	}
+	if len(nodes) == 0 {
+		return
+	}
+	if len(nodes) > 1 {
+		for i := range nodes {
+			cs = append(cs, caseSplitter(nodes[i])...)
+		}
+		return
+	}
+
+	node := nodes[0]
+	if node == nil {
+		return
+	}
+
+	var compountWithCase func(ast.Node) bool
+	compountWithCase = func(node ast.Node) bool {
+		if node == nil {
+			return false
+		}
+
+		switch node.(type) {
+		case *ast.CaseStmt, *ast.DefaultStmt:
+			return true
+		}
+
+		for i, n := range node.Children() {
+			if _, ok := n.(*ast.SwitchStmt); ok {
+				continue
+			}
+			if compountWithCase(node.Children()[i]) {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	var ns []ast.Node
+	switch node.(type) {
+	case *ast.CompoundStmt:
+		if compountWithCase(node) {
+			ns = node.(*ast.CompoundStmt).ChildNodes
+			node.(*ast.CompoundStmt).ChildNodes = nil
+		}
+
+	case *ast.CaseStmt:
+		ns = node.(*ast.CaseStmt).ChildNodes
+		node.(*ast.CaseStmt).ChildNodes = nil
+
+	case *ast.DefaultStmt:
+		ns = node.(*ast.DefaultStmt).ChildNodes
+		node.(*ast.DefaultStmt).ChildNodes = nil
+	}
+
+	cs = append(cs, node)
+	cs = append(cs, caseSplitter(ns...)...)
+
+	return
+}
+
+func caseMerge(nodes []ast.Node) (pre, cs []ast.Node) {
+	for i := range nodes {
+		// ignore empty *ast.CompountStmt
+		if comp, ok := nodes[i].(*ast.CompoundStmt); ok && len(comp.Children()) == 0 {
+			continue
+		}
+
+		var isCaseType bool
+
+		if _, ok := nodes[i].(*ast.CaseStmt); ok {
+			isCaseType = true
+		}
+		if _, ok := nodes[i].(*ast.DefaultStmt); ok {
+			isCaseType = true
+		}
+
+		if isCaseType {
+			cs = append(cs, nodes[i])
+			continue
+		}
+
+		if len(cs) == 0 {
+			pre = append(pre, nodes[i])
+			continue
+		}
+
+		cs[len(cs)-1].AddChild(nodes[i])
+	}
+
+	return
+}
+
 func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 	_ *goast.SwitchStmt, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
@@ -52,98 +222,37 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
 	// separation body of switch on cases
-	body := n.Children()[len(n.Children())-1].(*ast.CompoundStmt)
-
-	// solving switch case without body
-	// case -1:
-	// default: ...
-checkAgain:
-	for i := range body.Children() {
-		found := false
-		if _, ok := body.Children()[i].(*ast.CaseStmt); ok {
-			found = true
-		}
-		if _, ok := body.Children()[i].(*ast.DefaultStmt); ok {
-			found = true
-		}
-
-		if !found {
-			continue
-		}
-
-		v := body.Children()[i]
-		if vv, ok := v.Children()[len(v.Children())-1].(*ast.CaseStmt); ok {
-			if len(body.Children()) > i+1 {
-				body.ChildNodes = append(body.ChildNodes[:i+1], append([]ast.Node{vv}, body.ChildNodes[i+1:]...)...)
-			} else {
-				up := body.ChildNodes
-				body.ChildNodes = append(up, vv)
-			}
-			v.Children()[len(v.Children())-1] = &ast.CompoundStmt{}
-			goto checkAgain
-		}
-		if vv, ok := v.Children()[len(v.Children())-1].(*ast.DefaultStmt); ok {
-			if len(body.Children()) > i+1 {
-				body.ChildNodes = append(body.ChildNodes[:i+1], append([]ast.Node{vv}, body.ChildNodes[i+1:]...)...)
-			} else {
-				up := body.ChildNodes
-				body.ChildNodes = append(up, vv)
-			}
-			v.Children()[len(v.Children())-1] = &ast.CompoundStmt{}
-			goto checkAgain
-		}
+	body, ok := n.Children()[len(n.Children())-1].(*ast.CompoundStmt)
+	if !ok {
+		err = fmt.Errorf("body is not ast.CompoundStmt : %T", n.Children()[len(n.Children())-1])
 	}
 
-	for i := range body.Children() {
-		// For simplification - each CaseStmt will have CompoundStmt
-		if v, ok := body.Children()[i].(*ast.CaseStmt); ok {
-			if _, ok := v.Children()[len(v.Children())-1].(*ast.CompoundStmt); !ok {
-				var compoundStmt ast.CompoundStmt
-				compoundStmt.AddChild(v.Children()[len(v.Children())-1])
-				v.Children()[len(v.Children())-1] = &compoundStmt
-			}
-		}
-		// For simplification - each DefaultStmt will have CompoundStmt
-		if v, ok := body.Children()[i].(*ast.DefaultStmt); ok {
-			if _, ok := v.Children()[len(v.Children())-1].(*ast.CompoundStmt); !ok {
-				var compoundStmt ast.CompoundStmt
-				compoundStmt.AddChild(v.Children()[len(v.Children())-1])
-				v.Children()[len(v.Children())-1] = &compoundStmt
-			}
-		}
-	}
+	// CompoundStmt
+	// `-CaseStmt
+	//   |-UnaryOperator 'int' prefix '-'
+	//   | `-IntegerLiteral 'int' 1
+	//   |-<<<NULL>>>
+	//   `-CaseStmt
+	//     |-BinaryOperator 'int' '-'
+	//     | |- ...
+	//     |-<<<NULL>>>
+	//     `-CaseStmt
+	//       |- ...
+	//       |-<<<NULL>>>
+	//       `-DefaultStmt
+	//         `- ...
+	parts := caseSplitter(body.Children()...)
+	pre, parts := caseMerge(parts)
+	body.ChildNodes = parts
 
-	// Move element inside CompoundStmt
-	for i := 0; i < len(body.Children()); i++ {
-		switch body.Children()[i].(type) {
-		case *ast.CaseStmt, *ast.DefaultStmt:
-			// do nothing
-		default:
-			if i != 0 {
-				lastStmt := body.Children()[i-1].Children()
-				if comp, ok := lastStmt[len(lastStmt)-1].(*ast.CompoundStmt); ok {
-					// add node in CompoundStmt
-					comp.AddChild(body.Children()[i])
-
-					// remove from body
-					if i+1 < len(body.Children()) {
-						body.ChildNodes = append(body.ChildNodes[:i], body.ChildNodes[i+1:]...)
-					} else {
-						body.ChildNodes = body.ChildNodes[:i]
-					}
-
-					// goto to last iteration
-					i--
-				} else {
-					p.AddMessage(p.GenerateWarningMessage(
-						fmt.Errorf("Unexpected element"), n))
-				}
-			} else {
-				p.AddMessage(p.GenerateWarningMessage(
-					fmt.Errorf("Unsupport case"), n))
-			}
-
-		}
+	if len(pre) > 0 {
+		stmt, newPre, newPost, err := transpileCompoundStmt(&ast.CompoundStmt{
+			ChildNodes: pre,
+		}, p)
+		p.AddMessage(p.GenerateWarningMessage(err, n))
+		preStmts = append(preStmts, newPre...)
+		preStmts = append(preStmts, stmt.List...)
+		preStmts = append(preStmts, newPost...)
 	}
 
 	// The body will always be a CompoundStmt because a switch statement is not
@@ -155,52 +264,126 @@ checkAgain:
 
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
-	// For simplification switch case:
-	// from:
-	// case 3:
-	// 	{
-	// 		var c int
-	// 		return
-	// 	}
-	// 	fallthrough
-	// to:
-	// case 3:
-	// 	var c int
-	// 	return
+	// TODO
 	//
+	// from:
+	// case 2:
+	//  {
+	//  }
+	//  fallthrough
+	// case 3:
+	//  fallthrough
+	// case 4:
+	//  break
+	// to:
+	// case 2,3:
+	//  fallthrough
+	// case 4:
+	//  break
+	//
+	// from:
+	// 		fallthrough
+	//		break
+	// to:
+	//		---
+
+	// cases with 2 nodes
+	// from :
+	//		{
+	//			...
+	//		}
+	//		break or fallthrough
+	// to:
+	//		...
+	//		break or fallthrough
 	for i := range cases {
 		body := cases[i].Body
 		if len(body) != 2 {
 			continue
 		}
-		var isFallThrough bool
-		if v, ok := body[1].(*goast.BranchStmt); ok {
-			isFallThrough = (v.Tok == token.FALLTHROUGH)
-		}
-		if !isFallThrough {
-			if len(body) > 1 {
-				cases[i].Body = body
-			}
+		var (
+			last    = body[len(body)-1]
+			prelast = body[len(body)-2]
+		)
+		br, ok := last.(*goast.BranchStmt)
+		if !ok || !(br.Tok == token.FALLTHROUGH || br.Tok == token.BREAK) {
 			continue
 		}
-		if v, ok := body[0].(*goast.BlockStmt); ok {
-			if len(v.List) > 0 {
-				if vv, ok := v.List[len(v.List)-1].(*goast.BranchStmt); ok {
-					if vv.Tok == token.BREAK {
-						if isFallThrough {
-							cases[i].Body = append(v.List[:len(v.List)-1])
-							continue
-						}
-					}
-				}
-				if _, ok := v.List[len(v.List)-1].(*goast.ReturnStmt); ok {
-					cases[i].Body = body[:len(body)-1]
-					continue
-				}
-			} else {
-				cases[i].Body = []goast.Stmt{body[1]}
-			}
+		bl, ok := prelast.(*goast.BlockStmt)
+		if !ok {
+			continue
 		}
+
+		cases[i].Body = append(bl.List, br)
+	}
+
+	// from:
+	//		return
+	//		fallthrough
+	// to:
+	//		return
+	for i := range cases {
+		body := cases[i].Body
+		if len(body) < 2 {
+			continue
+		}
+		var (
+			last    = body[len(body)-1]
+			prelast = body[len(body)-2]
+		)
+		if br, ok := last.(*goast.BranchStmt); !ok || br.Tok != token.FALLTHROUGH {
+			continue
+		}
+		if _, ok := prelast.(*goast.ReturnStmt); !ok {
+			continue
+		}
+		cases[i].Body = cases[i].Body[:len(cases[i].Body)-1]
+	}
+
+	// from:
+	//		break
+	// 		fallthrough
+	// to:
+	//		---
+	for i := range cases {
+		body := cases[i].Body
+		if len(body) < 2 {
+			continue
+		}
+		var (
+			last    = body[len(body)-1]
+			prelast = body[len(body)-2]
+		)
+		if br, ok := last.(*goast.BranchStmt); !ok || br.Tok != token.FALLTHROUGH {
+			continue
+		}
+		if br, ok := prelast.(*goast.BranchStmt); !ok || br.Tok != token.BREAK {
+			continue
+		}
+		cases[i].Body = cases[i].Body[:len(cases[i].Body)-2]
+	}
+
+	// cases with 1 node
+	// from :
+	//		{
+	//			...
+	//		}
+	// to:
+	//		...
+	for i := range cases {
+		body := cases[i].Body
+		if len(body) != 1 {
+			continue
+		}
+		var (
+			last = body[len(body)-1]
+		)
+		bl, ok := last.(*goast.BlockStmt)
+		if !ok {
+			continue
+		}
+
+		cases[i].Body = bl.List
 	}
 
 	// Convert the normalized cases back into statements so they can be children

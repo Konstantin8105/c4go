@@ -71,6 +71,11 @@ func (unionVar * {{ $.Name }}) {{ .Name }}() (*{{ .TypeField }}){
 `
 	// Generate structure of union
 	var un union
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("%v. Details of union: %#v", err, un)
+		}
+	}()
 	un.Name = name
 	un.Size = size
 	for i := range fields {
@@ -84,6 +89,11 @@ func (unionVar * {{ $.Name }}) {{ .Name }}() (*{{ .TypeField }}){
 			return
 		}
 		f.TypeField = buf.String()
+
+		if f.TypeField == "" {
+			goast.Print(token.NewFileSet(), fields[i].Type)
+			f.TypeField = "interface{}"
+		}
 
 		un.Fields = append(un.Fields, f)
 	}

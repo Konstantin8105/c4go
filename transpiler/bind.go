@@ -59,8 +59,8 @@ func generateBinding(p *program.Program) (bindHeader, bindCode string) {
 		//		return float64(C.frexp(C.double(arg1), unsafe.Pointer(arg2)))
 		// }
 
-		mess := fmt.Sprintf("// Add c-binding for implementate function : `%s`", ds[i].Name)
-		bindCode += mess + "\n"
+		mess := fmt.Sprintf("// %s - add c-binding for implemention function", ds[i].Name)
+		bindCode += mess
 
 		code, err := getBindFunction(p, ds[i])
 		if err != nil {
@@ -126,22 +126,28 @@ func getBindFunction(p *program.Program, d program.DefinitionFunction) (code str
 		arg = append(arg, cgoExpr)
 	}
 
-	f.Body = &goast.BlockStmt{
-		List: []goast.Stmt{
-			&goast.ReturnStmt{
-				Results: []goast.Expr{
-					&goast.CallExpr{
-						Fun: goast.NewIdent(returnResolvedType),
-						Args: []goast.Expr{
-							&goast.CallExpr{
-								Fun:  goast.NewIdent(fmt.Sprintf("C.%s", d.Name)),
-								Args: arg,
-							},
-						},
+	if returnResolvedType != "" {
+		f.Body = &goast.BlockStmt{
+			List: []goast.Stmt{
+				&goast.ReturnStmt{
+					Results: []goast.Expr{
+						util.NewCallExpr(returnResolvedType,
+							util.NewCallExpr(fmt.Sprintf("C.%s", d.Name), arg...),
+						),
 					},
 				},
 			},
-		},
+		}
+	} else {
+		f.Body = &goast.BlockStmt{
+			List: []goast.Stmt{
+				&goast.ReturnStmt{
+					Results: []goast.Expr{
+						util.NewCallExpr(fmt.Sprintf("C.%s", d.Name), arg...),
+					},
+				},
+			},
+		}
 	}
 
 	var buf bytes.Buffer
@@ -162,6 +168,8 @@ func cgoTypes(goType string) (_ string, ok bool) {
 		return "int", true
 	case "int32":
 		return "int", true
+	case "int64":
+		return "long", true
 	case "float64":
 		return "double", true
 	case "byte":
@@ -177,6 +185,59 @@ func cgoTypes(goType string) (_ string, ok bool) {
 	}
 	return "", false
 }
+
+// TODO : add implementation
+//
+// Example:
+// func write(arg0 int32, arg1 interface{}, arg2 uint) noarch.SsizeT {
+//      a := arg1.([]byte)
+//      b := string(a)
+//      c := C.CString(b)
+//      return noarch.SsizeT(C.write(C.int(arg0), (unsafe.Pointer(c)), C.ulong(arg2)))
+// }
+//
+// func read(arg0 int32, arg1 interface{}, arg2 uint) noarch.SsizeT {
+//      a := arg1.([]byte)
+//      b := string(a)
+//      c := C.CString(b)
+//      S := noarch.SsizeT(C.read(C.int(arg0), unsafe.Pointer(c), C.ulong(arg2)))
+//      d := C.GoString(c)
+//      arg1 = []byte(d)
+//      return S
+// }
+//
+//	func read(arg0 int32, arg1 interface{}, arg2 uint) noarch.SsizeT {
+//	   switch v := arg1.(type) {
+//	   case []byte:
+//	   	a := v
+//	   	b := string(a)
+//	   	c := C.CString(b)
+//	   	S := noarch.SsizeT(C.read(C.int(arg0), unsafe.Pointer(c), C.ulong(arg2)))
+//	   	d := C.GoString(c)
+//	   	arg1 = []byte(d)
+//	   	return S
+//	   case *[]byte:
+//	   	a := v
+//	   	b := string(*a)
+//	   	c := C.CString(b)
+//	   	S := noarch.SsizeT(C.read(C.int(arg0), unsafe.Pointer(c), C.ulong(arg2)))
+//	   	d := C.GoString(c)
+//	   	arg1 = []byte(d)
+//	   	return S
+//	   }
+//	   return noarch.SsizeT(C.read(C.int(arg0), unsafe.Pointer(&arg1), C.ulong(arg2)))
+//	}
+//
+// 	func write(arg0 int32, arg1 interface{}, arg2 uint) noarch.SsizeT {
+// 	   switch v := arg1.(type) {
+// 	   case []byte: // []uint8:
+// 	   	a := v
+// 	   	b := string(a)
+// 	   	c := C.CString(b)
+// 	   	return noarch.SsizeT(C.write(C.int(arg0), (unsafe.Pointer(c)), C.ulong(arg2)))
+// 	   }
+// 	   return noarch.SsizeT(C.write(C.int(arg0), (unsafe.Pointer(&arg1)), C.ulong(arg2)))
+// 	}
 
 func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast.Expr, err error) {
 	if ct, ok := cgoTypes(goType); ok {
@@ -201,6 +262,7 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 			t = goType[2:]
 		}
 		t = "( * _Ctype_" + t + " ) "
+		t = strings.Replace(t, " ", "", -1)
 
 		p.AddImport("unsafe")
 
@@ -224,6 +286,7 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 			t = goType[1:]
 		}
 		t = "( * _Ctype_" + t + " ) "
+		t = strings.Replace(t, " ", "", -1)
 
 		p.AddImport("unsafe")
 
@@ -238,11 +301,11 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 
 		p.AddImport("unsafe")
 
-		return util.NewCallExpr(t, util.NewCallExpr("unsafe.Pointer",
+		return util.NewCallExpr("unsafe.Pointer",
 			&goast.UnaryExpr{
 				Op: token.AND,
 				X:  expr,
-			})), nil
+			}), nil
 	}
 
 	return &goast.CallExpr{

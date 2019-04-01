@@ -359,8 +359,8 @@ var builtInFunctionDefinitions = map[string][]string{
 		"ssize_t read(int, void *, size_t) -> noarch.Read",
 		"int close(int) -> noarch.CloseOnExec",
 		"int isatty(int) -> noarch.Isatty",
-		"int ftruncate(int , off_t ) -> noarch.Ftruncate",
 		"int unlink(const char *) -> noarch.Unlink",
+		"int ftruncate(int , off_t ) -> noarch.Ftruncate",
 	},
 	"sys/stat.h": {
 		"int fstat(int , struct stat  *) -> noarch.Fstat",

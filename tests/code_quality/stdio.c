@@ -2,6 +2,6 @@
 
 void print()
 {
-	printf("Hello");
-	printf("Hello, %d", 42);
+    printf("Hello");
+    printf("Hello, %d", 42);
 }
