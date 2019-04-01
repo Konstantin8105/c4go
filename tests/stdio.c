@@ -568,23 +568,24 @@ void test_sscanf()
 
 void test_ungetc()
 {
-  FILE * pFile;
+  FILE * fp;
   int c;
   char buffer [256];
 
-  pFile = fopen (test_file,"r");
-  is_not_null(pFile);
-  while (!feof (pFile)) {
-    c=getc (pFile);
-    if (c == EOF) break;
-    if (c == 'T') {
-		ungetc ('@',pFile);
-	} else {
-		ungetc (c,pFile);
-	}
-    // fgets (buffer,10,pFile);
-  	// printf("%s\n",buffer);
-  }
+  fp = fopen ("./tests/stdio_ungetc.txt","r");
+  is_not_null(fp);
+
+   while(!feof(fp)) {
+      c = getc (fp);
+      /* replace ! with + */
+      if( c == '!' ) {
+         ungetc ('+', fp);
+      } else {
+         ungetc(c, fp);
+      }
+      fgets(buffer, 255, fp);
+      fputs(buffer, stdout);
+   }
 }
 
 void test_FILE()
