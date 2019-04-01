@@ -53,15 +53,15 @@ func TimeTToFloat64(t TimeT) float64 {
 // Structure containing a calendar date and time broken down into its
 // components
 type Tm struct {
-	TmSec   int
-	TmMin   int
-	TmHour  int
-	TmMday  int
-	TmMon   int
-	TmYear  int
-	TmWday  int
-	TmYday  int
-	TmIsdst int
+	TmSec   int32
+	TmMin   int32
+	TmHour  int32
+	TmMday  int32
+	TmMon   int32
+	TmYear  int32
+	TmWday  int32
+	TmYday  int32
+	TmIsdst int32
 	// tm_gmtoff int32
 	// tm_zone   []byte
 }
@@ -72,14 +72,14 @@ type Tm struct {
 func LocalTime(timer []TimeT) (tm []Tm) {
 	t := time.Unix(int64(timer[0]), 0)
 	tm = make([]Tm, 1)
-	tm[0].TmSec = t.Second()
-	tm[0].TmMin = t.Minute()
-	tm[0].TmHour = t.Hour()
-	tm[0].TmMday = t.Day()
-	tm[0].TmMon = int(t.Month()) - 1
-	tm[0].TmYear = t.Year() - 1900
-	tm[0].TmWday = int(t.Weekday())
-	tm[0].TmYday = t.YearDay() - 1
+	tm[0].TmSec = int32(t.Second())
+	tm[0].TmMin = int32(t.Minute())
+	tm[0].TmHour = int32(t.Hour())
+	tm[0].TmMday = int32(t.Day())
+	tm[0].TmMon = int32(int(t.Month()) - 1)
+	tm[0].TmYear = int32(t.Year() - 1900)
+	tm[0].TmWday = int32(int(t.Weekday()))
+	tm[0].TmYday = int32(t.YearDay() - 1)
 	return
 }
 
@@ -88,14 +88,14 @@ func Gmtime(timer []TimeT) (tm []Tm) {
 	t := time.Unix(int64(timer[0]), 0)
 	t = t.UTC()
 	tm = make([]Tm, 1)
-	tm[0].TmSec = t.Second()
-	tm[0].TmMin = t.Minute()
-	tm[0].TmHour = t.Hour()
-	tm[0].TmMday = t.Day()
-	tm[0].TmMon = int(t.Month()) - 1
-	tm[0].TmYear = t.Year() - 1900
-	tm[0].TmWday = int(t.Weekday())
-	tm[0].TmYday = t.YearDay() - 1
+	tm[0].TmSec = int32(t.Second())
+	tm[0].TmMin = int32(t.Minute())
+	tm[0].TmHour = int32(t.Hour())
+	tm[0].TmMday = int32(t.Day())
+	tm[0].TmMon = int32(int(t.Month()) - 1)
+	tm[0].TmYear = int32(t.Year() - 1900)
+	tm[0].TmWday = int32(int(t.Weekday()))
+	tm[0].TmYday = int32(t.YearDay() - 1)
 	return
 }
 
@@ -103,10 +103,17 @@ func Gmtime(timer []TimeT) (tm []Tm) {
 // Returns the value of type time_t that represents the local time described
 // by the tm structure pointed by timeptr (which may be modified).
 func Mktime(tm []Tm) TimeT {
-	t := time.Date(tm[0].TmYear+1900, time.Month(tm[0].TmMon)+1, tm[0].TmMday,
-		tm[0].TmHour, tm[0].TmMin, tm[0].TmSec, 0, time.Now().Location())
+	t := time.Date(
+		int(tm[0].TmYear+1900),
+		time.Month(tm[0].TmMon)+1,
+		int(tm[0].TmMday),
+		int(tm[0].TmHour),
+		int(tm[0].TmMin),
+		int(tm[0].TmSec),
+		0,
+		time.Now().Location())
 
-	tm[0].TmWday = int(t.Weekday())
+	tm[0].TmWday = int32(t.Weekday())
 
 	return TimeT(int32(t.Unix()))
 }

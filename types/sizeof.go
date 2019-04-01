@@ -26,6 +26,10 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 	// should find out the correct size at runtime.
 	pointerSize := 8
 
+	if cType == "FILE *" || cType == "FILE" || cType == "struct _IO_FILE *" {
+		return pointerSize, nil
+	}
+
 	// Enum with name
 	if strings.HasPrefix(cType, "enum") {
 		return SizeOf(p, "int")
@@ -49,6 +53,10 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 		isStruct = true
 	} else if s, ok = p.Structs["struct "+cType]; ok {
 		isStruct = true
+	} else if strings.HasPrefix(cType, "struct ") {
+		if s, ok = p.Structs[cType[len("struct "):]]; ok {
+			isStruct = true
+		}
 	}
 	if isStruct {
 		totalBytes := 0
@@ -84,11 +92,18 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 	}
 
 	// An union will be the max size of its parts.
-	if strings.HasPrefix(cType, "union ") {
+	var isUnion bool
+	cType = util.GenerateCorrectType(cType)
+	if _, ok := p.Unions[cType]; ok {
+		isUnion = true
+	} else if _, ok := p.Unions["union "+cType]; ok {
+		isUnion = true
+	}
+	if isUnion {
 		byteCount := 0
 
-		s := p.Unions[cType]
-		if s == nil {
+		s, ok := p.Unions[cType]
+		if !ok {
 			return 0, fmt.Errorf("error in union")
 		}
 
@@ -142,10 +157,10 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 	case "int", "float", "long int":
 		return 4, nil
 
-	case "long", "double":
+	case "long", "long long", "long long int", "double":
 		return 8, nil
 
-	case "long double", "long long", "long long int", "long long unsigned int":
+	case "long double", "long long unsigned int":
 		return 16, nil
 	}
 
@@ -187,7 +202,7 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 	totalArraySize := 1
 	arrayType, arraySize := GetArrayTypeAndSize(cType)
 	if arraySize <= 0 {
-		return 0, fmt.Errorf("error in array size")
+		return 0, nil
 	}
 
 	for arraySize != -1 {

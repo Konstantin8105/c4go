@@ -101,6 +101,12 @@ type Program struct {
 
 	// preprocessor file
 	PreprocessorFile preprocessor.FilePP
+
+	// unsafeConvertValueToPointer - simplification for convert value to pointer
+	UnsafeConvertValueToPointer map[string]bool
+
+	// IsHaveVaList
+	IsHaveVaList bool
 }
 
 type commentPos struct {
@@ -120,27 +126,10 @@ func NewProgram() (p *Program) {
 		imports:             []string{},
 		typesAlreadyDefined: []string{},
 		startupStatements:   []goast.Stmt{},
-		Structs: StructRegistry(map[string]*Struct{
+		Structs:             StructRegistry(map[string]*Struct{
 			// Structs without implementations inside system C headers
 			// Example node for adding:
 			// &ast.TypedefDecl{ ... Type:"struct __locale_struct *" ... }
-
-			"struct __va_list_tag [1]": {
-				Name: "struct __va_list_tag [1]",
-				Type: StructType,
-			},
-
-			// Pos:ast.Position{File:"/usr/include/xlocale.h", Line:27
-			"struct __locale_struct *": {
-				Name: "struct __locale_struct *",
-				Type: StructType,
-			},
-
-			// Pos:ast.Position{File:"/usr/include/x86_64-linux-gnu/sys/time.h", Line:61
-			"struct timezone *__restrict": {
-				Name: "struct timezone *__restrict",
-				Type: StructType,
-			},
 		}),
 		Unions:                                   make(StructRegistry),
 		Verbose:                                  false,
@@ -152,6 +141,7 @@ func NewProgram() (p *Program) {
 		commentLine:                              map[string]commentPos{},
 		functionDefinitions:                      map[string]DefinitionFunction{},
 		builtInFunctionDefinitionsHaveBeenLoaded: false,
+		UnsafeConvertValueToPointer:              map[string]bool{},
 	}
 }
 
@@ -333,9 +323,18 @@ type nilWalker struct {
 }
 
 func (n nilWalker) Visit(node goast.Node) (w goast.Visitor) {
-	fmt.Fprintf(os.Stdout, "---------\n")
-	fmt.Fprintf(os.Stdout, "Node: %#v", node)
+	fmt.Fprintf(os.Stdout, "\n---------\n")
+	fmt.Fprintf(os.Stdout, "Node: %#v\n", node)
 	switch v := node.(type) {
+	case *goast.IndexExpr:
+		fmt.Fprintf(os.Stdout, "IndexExpr\n")
+		fmt.Fprintf(os.Stdout, "\tx     = %#v\n", v.X)
+		fmt.Fprintf(os.Stdout, "\tindex = %#v\n", v.Index)
+		if v.Index == nil {
+			goast.Print(token.NewFileSet(), v)
+			panic("")
+		}
+
 	case *goast.GenDecl:
 		fmt.Fprintf(os.Stdout, "%#v\n", v)
 		for i, s := range v.Specs {

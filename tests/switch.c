@@ -346,9 +346,46 @@ void switch_char()
     is_eq(form, 'S');
 }
 
+int value()
+{
+    return 42;
+}
+
+void switch_stat()
+{
+    int v = 15;
+    switch (v = value()) {
+    case 15:
+        fail("wrong");
+        break;
+    case 42:
+        is_true(v == 42);
+        break;
+    }
+}
+
+
+int case_inside_block(int a)
+{
+	switch (a) {
+	case 1: 
+		break;
+	case 2: 
+		{
+			a = 42;
+			case 3:
+				a += 45;
+				break;
+		}
+	case 4:
+		break;
+	}
+	return a;
+}
+
 int main()
 {
-    plan(29);
+    plan(36);
 
     switch_char();
     switch_bool();
@@ -371,6 +408,14 @@ int main()
     empty_switch();
     default_only_switch();
     switch_without_input();
+    switch_stat();
+
+	is_eq(case_inside_block(0),0);
+	is_eq(case_inside_block(1),1);
+	is_eq(case_inside_block(2),45+42);
+	is_eq(case_inside_block(3),3+45);
+	is_eq(case_inside_block(4),4);
+	is_eq(case_inside_block(5),5);
 
     done_testing();
 }

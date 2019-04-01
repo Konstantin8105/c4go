@@ -1,0 +1,194 @@
+//
+//	Package - transpiled by c4go
+//
+//	If you have found any issues, please raise an issue at:
+//	https://github.com/Konstantin8105/c4go/
+//
+
+package code_quality
+
+import "unsafe"
+
+// str - transpiled function from  C4GO/tests/code_quality/unsafe.c:9
+type str struct {
+	i int32
+}
+
+type un struct{ memory unsafe.Pointer }
+
+func (unionVar *un) copy() un {
+	var buffer [8]byte
+	for i := range // un - transpiled function from  C4GO/tests/code_quality/unsafe.c:13
+	buffer {
+		buffer[i] = (*((*[8]byte)(unionVar.memory)))[i]
+	}
+	var newUnion un
+	newUnion.memory = unsafe.Pointer(&buffer)
+	return newUnion
+}
+func (unionVar *un) i() *int32 {
+	if unionVar.memory == nil {
+		var buffer [8]byte
+		unionVar.memory = unsafe.Pointer(&buffer)
+	}
+	return (*int32)(unionVar.memory)
+}
+func (unionVar *un) d() *float64 {
+	if unionVar.memory == nil {
+		var buffer [8]byte
+		unionVar.memory = unsafe.Pointer(&buffer)
+	}
+	return (*float64)(unionVar.memory)
+}
+
+// db - transpiled function from  C4GO/tests/code_quality/unsafe.c:18
+type db = float64
+
+// test_char - transpiled function from  C4GO/tests/code_quality/unsafe.c:21
+func test_char() {
+	var t byte
+	var pt []byte = c4goUnsafeConvert_byte(&t)
+	// integers
+	_ = t
+	_ = pt
+}
+
+// test_short - transpiled function from  C4GO/tests/code_quality/unsafe.c:22
+func test_short() {
+	var t int16
+	var pt []int16 = c4goUnsafeConvert_int16(&t)
+	_ = t
+	_ = pt
+}
+
+// test_int - transpiled function from  C4GO/tests/code_quality/unsafe.c:23
+func test_int() {
+	var t int32
+	var pt []int32 = c4goUnsafeConvert_int32(&t)
+	_ = t
+	_ = pt
+}
+
+// test_long - transpiled function from  C4GO/tests/code_quality/unsafe.c:24
+func test_long() {
+	var t int32
+	var pt []int32 = c4goUnsafeConvert_int32(&t)
+	_ = t
+	_ = pt
+}
+
+// test_li - transpiled function from  C4GO/tests/code_quality/unsafe.c:25
+func test_li() {
+	var t int32
+	var pt []int32 = c4goUnsafeConvert_int32(&t)
+	_ = t
+	_ = pt
+}
+
+// test_ll - transpiled function from  C4GO/tests/code_quality/unsafe.c:26
+func test_ll() {
+	var t int64
+	var pt []int64 = c4goUnsafeConvert_int64(&t)
+	_ = t
+	_ = pt
+}
+
+// test_lli - transpiled function from  C4GO/tests/code_quality/unsafe.c:27
+func test_lli() {
+	var t int64
+	var pt []int64 = c4goUnsafeConvert_int64(&t)
+	_ = t
+	_ = pt
+}
+
+// test_f - transpiled function from  C4GO/tests/code_quality/unsafe.c:30
+func test_f() {
+	var t float32
+	var pt []float32 = c4goUnsafeConvert_float32(&t)
+	// floats
+	_ = t
+	_ = pt
+}
+
+// test_d - transpiled function from  C4GO/tests/code_quality/unsafe.c:31
+func test_d() {
+	var t float64
+	var pt []float64 = c4goUnsafeConvert_float64(&t)
+	_ = t
+	_ = pt
+}
+
+// test_ld - transpiled function from  C4GO/tests/code_quality/unsafe.c:32
+func test_ld() {
+	var t float64
+	var pt []float64 = c4goUnsafeConvert_float64(&t)
+	_ = t
+	_ = pt
+}
+
+// test_struct - transpiled function from  C4GO/tests/code_quality/unsafe.c:35
+func test_struct() {
+	var t str
+	var pt []str = c4goUnsafeConvert_str(&t)
+	// struct
+	_ = t
+	_ = pt
+}
+
+// test_un - transpiled function from  C4GO/tests/code_quality/unsafe.c:38
+func test_un() {
+	var t un
+	var pt []un = c4goUnsafeConvert_un(&t)
+	// union
+	_ = t
+	_ = pt
+}
+
+// test_typedef - transpiled function from  C4GO/tests/code_quality/unsafe.c:41
+func test_typedef() {
+	var t db
+	var pt []db = c4goUnsafeConvert_float64(&t)
+	// typedef
+	_ = t
+	_ = pt
+}
+
+// c4goUnsafeConvert_byte : created by c4go
+func c4goUnsafeConvert_byte(c4go_name *byte) []byte {
+	return (*[1000000]byte)(unsafe.Pointer(c4go_name))[:]
+}
+
+// c4goUnsafeConvert_float32 : created by c4go
+func c4goUnsafeConvert_float32(c4go_name *float32) []float32 {
+	return (*[1000000]float32)(unsafe.Pointer(c4go_name))[:]
+}
+
+// c4goUnsafeConvert_float64 : created by c4go
+func c4goUnsafeConvert_float64(c4go_name *float64) []float64 {
+	return (*[1000000]float64)(unsafe.Pointer(c4go_name))[:]
+}
+
+// c4goUnsafeConvert_int16 : created by c4go
+func c4goUnsafeConvert_int16(c4go_name *int16) []int16 {
+	return (*[1000000]int16)(unsafe.Pointer(c4go_name))[:]
+}
+
+// c4goUnsafeConvert_int32 : created by c4go
+func c4goUnsafeConvert_int32(c4go_name *int32) []int32 {
+	return (*[1000000]int32)(unsafe.Pointer(c4go_name))[:]
+}
+
+// c4goUnsafeConvert_int64 : created by c4go
+func c4goUnsafeConvert_int64(c4go_name *int64) []int64 {
+	return (*[1000000]int64)(unsafe.Pointer(c4go_name))[:]
+}
+
+// c4goUnsafeConvert_str : created by c4go
+func c4goUnsafeConvert_str(c4go_name *str) []str {
+	return (*[1000000]str)(unsafe.Pointer(c4go_name))[:]
+}
+
+// c4goUnsafeConvert_un : created by c4go
+func c4goUnsafeConvert_un(c4go_name *un) []un {
+	return (*[1000000]un)(unsafe.Pointer(c4go_name))[:]
+}

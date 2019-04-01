@@ -3,6 +3,7 @@ package noarch
 import (
 	"bytes"
 	"reflect"
+	"unsafe"
 )
 
 // Strlen returns the length of a string.
@@ -11,11 +12,11 @@ import (
 // C string is as long as the number of characters between the beginning of the
 // string and the terminating null character (without including the terminating
 // null character itself).
-func Strlen(a []byte) int {
+func Strlen(a []byte) int32 {
 	// TODO: The transpiler should have a syntax that means this proxy function
 	// does not need to exist.
 
-	return len(CStringToString(a))
+	return int32(len(CStringToString(a)))
 }
 
 // Strcpy copies the C string pointed by source into the array pointed by
@@ -50,7 +51,8 @@ func Strcpy(dest, src []byte) []byte {
 //
 // destination and source shall not overlap (see memmove for a safer alternative
 // when overlapping).
-func Strncpy(dest, src []byte, len int) []byte {
+func Strncpy(dest, src []byte, len32 int32) []byte {
+	len := int(len32)
 	// Copy up to the len or first NULL bytes - whichever comes first.
 	i := 0
 	for ; i < len && src[i] != 0; i++ {
@@ -80,20 +82,21 @@ func Strcat(dest, src []byte) []byte {
 // The terminating null character in destination is overwritten by the first
 // character of source, and a null-character is included at the end
 // of the new string formed by the concatenation of both in destination.
-func Strncat(dest, src []byte, len int) []byte {
+func Strncat(dest, src []byte, len int32) []byte {
 	Strncpy(dest[Strlen(dest):], src, len)
 	return dest
 }
 
 // Strcmp - compare two strings
 // Compares the C string str1 to the C string str2.
-func Strcmp(str1, str2 []byte) int {
-	return bytes.Compare([]byte(CStringToString(str1)), []byte(CStringToString(str2)))
+func Strcmp(str1, str2 []byte) int32 {
+	return int32(bytes.Compare([]byte(CStringToString(str1)), []byte(CStringToString(str2))))
 }
 
 // Strchr - Locate first occurrence of character in string
 // See: http://www.cplusplus.com/reference/cstring/strchr/
-func Strchr(str []byte, ch int) []byte {
+func Strchr(str []byte, ch32 int32) []byte {
+	ch := int(ch32)
 	i := 0
 	for {
 		if str[i] == '\x00' {
@@ -143,9 +146,19 @@ func Memset(ptr []byte, value byte, num uint32) []byte {
 }
 
 // Memmove move block of memory
-func Memmove(ptr, source interface{}, num uint32) interface{} {
-	p1 := ptr.([]byte)
-	p2 := source.([]byte)
+func Memmove(ptr, src interface{}, num uint32) interface{} {
+	// both types is []byte
+	if p, ok := ptr.([]byte); ok {
+		if s, ok := src.([]byte); ok {
+			for i := int(num); i >= 0; i-- {
+				p[i] = s[i]
+			}
+			return s
+		}
+	}
+
+	p1 := (*[100000]byte)(unsafe.Pointer(uintptr(unsafe.Pointer(&ptr))))
+	p2 := (*[100000]byte)(unsafe.Pointer(uintptr(unsafe.Pointer(&src))))
 	for i := int(num); i >= 0; i-- {
 		p1[i] = p2[i]
 	}
@@ -154,7 +167,7 @@ func Memmove(ptr, source interface{}, num uint32) interface{} {
 
 // Memcmp - compare two buffers
 // Compares the first count characters of the objects pointed to be lhs and rhs
-func Memcmp(lhs []byte, rhs []byte, count uint32) int {
+func Memcmp(lhs []byte, rhs []byte, count uint32) int32 {
 	for i := 0; uint32(i) < count; i++ {
 		if int(lhs[i]) < int(rhs[i]) {
 			return -1
@@ -181,7 +194,8 @@ func Memcpy(dst, src interface{}, size uint) interface{} {
 	return dst
 }
 
-func Strrchr(source []byte, c int) []byte {
+func Strrchr(source []byte, c32 int32) []byte {
+	c := int(c32)
 	ch := byte(c)
 	pos := len(source)
 	for i := range source {
@@ -198,10 +212,16 @@ func Strrchr(source []byte, c int) []byte {
 	return source
 }
 
-func Strdup(s []byte) []byte {
-	return s
+func Strdup(s []byte) (rs []byte) {
+	for i := range s {
+		if s[i] == '\x00' {
+			break
+		}
+		rs = append(rs, s[i])
+	}
+	return
 }
 
-func Strerror(e int) []byte {
+func Strerror(e int32) []byte {
 	return []byte("strerror")
 }

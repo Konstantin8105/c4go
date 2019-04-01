@@ -62,6 +62,9 @@ func transpileFieldDecl(p *program.Program, n *ast.FieldDecl) (
 					n, field, err)
 				field.Type = util.NewIdent(n.Type)
 			}
+			if id, ok := field.Type.(*goast.Ident); ok && id.Name == "" {
+				id.Name = "C4GO_FIELD_DECL_NAME_EMPTY"
+			}
 		}
 	}()
 	if util.IsFunction(n.Type) {
@@ -236,7 +239,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			var declsIn []goast.Decl
 			declsIn, err = transpileToNode(field, p)
 			if err != nil {
-				err = fmt.Errorf("Cannot transpile %T", field)
+				err = fmt.Errorf("Cannot transpile %T : %v", field, err)
 				// p.AddMessage(p.GenerateWarningMessage(err, field))
 				return
 			}
@@ -481,7 +484,7 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 			Specs: []goast.Spec{
 				&goast.TypeSpec{
 					Name: util.NewIdent(name),
-					Type: util.NewTypeIdent("int"),
+					Type: util.NewTypeIdent("int32"),
 				},
 			},
 		})
@@ -576,23 +579,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 
 	if strings.Contains(n.Type, "va_list") &&
 		strings.Contains(n.Type2, "va_list_tag") {
-		// variable for va_list. see "variadic function"
-		// header : <stdarg.h>
-		// Example :
-		// DeclStmt 0x2fd87e0 <line:442:2, col:14>
-		// `-VarDecl 0x2fd8780 <col:2, col:10> col:10 used args 'va_list':'struct __va_list_tag [1]'
-		// Result:
-		// ... - convert to - c4goArgs ...interface{}
-		// var args = c4goArgs
-		return []goast.Decl{&goast.GenDecl{
-			Tok: token.VAR,
-			Specs: []goast.Spec{
-				&goast.ValueSpec{
-					Names:  []*goast.Ident{util.NewIdent(n.Name)},
-					Values: []goast.Expr{util.NewIdent("c4goArgs")},
-				},
-			},
-		}}, "", nil
+		return VaListInit(p, n.Name), "", nil
 	}
 
 	// Example of DeclStmt for C code:

@@ -6,8 +6,8 @@ import (
 
 type Winsize = unix.Winsize
 
-func Ioctl(fd int, req int, w []Winsize) int {
-	wb, err := unix.IoctlGetWinsize(fd, uint(req))
+func Ioctl(fd int32, req int32, w []Winsize) int32 {
+	wb, err := unix.IoctlGetWinsize(int(fd), uint(req))
 	if err != nil {
 		return -1
 	}

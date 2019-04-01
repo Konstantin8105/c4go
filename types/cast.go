@@ -97,19 +97,6 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	cFromType = util.CleanCType(cFromType)
 	cToType = util.CleanCType(cToType)
 
-	// Only for "stddef.h"
-	if p.IncludeHeaderIsExists("stddef.h") {
-		if cFromType == "long long" && cToType == "ptrdiff_t" {
-			expr = &goast.BinaryExpr{
-				X:  expr,
-				Op: token.QUO,
-				Y: &goast.BasicLit{
-					Kind:  token.INT,
-					Value: "8",
-				},
-			}
-		}
-	}
 	fromType := cFromType
 	toType := cToType
 
@@ -145,21 +132,34 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return expr, nil
 	}
 
+	// Exceptions for va_list
+	if fromType == "va_list" && toType == "struct __va_list_tag *" {
+		return expr, nil
+	}
+
 	// casting
 	if fromType == "void *" && toType[len(toType)-1] == '*' &&
-		!strings.Contains(toType, "FILE") && toType[len(toType)-2] != '*' {
+		toType[len(toType)-2] != '*' {
 		toType = strings.Replace(toType, "*", " ", -1)
 		t, err := ResolveType(p, toType)
 		if err != nil {
 			return nil, err
 		}
-		return &goast.TypeAssertExpr{
-			X:      expr,
-			Lparen: 1,
-			Type: &goast.ArrayType{
-				Lbrack: 1,
-				Elt:    util.NewIdent(t),
-			}}, nil
+		if strings.Contains(toType, "FILE") {
+			return &goast.TypeAssertExpr{
+				X:      expr,
+				Lparen: 1,
+				Type:   goast.NewIdent("*noarch.File"),
+			}, nil
+		} else {
+			return &goast.TypeAssertExpr{
+				X:      expr,
+				Lparen: 1,
+				Type: &goast.ArrayType{
+					Lbrack: 1,
+					Elt:    util.NewIdent(t),
+				}}, nil
+		}
 	}
 
 	// Checking amount recursive typedef element
@@ -238,7 +238,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	if strings.Contains(fromType, "enum") && !strings.Contains(toType, "enum") {
 		in := goast.CallExpr{
 			Fun: &goast.Ident{
-				Name: "int",
+				Name: "int32",
 			},
 			Lparen: 1,
 			Args: []goast.Expr{
@@ -276,7 +276,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return expr, nil
 	}
 
-	if util.IsPointer(cFromType) && cToType == "bool" {
+	if IsPointer(cFromType, p) && cToType == "bool" {
 		expr = &goast.BinaryExpr{
 			X:  expr,
 			Op: token.NEQ, // !=
@@ -353,7 +353,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 			return e, nil
 		}
 		if fromType == "bool" && toType == v {
-			e := util.NewGoExpr(`map[bool]int{false: 0, true: 1}[replaceme]`)
+			e := util.NewGoExpr(`map[bool]int32{false: 0, true: 1}[replaceme]`)
 			// Swap replaceme with the current expression
 			e.(*goast.IndexExpr).Index = expr
 			return CastExpr(p, e, "int", cToType)
@@ -452,7 +452,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return util.NewStringLit(`""`), nil
 	}
 
-	if fromType == "_Bool" && toType == "int" {
+	if fromType == "_Bool" && toType == "int32" {
 		return expr, nil
 	}
 
@@ -478,7 +478,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return expr, nil
 	}
 
-	if IsCInteger(p, cFromType) && util.IsPointer(cToType) {
+	if IsCInteger(p, cFromType) && IsPointer(cToType, p) {
 		expr = goast.NewIdent("nil")
 		return expr, nil
 	}

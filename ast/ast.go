@@ -3,6 +3,7 @@ package ast
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -63,6 +64,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseAccessSpecDecl(line), nil
 	case "AlignedAttr":
 		return parseAlignedAttr(line), nil
+	case "AnnotateAttr":
+		return parseAnnotateAttr(line), nil
 	case "AllocSizeAttr":
 		return parseAllocSizeAttr(line), nil
 	case "AlwaysInlineAttr":
@@ -139,6 +142,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseElaboratedType(line), nil
 	case "EmptyDecl":
 		return parseEmptyDecl(line), nil
+	case "EnableIfAttr":
+		return parseEnableIfAttr(line), nil
 	case "Enum":
 		return parseEnum(line), nil
 	case "EnumConstantDecl":
@@ -213,6 +218,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseNotTailCalledAttr(line), nil
 	case "OffsetOfExpr":
 		return parseOffsetOfExpr(line), nil
+	case "OverloadableAttr":
+		return parseOverloadableAttr(line), nil
 	case "PackedAttr":
 		return parsePackedAttr(line), nil
 	case "ParagraphComment":
@@ -326,34 +333,22 @@ func groupsFromRegex(rx, line string) map[string]string {
 
 // GetTypeIfExist return string inside field Type of struct
 func GetTypeIfExist(node Node) (Type *string, ok bool) {
-	switch v := node.(type) {
-	case *IntegerLiteral:
-		return &v.Type, true
-	case *DeclRefExpr:
-		return &v.Type2, true
-	case *ArraySubscriptExpr:
-		return &v.Type, true
-	case *UnaryOperator:
-		return &v.Type, true
-	case *ParenExpr:
-		return &v.Type, true
-	case *BinaryOperator:
-		return &v.Type, true
-	case *ImplicitCastExpr:
-		return &v.Type, true
-	case *CStyleCastExpr:
-		return &v.Type, true
-	case *VAArgExpr:
-		return &v.Type, true
-	case *MemberExpr:
-		return &v.Type, true
-	case *CallExpr:
-		return &v.Type, true
-	case *CharacterLiteral:
-		return &v.Type, true
-	case *StringLiteral:
-		return &v.Type, true
+	for _, typ := range []string{"Type", "Type1", "Type2"} {
+		s := reflect.ValueOf(node).Elem()
+		typeOfT := s.Type()
+		for i := 0; i < s.NumField(); i++ {
+			f := s.Field(i)
+			name := typeOfT.Field(i).Name
+			if typ != name {
+				continue
+			}
+			_, ok := f.Interface().(string)
+			if !ok {
+				continue
+			}
+			str := f.Addr().Interface().(*string)
+			return str, true
+		}
 	}
-
 	return nil, false
 }

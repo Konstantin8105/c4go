@@ -168,7 +168,14 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 					&goast.AssignStmt{
 						Lhs: []goast.Expr{fieldList.List[0].Names[0]},
 						Tok: token.DEFINE,
-						Rhs: []goast.Expr{util.NewCallExpr("len", goast.NewIdent("os.Args"))},
+						Rhs: []goast.Expr{
+							&goast.CallExpr{
+								Fun: goast.NewIdent("int32"),
+								Args: []goast.Expr{
+									util.NewCallExpr("len", goast.NewIdent("os.Args")),
+								},
+							},
+						},
 					},
 				)
 			}
@@ -230,30 +237,6 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 			}
 		}
 
-		// for function argument: ...
-		// added for "variadic function"
-		if strings.Contains(n.Type, "...") {
-			body.List = append([]goast.Stmt{
-				&goast.DeclStmt{
-					Decl: &goast.GenDecl{
-						Tok: token.VAR,
-						Specs: []goast.Spec{&goast.ValueSpec{
-							Names: []*goast.Ident{util.NewIdent("c4goVaListPosition")},
-							Type:  goast.NewIdent("int"),
-							Values: []goast.Expr{&goast.BasicLit{
-								Kind:  token.INT,
-								Value: "0",
-							}},
-						}},
-					}},
-				&goast.AssignStmt{
-					Lhs: []goast.Expr{goast.NewIdent("_")},
-					Tok: token.ASSIGN,
-					Rhs: []goast.Expr{util.NewIdent("c4goVaListPosition")},
-				},
-			}, body.List...)
-		}
-
 		decls = append(decls, &goast.FuncDecl{
 			Name: util.NewIdent(n.Name),
 			Type: util.NewFuncType(fieldList, t, addReturnName),
@@ -283,7 +266,7 @@ func getFieldList(p *program.Program, f *ast.FunctionDecl, fieldTypes []string) 
 			if len(t) > 0 {
 				r = append(r, &goast.Field{
 					Names: []*goast.Ident{util.NewIdent(v.Name)},
-					Type:  util.NewTypeIdent(t),
+					Type:  goast.NewIdent(t),
 				})
 			}
 		}
@@ -348,10 +331,15 @@ func transpileReturnStmt(n *ast.ReturnStmt, p *program.Program) (
 	if p.Function != nil && p.Function.Name == "main" {
 		litExpr, isLiteral := e.(*goast.BasicLit)
 		if !isLiteral || (isLiteral && litExpr.Value != "0") {
-			p.AddImport("os")
+			p.AddImport("github.com/Konstantin8105/c4go/noarch")
 			return util.NewExprStmt(&goast.CallExpr{
-				Fun:  goast.NewIdent("os.Exit"),
-				Args: results,
+				Fun: goast.NewIdent("noarch.Exit"),
+				Args: []goast.Expr{
+					&goast.CallExpr{
+						Fun:  goast.NewIdent("int32"),
+						Args: results,
+					},
+				},
 			}), preStmts, postStmts, nil
 		}
 		results = []goast.Expr{}

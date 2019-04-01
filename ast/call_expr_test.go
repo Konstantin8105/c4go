@@ -18,6 +18,13 @@ func TestCallExpr(t *testing.T) {
 			Type:       "int",
 			ChildNodes: []Node{},
 		},
+		`0x7f9bf3035c20 <line:7:4, col:64> 'intr':'enum rrr'`: &CallExpr{
+			Addr:       0x7f9bf3035c20,
+			Pos:        NewPositionFromString("line:7:4, col:64"),
+			Type:       "intr",
+			Type2:      "enum rrr",
+			ChildNodes: []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)

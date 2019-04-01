@@ -231,13 +231,24 @@ void test_pointer_arith_size_t()
 
 void test_pointer_minus_pointer()
 {
-    char* left_ptr;
-    char* right_ptr;
-    char arr[30];
-    left_ptr = &arr[0];
-    right_ptr = &arr[20];
-
-    is_eq(right_ptr - left_ptr, 20);
+    {
+        diag("char type");
+        char* left_ptr;
+        char* right_ptr;
+        char arr[300];
+        left_ptr = &arr[0];
+        right_ptr = &arr[200];
+        is_eq(right_ptr - left_ptr, 200);
+    }
+    {
+        diag("long long type");
+        long long* left_ptr;
+        long long* right_ptr;
+        long long arr[300];
+        left_ptr = &arr[0];
+        right_ptr = &arr[200];
+        is_eq(right_ptr - left_ptr, 200);
+    }
 }
 
 typedef unsigned char pcre_uchar;
@@ -401,28 +412,330 @@ void test_parg_struct()
 
 int function_array_field(int a)
 {
-	return a+1;
+    return a + 1;
 }
 void test_function_array()
 {
-	struct fa {
-		int(* pf)(int);
-	};
-	struct fa f[10];
-	int i = 0;
-	for (i = 0; i < 10 ; i++)  {
-		f[i].pf = function_array_field;
+    struct fa {
+        int (*pf)(int);
+    };
+    struct fa f[10];
+    int i = 0;
+    for (i = 0; i < 10; i++) {
+        f[i].pf = function_array_field;
+    }
+    int y = 42;
+    for (i = 0; i < 10; i++) {
+        y = ((f[i]).pf)(y);
+    }
+    is_eq(y, 52);
+}
+
+void test_string_array()
+{
+    {
+        diag("point 0");
+        struct line_t {
+            struct line_t* last;
+            struct line_t* next;
+            int pos;
+        };
+        struct line_t l1;
+        l1.last = NULL;
+        l1.next = NULL;
+        struct line_t l2;
+        l2.last = &l1;
+        l2.next = NULL;
+        is_true(l2.last == &l1);
+    }
+    {
+        diag("point 1");
+        char ch_arr[3][10] = { "spike", "tom", "jerry" };
+        printf("%s\n", (*(ch_arr + 0) + 0));
+        printf("%s\n", (*(ch_arr + 0) + 1));
+        printf("%s\n", (*(ch_arr + 1) + 2));
+    }
+    // TODO
+    // {
+    // 	diag("point 2");
+    // 	// see https://stackoverflow.com/questions/6812242/defining-and-iterating-through-array-of-strings-in-c
+    // 	char *numbers[] = {"One", "Two", "Three", ""}, **n;
+    // 	n = numbers;
+    // 	while (*n != "") {
+    // 	  printf ("%s\n",  *n++);
+    // 	}
+    // }
+    {
+        diag("point 3");
+        // see https://stackoverflow.com/questions/6812242/defining-and-iterating-through-array-of-strings-in-c
+        static const char* strings[] = { "asdf", "asdfasdf", 0 };
+        const char** ptr = strings;
+        while (*ptr != 0) {
+            printf("%s \n", *ptr);
+            ++ptr;
+        }
+    }
+    {
+        diag("point 4");
+        // see https://codereview.stackexchange.com/questions/71119/printing-the-contents-of-a-string-array-using-pointers
+        char* names[] = { "John", "Mona", "Lisa", "Frank" };
+        for (int i = 0; i < 4; ++i) {
+            char* pos = names[i];
+            while (*pos != '\0') {
+                printf("%c", *(pos++));
+            }
+            printf("\n");
+        }
+    }
+    {
+        diag("point 5");
+        const char* names[] = { "John", "Mona", "Lisa", "Frank", NULL };
+        for (int i = 0; names[i]; ++i) {
+            const char* ch = names[i];
+            while (*ch) {
+                putchar(*ch++);
+            }
+            putchar('\n');
+        }
+    }
+    {
+        diag("point 6");
+        const char* names[] = { "John", "Mona", "Lisa", "Frank", NULL };
+        for (const char** pNames = names; *pNames; pNames++) {
+            const char* pName = *pNames;
+            while (*pName) {
+                putchar(*pName++);
+            }
+            putchar('\n');
+        }
+    }
+    {
+        diag("point 7");
+        char* names[] = { "John", "Mona", "Lisa", "Frank" };
+        int elements = sizeof(names) / sizeof(names[0]);
+        for (int i = 0; i < elements; i++) {
+            char* p = names[i];
+            while (*p)
+                putchar(*p++);
+            putchar('\n');
+        }
+    }
+    {
+        diag("point 8");
+        int array[] = { 5, 2, 9, 7, 15 };
+        int i = 0;
+        array[i]++;
+        printf("%d %d\n", i, array[i]);
+        array[i]++;
+        printf("%d %d\n", i, array[i]);
+        array[i++];
+        printf("%d %d\n", i, array[i]);
+        array[i++];
+        printf("%d %d\n", i, array[i]);
+    }
+}
+
+void test_typedef_pointer()
+{
+    typedef double* pd;
+    double v[2] = { 42., -42. };
+    {
+        diag("typedef_pointer : 1");
+        pd p = &v[0];
+        p++;
+        is_eq(*p, v[1]);
+    }
+    {
+        diag("typedef_pointer : 2");
+        pd p = v;
+        p += 1;
+        is_eq(*p, v[1]);
+    }
+    {
+        diag("typedef_pointer : 3");
+        pd p = &v[1] - 1;
+        p = 0 + p + 0 + 1;
+        is_eq(*p, v[1]);
+    }
+    {
+        diag("typedef_pointer : 4");
+        pd p = 0 + v + 1 + 0 - 1; // v[0]
+        p = 0 + p + 0 + 1 - 0 + 1 - 1; // p = p + 1
+        is_eq(*p, v[1]);
+    }
+}
+
+int** getArray()
+{
+    int twod[4][3] = { { 2, 4, 6 }, { 8, 10, 12 }, { 14, 16, 18 }, { 20, 22, 24 } };
+    int* twodPass[4];
+    twodPass[0] = twod[0];
+    twodPass[1] = twod[1];
+    twodPass[2] = twod[2];
+    twodPass[3] = twod[3];
+    return twodPass;
+}
+
+void view_matrix(int** p, int size1, int size2)
+{
+    for (int i = 0; i < size1; i++) {
+        for (int j = 0; j < size2; j++) {
+            printf("      p[%d,%d] = %d\n", i, j, p[i][j]);
+        }
+    }
+}
+
+void test_double_array()
+{
+    // see https://forums.macrumors.com/threads/understanding-double-pointers-in-c.701091/
+    int** p = getArray();
+    printf(" p is: %d\n", **p);
+    printf("*p + 1 is: %d\n", *(*p + 1));
+    p = getArray();
+    {
+        diag("cases 1:");
+        int* pp = *p;
+        printf("    1: %d\n", *(pp++));
+        printf("    2: %d\n", *(pp++));
+        printf("    3: %d\n", *(pp++));
+    }
+    // TODO : view_matrix(p,4,3);
+
+    p = getArray();
+    {
+        diag("cases 1a:");
+        int* pp = *p;
+        printf("    1: %d\n", (*pp)++);
+        printf("    2: %d\n", (*pp)++);
+        printf("    3: %d\n", (*pp)++);
+    }
+    // TODO : view_matrix(p,4,3);
+
+    p = getArray();
+    {
+        diag("cases 2:");
+        int** pp = p;
+        printf("    1: %d\n", *((*(pp))++));
+        printf("    2: %d\n", *((*(pp))++));
+        printf("    3: %d\n", *((*(pp))++));
+    }
+    // TODO : view_matrix(p,4,3);
+
+    p = getArray();
+    {
+        diag("cases 3:");
+        int** pp = p;
+        printf("    1: %d\n", (*pp)[0]);
+        printf("    2: %d\n", (*pp)[1]);
+        printf("    3: %d\n", (*pp)[2]);
+    }
+    // TODO : view_matrix(p,4,3);
+
+    p = getArray();
+    {
+        diag("cases 4:");
+        int** pp = p;
+        printf("    1: %d\n", *(*((pp)++)));
+        printf("    2: %d\n", *(*((pp)++)));
+        printf("    3: %d\n", *(*((pp)++)));
+    }
+    // TODO : view_matrix(p,4,3);
+
+    p = getArray();
+    {
+        diag("cases 5:");
+        int** pp = p;
+        printf("    1: %d\n", *((*pp)++));
+        printf("    2: %d\n", *((*pp)++));
+        printf("    3: %d\n", *((*pp)++));
+    }
+    // TODO : view_matrix(p,4,3);
+
+    p = getArray();
+    {
+        diag("cases 6:");
+        int** pp = p;
+        printf("    1: %d\n", pp[0][0]);
+        printf("    2: %d\n", pp[0][1]);
+        printf("    3: %d\n", pp[0][2]);
+    }
+    // TODO : view_matrix(p,4,3);
+}
+
+static void trans(char * p)
+{
+	printf("trans = `%s`\n",p);
+}
+
+void test_func_byte()
+{
+	char * const gameOver = "game over";
+	trans(gameOver);
+	char * gameOver2 = "game over";
+	trans(gameOver2);
+}
+
+void test_negative_index()
+{
+	double ad[5] = {1.,2., 4., 5.,6.0};
+	is_eq(ad[0], 1.0);
+	double *p = ad;
+	p += 3;
+	is_eq(*p,5.0);
+	is_eq(p[-1],4.0);
+	double *ds = &(p[-1]);
+	is_eq(ds[-1], 2.0);
+}
+
+void test_matrix_init()
+{
+	int rows = 2;
+	int cols = 3;
+	int      i,j;
+	double   **m;
+
+	m = (double **) malloc( (unsigned) rows * sizeof(double *) );
+	for (i = 0; i < rows ; i++)
+	{
+		m[i] = (double *) malloc( (unsigned) cols * sizeof(double) );
 	}
-	int y = 42;
-	for (i = 0; i < 10; i++) {
-		y = ((f[i]).pf)(y);
+
+	for (i = 0; i < rows ; i++){
+		for (j = 0; j < cols; j++){
+			printf("init [%d , %d]\n",i,j);
+			m[i][j] = i*cols + j;
+		}
 	}
-	is_eq(y , 52);
+
+	for (i = 0; i < rows ; i++){
+		for (j = 0; j < cols; j++){
+			is_eq(m[i][j] , i*cols + j);
+		}
+	}
+}
+
+struct someR{
+	unsigned long * ul;
+};
+
+void test_post_pointer()
+{
+	struct someR R;
+	unsigned long ull[6] = {2,4,8,10,12,34};
+	R.ul = ull;
+	struct someR * pR = &R;
+	for (int i=0;i <5;i++) {
+		printf("%d\n",(int)(*pR->ul));
+		is_eq(ull[i], *pR->ul);
+		if (i < 4) {
+			pR->ul++;
+		}
+	}
 }
 
 int main()
 {
-    plan(172);
+    plan(199);
 
     test_parg_struct();
     START_TEST(struct_init);
@@ -447,7 +760,9 @@ int main()
     START_TEST(stringarr_init);
     START_TEST(partialarr_init);
     START_TEST(function_array);
+    START_TEST(typedef_pointer);
 
+    diag("arrayEx");
     is_eq(arrayEx[1], 2.0);
 
     diag("Array arithmetic");
@@ -637,6 +952,27 @@ int main()
             is_eq(*ptr, arr[i]);
             i++;
         }
+    }
+    diag("Pointer to Pointer. 13");
+    {
+        struct temp_str {
+            double* qwe;
+        };
+        struct temp_str t;
+        double a[5] = { 10., 20., 30., 40., 50. };
+        t.qwe = &a[0];
+        double* ptr;
+        int i = 0;
+        for (ptr = &t.qwe[0]; i < 5; ptr++) {
+            is_eq(*ptr, t.qwe[i]);
+            i++;
+        }
+        for (ptr = t.qwe; i < 5; ptr++) {
+            is_eq(*ptr, t.qwe[i]);
+            i++;
+        }
+        ptr = 0 + t.qwe + 1;
+        is_eq(*ptr, t.qwe[1]);
     }
     diag("Operation += 1 for double array");
     {
@@ -891,7 +1227,7 @@ int main()
     }
 
     test_pointer_arith_size_t();
-    test_pointer_minus_pointer();
+    START_TEST(pointer_minus_pointer);
 
     diag("calloc with struct");
     {
@@ -933,6 +1269,12 @@ int main()
         ssize_t* l = &len;
         is_eq(*l, len);
     }
+    START_TEST(string_array);
+    START_TEST(double_array);
+	START_TEST(func_byte);
+	START_TEST(negative_index);
+	START_TEST(matrix_init);
+	START_TEST(post_pointer);
 
     done_testing();
 }

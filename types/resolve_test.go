@@ -15,7 +15,7 @@ type resolveTestCase struct {
 }
 
 var resolveTestCases = []resolveTestCase{
-	{"int", "int"},
+	{"int", "int32"},
 	{"char *[13]", "[][]byte"},
 	{"__uint16_t", "uint16"},
 	{"void *", "interface{}"},
@@ -23,12 +23,12 @@ var resolveTestCases = []resolveTestCase{
 	{"div_t", "noarch.DivT"},
 	{"ldiv_t", "noarch.LdivT"},
 	{"lldiv_t", "noarch.LldivT"},
-	{"int [2]", "[]int"},
-	{"int [2][3]", "[][]int"},
-	{"int [2][3][4]", "[][][]int"},
-	{"int [2][3][4][5]", "[][][][]int"},
-	{"int (*[2])(int, int)", "[2]func(int,int)(int)"},
-	{"int (*(*(*)))(int, int)", "[][]func(int,int)(int)"},
+	{"int [2]", "[]int32"},
+	{"int [2][3]", "[][]int32"},
+	{"int [2][3][4]", "[][][]int32"},
+	{"int [2][3][4][5]", "[][][][]int32"},
+	{"int (*[2])(int, int)", "[2]func(int32,int32)(int32)"},
+	{"int (*(*(*)))(int, int)", "[][]func(int32,int32)(int32)"},
 }
 
 func TestResolve(t *testing.T) {
@@ -61,5 +61,37 @@ func TestResolveError(t *testing.T) {
 				t.Fatalf("Not acceptable")
 			}
 		})
+	}
+}
+
+func TestGetAmountArraySize(t *testing.T) {
+	tcs := []struct {
+		cType string
+		value int
+		e     bool
+	}{
+		{
+			cType: "char [40]",
+			value: 40,
+			e:     false,
+		},
+		{
+			cType: "char",
+			e:     true,
+		},
+		{
+			cType: "unsigned char",
+			e:     true,
+		},
+	}
+
+	for _, tc := range tcs {
+		s, err := types.GetAmountArraySize(tc.cType, nil)
+		if err != nil && tc.e {
+			continue
+		}
+		if s != tc.value {
+			t.Errorf("%d != %d", s, tc.value)
+		}
 	}
 }

@@ -31,7 +31,7 @@ void test_return_ternary()
 
 int main()
 {
-    plan(13);
+    plan(15);
 
     int a = 'a' == 65 ? 10 : 100;
     float b = 10 == 10 ? 1.0 : 2.0;
@@ -86,6 +86,16 @@ int main()
     }
 
     test_return_ternary();
+
+	diag("postfix else");
+	{
+		int a = 12;
+		int d;
+		d = (1 == 0) ? --a : ++a;
+		is_eq(d, 13);
+		d = (1 != 0) ? --a : ++a;
+		is_eq(d, 12);
+	}
 
     done_testing();
 }

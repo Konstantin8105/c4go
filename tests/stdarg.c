@@ -102,6 +102,32 @@ void test_va_list3()
     is_eq(strange(2, &v1, &v2), 10 + 2 + 23 + 2);
 }
 
+void out(int num_args, va_list ap)
+{
+    for (int i = 0; i < num_args; i++) {
+		int Y = va_arg(ap, int);
+		printf("%d -> %d\n", i, Y);
+    }
+}
+
+void red(int num_args, ...)
+{
+    va_list ap;
+	// base test
+    va_start(ap, num_args);
+	out(num_args, ap);
+    va_end(ap);
+	// repeat test
+    va_start(ap, num_args);
+	out(num_args, ap);
+    va_end(ap);
+}
+
+void test_va_list4()
+{
+    red(3,12,23,34);
+}
+
 int main()
 {
     plan(6);
@@ -109,6 +135,7 @@ int main()
     START_TEST(va_list)
     START_TEST(va_list2)
     START_TEST(va_list3)
+    START_TEST(va_list4)
 
     done_testing();
 }

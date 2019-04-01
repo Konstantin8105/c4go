@@ -290,14 +290,14 @@ var builtInFunctionDefinitions = map[string][]string{
 		"long int atol(const char*) -> noarch.Atol",
 		"long long int atoll(const char*) -> noarch.Atoll",
 		"div_t div(int, int) -> noarch.Div",
-		"void exit(int) -> os.Exit",
+		"void exit(int) -> noarch.Exit",
 		"void free(void*) -> noarch.Free",
 		"char* getenv(const char *) -> noarch.Getenv",
 		"long int labs(long int) -> noarch.Labs",
 		"ldiv_t ldiv(long int, long int) -> noarch.Ldiv",
 		"long long int llabs(long long int) -> noarch.Llabs",
 		"lldiv_t lldiv(long long int, long long int) -> noarch.Lldiv",
-		"int rand() -> math/rand.Int",
+		"int rand() -> noarch.Int32",
 		// The real definition is srand(unsigned int) however the type would be
 		// different. It's easier to change the definition than create a proxy
 		// function in stdlib.go.
@@ -357,10 +357,10 @@ var builtInFunctionDefinitions = map[string][]string{
 		"void exit(int) -> golang.org/x/sys/unix.Exit",
 		"ssize_t write(int, const void *, size_t) -> noarch.Write",
 		"ssize_t read(int, void *, size_t) -> noarch.Read",
-		"int close(int) -> golang.org/x/sys/unix.CloseOnExec",
+		"int close(int) -> noarch.CloseOnExec",
 		"int isatty(int) -> noarch.Isatty",
-		"int ftruncate(int , off_t ) -> noarch.Ftruncate",
 		"int unlink(const char *) -> noarch.Unlink",
+		"int ftruncate(int , off_t ) -> noarch.Ftruncate",
 	},
 	"sys/stat.h": {
 		"int fstat(int , struct stat  *) -> noarch.Fstat",
