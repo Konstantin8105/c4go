@@ -40,19 +40,20 @@ void test_strcspn()
 	printf ("The first number in str is at position %d.\n",i+1);
 }
 
-// void test_strpbrk()
-// {
-	// char str[] = "This is a sample string";
-	// char key[] = "aeiou";
-	// char * pch;
-	// printf ("Vowels in '%s': ",str);
-	// pch = strpbrk (str, key);
+void test_strpbrk()
+{
+	char str[] = "This is a sample string";
+	char key[] = "aeiou";
+	char * pch;
+	printf ("Vowels in '%s': ",str);
+	pch = strpbrk (str, key);
+	printf("strpbrk: `%s`\n", pch);
 	// while (pch != NULL) {
 		// printf ("%c " , *pch);
 		// pch = strpbrk (pch+1,key);
 	// }
-	// printf ("\n");
-// }
+	printf ("\n");
+}
 
 void test_strspn()
 {
@@ -256,7 +257,7 @@ int main()
 	START_TEST(strtok);
 	START_TEST(strncmp);
 	START_TEST(strcspn);
-	// TODO: START_TEST(strpbrk);
+	START_TEST(strpbrk);
 	START_TEST(strspn);
     {
         diag("strerror");
