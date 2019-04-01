@@ -5,18 +5,19 @@
     diag(#t);         \
     test_##t();
 
-// void test_strtok()
-// {
-	// char str[] ="- This, a sample string.";
-	// char * pch;
-	// printf ("Splitting string \"%s\" into tokens:\n",str);
-	// pch = strtok (str," ,.-");
+void test_strtok()
+{
+	char str[] ="- This, a sample string.";
+	char * pch;
+	printf ("Splitting string \"%s\" into tokens:\n",str);
+	pch = strtok (str," ,.-");
+	printf("strtok: `%s`\n", pch);
 	// while (pch != NULL)
 	// {
 	  // printf ("%s\n",pch);
 	  // pch = strtok (NULL, " ,.-");
 	// }
-// }
+}
 
 void test_strncmp()
 {
@@ -252,7 +253,7 @@ int main()
         is_streq(s1, s2);
         is_true(s1 != s2);
     }
-	// TODO:  START_TEST(strtok);
+	START_TEST(strtok);
 	START_TEST(strncmp);
 	START_TEST(strcspn);
 	// TODO: START_TEST(strpbrk);

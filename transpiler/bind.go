@@ -319,9 +319,25 @@ func bindFromCtoGo(p *program.Program, cType string, goType string, expr goast.E
 		stmts = append(stmts, &goast.ReturnStmt{Results: []goast.Expr{expr}})
 	}
 
-	stmts = append(stmts, &goast.ReturnStmt{Results: []goast.Expr{
-		util.NewCallExpr(goType, expr),
-	}})
+	// from documentation : https://golang.org/cmd/cgo/
+	//
+	// C string to Go string
+	// func C.GoString(*C.char) string
+	//
+
+	switch cType {
+	case "char *":
+		stmts = append(stmts, &goast.ReturnStmt{Results: []goast.Expr{
+			util.NewCallExpr("[]byte",
+				util.NewCallExpr("C.GoString", expr),
+			),
+		}})
+
+	default:
+		stmts = append(stmts, &goast.ReturnStmt{Results: []goast.Expr{
+			util.NewCallExpr(goType, expr),
+		}})
+	}
 
 	return
 }
