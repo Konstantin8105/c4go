@@ -120,6 +120,9 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 		})
 	}
 
+	// add convertion value to slice
+	GetUnsafeConvertDecls(p)
+
 	// Add the imports after everything else so we can ensure that they are all
 	// placed at the top.
 	for _, quotedImportPath := range p.Imports() {
@@ -153,6 +156,11 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 		src += "\n"
 		src += bindCode
 		source = src
+	}
+
+	// only for "stdarg.h"
+	if p.IncludeHeaderIsExists("stdarg.h") && p.IsHaveVaList {
+		source += getVaListStruct()
 	}
 
 	return
@@ -472,6 +480,12 @@ func transpileToNode(node ast.Node, p *program.Program) (
 
 	defer func() {
 		decls = nilFilterDecl(decls)
+	}()
+
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("error - panic : %#v", r)
+		}
 	}()
 
 	switch n := node.(type) {

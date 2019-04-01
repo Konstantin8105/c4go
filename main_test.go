@@ -426,35 +426,6 @@ func TestStartPreprocess(t *testing.T) {
 	}
 }
 
-func TestGoPath(t *testing.T) {
-	gopath := "GOPATH"
-
-	existEnv := os.Getenv(gopath)
-	if existEnv == "" {
-		t.Errorf("$GOPATH is not set")
-	}
-
-	// return env.var.
-	defer func() {
-		err := os.Setenv(gopath, existEnv)
-		if err != nil {
-			t.Errorf("Cannot restore the value of $GOPATH")
-		}
-	}()
-
-	// reset value of env.var.
-	err := os.Setenv(gopath, "")
-	if err != nil {
-		t.Errorf("Cannot set value of $GOPATH")
-	}
-
-	// testing
-	err = Start(DefaultProgramArgs())
-	if err == nil {
-		t.Errorf(err.Error())
-	}
-}
-
 func TestMultifileTranspilation(t *testing.T) {
 	tcs := []struct {
 		source         []string
@@ -636,7 +607,7 @@ func TestCodeQuality(t *testing.T) {
 	// https://github.com/Konstantin8105/c4go/issues/376
 	// t.Parallel()
 
-	suffix := ".expected.c"
+	suffix := ".go.expected"
 
 	for i, file := range files {
 		if strings.HasSuffix(file, suffix) {
@@ -866,28 +837,31 @@ func TestExamples(t *testing.T) {
 				t.Errorf(err.Error())
 			}
 
-			var file *os.File
-			file, err = os.Open(args.outputFile)
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer file.Close()
-
-			readme, err := ioutil.ReadFile("./README.md")
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			scanner := bufio.NewScanner(file)
-			for scanner.Scan() {
-				line := scanner.Text()
-				if !bytes.Contains(readme, []byte(line)) {
-					t.Errorf("Cannot found line : %s", line)
+			filenames := append(args.inputFiles, args.outputFile)
+			for _, filename := range filenames {
+				var file *os.File
+				file, err = os.Open(filename)
+				if err != nil {
+					t.Fatal(err)
 				}
-			}
+				defer file.Close()
 
-			if err := scanner.Err(); err != nil {
-				t.Fatal(err)
+				readme, err := ioutil.ReadFile("./README.md")
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				scanner := bufio.NewScanner(file)
+				for scanner.Scan() {
+					line := scanner.Text()
+					if !bytes.Contains(readme, []byte(line)) {
+						t.Errorf("Cannot found line : %s", line)
+					}
+				}
+
+				if err := scanner.Err(); err != nil {
+					t.Fatal(err)
+				}
 			}
 		})
 	}

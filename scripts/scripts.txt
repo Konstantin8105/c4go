@@ -1,0 +1,46 @@
+
+Calculate warnings : ./testdata/9wm
+		After transpiling : 2 warnings.
+		Go build : 12 warnings
+		Unsafe   : 407
+
+Calculate warnings : ./testdata/ed
+		After transpiling : 2 warnings.
+		Go build : 26 warnings
+		Unsafe   : 169
+
+Calculate warnings in file: ./testdata/neateqn/neateqn.go
+		After transpiling : 0 warnings.
+		Go build : 3 warnings
+		Unsafe   : 22
+
+Calculate warnings in file: ./testdata/neatmkfn/neatmkfn.go
+		After transpiling : 555 warnings.
+		Go build : 3 warnings
+		Unsafe   : 44
+
+Calculate warnings in file: ./testdata/neatpost/neatpost.go
+		After transpiling : 0 warnings.
+		Go build : 9 warnings
+		Unsafe   : 40
+
+Calculate warnings in file: ./testdata/neatrefer/neatrefer.go
+		After transpiling : 2 warnings.
+		Go build : 0 warnings
+		Unsafe   : 14
+
+Calculate warnings in file: ./testdata/neatroff/neatroff.go
+		After transpiling : 1 warnings.
+		Go build : 6 warnings
+		Unsafe   : 254
+
+Calculate warnings in file: ./testdata/neatvi/neatvi.go
+		After transpiling : 28 warnings.
+		Go build : 3 warnings
+		Unsafe   : 130
+
+Calculate warnings in file: testdata/vorbis/vorbis.go
+After transpiling : 4 warnings.
+		Go build : 42 warnings
+		Unsafe   : 255
+

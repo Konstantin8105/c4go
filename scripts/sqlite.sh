@@ -6,6 +6,8 @@ set -e
 # documented.
 go build
 
+mkdir -p ./testdata/
+
 export C4GO_DIR=$GOPATH/src/github.com/Konstantin8105/c4go
 export C4GO=$C4GO_DIR/c4go
 
@@ -14,7 +16,7 @@ export C4GO=$C4GO_DIR/c4go
 export SQLITE3_FILE=sqlite-amalgamation-3250200
 
 # Variable for location of temp sqlite files
-SQLITE_TEMP_FOLDER="/tmp/SQLITE"
+SQLITE_TEMP_FOLDER="./testdata/SQLITE"
 mkdir -p $SQLITE_TEMP_FOLDER
 
 # Download/unpack SQLite if required.
@@ -41,8 +43,18 @@ SQLITE_WARNINGS=`cat $SQLITE_TEMP_FOLDER/sqlite.go | grep "^// Warning" | sort |
 echo "After transpiling shell.c and sqlite3.c together, have summary: $SQLITE_WARNINGS warnings."
 
 # Show amount error from `go build`:
-SQLITE_WARNINGS_GO=`go build $SQLITE_TEMP_FOLDER/sqlite.go -gcflags="-e" 2>&1 | wc -l`
+SQLITE_WARNINGS_GO=`go build -o $SQLITE_TEMP_FOLDER/sqlite.app $SQLITE_TEMP_FOLDER/sqlite.go -gcflags="-e" 2>&1 | wc -l`
 echo "In file sqlite.go summary : $SQLITE_WARNINGS_GO warnings in go build."
 
-SQLITE_UNSAFE=`cat $SQLITE_TEMP_FOLDER/sqlite.go | grep unsafe | wc -l`
+SQLITE_UNSAFE=`cat $SQLITE_TEMP_FOLDER/sqlite.go | grep "unsafe\." | wc -l`
 echo "Amount unsafe package using: $SQLITE_UNSAFE"
+
+# Arguments menu
+echo "    -s for show detail of Go build errors"
+if [ "$1" == "-s" ]; then
+	# show go build warnings	
+		# c4go warnings
+			cat $SQLITE_TEMP_FOLDER/sqlite.go | grep "^// Warning" | sort | uniq
+		# show amount error from `go build`:
+			go build -o $SQLITE_TEMP_FOLDER/sqlite.app -gcflags="-e"  $SQLITE_TEMP_FOLDER/sqlite.go 2>&1
+fi

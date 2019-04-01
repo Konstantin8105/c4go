@@ -64,6 +64,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseAccessSpecDecl(line), nil
 	case "AlignedAttr":
 		return parseAlignedAttr(line), nil
+	case "AnnotateAttr":
+		return parseAnnotateAttr(line), nil
 	case "AllocSizeAttr":
 		return parseAllocSizeAttr(line), nil
 	case "AlwaysInlineAttr":
@@ -140,6 +142,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseElaboratedType(line), nil
 	case "EmptyDecl":
 		return parseEmptyDecl(line), nil
+	case "EnableIfAttr":
+		return parseEnableIfAttr(line), nil
 	case "Enum":
 		return parseEnum(line), nil
 	case "EnumConstantDecl":
@@ -214,6 +218,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseNotTailCalledAttr(line), nil
 	case "OffsetOfExpr":
 		return parseOffsetOfExpr(line), nil
+	case "OverloadableAttr":
+		return parseOverloadableAttr(line), nil
 	case "PackedAttr":
 		return parsePackedAttr(line), nil
 	case "ParagraphComment":

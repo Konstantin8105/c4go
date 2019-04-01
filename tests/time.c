@@ -150,15 +150,15 @@ void test_CLOCKS_PER_SEC()
 
 void test_strftime()
 {
-	time_t rawtime;
-	struct tm * timeinfo;
-	char buffer [80];
-	
-	time (&rawtime);
-	timeinfo = localtime (&rawtime);
-	
-	strftime (buffer,80,"Now it's %D.",timeinfo);
-	puts (buffer);
+    time_t rawtime;
+    struct tm* timeinfo;
+    char buffer[80];
+
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+
+    strftime(buffer, 80, "Now it's %D.", timeinfo);
+    puts(buffer);
 }
 
 int main()
@@ -175,7 +175,7 @@ int main()
     START_TEST(clock);
     START_TEST(difftime);
     START_TEST(CLOCKS_PER_SEC);
-	START_TEST(strftime);
+    START_TEST(strftime);
 
     // sys/time.h
     START_TEST(timeval);

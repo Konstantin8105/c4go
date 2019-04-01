@@ -26,23 +26,24 @@ var sizeofTestCases = []sizeofTestCase{
 	{"int ***", 8, true},
 	{"char *const", 8, true},
 	{"char *const [3]", 24, true},
-	{"struct c [2]", 0, false},
+	{"struct c [2]", 0, true},
 }
 
 func TestSizeOf(t *testing.T) {
 	p := program.NewProgram()
 
 	for _, testCase := range sizeofTestCases {
-		size, err := types.SizeOf(p, testCase.cType)
-		if !((err != nil && testCase.isError == false) ||
-			(err == nil && testCase.isError == true)) {
-			t.Error(err)
-			continue
-		}
+		t.Run(testCase.cType, func(t *testing.T) {
+			size, err := types.SizeOf(p, testCase.cType)
+			if !((err != nil && testCase.isError == false) ||
+				(err == nil && testCase.isError == true)) {
+				t.Fatal(err)
+			}
 
-		if size != testCase.size {
-			t.Errorf("Expected '%s' -> '%d', got '%d'",
-				testCase.cType, testCase.size, size)
-		}
+			if size != testCase.size {
+				t.Errorf("Expected '%s' -> '%d', got '%d'",
+					testCase.cType, testCase.size, size)
+			}
+		})
 	}
 }

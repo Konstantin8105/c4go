@@ -95,7 +95,7 @@ func main() {
 	var c int32
 	fmt.Printf("Enter a number\n")
 	// get value
-	noarch.Scanf([]byte("%d\x00"), (*[100000000]int32)(unsafe.Pointer(&n))[:])
+	noarch.Scanf([]byte("%d\x00"), c4goUnsafeConvert_int32(&n))
 	noarch.Printf([]byte("The number is: %d\n\x00"), n)
 	if n == 2 {
 		// -------
@@ -114,29 +114,29 @@ func main() {
 	}
 	return
 }
+
+// c4goUnsafeConvert_int32 : created by c4go
+func c4goUnsafeConvert_int32(c4go_name *int32) []int32 {
+	return (*[1000000]int32)(unsafe.Pointer(c4go_name))[:]
+}
 ```
 
 # Example with binding function
 
-Run:
-
-```
-c4go transpile 
-```
-
+C:
 
 ```c
-#include <stdio.h>
 #include <math.h>
+#include <stdio.h>
 
 int main()
 {
-	int n;
-	double param = 8.0, result;
-	result = frexp(param,&n);
-	printf("result = %5.2f\n", result);
-	printf("n      = %d\n"   , n     );
-	return 0;
+    int n;
+    double param = 8.0, result;
+    result = frexp(param, &n);
+    printf("result = %5.2f\n", result);
+    printf("n      = %d\n", n);
+    return 0;
 }
 ```
 
@@ -151,7 +151,6 @@ int main()
 
 package main
 
-// #include </usr/include/math.h>
 import "C"
 
 import "github.com/Konstantin8105/c4go/noarch"
@@ -162,14 +161,18 @@ func main() {
 	var n int32
 	var param float64 = 8
 	var result float64
-	result = frexp(param, (*[100000000]int32)(unsafe.Pointer(&n))[:])
+	result = frexp(param, c4goUnsafeConvert_int32(&n))
 	noarch.Printf([]byte("result = %5.2f\n\x00"), result)
 	noarch.Printf([]byte("n      = %d\n\x00"), n)
 	return
 }
 
-// Add c-binding for implemention function : `frexp`
+// c4goUnsafeConvert_int32 : created by c4go
+func c4goUnsafeConvert_int32(c4go_name *int32) []int32 {
+	return (*[1000000]int32)(unsafe.Pointer(c4go_name))[:]
+}
 
+// frexp - add c-binding for implemention function
 func frexp(arg0 float64, arg1 []int32) float64 {
 	return float64(C.frexp(C.double(arg0), (*_Ctype_int)(unsafe.Pointer(&arg1[0]))))
 }
@@ -180,22 +183,55 @@ func frexp(arg0 float64, arg1 []int32) float64 {
 ```c
 #include <stdio.h>
 
-void a(int *v1) { printf("a: %d\n",*v1); }
+// input argument - C-pointer
+void a(int* v1) { printf("a: %d\n", *v1); }
 
-void b(int v1[], int size) {
-	for (size-- ; size >= 0 ; size-- ) { printf("b: %d %d\n", size,  v1[size]); }
+// input argument - C-array
+void b(int v1[], int size)
+{
+    for (size--; size >= 0; size--) {
+        printf("b: %d %d\n", size, v1[size]);
+    }
 }
 
-int main() {
-	int i1 = 42;
-	a(&i1);
-	b(&i1, 1);
+int main()
+{
+    // value
+    int i1 = 42;
+    a(&i1);
+    b(&i1, 1);
 
-	int i2[] = {11,22};
-	a(i2);
-	b(i2,2);
+    // C-array
+    int i2[] = { 11, 22 };
+    a(i2);
+    b(i2, 2);
 
-	return 0;
+    // C-pointer from value
+    int* i3 = &i1;
+    a(i3);
+    b(i3, 1);
+
+    // C-pointer from array
+    int* i4 = i2;
+    a(i4);
+    b(i4, 2);
+
+    // C-pointer from array
+    int* i5 = i2[1];
+    a(i5);
+    b(i5, 1);
+
+    // pointer arithmetic
+    int* i6 = i5 + 1;
+    a(i6);
+    b(i6, 1);
+
+    // pointer arithmetic
+    int* i7 = 1 + 0 + i5 + 0;
+    a(i7);
+    b(i7, 1);
+
+    return 0;
 }
 ```
 
@@ -212,27 +248,58 @@ package main
 import "unsafe"
 import "github.com/Konstantin8105/c4go/noarch"
 
-// a - transpiled function from  C4GO/examples/ap.c:3
+// a - transpiled function from  C4GO/examples/ap.c:4
 func a(v1 []int32) {
+	// input argument - C-pointer
 	noarch.Printf([]byte("a: %d\n\x00"), v1[0])
 }
 
-// b - transpiled function from  C4GO/examples/ap.c:5
+// b - transpiled function from  C4GO/examples/ap.c:7
 func b(v1 []int32, size int32) {
-	for size -= 1; size >= 0; size-- {
-		noarch.Printf([]byte("b: %d %d\n\x00"), size, v1[size])
+	{
+		// input argument - C-array
+		for size -= 1; size >= 0; size-- {
+			noarch.Printf([]byte("b: %d %d\n\x00"), size, v1[size])
+		}
 	}
 }
 
-// main - transpiled function from  C4GO/examples/ap.c:9
+// main - transpiled function from  C4GO/examples/ap.c:14
 func main() {
 	var i1 int32 = 42
-	a((*[100000000]int32)(unsafe.Pointer(&i1))[:])
-	b((*[100000000]int32)(unsafe.Pointer(&i1))[:], 1)
+	// value
+	a(c4goUnsafeConvert_int32(&i1))
+	b(c4goUnsafeConvert_int32(&i1), 1)
 	var i2 []int32 = []int32{11, 22}
+	// C-array
 	a(i2)
 	b(i2, 2)
+	var i3 []int32 = c4goUnsafeConvert_int32(&i1)
+	// C-pointer from value
+	a(i3)
+	b(i3, 1)
+	var i4 []int32 = i2
+	// C-pointer from array
+	a(i4)
+	b(i4, 2)
+	var i5 []int32 = i2[1:]
+	// C-pointer from array
+	a(i5)
+	b(i5, 1)
+	var i6 []int32 = i5[0+1:]
+	// pointer arithmetic
+	a(i6)
+	b(i6, 1)
+	var i7 []int32 = i5[1+0+0+0:]
+	// pointer arithmetic
+	a(i7)
+	b(i7, 1)
 	return
+}
+
+// c4goUnsafeConvert_int32 : created by c4go
+func c4goUnsafeConvert_int32(c4go_name *int32) []int32 {
+	return (*[1000000]int32)(unsafe.Pointer(c4go_name))[:]
 }
 ```
 

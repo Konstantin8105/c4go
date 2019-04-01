@@ -190,13 +190,15 @@ func NewBinaryExpr(left goast.Expr, operator token.Token, right goast.Expr,
 	return b
 }
 
+const C4GoPostFixForAvoid string = "_c4go_postfix"
+
 // NewIdent - create a new Go ast Ident
 func NewIdent(name string) *goast.Ident {
 	// TODO: The name of a variable or field cannot be a reserved word
 	// https://github.com/Konstantin8105/c4go/issues/83
 	// Search for this issue in other areas of the codebase.
 	if IsGoKeyword(name) {
-		name += "_"
+		name += C4GoPostFixForAvoid
 	}
 
 	// Remove const prefix as it has no equivalent in Go.
@@ -300,109 +302,6 @@ func ConvertFunctionNameFromCtoGo(name string) string {
 		return "__"
 	}
 	return name
-}
-
-// GetUintptr - return uintptr. Example : uintptr(unsafe.Pointer(&expr))
-func GetUintptr(expr goast.Expr) goast.Expr {
-
-	if _, ok := expr.(*goast.SelectorExpr); ok {
-		expr = &goast.IndexExpr{
-			X:     expr,
-			Index: goast.NewIdent("0"),
-		}
-	}
-
-	if sl, ok := expr.(*goast.SliceExpr); ok {
-		if c, ok := sl.X.(*goast.CallExpr); ok {
-			if fin, ok := c.Fun.(*goast.Ident); ok && strings.Contains(fin.Name, "100000") {
-				if len(c.Args) == 1 {
-					if cc, ok := c.Args[0].(*goast.CallExpr); ok {
-						if fin, ok := cc.Fun.(*goast.Ident); ok && strings.Contains(fin.Name, "unsafe.Pointer") {
-							if len(cc.Args) == 1 {
-								if un, ok := cc.Args[0].(*goast.UnaryExpr); ok && un.Op == token.AND {
-									expr = un.X
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	return NewCallExpr("uintptr",
-		NewCallExpr("unsafe.Pointer",
-			&goast.UnaryExpr{
-				Op: token.AND,
-				X:  expr,
-			},
-		),
-	)
-}
-
-// GetUintptrForSlice - return uintptr for slice
-// Example : uint64(uintptr(unsafe.Pointer((*(**int)(unsafe.Pointer(& ...slice... )))))))
-func GetUintptrForSlice(expr goast.Expr, sizeof int) (goast.Expr, string) {
-	returnType := "long long"
-
-	return &goast.BinaryExpr{
-		X: NewCallExpr("int64", NewCallExpr("uintptr", NewCallExpr("unsafe.Pointer",
-			&goast.StarExpr{
-				Star: 1,
-				X: &goast.CallExpr{
-					Fun: &goast.ParenExpr{
-						Lparen: 1,
-						X: &goast.StarExpr{
-							Star: 1,
-							X: &goast.StarExpr{
-								Star: 1,
-								X:    goast.NewIdent("byte"),
-							},
-						},
-					},
-					Lparen: 1,
-					Args: []goast.Expr{&goast.CallExpr{
-						Fun:    goast.NewIdent("unsafe.Pointer"),
-						Lparen: 1,
-						Args: []goast.Expr{&goast.UnaryExpr{
-							Op: token.AND,
-							X:  expr,
-						}},
-					}},
-				},
-			},
-		))),
-		Op: token.QUO,
-		Y:  NewCallExpr("int64", goast.NewIdent(fmt.Sprintf("%d", sizeof))),
-	}, returnType
-}
-
-// CreateSliceFromReference - create a slice, like :
-// (*[1]int)(unsafe.Pointer(&a))[:]
-func CreateSliceFromReference(goType string, expr goast.Expr) goast.Expr {
-	// If the Go type is blank it means that the C type is 'void'.
-	if goType == "" {
-		goType = "interface{}"
-	}
-
-	// This is a hack to convert a reference to a variable into a slice that
-	// points to the same location. It will look similar to:
-	//
-	//     (*[1]int)(unsafe.Pointer(&a))[:]
-	//
-	// You must always call this Go before using CreateSliceFromReference:
-	//
-	//     p.AddImport("unsafe")
-	//
-	return &goast.SliceExpr{
-		X: NewCallExpr(fmt.Sprintf("(*[100000000]%s)", goType),
-			NewCallExpr("unsafe.Pointer",
-				&goast.UnaryExpr{
-					X:  expr,
-					Op: token.AND,
-				}),
-		),
-	}
 }
 
 // NewFuncType - create a new function type, example:

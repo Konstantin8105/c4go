@@ -70,47 +70,6 @@ func IsFunction(s string) bool {
 	return strings.Contains(s, "(")
 }
 
-//IsCPointer - check C type is pointer
-func IsCPointer(s string) bool {
-	if len(s) == 0 {
-		return false
-	}
-	for i := len(s) - 1; i >= 0; i-- {
-		switch s[i] {
-		case ' ':
-			continue
-		case '*':
-			return true
-		default:
-			break
-		}
-	}
-	return false
-}
-
-// IsCArray - check C type is array
-func IsCArray(s string) bool {
-	if len(s) == 0 {
-		return false
-	}
-	for i := len(s) - 1; i >= 0; i-- {
-		switch s[i] {
-		case ' ':
-			continue
-		case ']':
-			return true
-		default:
-			break
-		}
-	}
-	return false
-}
-
-// IsPointer - check type is pointer
-func IsPointer(s string) bool {
-	return strings.ContainsAny(s, "*[]")
-}
-
 // IsLastArray - check type have array '[]'
 func IsLastArray(s string) bool {
 	for _, b := range s {
@@ -363,14 +322,43 @@ func CleanCType(s string) (out string) {
 	out = strings.Replace(out, "( *)", "(*)", -1)
 
 	// Remove any whitespace or attributes that are not relevant to Go.
-	out = strings.Replace(out, "const", "", -1)
-	out = strings.Replace(out, "volatile", "", -1)
-	out = strings.Replace(out, "__restrict", "", -1)
-	out = strings.Replace(out, "restrict", "", -1)
-	out = strings.Replace(out, "_Nullable", "", -1)
 	out = strings.Replace(out, "\t", "", -1)
 	out = strings.Replace(out, "\n", "", -1)
 	out = strings.Replace(out, "\r", "", -1)
+	list := []string{"const", "volatile", "__restrict", "restrict", "_Nullable"}
+	for _, word := range list {
+		// example :
+		// `const`
+		if out == word {
+			out = ""
+			continue
+		}
+
+		// examples :
+		// `const char  * *`
+		// `const struct parg_option`
+		// `void (*)(int  *, void  *, const char  *)`
+		out = strings.Replace(out, " "+word+" ", "", -1)
+		out = strings.Replace(out, " "+word+"*", "*", -1)
+		out = strings.Replace(out, "*"+word+" ", "*", -1)
+		out = strings.Replace(out, "*"+word+"*", "* *", -1)
+
+		if pr := word + " "; strings.HasPrefix(out, pr) {
+			out = out[len(word):]
+		}
+		if po := " " + word; strings.HasSuffix(out, po) {
+			out = out[:len(out)-len(word)]
+		}
+
+		if pr := word + "*"; strings.HasPrefix(out, pr) {
+			out = out[len(word):]
+		}
+		if po := "*" + word; strings.HasSuffix(out, po) {
+			out = out[:len(out)-len(word)]
+		}
+
+		out = strings.TrimSpace(out)
+	}
 
 	// remove space from pointer symbols
 	out = strings.Replace(out, "* *", "**", -1)

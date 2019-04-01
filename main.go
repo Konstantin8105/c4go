@@ -190,6 +190,7 @@ func buildTree(nodes []treeNode, depth int) []ast.Node {
 			*ast.InlineCommandComment, *ast.ParagraphComment,
 			*ast.ParamCommandComment, *ast.TextComment,
 			*ast.VerbatimLineComment, *ast.VerbatimBlockComment,
+			*ast.AnnotateAttr,
 			*ast.VerbatimBlockLineComment:
 			continue
 
@@ -215,7 +216,7 @@ var goKeywords = [...]string{
 	"fallthrough", "if", "range", "type", "continue", "for",
 	"import", "return", "var", "init",
 	// "struct",
-	// "_",
+	"_",
 	// "const",
 	// go packages
 	"fmt", "os", "math", "testing", "unsafe", "ioutil",
@@ -229,6 +230,11 @@ var goKeywords = [...]string{
 	"uint", "uintptr",
 	"float32", "float64",
 	"complex64", "complex128",
+	// built-in
+	"len", "append", "cap", "delete", "copy", // "close",
+	"make", "new", "panic", "recover", "real", "complex",
+	"imag", "print", "println", "error", "Type", "Type1",
+	"IntegerType", "FloatType", "ComplexType",
 }
 var letters string = "_qwertyuiopasdfghjklzxcvbnm1234567890><"
 
@@ -270,7 +276,9 @@ func avoidGoKeywords(tree []ast.Node) {
 			str := f.Addr().Interface().(*string)
 
 			// avoid problem with GOPATH and `go` keyword
-			*str = strings.Replace(*str, os.Getenv("GOPATH"), "GOPATH", -1)
+			if gopath := os.Getenv("GOPATH"); gopath != "" {
+				*str = strings.Replace(*str, gopath, "GOPATH", -1)
+			}
 
 			for _, gk := range goKeywords {
 				// example *st :
@@ -343,11 +351,6 @@ func Start(args ProgramArgs) (err error) {
 func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.FilePP, err error) {
 	if args.verbose {
 		fmt.Fprintln(os.Stdout, "Start tanspiling ...")
-	}
-
-	if os.Getenv("GOPATH") == "" {
-		err = fmt.Errorf("The $GOPATH must be set")
-		return
 	}
 
 	// 1. Compile it first (checking for errors)
@@ -490,7 +493,7 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 
 	// simplify Go code by `gofmt`
 	// error ignored, because it is not change the workflow
-	_, _ = exec.Command("gofmt", "-w", outputFilePath).Output()
+	_, _ = exec.Command("gofmt", "-s", "-w", outputFilePath).Output()
 
 	return nil
 }

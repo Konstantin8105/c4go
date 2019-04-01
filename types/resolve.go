@@ -28,6 +28,26 @@ var cIntegerType = []string{
 	"ptrdiff_t",
 }
 
+var goBaseTypes = [...]string{
+	"string",
+	"bool",
+	"int8", "uint8", "byte",
+	"int16", "uint16",
+	"int32", "rune", "uint32",
+	"int64", "uint64", "int",
+	"uint", "uintptr",
+	"float32", "float64",
+	"complex64", "complex128",
+}
+
+func IsGoBaseType(ctype string) bool {
+	for _, t := range goBaseTypes {
+		if ctype == t {
+			return true
+		}
+	}
+	return false
+}
 func IsSigned(p *program.Program, cType string) bool {
 	if !strings.Contains(cType, "unsigned") {
 		return true
@@ -138,6 +158,11 @@ func ResolveType(p *program.Program, s string) (resolveResult string, err error)
 		s = strings.Replace(s, "__sFILEX", "int", -1)
 	}
 
+	// Specific for va_list
+	if strings.Contains(s, "struct __va_list_tag") {
+		return "* va_list", nil
+	}
+
 	// The simple resolve types are the types that we know there is an exact Go
 	// equivalent. For example float, int, etc.
 	if v, ok := program.DefinitionType[s]; ok {
@@ -239,13 +264,12 @@ func ResolveType(p *program.Program, s string) (resolveResult string, err error)
 	if s[len(s)-1] == '*' {
 		r := strings.TrimSpace(s[:len(s)-1])
 		r, err = ResolveType(p, r)
-		if err != nil {
-			err = fmt.Errorf("Cannot resolve star `*` for %v : %v", s, err)
-			return s, err
-		}
 		prefix := "[]"
 		if strings.Contains(r, "noarch.File") {
 			prefix = "*"
+		}
+		if err != nil {
+			err = fmt.Errorf("Cannot resolve star `*` for %v : %v", s, err)
 		}
 		return prefix + r, err
 	}
@@ -305,7 +329,7 @@ func ResolveType(p *program.Program, s string) (resolveResult string, err error)
 
 	errMsg := fmt.Sprintf(
 		"I couldn't find an appropriate Go type for the C type '%s'.", s)
-	return "interface{}", errors.New(errMsg)
+	return s, errors.New(errMsg)
 }
 
 // resolveType determines the Go type from a C type.
@@ -373,7 +397,7 @@ func SeparateFunction(p *program.Program, s string) (
 		}
 		returns = append(returns, t)
 	}
-	prefix = pr
+	prefix = util.CleanCType(pr)
 	return
 }
 
@@ -393,7 +417,12 @@ func IsTypedefFunction(p *program.Program, s string) bool {
 // Example :
 // In  : 'char [40]'
 // Out : 40
-func GetAmountArraySize(cType string) (size int, err error) {
+func GetAmountArraySize(cType string, p *program.Program) (size int, err error) {
+	if !IsCArray(cType, p) {
+		err = fmt.Errorf("Is not array: `%s`", cType)
+		return
+	}
+
 	reg := util.GetRegex("\\[(?P<size>\\d+)\\]")
 	match := reg.FindStringSubmatch(cType)
 
@@ -437,4 +466,55 @@ func GetBaseType(s string) string {
 			strings.Replace(s, "(*)", "*", -1)))
 	}
 	return s
+}
+
+// IsCArray - check C type is array
+func IsCArray(s string, p *program.Program) bool {
+	if len(s) == 0 {
+		return false
+	}
+	for i := len(s) - 1; i >= 0; i-- {
+		switch s[i] {
+		case ' ':
+			continue
+		case ']':
+			return true
+		default:
+			break
+		}
+	}
+	if p != nil {
+		if t, ok := p.TypedefType[s]; ok {
+			return IsCArray(t, p)
+		}
+	}
+	return false
+}
+
+// IsPointer - check type is pointer
+func IsPointer(s string, p *program.Program) bool {
+	return IsCPointer(s, p) || IsCArray(s, p)
+}
+
+//IsCPointer - check C type is pointer
+func IsCPointer(s string, p *program.Program) bool {
+	if len(s) == 0 {
+		return false
+	}
+	for i := len(s) - 1; i >= 0; i-- {
+		switch s[i] {
+		case ' ':
+			continue
+		case '*':
+			return true
+		default:
+			break
+		}
+	}
+	if p != nil {
+		if t, ok := p.TypedefType[s]; ok {
+			return IsCPointer(t, p)
+		}
+	}
+	return false
 }

@@ -7,7 +7,7 @@
 
 package code_quality
 
-// if_1 - transpiled function from  $GOPATH/src/github.com/Konstantin8105/c4go/tests/code_quality/if.c:1
+// if_1 - transpiled function from  C4GO/tests/code_quality/if.c:1
 func if_1() {
 	var a int32 = 5
 	var b int32 = 2
@@ -17,9 +17,9 @@ func if_1() {
 	} else if c <= a {
 		a = 0
 	}
-	_ = (a)
-	_ = (b)
-	_ = (c)
+	_ = a
+	_ = b
+	_ = c
 	var w int32 = func() int32 {
 		if 2 > 1 {
 			return -1
@@ -52,7 +52,7 @@ func if_1() {
 		return 5
 	}()
 	r = func() int32 {
-		if map[bool]int32{false: 0, true: 1}[(w > 1)]+map[bool]int32{false: 0, true: 1}[(r == 4)] != 0 {
+		if map[bool]int32{false: 0, true: 1}[w > 1]+map[bool]int32{false: 0, true: 1}[r == 4] != 0 {
 			return -1
 		}
 		return 5

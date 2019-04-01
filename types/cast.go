@@ -132,21 +132,34 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return expr, nil
 	}
 
+	// Exceptions for va_list
+	if fromType == "va_list" && toType == "struct __va_list_tag *" {
+		return expr, nil
+	}
+
 	// casting
 	if fromType == "void *" && toType[len(toType)-1] == '*' &&
-		!strings.Contains(toType, "FILE") && toType[len(toType)-2] != '*' {
+		toType[len(toType)-2] != '*' {
 		toType = strings.Replace(toType, "*", " ", -1)
 		t, err := ResolveType(p, toType)
 		if err != nil {
 			return nil, err
 		}
-		return &goast.TypeAssertExpr{
-			X:      expr,
-			Lparen: 1,
-			Type: &goast.ArrayType{
-				Lbrack: 1,
-				Elt:    util.NewIdent(t),
-			}}, nil
+		if strings.Contains(toType, "FILE") {
+			return &goast.TypeAssertExpr{
+				X:      expr,
+				Lparen: 1,
+				Type:   goast.NewIdent("*noarch.File"),
+			}, nil
+		} else {
+			return &goast.TypeAssertExpr{
+				X:      expr,
+				Lparen: 1,
+				Type: &goast.ArrayType{
+					Lbrack: 1,
+					Elt:    util.NewIdent(t),
+				}}, nil
+		}
 	}
 
 	// Checking amount recursive typedef element
@@ -263,7 +276,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return expr, nil
 	}
 
-	if util.IsPointer(cFromType) && cToType == "bool" {
+	if IsPointer(cFromType, p) && cToType == "bool" {
 		expr = &goast.BinaryExpr{
 			X:  expr,
 			Op: token.NEQ, // !=
@@ -465,7 +478,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return expr, nil
 	}
 
-	if IsCInteger(p, cFromType) && util.IsPointer(cToType) {
+	if IsCInteger(p, cFromType) && IsPointer(cToType, p) {
 		expr = goast.NewIdent("nil")
 		return expr, nil
 	}

@@ -20,6 +20,9 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		if err != nil {
 			err = fmt.Errorf("Cannot transpileImplicitCastExpr. err = %v", err)
 		}
+		if exprType == "" {
+			exprType = "ImplicitCastExprWrongType"
+		}
 	}()
 
 	n.Type = util.GenerateCorrectType(n.Type)
@@ -40,13 +43,63 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		expr = goast.NewIdent("nil")
 		return
 	}
+
+	// type casting
+	if n.Kind == "BitCast" && types.IsPointer(exprType, p) && types.IsPointer(n.Type, p) {
+		var newPost []goast.Stmt
+		expr, exprType, newPost, err = PntBitCast(expr, exprType, n.Type, p)
+		postStmts = append(postStmts, newPost...)
+		if err != nil {
+			return nil, "BitCastWrongType", nil, nil, err
+		}
+		return
+	}
+
 	if n.Kind == "IntegralToPointer" {
 		// ImplicitCastExpr 'double *' <IntegralToPointer>
 		// `-ImplicitCastExpr 'long' <LValueToRValue>
 		//   `-DeclRefExpr 'long' lvalue Var 0x30e91d8 'pnt' 'long'
-		if util.IsCPointer(n.Type) {
+		if types.IsCPointer(n.Type, p) {
 			if t, ok := ast.GetTypeIfExist(n.Children()[0]); ok {
-				if types.IsCInteger(p, *t) {
+				//
+				// ImplicitCastExpr 'char *' <IntegralToPointer>
+				// `-ImplicitCastExpr 'char' <LValueToRValue>
+				//   `-ArraySubscriptExpr 'char' lvalue
+				//     |-ImplicitCastExpr 'char *' <LValueToRValue>
+				//     | `-DeclRefExpr 'char *' lvalue Var 0x413c8a8 'b' 'char *'
+				//     `-IntegerLiteral 'int' 3
+				//
+				// n.Type = 'char *'
+				// *t     = 'char'
+				//
+
+				if ind, ok := expr.(*goast.IndexExpr); ok {
+					// from :
+					//
+					// 0  *ast.IndexExpr {
+					// 1  .  X: *ast.Ident {
+					// 3  .  .  Name: "b"
+					// 4  .  }
+					// 6  .  Index: *ast.BasicLit { ... }
+					// 12  }
+					//
+					// to:
+					//
+					// 88  0: *ast.SliceExpr {
+					// 89  .  X: *ast.Ident {
+					// 91  .  .  Name: "b"
+					// 93  .  }
+					// 95  .  Low: *ast.BasicLit { ... }
+					// 99  .  }
+					// 102  }
+					expr = &goast.SliceExpr{
+						X:      ind.X,
+						Low:    ind.Index,
+						Slice3: false,
+					}
+					exprType = n.Type
+					return
+				} else if types.IsCInteger(p, *t) {
 					resolveType := n.Type
 					resolveType, err = types.ResolveType(p, n.Type)
 					if err != nil {
@@ -74,43 +127,6 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 						fmt.Errorf("used unsafe convert from integer to pointer"), n)
 					exprType = n.Type
 					return
-				} else {
-					//
-					// ImplicitCastExpr 'char *' <IntegralToPointer>
-					// `-ImplicitCastExpr 'char' <LValueToRValue>
-					//   `-ArraySubscriptExpr 'char' lvalue
-					//     |-ImplicitCastExpr 'char *' <LValueToRValue>
-					//     | `-DeclRefExpr 'char *' lvalue Var 0x413c8a8 'b' 'char *'
-					//     `-IntegerLiteral 'int' 3
-					//
-					// n.Type = 'char *'
-					// *t     = 'char'
-					//
-
-					if ind, ok := expr.(*goast.IndexExpr); ok {
-						// from :
-						//
-						// 0  *ast.IndexExpr {
-						// 1  .  X: *ast.Ident {
-						// 3  .  .  Name: "b"
-						// 4  .  }
-						// 6  .  Index: *ast.BasicLit { ... }
-						// 12  }
-						//
-						// to:
-						//
-						// 88  0: *ast.SliceExpr {
-						// 89  .  X: *ast.Ident {
-						// 91  .  .  Name: "b"
-						// 93  .  }
-						// 95  .  Low: *ast.BasicLit { ... }
-						// 99  .  }
-						// 102  }
-						expr = &goast.SliceExpr{
-							X:   ind.X,
-							Low: ind.Index,
-						}
-					}
 				}
 			}
 		}
@@ -154,9 +170,9 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 	// ImplicitCastExpr 'char *' <ArrayToPointerDecay>
 	// `-MemberExpr 'char [20]' lvalue .input_str 0x3662ba0
 	//   `-DeclRefExpr 'struct s_inp':'struct s_inp' lvalue Var 0x3662c50 's' 'struct s_inp':'struct s_inp'
-	if util.IsCPointer(n.Type) {
+	if types.IsCPointer(n.Type, p) {
 		if len(n.Children()) > 0 {
-			if memb, ok := n.Children()[0].(*ast.MemberExpr); ok && util.IsCArray(memb.Type) {
+			if memb, ok := n.Children()[0].(*ast.MemberExpr); ok && types.IsCArray(memb.Type, p) {
 				expr = &goast.SliceExpr{
 					X:      expr,
 					Lbrack: 1,
@@ -178,6 +194,9 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("Cannot transpileImplicitCastExpr. err = %v", err)
+		}
+		if exprType == "" {
+			exprType = "CStyleCastExpr"
 		}
 	}()
 
@@ -220,14 +239,25 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 		return
 	}
 
-	expr, exprType, preStmts, postStmts, err = transpileToExpr(
-		n.Children()[0], p, exprIsStmt)
+	expr, exprType, preStmts, postStmts, err = atomicOperation(
+		n.Children()[0], p)
 	if err != nil {
 		return nil, "", nil, nil, err
 	}
 
 	if exprType == types.NullPointer {
 		expr = goast.NewIdent("nil")
+		return
+	}
+
+	// type casting
+	if n.Kind == "BitCast" && types.IsPointer(exprType, p) && types.IsPointer(n.Type, p) {
+		var newPost []goast.Stmt
+		expr, exprType, newPost, err = PntBitCast(expr, exprType, n.Type, p)
+		postStmts = append(postStmts, newPost...)
+		if err != nil {
+			return nil, "BitCastWrongType", nil, nil, err
+		}
 		return
 	}
 
@@ -265,14 +295,19 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 	if len(n.Children()) > 0 {
 		if types.IsCInteger(p, n.Type) {
 			if t, ok := ast.GetTypeIfExist(n.Children()[0]); ok {
-				if util.IsPointer(*t) {
+				if types.IsPointer(*t, p) {
 					// main information	: https://go101.org/article/unsafe.html
 					sizeof, err := types.SizeOf(p, types.GetBaseType(*t))
 					if err != nil {
 						return nil, "", nil, nil, err
 					}
-					var retType string
-					expr, retType = util.GetUintptrForSlice(expr, sizeof)
+					var retType string = "long long"
+					var newPost []goast.Stmt
+					expr, newPost, err = GetPointerAddress(expr, *t, sizeof)
+					if err != nil {
+						return nil, "", nil, nil, err
+					}
+					postStmts = append(postStmts, newPost...)
 
 					expr, err = types.CastExpr(p, expr, retType, n.Type)
 					if err != nil {

@@ -4,15 +4,9 @@
 package transpiler
 
 import (
-	"bytes"
 	"fmt"
-	"go/parser"
-	"go/printer"
-	"go/token"
-	"html/template"
-	"strings"
-
 	goast "go/ast"
+	"go/token"
 
 	"github.com/Konstantin8105/c4go/ast"
 	"github.com/Konstantin8105/c4go/program"
@@ -85,7 +79,7 @@ func transpileConditionalOperator(n *ast.ConditionalOperator, p *program.Program
 	}
 
 	// c - else body
-	c, cType, newPre, newPost, err := transpileToExpr(n.Children()[2], p, false)
+	c, cType, newPre, newPost, err := atomicOperation(n.Children()[2], p)
 	if err != nil {
 		err = fmt.Errorf("parameter `c` : %v", err)
 		return nil, "", nil, nil, err
@@ -213,122 +207,6 @@ func transpileParenExpr(n *ast.ParenExpr, p *program.Program) (
 	return
 }
 
-// pointerArithmetic - operations between 'int' and pointer
-// Example C code : ptr += i
-// ptr = (*(*[1]int)(unsafe.Pointer(uintptr(unsafe.Pointer(&ptr[0])) + (i)*unsafe.Sizeof(ptr[0]))))[:]
-// , where i  - right
-//        '+' - operator
-//      'ptr' - left
-//      'int' - leftType transpiled in Go type
-// Note:
-// 1) rigthType MUST be 'int'
-// 2) pointerArithmetic - implemented ONLY right part of formula
-// 3) right is MUST be positive value, because impossible multiply uintptr to (-1)
-func pointerArithmetic(p *program.Program,
-	left goast.Expr, leftType string,
-	right goast.Expr, rightType string,
-	operator token.Token) (
-	_ goast.Expr, _ string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
-	defer func() {
-		if err != nil {
-			err = fmt.Errorf("Cannot transpile pointerArithmetic. err = %v", err)
-		}
-	}()
-
-	if bl, ok := right.(*goast.BasicLit); ok && operator == token.ADD {
-		if bl.Value == "1" && bl.Kind == token.INT {
-			return &goast.SliceExpr{
-				X:      left,
-				Lbrack: 1,
-				Low: &goast.BasicLit{
-					Kind:  token.INT,
-					Value: "1",
-				},
-				Slice3: false,
-			}, leftType, preStmts, postStmts, nil
-		}
-	}
-
-	if !(types.IsCInteger(p, rightType) || rightType == "bool") {
-		err = fmt.Errorf("right type is not C integer type : '%s'", rightType)
-		return
-	}
-	if !util.IsPointer(leftType) {
-		err = fmt.Errorf("left type is not a pointer : '%s'", leftType)
-		return
-	}
-	right, err = types.CastExpr(p, right, rightType, "int")
-	if err != nil {
-		return
-	}
-
-	resolvedLeftType, err := types.ResolveType(p, leftType)
-	if err != nil {
-		return
-	}
-
-	type pA struct {
-		Name      string // name of variable: 'ptr'
-		Type      string // type of variable: 'int','double'
-		Condition string // condition : '-1' ,'(-1+2-2)'
-		Operator  string // operator : '+', '-'
-	}
-
-	var s pA
-
-	{
-		var buf bytes.Buffer
-		_ = printer.Fprint(&buf, token.NewFileSet(), left)
-		s.Name = buf.String()
-	}
-	{
-		var buf bytes.Buffer
-		_ = printer.Fprint(&buf, token.NewFileSet(), right)
-		s.Condition = buf.String()
-	}
-	s.Type = resolvedLeftType[2:]
-
-	s.Operator = "+"
-	if operator == token.SUB {
-		s.Operator = "-"
-	}
-
-	src := `package main
-func main(){
-	a := (*(*[1000000000]{{ .Type }})(unsafe.Pointer(uintptr(
-			unsafe.Pointer(&{{ .Name }}[0])) {{ .Operator }}
-			(uintptr)({{ .Condition }})*unsafe.Sizeof({{ .Name }}[0]))))[:]
-}`
-	tmpl := template.Must(template.New("").Parse(src))
-	var source bytes.Buffer
-	err = tmpl.Execute(&source, s)
-	if err != nil {
-		err = fmt.Errorf("Cannot execute template. err = %v", err)
-		return
-	}
-
-	// Create the AST by parsing src.
-	fset := token.NewFileSet() // positions are relative to fset
-	body := strings.Replace(source.String(), "&#43;", "+", -1)
-	body = strings.Replace(body, "&amp;", "&", -1)
-	body = strings.Replace(body, "&#34;", "\"", -1)
-	body = strings.Replace(body, "&#39;", "'", -1)
-	body = strings.Replace(body, "&gt;", ">", -1)
-	body = strings.Replace(body, "&lt;", "<", -1)
-	// TODO: add unicode convertor
-	f, err := parser.ParseFile(fset, "", body, 0)
-	if err != nil {
-		body = strings.Replace(body, "\n", "", -1)
-		err = fmt.Errorf("Cannot parse file. err = %v. body = `%s`", err, body)
-		return
-	}
-
-	p.AddImport("unsafe")
-
-	return f.Decls[0].(*goast.FuncDecl).Body.List[0].(*goast.AssignStmt).Rhs[0],
-		leftType, preStmts, postStmts, nil
-}
-
 func transpileCompoundAssignOperator(
 	n *ast.CompoundAssignOperator, p *program.Program, exprIsStmt bool) (
 	_ goast.Expr, _ string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
@@ -339,95 +217,33 @@ func transpileCompoundAssignOperator(
 		}
 	}()
 
-	operator := getTokenForOperator(n.Opcode)
+	operator := n.Opcode[:len(n.Opcode)-1]
 
-	right, rightType, newPre, newPost, err := atomicOperation(n.Children()[1], p)
-	if err != nil {
-		return nil, "", nil, nil, err
+	if len(n.ChildNodes) != 2 {
+		err = fmt.Errorf("not enought ChildNodes: %d", len(n.ChildNodes))
+		return
 	}
 
-	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
-
-	left, leftType, newPre, newPost, err := transpileToExpr(n.Children()[0], p, false)
-	if err != nil {
-		return nil, "", nil, nil, err
+	if !types.IsCPointer(n.Type, p) && !types.IsCArray(n.Type, p) {
+		return transpileBinaryOperator(&ast.BinaryOperator{
+			Type:       n.Type,
+			Operator:   n.Opcode,
+			ChildNodes: n.ChildNodes,
+		}, p, false)
 	}
 
-	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
-
-	// Pointer arithmetic
-	if util.IsPointer(n.Type) &&
-		(operator == token.ADD_ASSIGN || operator == token.SUB_ASSIGN) {
-		operator = convertToWithoutAssign(operator)
-		v, vType, newPre, newPost, err := pointerArithmetic(
-			p, left, leftType, right, rightType, operator)
-		if err != nil {
-			return nil, "", nil, nil, err
-		}
-		if v == nil {
-			return nil, "", nil, nil, fmt.Errorf("Expr is nil")
-		}
-		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
-		var name string
-		name, err = getName(p, n.Children()[0])
-		if err != nil {
-			return nil, "", nil, nil, err
-		}
-		found := false
-		if sl, ok := v.(*goast.SliceExpr); ok {
-			if ind, ok := sl.X.(*goast.IndexExpr); ok {
-				v = &goast.BinaryExpr{
-					X:  ind,
-					Op: token.ASSIGN,
-					Y:  v,
-				}
-				found = true
-			}
-		}
-		if !found {
-			v = &goast.BinaryExpr{
-				X:  goast.NewIdent(name),
-				Op: token.ASSIGN,
-				Y:  v,
-			}
-		}
-		return v, vType, preStmts, postStmts, nil
-	}
-
-	right, err = types.CastExpr(p, right, rightType, leftType)
-	if err != nil {
-		return nil, "", nil, nil, err
-	}
-	rightType = leftType
-
-	// The right hand argument of the shift left or shift right operators
-	// in Go must be unsigned integers. In C, shifting with a negative shift
-	// count is undefined behaviour (so we should be able to ignore that case).
-	// To handle this, cast the shift count to a uint64.
-	if operator == token.SHL_ASSIGN || operator == token.SHR_ASSIGN {
-		right, err = types.CastExpr(p, right, rightType, "unsigned long long")
-		p.AddMessage(p.GenerateWarningMessage(err, n))
-		if right == nil {
-			right = util.NewNil()
-		}
-	}
-
-	resolvedLeftType, err := types.ResolveType(p, leftType)
-	if err != nil {
-		p.AddMessage(p.GenerateWarningMessage(err, n))
-	}
-
-	if right == nil {
-		err = fmt.Errorf("Right part is nil. err = %v", err)
-		return nil, "", nil, nil, err
-	}
-	if left == nil {
-		err = fmt.Errorf("Left part is nil. err = %v", err)
-		return nil, "", nil, nil, err
-	}
-
-	return util.NewBinaryExpr(left, operator, right, resolvedLeftType, exprIsStmt),
-		n.Type, preStmts, postStmts, nil
+	return transpileBinaryOperator(&ast.BinaryOperator{
+		Type:     n.Type,
+		Operator: "=",
+		ChildNodes: []ast.Node{
+			n.ChildNodes[0],
+			&ast.BinaryOperator{
+				Type:       n.Type,
+				Operator:   operator,
+				ChildNodes: n.ChildNodes,
+			},
+		},
+	}, p, false)
 }
 
 // getTokenForOperator returns the Go operator token for the provided C
@@ -549,6 +365,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 	if err != nil {
 		return
 	}
+
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("Cannot create atomicOperation |%T|. err = %v", n, err)
@@ -561,7 +378,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 	switch v := n.(type) {
 	case *ast.UnaryOperator:
 		switch v.Operator {
-		case "&", "*", "!", "-", "~":
+		case "&", "*", "!", "-", "+", "~":
 			return
 		}
 		// UnaryOperator 0x252d798 <col:17, col:18> 'double' prefix '-'
@@ -613,17 +430,130 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			break
 		}
 
-		// UnaryOperator 0x358d470 <col:28, col:40> 'int' postfix '++'
-		// `-MemberExpr 0x358d438 <col:28, col:36> 'int' lvalue .pos 0x358b538
-		//   `-ArraySubscriptExpr 0x358d410 <col:28, col:34> 'struct struct_I_A':'struct struct_I_A' lvalue
-		//     |-ImplicitCastExpr 0x358d3f8 <col:28> 'struct struct_I_A *' <ArrayToPointerDecay>
-		//     | `-DeclRefExpr 0x358d3b0 <col:28> 'struct struct_I_A [2]' lvalue Var 0x358b6e8 'siia' 'struct struct_I_A [2]'
-		//     `-IntegerLiteral 0x358d3d8 <col:33> 'int' 0
+		// UnaryOperator 'char *' postfix '++'
+		// `-ParenExpr 'char *' lvalue
+		//   `-UnaryOperator 'char *' lvalue prefix '*'
+		//     `-ImplicitCastExpr 'char **' <LValueToRValue>
+		//       `-DeclRefExpr 'char **' lvalue Var 0x2699168 'bpp' 'char **'
+		//
+		// UnaryOperator 'int' postfix '++'
+		// `-MemberExpr 'int' lvalue .pos 0x358b538
+		//   `-ArraySubscriptExpr 'struct struct_I_A':'struct struct_I_A' lvalue
+		//     |-ImplicitCastExpr 'struct struct_I_A *' <ArrayToPointerDecay>
+		//     | `-DeclRefExpr 'struct struct_I_A [2]' lvalue Var 0x358b6e8 'siia' 'struct struct_I_A [2]'
+		//     `-IntegerLiteral 'int' 0
 		varName = "tempVar"
 
-		expr, exprType, preStmts, postStmts, err = transpileToExpr(v.Children()[0], p, false)
+		nextNode := v.Children()[0]
+		for {
+			if par, ok := nextNode.(*ast.ParenExpr); ok {
+				nextNode = par.ChildNodes[0]
+				continue
+			}
+			break
+		}
+		expr, exprType, preStmts, postStmts, err = transpileToExpr(nextNode, p, false)
 		if err != nil {
 			return
+		}
+
+		var exprResolveType string
+		exprResolveType, err = types.ResolveType(p, v.Type)
+		if err != nil {
+			return
+		}
+
+		if types.IsPointer(v.Type, p) {
+			switch e := expr.(type) {
+			case *goast.IndexExpr:
+				if v.Operator == "++" {
+					// expr = 'bpp[0]'
+					// example of snippet:
+					//	func  () []byte{
+					//		tempVar = bpp[0]
+					//		defer func(){
+					//			bpp = bpp[1:]
+					//		}()
+					//		return tempVar
+					//	}
+					expr = util.NewAnonymousFunction(
+						// body :
+						append(preStmts, &goast.AssignStmt{
+							Lhs: []goast.Expr{util.NewIdent(varName)},
+							Tok: token.DEFINE,
+							Rhs: []goast.Expr{expr},
+						}),
+						// defer :
+						append([]goast.Stmt{
+							&goast.AssignStmt{
+								Lhs: []goast.Expr{
+									e,
+								},
+								Tok: token.ASSIGN,
+								Rhs: []goast.Expr{
+									&goast.SliceExpr{
+										X:      e,
+										Low:    goast.NewIdent("1"),
+										Slice3: false,
+									},
+								},
+							},
+						}, postStmts...),
+						// return :
+						util.NewIdent(varName),
+						exprResolveType)
+					preStmts = nil
+					postStmts = nil
+					return
+				}
+
+			case *goast.Ident, *goast.SelectorExpr:
+				if v.Operator == "++" {
+					// expr = 'p'
+					// example of snippet:
+					//	func  () [][]byte{
+					//		tempVar = p
+					//		defer func(){
+					//			p = p[1:]
+					//		}()
+					//		return tempVar
+					//	}
+					expr = util.NewAnonymousFunction(
+						// body :
+						append(preStmts, &goast.AssignStmt{
+							Lhs: []goast.Expr{util.NewIdent(varName)},
+							Tok: token.DEFINE,
+							Rhs: []goast.Expr{expr},
+						}),
+						// defer :
+						append([]goast.Stmt{
+							&goast.AssignStmt{
+								Lhs: []goast.Expr{
+									e,
+								},
+								Tok: token.ASSIGN,
+								Rhs: []goast.Expr{
+									&goast.SliceExpr{
+										X:      e,
+										Low:    goast.NewIdent("1"),
+										Slice3: false,
+									},
+								},
+							},
+						}, postStmts...),
+						// return :
+						util.NewIdent(varName),
+						exprResolveType)
+					preStmts = nil
+					postStmts = nil
+					return
+				}
+
+			default:
+				// TODO add here
+				p.AddMessage(p.GenerateWarningMessage(
+					fmt.Errorf("transpilation pointer is not support: %T", e), v))
+			}
 		}
 
 		body := append(preStmts, &goast.AssignStmt{
@@ -656,12 +586,6 @@ func atomicOperation(n ast.Node, p *program.Program) (
 
 		body = append(body, preStmts...)
 		deferBody = append(deferBody, postStmts...)
-
-		var exprResolveType string
-		exprResolveType, err = types.ResolveType(p, v.Type)
-		if err != nil {
-			return
-		}
 
 		// operators: ++, --
 		if v.IsPrefix {
@@ -721,7 +645,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		if vv, ok := v.Children()[0].(*ast.UnaryOperator); ok && vv.IsPrefix && vv.Operator == "*" {
 			if vvv, ok := vv.Children()[0].(*ast.ImplicitCastExpr); ok {
 				if vvvv, ok := vvv.Children()[0].(*ast.DeclRefExpr); ok {
-					if util.IsPointer(vvvv.Type) {
+					if types.IsPointer(vvvv.Type, p) {
 						varName := vvvv.Name
 
 						var exprResolveType string
@@ -802,6 +726,9 @@ func atomicOperation(n ast.Node, p *program.Program) (
 
 	case *ast.ParenExpr:
 		// ParenExpr 0x3c42468 <col:18, col:40> 'int'
+		if len(n.Children()) == 1 {
+			return atomicOperation(n.Children()[0], p)
+		}
 		return
 
 	case *ast.ImplicitCastExpr:
@@ -812,6 +739,9 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			return
 		}
 		if v.Kind == "IntegralToPointer" {
+			return
+		}
+		if v.Kind == "BitCast" {
 			return
 		}
 
@@ -1042,15 +972,20 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			preStmts = nil
 			postStmts = nil
 
-			returnValue, _, _, _, _ := transpileToExpr(decl, p, false)
-			if d, ok := decl.(*ast.DeclRefExpr); ok &&
-				util.IsPointer(d.Type) && !util.IsPointer(v.Type) {
-				returnValue = &goast.IndexExpr{
-					X: returnValue,
-					Index: &goast.BasicLit{
-						Kind:  token.INT,
-						Value: "0",
-					},
+			var returnValue goast.Expr
+			if bin, ok := e.(*goast.BinaryExpr); ok {
+				returnValue = bin.X
+			} else {
+				returnValue, _, _, _, _ = transpileToExpr(decl, p, false)
+				if d, ok := decl.(*ast.DeclRefExpr); ok &&
+					types.IsPointer(d.Type, p) && !types.IsPointer(v.Type, p) {
+					returnValue = &goast.IndexExpr{
+						X: returnValue,
+						Index: &goast.BasicLit{
+							Kind:  token.INT,
+							Value: "0",
+						},
+					}
 				}
 			}
 
@@ -1080,12 +1015,20 @@ func getDeclRefExprOrArraySub(n ast.Node) (ast.Node, bool) {
 	switch v := n.(type) {
 	case *ast.DeclRefExpr:
 		return v, true
+	case *ast.ParenExpr:
+		return getDeclRefExprOrArraySub(n.Children()[0])
 	case *ast.ImplicitCastExpr:
 		return getDeclRefExprOrArraySub(n.Children()[0])
 	case *ast.UnaryOperator:
 		return getDeclRefExprOrArraySub(n.Children()[0])
 	case *ast.ArraySubscriptExpr:
 		return v, true
+	case *ast.BinaryOperator:
+		for i := range v.Children() {
+			if v, ok := getDeclRefExprOrArraySub(v.Children()[i]); ok {
+				return v, true
+			}
+		}
 	case *ast.MemberExpr:
 		return v, true
 	}

@@ -250,9 +250,26 @@ void union_with_struct()
     is_true(u.l > 0);
 }
 
+struct suf {
+	union {
+		int *i;
+		void (*sa) (int, double *, void *);
+	} uf;
+};
+
+void union_with_func()
+{
+	struct suf s;
+	int a = 42;
+	s.uf.i = &a;
+	is_not_null(s.uf.i);
+	is_not_null(s.uf.sa);
+	(void)(s.uf);
+}
+
 int main()
 {
-    plan(48);
+    plan(50);
 
     union programming variable;
 
@@ -268,6 +285,7 @@ int main()
     union_array();
     union_arr_in_str();
     union_with_struct();
+	union_with_func();
 
     done_testing();
 }
