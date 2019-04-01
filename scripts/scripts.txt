@@ -1,7 +1,7 @@
 
 Calculate warnings : ./testdata/9wm
 		After transpiling : 2 warnings.
-		Go build : 5 warnings
+		Go build : 4 warnings
 		Unsafe   : 407
 
 Calculate warnings : ./testdata/ed
