@@ -158,6 +158,8 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 		source = src
 	}
 
+	source = addBreaklines(source)
+
 	return
 }
 
