@@ -579,7 +579,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 
 	if strings.Contains(n.Type, "va_list") &&
 		strings.Contains(n.Type2, "va_list_tag") {
-		return VaListInit(n.Name), "", nil
+		return VaListInit(p, n.Name), "", nil
 	}
 
 	// Example of DeclStmt for C code:

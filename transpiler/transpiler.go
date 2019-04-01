@@ -159,7 +159,7 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 	}
 
 	// only for "stdarg.h"
-	if p.IncludeHeaderIsExists("stdarg.h") {
+	if p.IncludeHeaderIsExists("stdarg.h") && p.IsHaveVaList {
 		source += getVaListStruct()
 	}
 

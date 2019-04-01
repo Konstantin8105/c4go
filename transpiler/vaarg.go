@@ -26,6 +26,8 @@ func transpileVAArgExpr(n *ast.VAArgExpr, p *program.Program) (
 	//  `-ImplicitCastExpr 'struct __va_list_tag *' <ArrayToPointerDecay>
 	//    `-DeclRefExpr 'va_list':'...' lvalue Var 'ap' 'va_list':'...'
 
+	p.IsHaveVaList = true
+
 	expr, exprType, preStmts, postStmts, err = atomicOperation(n.Children()[0], p)
 	if err != nil {
 		return expr, exprType, preStmts, postStmts, err
@@ -92,7 +94,7 @@ const (
 	va_end                = "va_end"
 )
 
-func VaListInit(name string) []goast.Decl {
+func VaListInit(p *program.Program, name string) []goast.Decl {
 	// variable for va_list. see "variadic function"
 	// header : <stdarg.h>
 	// Example :
@@ -101,6 +103,9 @@ func VaListInit(name string) []goast.Decl {
 	// Result:
 	// ... - convert to - c4goArgs ...interface{}
 	// var args = c4goArgs
+
+	p.IsHaveVaList = true
+
 	return []goast.Decl{&goast.GenDecl{
 		Tok: token.VAR,
 		Specs: []goast.Spec{

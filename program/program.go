@@ -104,6 +104,9 @@ type Program struct {
 
 	// unsafeConvertValueToPointer - simplification for convert value to pointer
 	UnsafeConvertValueToPointer map[string]bool
+
+	// IsHaveVaList
+	IsHaveVaList bool
 }
 
 type commentPos struct {
