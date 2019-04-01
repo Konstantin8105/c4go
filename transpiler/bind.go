@@ -59,9 +59,6 @@ func generateBinding(p *program.Program) (bindHeader, bindCode string) {
 		//		return float64(C.frexp(C.double(arg1), unsafe.Pointer(arg2)))
 		// }
 
-		mess := fmt.Sprintf("// %s - add c-binding for implemention function", ds[i].Name)
-		bindCode += mess
-
 		code, err := getBindFunction(p, ds[i])
 		if err != nil {
 			bindCode += p.GenerateWarningMessage(err, nil) + "\n"
@@ -130,6 +127,15 @@ func getBindFunction(p *program.Program, d program.DefinitionFunction) (code str
 
 	stmts := bindFromCtoGo(p, d.ReturnType, returnResolvedType, util.NewCallExpr(fmt.Sprintf("C.%s", d.Name), arg...))
 	f.Body.List = append(f.Body.List, stmts...)
+
+	// add comment for function
+	f.Doc = &goast.CommentGroup{
+		List: []*goast.Comment{
+			&goast.Comment{
+				Text: fmt.Sprintf("// %s - add c-binding for implemention function", d.Name),
+			},
+		},
+	}
 
 	var buf bytes.Buffer
 	if err := format.Node(&buf, token.NewFileSet(), &goast.File{
