@@ -7,6 +7,7 @@ import (
 
 	"github.com/Konstantin8105/c4go/ast"
 	"github.com/Konstantin8105/c4go/program"
+	"github.com/Konstantin8105/c4go/types"
 	"github.com/Konstantin8105/c4go/util"
 )
 
@@ -25,14 +26,20 @@ func transpileVAArgExpr(n *ast.VAArgExpr, p *program.Program) (
 	//  `-ImplicitCastExpr 'struct __va_list_tag *' <ArrayToPointerDecay>
 	//    `-DeclRefExpr 'va_list':'...' lvalue Var 'ap' 'va_list':'...'
 
-	// TODO:
-	nameVa := "VaName"
-	toType := "some"
+	expr, exprType, preStmts, postStmts, err = atomicOperation(n.Children()[0], p)
+	if err != nil {
+		return expr, exprType, preStmts, postStmts, err
+	}
+
+	goType, err := types.ResolveType(p, n.Type)
+	if err != nil {
+		return expr, exprType, preStmts, postStmts, err
+	}
 
 	expr = &goast.TypeAssertExpr{
-		X:      util.NewCallExpr(va_arg, util.NewIdent(nameVa)),
+		X:      util.NewCallExpr(va_arg, expr),
 		Lparen: 1,
-		Type:   util.NewIdent(toType),
+		Type:   goast.NewIdent(goType),
 	}
 	exprType = n.Type
 	return
@@ -66,7 +73,13 @@ func va_arg(v * va_list) interface{} {
 	defer func(){
 		 v.position++	
 	}()
-	return v.slice[v.position]
+	value := v.slice[v.position]
+	switch value.(type) {
+		case int: 
+			return int32(value.(int))
+		default:
+			return value
+	}
 }
 
 `
@@ -99,4 +112,16 @@ func VaListInit(name string) []goast.Decl {
 			},
 		},
 	}}
+}
+
+func changeVaListFuncs(functionName *string) {
+	switch *functionName {
+	case "__builtin_va_start":
+		mod := va_start
+		*functionName = mod
+	case "__builtin_va_end":
+		mod := va_end
+		*functionName = mod
+	}
+	return
 }
