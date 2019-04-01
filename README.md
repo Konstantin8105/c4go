@@ -174,7 +174,7 @@ func c4goUnsafeConvert_int32(c4go_name *int32) []int32 {
 
 // frexp - add c-binding for implemention function
 func frexp(arg0 float64, arg1 []int32) float64 {
-	return float64(C.frexp(C.double(arg0), (*_Ctype_int)(unsafe.Pointer(&arg1[0]))))
+ 	return float64(C.frexp(C.double(arg0), (*C.int)(unsafe.Pointer(&arg1[0]))))
 }
 ```
 
