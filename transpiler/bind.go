@@ -261,7 +261,7 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 			// TODO: check next
 			t = goType[2:]
 		}
-		t = "( * _Ctype_" + t + " ) "
+		t = "( * C." + t + " ) "
 		t = strings.Replace(t, " ", "", -1)
 
 		p.AddImport("unsafe")
@@ -285,7 +285,7 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 			// TODO: check next
 			t = goType[1:]
 		}
-		t = "( * _Ctype_" + t + " ) "
+		t = "( * C." + t + " ) "
 		t = strings.Replace(t, " ", "", -1)
 
 		p.AddImport("unsafe")
