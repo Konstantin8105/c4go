@@ -126,29 +126,10 @@ func getBindFunction(p *program.Program, d program.DefinitionFunction) (code str
 		arg = append(arg, cgoExpr)
 	}
 
-	if returnResolvedType != "" {
-		f.Body = &goast.BlockStmt{
-			List: []goast.Stmt{
-				&goast.ReturnStmt{
-					Results: []goast.Expr{
-						util.NewCallExpr(returnResolvedType,
-							util.NewCallExpr(fmt.Sprintf("C.%s", d.Name), arg...),
-						),
-					},
-				},
-			},
-		}
-	} else {
-		f.Body = &goast.BlockStmt{
-			List: []goast.Stmt{
-				&goast.ReturnStmt{
-					Results: []goast.Expr{
-						util.NewCallExpr(fmt.Sprintf("C.%s", d.Name), arg...),
-					},
-				},
-			},
-		}
-	}
+	f.Body = &goast.BlockStmt{}
+
+	stmts := bindFromCtoGo(p, d.ReturnType, returnResolvedType, util.NewCallExpr(fmt.Sprintf("C.%s", d.Name), arg...))
+	f.Body.List = append(f.Body.List, stmts...)
 
 	var buf bytes.Buffer
 	if err := format.Node(&buf, token.NewFileSet(), &goast.File{
@@ -315,4 +296,21 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 		},
 		Args: []goast.Expr{expr},
 	}, nil
+}
+
+// example:
+//
+// returnValue := ...
+// return cast_from_C_to_Go_type(returnValue)
+//
+func bindFromCtoGo(p *program.Program, cType string, goType string, expr goast.Expr) (stmts []goast.Stmt) {
+	if cType == "" {
+		stmts = append(stmts, &goast.ReturnStmt{Results: []goast.Expr{expr}})
+	}
+
+	stmts = append(stmts, &goast.ReturnStmt{Results: []goast.Expr{
+		util.NewCallExpr(goType, expr),
+	}})
+
+	return
 }
