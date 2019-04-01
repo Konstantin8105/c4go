@@ -59,8 +59,8 @@ func generateBinding(p *program.Program) (bindHeader, bindCode string) {
 		//		return float64(C.frexp(C.double(arg1), unsafe.Pointer(arg2)))
 		// }
 
-		mess := fmt.Sprintf("// Add c-binding for implemention function : `%s`", ds[i].Name)
-		bindCode += mess + "\n"
+		mess := fmt.Sprintf("// %s - add c-binding for implemention function", ds[i].Name)
+		bindCode += mess
 
 		code, err := getBindFunction(p, ds[i])
 		if err != nil {
@@ -262,6 +262,7 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 			t = goType[2:]
 		}
 		t = "( * _Ctype_" + t + " ) "
+		t = strings.Replace(t, " ", "", -1)
 
 		p.AddImport("unsafe")
 
@@ -285,6 +286,7 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 			t = goType[1:]
 		}
 		t = "( * _Ctype_" + t + " ) "
+		t = strings.Replace(t, " ", "", -1)
 
 		p.AddImport("unsafe")
 

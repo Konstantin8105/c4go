@@ -158,6 +158,11 @@ func ResolveType(p *program.Program, s string) (resolveResult string, err error)
 		s = strings.Replace(s, "__sFILEX", "int", -1)
 	}
 
+	// Specific for va_list
+	if strings.Contains(s, "struct __va_list_tag") {
+		return "* va_list", nil
+	}
+
 	// The simple resolve types are the types that we know there is an exact Go
 	// equivalent. For example float, int, etc.
 	if v, ok := program.DefinitionType[s]; ok {

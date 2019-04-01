@@ -208,12 +208,8 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		}
 	}()
 
-	if functionName == "__builtin_va_start" ||
-		functionName == "__builtin_va_end" {
-		// ignore function __builtin_va_start, __builtin_va_end
-		// see "Variadic functions"
-		return nil, n.Type, nil, nil, nil
-	}
+	// specific for va_list
+	changeVaListFuncs(&functionName)
 
 	// function "malloc" from stdlib.h
 	//

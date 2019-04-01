@@ -132,6 +132,11 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return expr, nil
 	}
 
+	// Exceptions for va_list
+	if fromType == "va_list" && toType == "struct __va_list_tag *" {
+		return expr, nil
+	}
+
 	// casting
 	if fromType == "void *" && toType[len(toType)-1] == '*' &&
 		toType[len(toType)-2] != '*' {

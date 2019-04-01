@@ -3,7 +3,6 @@ package transpiler
 import (
 	"fmt"
 	goast "go/ast"
-	"go/parser"
 	"go/token"
 	"strconv"
 	"strings"
@@ -58,60 +57,6 @@ func getDefaultValueForVar(p *program.Program, a *ast.VarDecl) (
 	}()
 	if len(a.Children()) == 0 {
 		return nil, "", nil, nil, nil
-	}
-
-	if va, ok := a.Children()[0].(*ast.VAArgExpr); ok {
-		outType, err := types.ResolveType(p, va.Type)
-		if err != nil {
-			return nil, "", nil, nil, err
-		}
-		var argsName string
-		if a, ok := va.Children()[0].(*ast.ImplicitCastExpr); ok {
-			if a, ok := a.Children()[0].(*ast.DeclRefExpr); ok {
-				argsName = a.Name
-			} else {
-				return nil, "", nil, nil, fmt.Errorf(
-					"Expect DeclRefExpr for vaar, but we have %T", a)
-			}
-		} else {
-			return nil, "", nil, nil, fmt.Errorf(
-				"Expect ImplicitCastExpr for vaar, but we have %T", a)
-		}
-		src := fmt.Sprintf(`package main
-var temp = func() (c4go_def %s) {
-	switch v := %s[c4goVaListPosition].(type){
-	case int: 
-		c4go_def = %s(v)
-	case int32: 
-		c4go_def = %s(v)
-	case int64: 
-		c4go_def = %s(v)
-	case float32: 
-		c4go_def= %s(v)
-	case float64: 
-		c4go_def= %s(v)
-	}
-	c4goVaListPosition++
-	return 
-}()`,
-			outType,
-			argsName,
-			outType,
-			outType,
-			outType,
-			outType,
-			outType,
-		)
-
-		// Create the AST by parsing src.
-		fset := token.NewFileSet() // positions are relative to fset
-		f, err := parser.ParseFile(fset, "", src, 0)
-		if err != nil {
-			return nil, "", nil, nil, err
-		}
-
-		expr := f.Decls[0].(*goast.GenDecl).Specs[0].(*goast.ValueSpec).Values
-		return expr, va.Type, nil, nil, nil
 	}
 
 	defaultValue, defaultValueType, newPre, newPost, err := atomicOperation(a.Children()[0], p)
