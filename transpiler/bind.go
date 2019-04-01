@@ -314,15 +314,13 @@ func bindFromCtoGo(p *program.Program, cType string, goType string, expr goast.E
 	if expr == nil {
 		expr = goast.NewIdent("C4GO_UNDEFINE_EXPR")
 	}
-	if cType == "" {
-		cType = "C4GO_UNDEFINE_C_TYPE"
-	}
 	if goType == "" {
 		goType = "C4GO_UNDEFINE_GO_TYPE"
 	}
 
 	if cType == "" {
 		stmts = append(stmts, &goast.ReturnStmt{Results: []goast.Expr{expr}})
+		return
 	}
 
 	// from documentation : https://golang.org/cmd/cgo/
