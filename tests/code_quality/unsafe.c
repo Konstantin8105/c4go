@@ -1,29 +1,30 @@
-#define unsafetype(type,name)	\
-void name(){					\
-	type    t;					\
-	type * pt = &t;				\
-	(void)(t);					\
-	(void)(pt);					\
-}
+#define unsafetype(type, name) \
+    void name()                \
+    {                          \
+        type t;                \
+        type* pt = &t;         \
+        (void)(t);             \
+        (void)(pt);            \
+    }
 
-struct str{
-	int i;
+struct str {
+    int i;
 };
 
-union un{
-	int i;
-	double d;
+union un {
+    int i;
+    double d;
 };
 
 typedef double db;
 
 // integers
-unsafetype(char,test_char);
-unsafetype(short,test_short);
-unsafetype(int,test_int);
-unsafetype(long,test_long);
+unsafetype(char, test_char);
+unsafetype(short, test_short);
+unsafetype(int, test_int);
+unsafetype(long, test_long);
 unsafetype(long int, test_li);
-unsafetype(long long,test_ll);
+unsafetype(long long, test_ll);
 unsafetype(long long int, test_lli);
 
 // floats
