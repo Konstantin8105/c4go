@@ -184,6 +184,7 @@ void test_c_struct()
 void test_c_function()
 {
 	void (*a) (void) ;
+	a = NULL;
 	int p;														
 	diag("for C pointer:  null");								
 	if   ( a)  { printf("a1\n"); } else { printf("a2\n"); }			
@@ -196,13 +197,13 @@ void test_c_function()
 	p = !a;														
 	if (p) { printf("p1\n"); } else { printf("p2\n"); }			
 	// TODO:
-	// a = test_c_pointers ;										
-	// diag("for C pointer:  null");								
-	// if   ( a)  { printf("a11\n"); } else { printf("a12\n"); }	
-	// diag("for C pointer: not null");							
-	// if   (!a)  { printf("a12\n"); } else { printf("a13\n"); }	
-	// diag("for C pointer: not-not null");						
-	// if (!(!a)) { printf("a14\n"); } else { printf("a15\n"); }	
+	a = test_c_pointers ;										
+	diag("for C pointer:  null");								
+	if   ( a)  { printf("a11\n"); } else { printf("a12\n"); }	
+	diag("for C pointer: not null");							
+	if   (!a)  { printf("a12\n"); } else { printf("a13\n"); }	
+	diag("for C pointer: not-not null");						
+	if (!(!a)) { printf("a14\n"); } else { printf("a15\n"); }	
 	diag("for C type : function");								
 	print_bool(!a,!(!a));										
 	p = !a;														

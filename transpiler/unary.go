@@ -153,7 +153,7 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 	if util.IsFunction(eType) {
 		return &goast.BinaryExpr{
 			X:  e,
-			Op: token.NEQ, // !=
+			Op: token.EQL, // ==
 			Y:  goast.NewIdent("nil"),
 		}, "bool", preStmts, postStmts, nil
 	}

@@ -111,7 +111,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	if util.IsFunction(cFromType) && toType == "bool" {
 		return &goast.BinaryExpr{
 			X:  expr,
-			Op: token.EQL,
+			Op: token.NEQ, // !=
 			Y:  goast.NewIdent("nil"),
 		}, nil
 	}
