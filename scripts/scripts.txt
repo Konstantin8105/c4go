@@ -9,6 +9,11 @@ Calculate warnings : ./testdata/ed
 		Go build : 2 warnings
 		Unsafe   : 169
 
+Calculate warnings in file: ./testdata/minmad/minmad.go
+		After transpiling : 66 warnings.
+		Go build : 2 warnings
+		Unsafe   : 17
+
 Calculate warnings in file: ./testdata/neateqn/neateqn.go
 		After transpiling : 0 warnings.
 		Go build : 0 warnings
@@ -18,6 +23,11 @@ Calculate warnings in file: ./testdata/neatmkfn/neatmkfn.go
 		After transpiling : 557 warnings.
 		Go build : 72 warnings
 		Unsafe   : 44
+
+Calculate warnings in file: ./testdata/neatmail/neatmail.go
+		After transpiling : 35 warnings.
+		Go build : 2 warnings
+		Unsafe   : 175
 
 Calculate warnings in file: ./testdata/neatpost/neatpost.go
 		After transpiling : 0 warnings.
@@ -40,7 +50,7 @@ Calculate warnings in file: ./testdata/neatvi/neatvi.go
 		Unsafe   : 130
 
 Calculate warnings in file: testdata/vorbis/vorbis.go
-After transpiling : 4 warnings.
+		After transpiling : 4 warnings.
 		Go build : 42 warnings
 		Unsafe   : 255
 
