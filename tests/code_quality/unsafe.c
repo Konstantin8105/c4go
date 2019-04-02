@@ -18,24 +18,24 @@ union un{
 typedef double db;
 
 // integers
-unsafetype(char,test_char)
-unsafetype(short,test_short)
-unsafetype(int,test_int)
-unsafetype(long,test_long)
-unsafetype(long int, test_li)
-unsafetype(long long,test_ll)
-unsafetype(long long int, test_lli)
+unsafetype(char,test_char);
+unsafetype(short,test_short);
+unsafetype(int,test_int);
+unsafetype(long,test_long);
+unsafetype(long int, test_li);
+unsafetype(long long,test_ll);
+unsafetype(long long int, test_lli);
 
 // floats
-unsafetype(float, test_f)
-unsafetype(double, test_d)
-unsafetype(long double, test_ld)
+unsafetype(float, test_f);
+unsafetype(double, test_d);
+unsafetype(long double, test_ld);
 
 // struct
-unsafetype(struct str, test_struct)
+unsafetype(struct str, test_struct);
 
 // union
-unsafetype(union un, test_un)
+unsafetype(union un, test_un);
 
 // typedef
-unsafetype(db, test_typedef)
+unsafetype(db, test_typedef);
