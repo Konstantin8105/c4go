@@ -248,6 +248,13 @@ func TestResolveFunction(t *testing.T) {
 			fields:   []string{"int"},
 			returns:  []string{"void(int,void(int))"},
 		},
+		{
+			input:    "void (struct __jmp_buf_tag *, int) __attribute__((noreturn))",
+			prefix:   "",
+			funcname: "",
+			fields:   []string{"struct __jmp_buf_tag *", "int"},
+			returns:  []string{"void"},
+		},
 	}
 
 	for i, tc := range tcs {
