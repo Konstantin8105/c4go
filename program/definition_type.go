@@ -68,7 +68,6 @@ var DefinitionType = map[string]string{
 	// These are special cases that almost certainly don't work. I've put
 	// them here because for whatever reason there is no suitable type or we
 	// don't need these platform specific things to be implemented yet.
-	"__builtin_va_list": "int64",
 	"unsigned __int128": "uint64",
 	"__int128":          "int64",
 	"__mbstate_t":       "int64",
