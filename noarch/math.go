@@ -4,6 +4,16 @@ import (
 	"math"
 )
 
+// BoolToInt converts boolean value to an int, which is a common operation in C.
+// 0 and 1 represent false and true respectively.
+func BoolToInt(x bool) int32 {
+	if x {
+		return 1
+	}
+
+	return 0
+}
+
 // Signbitf ...
 func Signbitf(x float32) int32 {
 	return BoolToInt(math.Signbit(float64(x)))
