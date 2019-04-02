@@ -568,10 +568,10 @@ void test_sscanf()
 
 void test_FILE()
 {
-	FILE * p = stdout;
-	is_true( p != stderr );
-	is_true( p == stdout );
-	(void) p;
+    FILE* p = stdout;
+    is_true(p != stderr);
+    is_true(p == stdout);
+    (void)p;
 }
 
 int main()
@@ -612,7 +612,7 @@ int main()
     START_TEST(eof)
     START_TEST(getline)
     START_TEST(sscanf)
-	START_TEST(FILE)
+    START_TEST(FILE)
 
     // that test must be last test
     START_TEST(perror)

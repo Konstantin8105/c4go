@@ -24,17 +24,17 @@
 char* strnul = "this string has a \0 NUL";
 char arrnul[] = "this string has a \0 NUL";
 
-static int clrcomp(char *s, int len)
+static int clrcomp(char* s, int len)
 {
-	static char *digs = "0123456789abcdef";
-	int i;
-	for (i = 0; i < len; i++) { 
-		if (strchr(digs, tolower(s[i]))) {
-			printf("%d\n", (int)(*strchr(digs, tolower(s[i]))));
-			return (strchr(digs, tolower(s[i])) - digs);
-		}
-	}
-	return -1;
+    static char* digs = "0123456789abcdef";
+    int i;
+    for (i = 0; i < len; i++) {
+        if (strchr(digs, tolower(s[i]))) {
+            printf("%d\n", (int)(*strchr(digs, tolower(s[i]))));
+            return (strchr(digs, tolower(s[i])) - digs);
+        }
+    }
+    return -1;
 }
 
 int main()
@@ -83,13 +83,13 @@ int main()
     is_eq(toupper('\n'), '\n');
     is_eq(toupper('z'), 'Z');
 
-	diag("clrcomp");
-	{
-		char *word1 = "12";
-		is_eq(clrcomp(word1,2),1);
-		char *word2 = "qwe12";
-		is_eq(clrcomp(word2,5),14);
-	}
+    diag("clrcomp");
+    {
+        char* word1 = "12";
+        is_eq(clrcomp(word1, 2), 1);
+        char* word2 = "qwe12";
+        is_eq(clrcomp(word2, 5), 14);
+    }
 
     done_testing();
 }
