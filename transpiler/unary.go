@@ -153,7 +153,7 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 	if util.IsFunction(eType) {
 		return &goast.BinaryExpr{
 			X:  e,
-			Op: token.EQL, // ==
+			Op: token.NEQ, // !=
 			Y:  goast.NewIdent("nil"),
 		}, "bool", preStmts, postStmts, nil
 	}
@@ -221,7 +221,7 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 
 	p.AddImport("github.com/Konstantin8105/c4go/noarch")
 
-	eType = "int"
+	eType = "bool"
 
 	return util.NewCallExpr("noarch.Not", e),
 		eType, preStmts, postStmts, nil

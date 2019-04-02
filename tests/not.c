@@ -17,6 +17,22 @@ void print_bool(int tr,int fl)
 	} else {
 		printf("print_bool fl is false\n");
 	}
+	if (tr != 0 && fl != 0) {
+		pass("test != 0");
+	}
+	if (tr == 0 && fl == 0) {
+		pass("test == 0");
+	}
+}
+
+void ok()
+{
+	pass("success");
+}
+
+void f()
+{
+	fail("need fix");
 }
 
 #define not_c_type(type)										\
@@ -27,10 +43,10 @@ diag("------------------");										\
 	int p;														\
 	diag("not for C type : zero value");						\
 	a = 0;														\
-	if (!a) { printf("a1\n"); } else { printf("a2\n"); }		\
+	if (!a) { printf("a1\n");ok(); } else { printf("a2\n"); f();}		\
 	diag("not-not for C type : zero value");					\
 	a = 0;														\
-	if (!(!a)) { printf("a3\n"); } else { printf("a4\n"); }		\
+	if (!(!a)) { printf("a3\n");f(); } else { printf("a4\n");ok(); }		\
 	diag("for C type : function");								\
 	print_bool(!a,!(!a));										\
 	diag("for C type : assign");								\
@@ -74,15 +90,15 @@ diag("------------------");										\
 
 void test_c_types()
 {
-	// not_c_type(char            );
-	// not_c_type(double          );
-	// not_c_type(float           );
-	not_c_type(short				);
-	// not_c_type(int					);
-	// not_c_type(long					);
-	// not_c_type(long double     );
-	// not_c_type(long long       );
-	// not_c_type(signed char     );
+	not_c_type(char            );
+	not_c_type(double          );
+	not_c_type(float           );
+	not_c_type(short			);
+	not_c_type(int				);
+	not_c_type(long				);
+	not_c_type(long double     );
+	not_c_type(long long       );
+	not_c_type(signed char     );
 	// not_c_type(unsigned long   );
 }
 
@@ -179,13 +195,14 @@ void test_c_function()
 	print_bool(!a,!(!a));										
 	p = !a;														
 	if (p) { printf("p1\n"); } else { printf("p2\n"); }			
-	a = test_c_pointers ;										
-	diag("for C pointer:  null");								
-	if   ( a)  { printf("a11\n"); } else { printf("a12\n"); }	
-	diag("for C pointer: not null");							
-	if   (!a)  { printf("a12\n"); } else { printf("a13\n"); }	
-	diag("for C pointer: not-not null");						
-	if (!(!a)) { printf("a14\n"); } else { printf("a15\n"); }	
+	// TODO:
+	// a = test_c_pointers ;										
+	// diag("for C pointer:  null");								
+	// if   ( a)  { printf("a11\n"); } else { printf("a12\n"); }	
+	// diag("for C pointer: not null");							
+	// if   (!a)  { printf("a12\n"); } else { printf("a13\n"); }	
+	// diag("for C pointer: not-not null");						
+	// if (!(!a)) { printf("a14\n"); } else { printf("a15\n"); }	
 	diag("for C type : function");								
 	print_bool(!a,!(!a));										
 	p = !a;														
@@ -194,12 +211,12 @@ void test_c_function()
 
 int main()
 {
-    plan(0);
+    plan(18);
 
 	START_TEST(c_types);
-	// START_TEST(c_pointers);
-	// START_TEST(c_struct);
-	// START_TEST(c_function);
+	START_TEST(c_pointers);
+	START_TEST(c_struct);
+	START_TEST(c_function);
 
     done_testing();
 }
