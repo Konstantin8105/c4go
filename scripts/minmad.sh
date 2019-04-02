@@ -9,9 +9,9 @@ mkdir -p ./testdata/
 # prepare variables
 	export C4GO_DIR=$GOPATH/src/github.com/Konstantin8105/c4go
 	export C4GO=$C4GO_DIR/c4go
-	export GIT_SOURCE="https://github.com/nothings/stb.git"
-	export NAME="vorbis"
-	export TEMP_FOLDER="testdata/$NAME"
+	export GIT_SOURCE="https://github.com/aligrudi/minmad.git"
+	export NAME="minmad"
+	export TEMP_FOLDER="./testdata/$NAME"
 	export GO_FILE="$TEMP_FOLDER/$NAME.go"
 	export GO_APP="$TEMP_FOLDER/$NAME.app"
 
@@ -29,7 +29,6 @@ mkdir -p ./testdata/
 # transpilation of all projects
 	echo "Transpile to $GO_FILE"
 	$C4GO transpile                         \
-		-s                                  \
 		-o="$GO_FILE"                       \
 		$TEMP_FOLDER/*.c
 
@@ -55,7 +54,7 @@ if [ "$1" == "-s" ]; then
 		# c4go warnings
 			cat $GO_FILE | grep "^// Warning" | sort | uniq
 		# show amount error from `go build`:
-			go build -o $GO_APP -gcflags="-e" $GO_FILE 2>&1 | sort 
+			go build -o $GO_APP -gcflags="-e" $GO_FILE 2>&1
 fi
 
 

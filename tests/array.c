@@ -662,75 +662,74 @@ void test_double_array()
     // TODO : view_matrix(p,4,3);
 }
 
-static void trans(char * p)
+static void trans(char* p)
 {
-	printf("trans = `%s`\n",p);
+    printf("trans = `%s`\n", p);
 }
 
 void test_func_byte()
 {
-	char * const gameOver = "game over";
-	trans(gameOver);
-	char * gameOver2 = "game over";
-	trans(gameOver2);
+    char* const gameOver = "game over";
+    trans(gameOver);
+    char* gameOver2 = "game over";
+    trans(gameOver2);
 }
 
 void test_negative_index()
 {
-	double ad[5] = {1.,2., 4., 5.,6.0};
-	is_eq(ad[0], 1.0);
-	double *p = ad;
-	p += 3;
-	is_eq(*p,5.0);
-	is_eq(p[-1],4.0);
-	double *ds = &(p[-1]);
-	is_eq(ds[-1], 2.0);
+    double ad[5] = { 1., 2., 4., 5., 6.0 };
+    is_eq(ad[0], 1.0);
+    double* p = ad;
+    p += 3;
+    is_eq(*p, 5.0);
+    is_eq(p[-1], 4.0);
+    double* ds = &(p[-1]);
+    is_eq(ds[-1], 2.0);
 }
 
 void test_matrix_init()
 {
-	int rows = 2;
-	int cols = 3;
-	int      i,j;
-	double   **m;
+    int rows = 2;
+    int cols = 3;
+    int i, j;
+    double** m;
 
-	m = (double **) malloc( (unsigned) rows * sizeof(double *) );
-	for (i = 0; i < rows ; i++)
-	{
-		m[i] = (double *) malloc( (unsigned) cols * sizeof(double) );
-	}
+    m = (double**)malloc((unsigned)rows * sizeof(double*));
+    for (i = 0; i < rows; i++) {
+        m[i] = (double*)malloc((unsigned)cols * sizeof(double));
+    }
 
-	for (i = 0; i < rows ; i++){
-		for (j = 0; j < cols; j++){
-			printf("init [%d , %d]\n",i,j);
-			m[i][j] = i*cols + j;
-		}
-	}
+    for (i = 0; i < rows; i++) {
+        for (j = 0; j < cols; j++) {
+            printf("init [%d , %d]\n", i, j);
+            m[i][j] = i * cols + j;
+        }
+    }
 
-	for (i = 0; i < rows ; i++){
-		for (j = 0; j < cols; j++){
-			is_eq(m[i][j] , i*cols + j);
-		}
-	}
+    for (i = 0; i < rows; i++) {
+        for (j = 0; j < cols; j++) {
+            is_eq(m[i][j], i * cols + j);
+        }
+    }
 }
 
-struct someR{
-	unsigned long * ul;
+struct someR {
+    unsigned long* ul;
 };
 
 void test_post_pointer()
 {
-	struct someR R;
-	unsigned long ull[6] = {2,4,8,10,12,34};
-	R.ul = ull;
-	struct someR * pR = &R;
-	for (int i=0;i <5;i++) {
-		printf("%d\n",(int)(*pR->ul));
-		is_eq(ull[i], *pR->ul);
-		if (i < 4) {
-			pR->ul++;
-		}
-	}
+    struct someR R;
+    unsigned long ull[6] = { 2, 4, 8, 10, 12, 34 };
+    R.ul = ull;
+    struct someR* pR = &R;
+    for (int i = 0; i < 5; i++) {
+        printf("%d\n", (int)(*pR->ul));
+        is_eq(ull[i], *pR->ul);
+        if (i < 4) {
+            pR->ul++;
+        }
+    }
 }
 
 int main()
@@ -1271,10 +1270,10 @@ int main()
     }
     START_TEST(string_array);
     START_TEST(double_array);
-	START_TEST(func_byte);
-	START_TEST(negative_index);
-	START_TEST(matrix_init);
-	START_TEST(post_pointer);
+    START_TEST(func_byte);
+    START_TEST(negative_index);
+    START_TEST(matrix_init);
+    START_TEST(post_pointer);
 
     done_testing();
 }

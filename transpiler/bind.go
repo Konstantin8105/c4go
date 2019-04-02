@@ -59,9 +59,6 @@ func generateBinding(p *program.Program) (bindHeader, bindCode string) {
 		//		return float64(C.frexp(C.double(arg1), unsafe.Pointer(arg2)))
 		// }
 
-		mess := fmt.Sprintf("// %s - add c-binding for implemention function", ds[i].Name)
-		bindCode += mess
-
 		code, err := getBindFunction(p, ds[i])
 		if err != nil {
 			bindCode += p.GenerateWarningMessage(err, nil) + "\n"
@@ -126,28 +123,18 @@ func getBindFunction(p *program.Program, d program.DefinitionFunction) (code str
 		arg = append(arg, cgoExpr)
 	}
 
-	if returnResolvedType != "" {
-		f.Body = &goast.BlockStmt{
-			List: []goast.Stmt{
-				&goast.ReturnStmt{
-					Results: []goast.Expr{
-						util.NewCallExpr(returnResolvedType,
-							util.NewCallExpr(fmt.Sprintf("C.%s", d.Name), arg...),
-						),
-					},
-				},
+	f.Body = &goast.BlockStmt{}
+
+	stmts := bindFromCtoGo(p, d.ReturnType, returnResolvedType, util.NewCallExpr(fmt.Sprintf("C.%s", d.Name), arg...))
+	f.Body.List = append(f.Body.List, stmts...)
+
+	// add comment for function
+	f.Doc = &goast.CommentGroup{
+		List: []*goast.Comment{
+			&goast.Comment{
+				Text: fmt.Sprintf("// %s - add c-binding for implemention function", d.Name),
 			},
-		}
-	} else {
-		f.Body = &goast.BlockStmt{
-			List: []goast.Stmt{
-				&goast.ReturnStmt{
-					Results: []goast.Expr{
-						util.NewCallExpr(fmt.Sprintf("C.%s", d.Name), arg...),
-					},
-				},
-			},
-		}
+		},
 	}
 
 	var buf bytes.Buffer
@@ -261,7 +248,7 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 			// TODO: check next
 			t = goType[2:]
 		}
-		t = "( * _Ctype_" + t + " ) "
+		t = "( * C." + t + " ) "
 		t = strings.Replace(t, " ", "", -1)
 
 		p.AddImport("unsafe")
@@ -285,7 +272,7 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 			// TODO: check next
 			t = goType[1:]
 		}
-		t = "( * _Ctype_" + t + " ) "
+		t = "( * C." + t + " ) "
 		t = strings.Replace(t, " ", "", -1)
 
 		p.AddImport("unsafe")
@@ -315,4 +302,46 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 		},
 		Args: []goast.Expr{expr},
 	}, nil
+}
+
+// example:
+//
+// returnValue := ...
+// return cast_from_C_to_Go_type(returnValue)
+//
+func bindFromCtoGo(p *program.Program, cType string, goType string, expr goast.Expr) (stmts []goast.Stmt) {
+
+	if expr == nil {
+		expr = goast.NewIdent("C4GO_UNDEFINE_EXPR")
+	}
+	if goType == "" {
+		goType = "C4GO_UNDEFINE_GO_TYPE"
+	}
+
+	if cType == "" {
+		stmts = append(stmts, &goast.ReturnStmt{Results: []goast.Expr{expr}})
+		return
+	}
+
+	// from documentation : https://golang.org/cmd/cgo/
+	//
+	// C string to Go string
+	// func C.GoString(*C.char) string
+	//
+
+	switch cType {
+	case "char *":
+		stmts = append(stmts, &goast.ReturnStmt{Results: []goast.Expr{
+			util.NewCallExpr("[]byte",
+				util.NewCallExpr("C.GoString", expr),
+			),
+		}})
+
+	default:
+		stmts = append(stmts, &goast.ReturnStmt{Results: []goast.Expr{
+			util.NewCallExpr(goType, expr),
+		}})
+	}
+
+	return
 }

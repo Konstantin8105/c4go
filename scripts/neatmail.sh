@@ -9,9 +9,9 @@ mkdir -p ./testdata/
 # prepare variables
 	export C4GO_DIR=$GOPATH/src/github.com/Konstantin8105/c4go
 	export C4GO=$C4GO_DIR/c4go
-	export GIT_SOURCE="https://github.com/nothings/stb.git"
-	export NAME="vorbis"
-	export TEMP_FOLDER="testdata/$NAME"
+	export GIT_SOURCE="https://github.com/aligrudi/neatmail.git"
+	export NAME="neatmail"
+	export TEMP_FOLDER="./testdata/$NAME"
 	export GO_FILE="$TEMP_FOLDER/$NAME.go"
 	export GO_APP="$TEMP_FOLDER/$NAME.app"
 
@@ -19,6 +19,9 @@ mkdir -p ./testdata/
     if [ ! -d $TEMP_FOLDER ]; then
 		mkdir -p $TEMP_FOLDER
 		git clone $GIT_SOURCE $TEMP_FOLDER
+		sed -i.bak '96,110d'   $TEMP_FOLDER/regex.c
+		sed -i.bak '75,82d;14,21d'   $TEMP_FOLDER/pg.c
+		sed -i.bak '145,153d'   $TEMP_FOLDER/mk.c
 	fi
 
 # remove go files from last transpilation
@@ -29,7 +32,6 @@ mkdir -p ./testdata/
 # transpilation of all projects
 	echo "Transpile to $GO_FILE"
 	$C4GO transpile                         \
-		-s                                  \
 		-o="$GO_FILE"                       \
 		$TEMP_FOLDER/*.c
 
@@ -55,7 +57,8 @@ if [ "$1" == "-s" ]; then
 		# c4go warnings
 			cat $GO_FILE | grep "^// Warning" | sort | uniq
 		# show amount error from `go build`:
-			go build -o $GO_APP -gcflags="-e" $GO_FILE 2>&1 | sort 
+			go build -o $GO_APP -gcflags="-e" $GO_FILE 2>&1
 fi
+
 
 

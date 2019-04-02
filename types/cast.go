@@ -111,7 +111,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	if util.IsFunction(cFromType) && toType == "bool" {
 		return &goast.BinaryExpr{
 			X:  expr,
-			Op: token.NEQ,
+			Op: token.NEQ, // !=
 			Y:  goast.NewIdent("nil"),
 		}, nil
 	}
@@ -353,10 +353,8 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 			return e, nil
 		}
 		if fromType == "bool" && toType == v {
-			e := util.NewGoExpr(`map[bool]int32{false: 0, true: 1}[replaceme]`)
-			// Swap replaceme with the current expression
-			e.(*goast.IndexExpr).Index = expr
-			return CastExpr(p, e, "int", cToType)
+			expr = util.NewCallExpr("noarch.BoolToInt", expr)
+			return CastExpr(p, expr, "int", cToType)
 		}
 	}
 

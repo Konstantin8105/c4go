@@ -100,6 +100,9 @@ func ParseFunction(s string) (prefix string, funcname string, f []string, r []st
 		}
 	}()
 
+	// remove specific attribute for function longjmp
+	s = strings.Replace(s, "__attribute__((noreturn))", "", -1)
+
 	s = strings.TrimSpace(s)
 	if !IsFunction(s) {
 		err = fmt.Errorf("Is not function : %s", s)
