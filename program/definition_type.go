@@ -54,25 +54,10 @@ var DefinitionType = map[string]string{
 	// when using the NULL macro.
 	"null": "null",
 
-	// Non platform-specific types.
-	"uint32":     "uint32",
-	"uint64":     "uint64",
-	"__uint16_t": "uint16",
-	"__uint32_t": "uint32",
-	"__uint64_t": "uint64",
-
 	// sys/stat.h
 	"mode_t":   "uint16",
 	"__mode_t": "uint16",
 
-	// These are special cases that almost certainly don't work. I've put
-	// them here because for whatever reason there is no suitable type or we
-	// don't need these platform specific things to be implemented yet.
-	"unsigned __int128": "uint64",
-	"__int128":          "int64",
-	"__mbstate_t":       "int64",
-	"__sbuf":            "int64",
-	"__sFILEX":          "interface{}",
 	"FILE":              "github.com/Konstantin8105/c4go/noarch.File",
 
 	// termios.h
