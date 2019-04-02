@@ -99,7 +99,6 @@ void test_c_types()
 	not_c_type(long double     );
 	not_c_type(long long       );
 	not_c_type(signed char     );
-	// not_c_type(unsigned long   );
 }
 
 #define not_c_pointer(type)										\
@@ -196,7 +195,6 @@ void test_c_function()
 	print_bool(!a,!(!a));										
 	p = !a;														
 	if (p) { printf("p1\n"); } else { printf("p2\n"); }			
-	// TODO:
 	a = test_c_pointers ;										
 	diag("for C pointer:  null");								
 	if   ( a)  { printf("a11\n"); } else { printf("a12\n"); }	
