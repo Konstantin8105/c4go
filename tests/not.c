@@ -5,6 +5,19 @@
     diag(#t);         \
     test_##t();
 
+void print_bool(int tr,int fl)
+{
+	if (tr) {
+		printf("print_bool tr is true");
+	} else {
+		printf("print_bool tr is false");
+	}
+	if (fl) {
+		printf("print_bool fl is true");
+	} else {
+		printf("print_bool fl is false");
+	}
+}
 
 #define not_c_type(type)										\
 {																\
@@ -17,12 +30,16 @@
 	diag("not-not for C type : zero value");					\
 	a = 0;														\
 	if (!(!a)) { printf("a3"); } else { printf("a4"); }			\
+	diag("for C type : function");								\
+	print_bool(!a,!(!a));										\
 	diag("for C type : assign");								\
 	p = !a;														\
 	if (p) { printf("p1"); } else { printf("p2"); }				\
 	diag("not for C type : non-zero positive value");			\
 	a = 42;														\
 	if (!a) { printf("a5"); } else { printf("a6"); }			\
+	diag("for C type : function");								\
+	print_bool(!a,!(!a));										\
 	diag("for C type : assign");								\
 	p = !a;														\
 	if (p) { printf("p1"); } else { printf("p2"); }				\
@@ -35,6 +52,8 @@
 	diag("not-not for C type : non-zero negative value");		\
 	a = -42;													\
 	if (!(!a)) { printf("a7"); } else { printf("a8"); }			\
+	diag("for C type : function");								\
+	print_bool(!a,!(!a));										\
 	diag("for C type : assign");								\
 	p = !a;														\
 	if (p) { printf("p1"); } else { printf("p2"); }				\
@@ -75,6 +94,8 @@ void test_c_types()
 	if   (!a)  { printf("a2"); } else { printf("a3"); }			\
 	diag("for C pointer: not-not null");						\
 	if (!(!a)) { printf("a4"); } else { printf("a5"); }			\
+	diag("for C type : function");								\
+	print_bool(!a,!(!a));										\
 	p = !a;														\
 	if (p) { printf("p1"); } else { printf("p2"); }				\
 	type b = 42; a = &b ;										\
@@ -84,6 +105,8 @@ void test_c_types()
 	if   (!a)  { printf("a12"); } else { printf("a13"); }		\
 	diag("for C pointer: not-not null");						\
 	if (!(!a)) { printf("a14"); } else { printf("a15"); }		\
+	diag("for C type : function");								\
+	print_bool(!a,!(!a));										\
 	p = !a;														\
 	if (p) { printf("p1"); } else { printf("p2"); }				\
 }
@@ -99,6 +122,8 @@ void test_c_types()
 	if   (!a)  { printf("a2"); } else { printf("a3"); }			\
 	diag("for C pointer: not-not null");						\
 	if (!(!a)) { printf("a4"); } else { printf("a5"); }			\
+	diag("for C type : function");								\
+	print_bool(!a,!(!a));										\
 	p = !a;														\
 	if (p) { printf("p1"); } else { printf("p2"); }				\
 	type b ; a = &b ;											\
@@ -108,6 +133,8 @@ void test_c_types()
 	if   (!a)  { printf("a12"); } else { printf("a13"); }		\
 	diag("for C pointer: not-not null");						\
 	if (!(!a)) { printf("a14"); } else { printf("a15"); }		\
+	diag("for C type : function");								\
+	print_bool(!a,!(!a));										\
 	p = !a;														\
 	if (p) { printf("p1"); } else { printf("p2"); }				\
 }
