@@ -318,7 +318,7 @@ func bindFromCtoGo(p *program.Program, cType string, goType string, expr goast.E
 		goType = "C4GO_UNDEFINE_GO_TYPE"
 	}
 
-	if cType == "" {
+	if cType == "" || cType == "void" {
 		stmts = append(stmts, &goast.ReturnStmt{Results: []goast.Expr{expr}})
 		return
 	}
