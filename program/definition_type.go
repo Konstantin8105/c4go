@@ -58,7 +58,7 @@ var DefinitionType = map[string]string{
 	"mode_t":   "uint16",
 	"__mode_t": "uint16",
 
-	"FILE":              "github.com/Konstantin8105/c4go/noarch.File",
+	"FILE": "github.com/Konstantin8105/c4go/noarch.File",
 
 	// termios.h
 	"tcflag_t": "uint32",
