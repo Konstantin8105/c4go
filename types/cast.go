@@ -335,9 +335,6 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		// Floating-point types.
 		"float32", "float64",
 
-		// Known aliases
-		"__uint16_t", "size_t",
-
 		"noarch.SsizeT",
 	}
 	for _, v := range types {
