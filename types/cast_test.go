@@ -37,7 +37,6 @@ func TestCast(t *testing.T) {
 		// Casting between numeric types.
 		{args{util.NewIntLit(1), "int", "float"}, util.NewCallExpr("float32", util.NewIntLit(1))},
 		{args{util.NewIntLit(1), "int", "double"}, util.NewCallExpr("float64", util.NewIntLit(1))},
-		{args{util.NewIntLit(1), "int", "__uint16_t"}, util.NewCallExpr("uint16", util.NewIntLit(1))},
 
 		// Casting to bool
 		{args{util.NewIntLit(1), "int", "bool"}, util.NewBinaryExpr(util.NewIntLit(1), token.NEQ, util.NewIntLit(0), "bool", false)},
