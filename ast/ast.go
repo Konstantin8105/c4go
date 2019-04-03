@@ -302,6 +302,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseWhileStmt(line), nil
 	case "NullStmt":
 		return nil, nil
+	case "...":
+		return nil, nil
 	}
 	return C4goErrorNode{}, fmt.Errorf("unknown node type: `%v`", fullline)
 }
