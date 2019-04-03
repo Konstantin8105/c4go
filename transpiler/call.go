@@ -214,7 +214,9 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 
 	functionName, err := getName(p, n)
 	if err != nil {
-		return nil, "", nil, nil, err
+		p.AddMessage(p.GenerateWarningMessage(err, n))
+		err = nil
+		functionName = undefineFunctionName
 	}
 	functionName = util.ConvertFunctionNameFromCtoGo(functionName)
 
