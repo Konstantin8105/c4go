@@ -45,6 +45,12 @@ echo "" >> $OUTPUT_FILE
 ./scripts/neatvi.sh		2>&1 | grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
 echo "" >> $OUTPUT_FILE
 
+./scripts/triangle.sh		2>&1 | grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
+echo "" >> $OUTPUT_FILE
+
+./scripts/sqlite.sh		2>&1 | grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
+echo "" >> $OUTPUT_FILE
+
 ./scripts/vorbis.sh		2>&1 | grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
 echo "" >> $OUTPUT_FILE
 

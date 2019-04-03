@@ -54,6 +54,16 @@ Calculate warnings in file: ./testdata/neatvi/neatvi.go
 		Go build : 3 warnings
 		Unsafe   : 130
 
+Calculate warnings in file: ./testdata/triangle/triangle.go
+		After transpiling : 2 warnings.
+		Go build : 589 warnings
+		Unsafe   : 1411
+
+Calculate warnings in file: ./testdata/SQLITE/sqlite.go
+		After transpiling : 2 warnings.
+		Go build : 1 warnings
+		Unsafe   : 2599
+
 Calculate warnings in file: testdata/vorbis/vorbis.go
 		After transpiling : 4 warnings.
 		Go build : 25 warnings
