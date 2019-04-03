@@ -84,6 +84,9 @@ func convertLinesToNodes(lines []string) (nodes []treeNode, errs []error) {
 		// for-loop conditions, as in for(;;).
 		line = strings.Replace(line, "<<<NULL>>>", "NullStmt", 1)
 		trimmed := strings.TrimLeft(line, "|\\- `")
+		if trimmed == "..." {
+			continue
+		}
 		node, err := ast.Parse(trimmed)
 		if err != nil {
 			// add to error slice
