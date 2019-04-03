@@ -46,28 +46,34 @@ func formatting(line string) string {
 	// * []
 	// * {}
 	// * ""
-	parens := []struct {
-		name     string
-		from, to byte
-	}{
-		{"p1", '(', ')'},
-		{"p2", '[', ']'},
-		{"p3", '{', '}'},
-		{"p4", '"', '"'},
-	}
+	// separator :
+	// * ,
 
 	// check last byte
-	if line[len(line)-1] != '}' || line[len(line)-1] != ')' {
+	if line[len(line)-1] != '}' && line[len(line)-1] != ')' {
+		return line
+	}
+	if !strings.Contains(line, "=") {
 		return line
 	}
 
-	level := 0
-	for i := len(line) - 1; i >= 0; i-- {
-		symbol := line[i]
-		for j := range parens {
-			if symbol == parens[j].to {
-			}
+	// initialization levels
+	levels := make([]int, len(line))
+	for i := 0; i < len(line); i++ {
+		levels[i] = -1
+	}
+
+	// add levels for parens - "
+	for i, isInside := 0, false; i < len(line); i++ {
+		if isInside {
+			levels[i] = 0
+		}
+		if line[i] == '"' {
+			isInside = !isInside
 		}
 	}
 
+	_ = levels
+
+	return line
 }
