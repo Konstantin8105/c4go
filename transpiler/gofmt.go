@@ -1,8 +1,6 @@
 package transpiler
 
 import (
-	"fmt"
-	"os"
 	"strings"
 )
 
@@ -63,8 +61,13 @@ func formatting(line string) string {
 		return line
 	}
 
-	// for i := len(line) - 1; i >= 0; i-- {
-	//
-	// }
+	level := 0
+	for i := len(line) - 1; i >= 0; i-- {
+		symbol := line[i]
+		for j := range parens {
+			if symbol == parens[j].to {
+			}
+		}
+	}
 
 }
