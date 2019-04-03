@@ -36,6 +36,8 @@ func getMemberName(firstChild ast.Node) (name string, ok bool) {
 	return "", false
 }
 
+const undefineFunctionName string = "C4GO_UNDEFINE_NAME"
+
 func getName(p *program.Program, firstChild ast.Node) (name string, err error) {
 	switch fc := firstChild.(type) {
 	case *ast.DeclRefExpr:
@@ -66,18 +68,33 @@ func getName(p *program.Program, firstChild ast.Node) (name string, err error) {
 		return n + "." + fc.Name, nil
 
 	case *ast.CallExpr:
+		if len(fc.Children()) == 0 {
+			return undefineFunctionName, nil
+		}
 		return getName(p, fc.Children()[0])
 
 	case *ast.ParenExpr:
+		if len(fc.Children()) == 0 {
+			return undefineFunctionName, nil
+		}
 		return getName(p, fc.Children()[0])
 
 	case *ast.UnaryOperator:
+		if len(fc.Children()) == 0 {
+			return undefineFunctionName, nil
+		}
 		return getName(p, fc.Children()[0])
 
 	case *ast.ImplicitCastExpr:
+		if len(fc.Children()) == 0 {
+			return undefineFunctionName, nil
+		}
 		return getName(p, fc.Children()[0])
 
 	case *ast.CStyleCastExpr:
+		if len(fc.Children()) == 0 {
+			return undefineFunctionName, nil
+		}
 		return getName(p, fc.Children()[0])
 
 	case *ast.ArraySubscriptExpr:
