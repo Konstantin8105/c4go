@@ -39,15 +39,18 @@ $C4GO transpile  -s                                          \
 # go tool pprof ./testdata/cpu.out
 
 # Show amount "Warning":
-SQLITE_WARNINGS=`cat $SQLITE_TEMP_FOLDER/sqlite.go | grep "^// Warning" | sort | uniq | wc -l`
-echo "After transpiling shell.c and sqlite3.c together, have summary: $SQLITE_WARNINGS warnings."
+export GO_FILE="$SQLITE_TEMP_FOLDER/sqlite.go"
+echo "Calculate warnings in file: $GO_FILE"
+
+SQLITE_WARNINGS=`cat $GO_FILE | grep "^// Warning" | sort | uniq | wc -l`
+echo "		After transpiling : $SQLITE_WARNINGS warnings."
 
 # Show amount error from `go build`:
 SQLITE_WARNINGS_GO=`go build -o $SQLITE_TEMP_FOLDER/sqlite.app $SQLITE_TEMP_FOLDER/sqlite.go -gcflags="-e" 2>&1 | wc -l`
-echo "In file sqlite.go summary : $SQLITE_WARNINGS_GO warnings in go build."
+echo "		Go build : $SQLITE_WARNINGS_GO warnings"
 
 SQLITE_UNSAFE=`cat $SQLITE_TEMP_FOLDER/sqlite.go | grep "unsafe\." | wc -l`
-echo "Amount unsafe package using: $SQLITE_UNSAFE"
+echo "		Unsafe   : $SQLITE_UNSAFE"
 
 # Arguments menu
 echo "    -s for show detail of Go build errors"

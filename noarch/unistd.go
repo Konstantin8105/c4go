@@ -5,10 +5,11 @@ import (
 	"os"
 
 	"golang.org/x/sys/unix"
+	"syscall"
 )
 
 func Isatty(fd int32) int32 {
-	_, err := unix.IoctlGetTermios(int(fd), unix.TCGETS)
+	_, err := unix.IoctlGetTermios(int(fd), syscall.TCGETS)
 	// TODO need test
 	if err != nil {
 		return 0
@@ -17,7 +18,7 @@ func Isatty(fd int32) int32 {
 }
 
 func CloseOnExec(c int32) {
-	unix.CloseOnExec(int(c))
+	syscall.CloseOnExec(int(c))
 }
 
 func Pipe(p []int32) int32 {
@@ -25,7 +26,7 @@ func Pipe(p []int32) int32 {
 	for i := range p {
 		pi[i] = int(p[i])
 	}
-	err := unix.Pipe(pi)
+	err := syscall.Pipe(pi)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
 		return -1
@@ -37,7 +38,7 @@ func Pipe(p []int32) int32 {
 }
 
 func Read(fd int32, p []byte, num uint) SsizeT {
-	n, err := unix.Read(int(fd), p)
+	n, err := syscall.Read(int(fd), p)
 	if err != nil {
 		return SsizeT(-1)
 	}
@@ -45,7 +46,7 @@ func Read(fd int32, p []byte, num uint) SsizeT {
 }
 
 func Write(fd int32, p []byte, num uint) SsizeT {
-	n, err := unix.Write(int(fd), p)
+	n, err := syscall.Write(int(fd), p)
 	if err != nil {
 		return SsizeT(-1)
 	}
@@ -55,7 +56,7 @@ func Write(fd int32, p []byte, num uint) SsizeT {
 type SsizeT int32
 
 func Ftruncate(fd int32, length int64) int32 {
-	err := unix.Ftruncate(int(fd), length)
+	err := syscall.Ftruncate(int(fd), length)
 	if err != nil {
 		return -1
 	}

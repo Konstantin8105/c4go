@@ -1,5 +1,5 @@
 package noarch
 
-import "golang.org/x/sys/unix"
+import "syscall"
 
-type Rusage = unix.Rusage
+type Rusage = syscall.Rusage

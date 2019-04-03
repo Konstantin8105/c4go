@@ -84,6 +84,11 @@ func getBindFunction(p *program.Program, d program.DefinitionFunction) (code str
 	var fl goast.FieldList
 	var argResolvedType []string
 	for i := range d.ArgumentTypes {
+		if i == len(d.ArgumentTypes)-1 && d.ArgumentTypes[i] == "..." {
+			argResolvedType[len(argResolvedType)-1] =
+				"..." + argResolvedType[len(argResolvedType)-1]
+			continue
+		}
 		resolveType, err := types.ResolveType(p, d.ArgumentTypes[i])
 		if err != nil {
 			return "", fmt.Errorf("cannot generate argument binding function `%s`: %v", d.Name, err)
@@ -239,7 +244,9 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 
 	t := goType
 
-	if strings.HasPrefix(goType, "[") {
+	if strings.HasPrefix(goType, "[][]") {
+		t = "interface{}"
+	} else if strings.HasPrefix(goType, "[") {
 		// []int  -> * _Ctype_int
 		t = goType[2:]
 		var ok bool
@@ -318,7 +325,7 @@ func bindFromCtoGo(p *program.Program, cType string, goType string, expr goast.E
 		goType = "C4GO_UNDEFINE_GO_TYPE"
 	}
 
-	if cType == "" {
+	if cType == "" || cType == "void" {
 		stmts = append(stmts, &goast.ReturnStmt{Results: []goast.Expr{expr}})
 		return
 	}

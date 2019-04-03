@@ -384,67 +384,6 @@ func TestCsparse(t *testing.T) {
 	}
 }
 
-func TestTriangle(t *testing.T) {
-	folder := "./testdata/git-source/triangle/"
-
-	// Create build folder
-	if _, err := os.Stat(folder); os.IsNotExist(err) {
-		err = os.MkdirAll(folder, os.ModePerm)
-		if err != nil {
-			t.Fatalf("Cannot create folder %v . %v", folder, err)
-		}
-
-		// download file
-		t.Logf("Download file")
-		fileUrl := "http://www.netlib.org/voronoi/triangle.zip"
-		err := downloadFile(folder+"triangle.zip", fileUrl)
-		if err != nil {
-			t.Logf("Cannot download : %v", err)
-			return
-		}
-
-		// extract zip
-		t.Logf("Extract")
-		_, err = unzip(folder+"triangle.zip", folder)
-		if err != nil {
-			t.Fatalf("Cannot unzip : %v", err)
-		}
-	}
-
-	args := DefaultProgramArgs()
-	args.inputFiles = []string{
-		folder + "triangle.c",
-	}
-	args.clangFlags = []string{}
-	args.outputFile = folder + "main.go"
-	args.ast = false
-	args.verbose = false
-
-	if err := Start(args); err != nil {
-		t.Fatalf("Cannot transpile `%v`: %v", args, err)
-	}
-
-	// print logs
-	ls, err := getLogs(folder + "main.go")
-	if err != nil {
-		t.Fatalf("Cannot show logs: %v", err)
-	}
-	for _, l := range ls {
-		t.Log(l)
-	}
-
-	cmd := exec.Command("go", "build", "-o", folder+"triangle", "-gcflags", "-e",
-		args.outputFile)
-	var stdout, stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	err = cmd.Run()
-	if err != nil {
-		parseError(t, stderr.String())
-		t.Logf("cmd.Run() failed with %s : %v\n", err, stderr.String())
-	}
-}
-
 func parseError(t *testing.T, str string) {
 	// Example:
 	// testdata/git-source/triangle/main.go:2478:41: invalid operation: (operator & not defined on slice)
