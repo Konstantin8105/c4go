@@ -30,6 +30,7 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 		// remove last element from stack
 		if len(sizeofStack) == 0 {
 			err = fmt.Errorf("cannot remove last sizeof stack element: slice is empty")
+			sizeofStack = make([]string, 10)
 		} else {
 			sizeofStack = sizeofStack[:len(sizeofStack)-1]
 		}
