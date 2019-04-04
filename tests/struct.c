@@ -627,9 +627,29 @@ void pointer_arithm_in_struct()
     is_true(ps->hvm == &str[3]);
 }
 
+typedef struct
+  {
+  enum { UADD = 0, UDEL = 1, UMOV = 2, VMOV = 3 } typet;
+  int * head;
+  int * tail;
+  }
+undo;
+
+void typedef_with_union()
+{
+	undo   u ;
+	(void)(u);
+	u.typet = UMOV;
+	is_eq(u.typet, UMOV);
+	(void)(u.typet);
+	int y = 53;
+	u.head = &y;
+	is_eq(*u.head, y);
+}
+
 int main()
 {
-    plan(100);
+    plan(102);
 
     pointer_arithm_in_struct();
     test_extern_vec();
@@ -1030,6 +1050,8 @@ int main()
     func_in_func_in_struct();
 
     struct_inside_union();
+
+	typedef_with_union();
 
     done_testing();
 }

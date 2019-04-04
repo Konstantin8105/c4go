@@ -4,6 +4,7 @@ import (
 	"fmt"
 	goast "go/ast"
 	"go/token"
+	"strings"
 
 	"github.com/Konstantin8105/c4go/ast"
 	"github.com/Konstantin8105/c4go/program"
@@ -56,7 +57,7 @@ type va_list struct{
 	slice    []interface{}
 }
 
-func create_va_list(list []interface{}) *va_list{
+func create_va_list(list []interface{}) * va_list{
 	return &va_list{
 		position: 0,
 		slice   : list,
@@ -129,4 +130,11 @@ func changeVaListFuncs(functionName *string) {
 		*functionName = mod
 	}
 	return
+}
+
+func ignoreVaListTypedef(name string) bool {
+	if strings.Contains(name, "va_list") {
+		return true
+	}
+	return false
 }

@@ -46,8 +46,8 @@ func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (
 		}
 	}()
 
-	n.Name = util.GenerateCorrectType(n.Name)
 	n.Name = strings.TrimPrefix(n.Name, "enum ")
+	n.Name = util.GenerateCorrectType(n.Name)
 
 	// For case `enum` without name
 	if n.Name == "" {

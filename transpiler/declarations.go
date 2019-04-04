@@ -230,7 +230,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			if eDecl, ok := field.(*ast.EnumDecl); ok && eDecl.Name == "" {
 				if pos+1 <= len(n.Children())-1 {
 					if f, ok := n.Children()[pos+1].(*ast.FieldDecl); ok {
-						n.Children()[pos].(*ast.EnumDecl).Name = f.Type
+						n.Children()[pos].(*ast.EnumDecl).Name = util.GenerateCorrectType(f.Type)
 					}
 				}
 			}
@@ -442,6 +442,10 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 	n.Type = util.CleanCType(util.GenerateCorrectType(n.Type))
 	n.Type2 = util.CleanCType(util.GenerateCorrectType(n.Type2))
 	name := n.Name
+
+	if ignoreVaListTypedef(n.Name) {
+		return
+	}
 
 	if "struct "+n.Name == n.Type || "union "+n.Name == n.Type {
 		p.TypedefType[n.Name] = n.Type

@@ -263,7 +263,12 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 			// TODO: check next
 			t = goType[2:]
 		}
-		t = "( * C." + t + " ) "
+
+		if _, ok := p.Structs[t]; ok {
+			t = "( * C.struct_" + t + " ) "
+		} else {
+			t = "( * C." + t + " ) "
+		}
 		t = strings.Replace(t, " ", "", -1)
 
 		p.AddImport("unsafe")
