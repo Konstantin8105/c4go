@@ -6,6 +6,7 @@ import (
 	goast "go/ast"
 	"go/format"
 	"go/token"
+	"sort"
 	"strings"
 
 	"github.com/Konstantin8105/c4go/program"
@@ -19,6 +20,10 @@ func generateBinding(p *program.Program) (bindHeader, bindCode string) {
 	if len(ds) == 0 {
 		return
 	}
+
+	sort.Slice(ds, func(i, j int) bool {
+		return ds[i].Name < ds[j].Name
+	})
 
 	// automatic binding of function
 	{
@@ -93,11 +98,14 @@ func getBindFunction(p *program.Program, d program.DefinitionFunction) (code str
 		if err != nil {
 			return "", fmt.Errorf("cannot generate argument binding function `%s`: %v", d.Name, err)
 		}
+		argResolvedType = append(argResolvedType, resolveType)
+	}
+	for i := range argResolvedType {
+		resolveType := argResolvedType[i]
 		fl.List = append(fl.List, &goast.Field{
 			Names: []*goast.Ident{goast.NewIdent(fmt.Sprintf("%s%d", prefix, i))},
 			Type:  goast.NewIdent(resolveType),
 		})
-		argResolvedType = append(argResolvedType, resolveType)
 	}
 	ft.Params = &fl
 	f.Type = &ft
