@@ -79,11 +79,14 @@ func generateBinding(p *program.Program) (bindHeader, bindCode string) {
 	return
 }
 
+func getBindArgName(pos int) string {
+	return fmt.Sprintf("arg%d", pos)
+}
+
 func getBindFunction(p *program.Program, d program.DefinitionFunction) (code string, err error) {
 	var f goast.FuncDecl
 	f.Name = goast.NewIdent(d.Name)
 
-	prefix := "arg"
 	// arguments types
 	var ft goast.FuncType
 	var fl goast.FieldList
@@ -103,7 +106,7 @@ func getBindFunction(p *program.Program, d program.DefinitionFunction) (code str
 	for i := range argResolvedType {
 		resolveType := argResolvedType[i]
 		fl.List = append(fl.List, &goast.Field{
-			Names: []*goast.Ident{goast.NewIdent(fmt.Sprintf("%s%d", prefix, i))},
+			Names: []*goast.Ident{goast.NewIdent(getBindArgName(i))},
 			Type:  goast.NewIdent(resolveType),
 		})
 	}
@@ -128,7 +131,7 @@ func getBindFunction(p *program.Program, d program.DefinitionFunction) (code str
 	var arg []goast.Expr
 	for i := range argResolvedType {
 		// convert from Go type to Cgo type
-		cgoExpr, err := ResolveCgoType(p, argResolvedType[i], goast.NewIdent(fmt.Sprintf("%s%d", prefix, i)))
+		cgoExpr, err := ResolveCgoType(p, argResolvedType[i], goast.NewIdent(getBindArgName(i)))
 		if err != nil {
 			return "", fmt.Errorf("cannot resolve cgo type for function `%s`: %v", d.Name, err)
 		}
@@ -138,7 +141,9 @@ func getBindFunction(p *program.Program, d program.DefinitionFunction) (code str
 
 	f.Body = &goast.BlockStmt{}
 
-	stmts := bindFromCtoGo(p, d.ReturnType, returnResolvedType, util.NewCallExpr(fmt.Sprintf("C.%s", d.Name), arg...))
+	stmts := prepareIfForNilArgs(argResolvedType, returnResolvedType)
+	f.Body.List = append(f.Body.List, stmts...)
+	stmts = bindFromCtoGo(p, d.ReturnType, returnResolvedType, util.NewCallExpr(fmt.Sprintf("C.%s", d.Name), arg...))
 	f.Body.List = append(f.Body.List, stmts...)
 
 	// add comment for function
@@ -363,5 +368,56 @@ func bindFromCtoGo(p *program.Program, cType string, goType string, expr goast.E
 		}})
 	}
 
+	return
+}
+
+// add if`s for nil cases
+//
+// strtok - add c-binding for implemention function
+// func strtok(arg0 []byte, arg1 []byte) []byte {
+//	if arg0 == nil {
+//		return []byte{}
+//	}
+//	if arg1 == nil {
+//		return []byte{}
+//	}
+//	return (.....)
+//}
+//
+func prepareIfForNilArgs(argType []string, returnType string) (stmts []goast.Stmt) {
+	var ret goast.Stmt
+	switch {
+	case strings.Contains(returnType, "[]"):
+		ret = &goast.ReturnStmt{
+			Results: []goast.Expr{
+				goast.NewIdent(returnType + "{}"),
+			},
+		}
+
+	default:
+		return
+	}
+
+	for i := range argType {
+		// for slices : []byte, []int, ...
+		// 	if arg... == nil{
+		//		return []...{}
+		//	}
+		if strings.Contains(argType[i], "[]") {
+			stmts = append(stmts, &goast.IfStmt{
+				Cond: &goast.BinaryExpr{
+					X:  goast.NewIdent(getBindArgName(i)),
+					Op: token.EQL,
+					Y:  goast.NewIdent("nil"),
+				},
+				Body: &goast.BlockStmt{
+					List: []goast.Stmt{
+						ret,
+					},
+				},
+			})
+			continue
+		}
+	}
 	return
 }
