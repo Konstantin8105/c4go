@@ -9,6 +9,11 @@ Calculate warnings : ./testdata/ed
 		Go build : 2 warnings
 		Unsafe   : 170
 
+Calculate warnings in file: ./testdata/lang/lang.go
+		After transpiling : 314 warnings.
+		Go build : 2 warnings
+		Unsafe   : 1029
+
 Calculate warnings in file: ./testdata/kilo/kilo.go
 		After transpiling : 0 warnings.
 		Go build : 0 warnings

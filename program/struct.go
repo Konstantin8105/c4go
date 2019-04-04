@@ -141,5 +141,9 @@ func (p *Program) GetBaseTypeOfTypedef(cTypedef string) (
 		panic(fmt.Errorf("Type cannot be empty"))
 	}
 
+	if cBase == cTypedef {
+		panic(fmt.Errorf("typedef loop for : %s", cBase))
+	}
+
 	return
 }

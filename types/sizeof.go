@@ -8,12 +8,30 @@ import (
 	"github.com/Konstantin8105/c4go/util"
 )
 
+var sizeofStack []string
+
 // SizeOf returns the number of bytes for a type. This the same as using the
 // sizeof operator/function in C.
 func SizeOf(p *program.Program, cType string) (size int, err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("Cannot determine sizeof : |%s|. err = %v", cType, err)
+		}
+	}()
+
+	// stack check
+	for i := range sizeofStack {
+		if sizeofStack[i] == cType {
+			return 0, fmt.Errorf("sizeof stack loop : %v", sizeofStack)
+		}
+	}
+	sizeofStack = append(sizeofStack, cType) // add to stack
+	defer func() {
+		// remove last element from stack
+		if len(sizeofStack) == 0 {
+			err = fmt.Errorf("cannot remove last sizeof stack element: slice is empty")
+		} else {
+			sizeofStack = sizeofStack[:len(sizeofStack)-1]
 		}
 	}()
 
@@ -36,7 +54,7 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 	}
 
 	// typedef int Integer;
-	if v, ok := p.TypedefType[cType]; ok {
+	if v, ok := p.GetBaseTypeOfTypedef(cType); ok {
 		return SizeOf(p, v)
 	}
 
