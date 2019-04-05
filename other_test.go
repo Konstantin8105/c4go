@@ -745,3 +745,82 @@ func TestTinn(t *testing.T) {
 
 	// TODO : add result compare
 }
+
+func TestSpringerproblem(t *testing.T) {
+
+	prefix := "Springerproblem"
+	gitSource := "https://github.com/carstenhag/springerproblem.git"
+
+	fileList, err := getFileList(prefix, gitSource)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	goFile := fileList[0] + ".go"
+	args := DefaultProgramArgs()
+	args.inputFiles = fileList
+	args.outputFile = goFile
+	args.ast = false
+	args.verbose = false
+
+	if err := Start(args); err != nil {
+		t.Fatalf("Cannot transpile `%v`: %v", args, err)
+	}
+
+	// warning is not acceptable
+	dat, err := ioutil.ReadFile(goFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if bytes.Contains(dat, []byte(program.WarningMessage)) {
+		t.Fatalf("find warning message")
+	}
+
+	// calculate amount unsafe operations
+	unsafeLimit := 1
+	uintptrLimit := 0
+	if count := bytes.Count(dat, []byte("unsafe.Pointer")); count > unsafeLimit {
+		t.Fatalf("too much unsafe operations: %d", count)
+	} else {
+		t.Logf("amount unsafe operations: %d", count)
+	}
+	if count := bytes.Count(dat, []byte("uintptr")); count > uintptrLimit {
+		t.Fatalf("too much uintptr operations: %d", count)
+	} else {
+		t.Logf("amount uintptr operations: %d", count)
+	}
+
+	cmd := exec.Command("go", "build",
+		"-o", goFile+".app",
+		"-gcflags", "-e",
+		goFile)
+	cmdOutput := &bytes.Buffer{}
+	cmdErr := &bytes.Buffer{}
+	cmd.Stdout = cmdOutput
+	cmd.Stderr = cmdErr
+	err = cmd.Run()
+	if err != nil {
+		t.Fatalf("Go build test `%v` : err = %v\n%v",
+			goFile, err, cmdErr.String())
+	}
+
+	index := strings.LastIndex(fileList[0], "/")
+	filepath := fileList[0][:index+1]
+	os.Chdir(filepath)
+
+	cmd = exec.Command("./main.c.go.app")
+	cmdOutput = &bytes.Buffer{}
+	cmdErr = &bytes.Buffer{}
+	cmd.Stdout = cmdOutput
+	cmd.Stdin = bytes.NewBuffer([]byte("1\n12\n12\n\n\n\n"))
+	cmd.Stderr = cmdErr
+	err = cmd.Run()
+	if err != nil {
+		t.Fatalf("Go run `%v` : err = %v\n%v\n%v",
+			goFile, err, cmdOutput.String(), cmdErr.String())
+	}
+	t.Logf("%s", cmdOutput.String())
+
+	// TODO : add result compare
+}

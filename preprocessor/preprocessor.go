@@ -257,7 +257,7 @@ func NewFilePP(inputFiles, clangFlags []string, cppCode bool) (
 			// find level of line
 			level, _ := separator(ier[pos])
 
-			for j := pos; j > 0; j-- {
+			for j := pos; j >= 0; j-- {
 				levelJ, nameJ := separator(ier[j])
 				if levelJ >= level {
 					continue

@@ -208,7 +208,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			err = fmt.Errorf("Error in transpileCallExpr : %v", err)
 		}
 		if resultType == "" {
-			p.AddMessage(p.GenerateWarningMessage(fmt.Errorf("exprType is empty"), n))
+			resultType = n.Type
 		}
 	}()
 
