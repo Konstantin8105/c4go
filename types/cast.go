@@ -163,10 +163,8 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 			return &goast.TypeAssertExpr{
 				X:      expr,
 				Lparen: 1,
-				Type: &goast.ArrayType{
-					Lbrack: 1,
-					Elt:    util.NewTypeIdent(t),
-				}}, nil
+				Type:   util.NewTypeIdent(t),
+			}, nil
 		}
 	}
 
