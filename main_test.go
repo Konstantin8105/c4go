@@ -865,19 +865,17 @@ func TestExamples(t *testing.T) {
 			}
 
 			t.Run("run", func(t *testing.T) {
-
-				// # These steps are from the README to verify it can be installed and run as
-				// # documented.
-				// go build
-				//
-				// export C4GO_DIR=$GOPATH/src/github.com/Konstantin8105/c4go
-				// export C4GO=$C4GO_DIR/c4go
-				//
-				// echo "Run: c4go transpile prime.c"
-				// $C4GO transpile -o=./testdata/prime.go $C4GO_DIR/examples/prime.c
-				// echo "47" | go run ./testdata/prime.go
-				// if [ $(cat ./testdata/prime.go | wc -l) -eq 0 ]; then exit 1; fi
-				// if [ $($C4GO ast $C4GO_DIR/examples/prime.c | wc -l) -eq 0 ]; then exit 1; fi
+				cmd := exec.Command("go", "run", args.outputFile)
+				cmdOutput := &bytes.Buffer{}
+				cmdErr := &bytes.Buffer{}
+				cmd.Stdout = cmdOutput
+				cmd.Stdin = bytes.NewBuffer([]byte("47"))
+				cmd.Stderr = cmdErr
+				err = cmd.Run()
+				if err != nil {
+					t.Fatalf("Go build test `%v` : err = %v\n%v",
+						args.outputFile, err, cmdErr.String())
+				}
 			})
 		})
 	}
