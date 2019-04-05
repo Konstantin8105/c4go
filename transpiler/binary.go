@@ -71,6 +71,8 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	}()
 
 	operator := getTokenForOperator(n.Operator)
+	n.Type = util.GenerateCorrectType(n.Type)
+	n.Type2 = util.GenerateCorrectType(n.Type2)
 
 	defer func() {
 		if err != nil {
@@ -557,7 +559,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	}
 
 	// Enum casting
-	if operator != token.ASSIGN && strings.Contains(rightType, "enum") {
+	if operator != token.ASSIGN && strings.Contains(rightType, "enum ") {
 		right, err = types.CastExpr(p, right, rightType, "int")
 		if err != nil {
 			p.AddMessage(p.GenerateWarningMessage(err, n))
