@@ -637,6 +637,7 @@ undo;
 
 void typedef_with_union()
 {
+	diag("typedef with union");
 	undo   u ;
 	(void)(u);
 	u.typet = UMOV;
@@ -645,11 +646,29 @@ void typedef_with_union()
 	int y = 53;
 	u.head = &y;
 	is_eq(*u.head, y);
+
+	undo u2;
+	u2.typet = VMOV;
+	int y2 = 42;
+	u2.head = &y2;
+	is_eq(u2.typet, VMOV);
+	is_eq(*u2.head, y2  );
+
+	undo * u3 = &u2;
+	is_eq((*u3).typet, VMOV);
+	is_eq(*(*u3).head, y2  );
+
+	(*u3).typet = u.typet;
+	is_eq((*u3).typet, UMOV);
+
+	int bd = UDEL;
+	(*u3).typet = bd;
+	is_eq((*u3).typet, UDEL);
 }
 
 int main()
 {
-    plan(102);
+    plan(108);
 
     pointer_arithm_in_struct();
     test_extern_vec();

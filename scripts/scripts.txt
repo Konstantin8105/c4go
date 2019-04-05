@@ -6,13 +6,13 @@ Calculate warnings : ./testdata/9wm
 
 Calculate warnings : ./testdata/ed
 		After transpiling : 0 warnings.
-		Go build : 2 warnings
+		Go build : 17 warnings
 		Unsafe   : 170
 
 Calculate warnings in file: ./testdata/lang/lang.go
-		After transpiling : 310 warnings.
-		Go build : 2 warnings
-		Unsafe   : 1081
+		After transpiling : 154 warnings.
+		Go build : 1367 warnings
+		Unsafe   : 1179
 
 Calculate warnings in file: ./testdata/kilo/kilo.go
 		After transpiling : 0 warnings.
@@ -31,7 +31,7 @@ Calculate warnings in file: ./testdata/neateqn/neateqn.go
 
 Calculate warnings in file: ./testdata/neatmkfn/neatmkfn.go
 		After transpiling : 6 warnings.
-		Go build : 275 warnings
+		Go build : 271 warnings
 		Unsafe   : 135
 
 Calculate warnings in file: ./testdata/neatmail/neatmail.go
@@ -51,7 +51,7 @@ Calculate warnings in file: ./testdata/neatrefer/neatrefer.go
 
 Calculate warnings in file: ./testdata/neatroff/neatroff.go
 		After transpiling : 0 warnings.
-		Go build : 26 warnings
+		Go build : 23 warnings
 		Unsafe   : 254
 
 Calculate warnings in file: ./testdata/neatvi/neatvi.go
@@ -61,7 +61,7 @@ Calculate warnings in file: ./testdata/neatvi/neatvi.go
 
 Calculate warnings in file: ./testdata/triangle/triangle.go
 		After transpiling : 2 warnings.
-		Go build : 589 warnings
+		Go build : 585 warnings
 		Unsafe   : 1411
 
 Calculate warnings in file: ./testdata/SQLITE/sqlite.go
@@ -71,6 +71,6 @@ Calculate warnings in file: ./testdata/SQLITE/sqlite.go
 
 Calculate warnings in file: testdata/vorbis/vorbis.go
 		After transpiling : 4 warnings.
-		Go build : 25 warnings
+		Go build : 21 warnings
 		Unsafe   : 255
 

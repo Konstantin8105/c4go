@@ -477,7 +477,7 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 
 	// added for support "typedef enum {...} dd" with empty name of struct
 	// Result in Go: "type dd int"
-	if strings.Contains(n.Type, "enum") {
+	if strings.Contains(n.Type, "enum ") {
 		// Registration new type in program.Program
 		if !p.IsTypeAlreadyDefined(n.Name) {
 			p.DefineType(n.Name)
