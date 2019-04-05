@@ -863,6 +863,9 @@ func TestExamples(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
+
+			t.Run("run", func(t *testing.T) {
+			})
 		})
 	}
 }
