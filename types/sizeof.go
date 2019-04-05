@@ -50,7 +50,7 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 	}
 
 	// Enum with name
-	if strings.HasPrefix(cType, "enum") {
+	if strings.HasPrefix(cType, "enum ") {
 		return SizeOf(p, "int")
 	}
 

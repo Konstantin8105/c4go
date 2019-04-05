@@ -243,7 +243,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	}
 
 	// convert enum to int and recursive
-	if strings.Contains(fromType, "enum") && !strings.Contains(toType, "enum") {
+	if strings.Contains(fromType, "enum ") && !strings.Contains(toType, "enum ") {
 		in := goast.CallExpr{
 			Fun: &goast.Ident{
 				Name: "int32",
@@ -261,10 +261,10 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return CastExpr(p, &in, "int", toType)
 	}
 	// convert int to enum and recursive
-	if !strings.Contains(fromType, "enum") && strings.Contains(toType, "enum") {
+	if !strings.Contains(fromType, "enum ") && strings.Contains(toType, "enum ") {
 		in := goast.CallExpr{
 			Fun: &goast.Ident{
-				Name: strings.TrimSpace(strings.Replace(toType, "enum", "", -1)),
+				Name: strings.TrimSpace(strings.Replace(toType, "enum ", "", -1)),
 			},
 			Lparen: 1,
 			Args: []goast.Expr{

@@ -383,7 +383,7 @@ func CleanCType(s string) (out string) {
 
 // GenerateCorrectType - generate correct type
 // Example: 'union (anonymous union at tests/union.c:46:3)'
-func GenerateCorrectType(name string) string {
+func GenerateCorrectType(name string) (result string) {
 	if !strings.Contains(name, "anonymous") {
 		return CleanCType(name)
 	}

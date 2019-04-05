@@ -748,6 +748,9 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			return
 		}
 
+		v.Type = util.GenerateCorrectType(v.Type)
+		v.Type2 = util.GenerateCorrectType(v.Type2)
+
 		// avoid problem :
 		//
 		// constant -1331 overflows uint32
