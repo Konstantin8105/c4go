@@ -165,6 +165,8 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 		source += getVaListStruct()
 	}
 
+	source = addBreaklines(source)
+
 	return
 }
 
