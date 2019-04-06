@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"fmt"
 	goast "go/ast"
-	"go/parser"
 	"go/printer"
 	"go/token"
 	"strconv"
@@ -734,77 +733,141 @@ func transpileCallExprQsort(n *ast.CallExpr, p *program.Program) (
 		if err != nil {
 			err = fmt.Errorf("Function: qsort. err = %v", err)
 		}
-	}()
-	// CallExpr 0x2c6b1b0 <line:182:2, col:40> 'void'
-	// |-ImplicitCastExpr 0x2c6b198 <col:2> 'void (*)(void *, size_t, size_t, __compar_fn_t)' <FunctionToPointerDecay>
-	// | `-DeclRefExpr 0x2c6b070 <col:2> 'void (void *, size_t, size_t, __compar_fn_t)' Function 0x2bec110 'qsort' 'void (void *, size_t, size_t, __compar_fn_t)'
-	// |-ImplicitCastExpr 0x2c6b210 <col:9> 'void *' <BitCast>
-	// | `-ImplicitCastExpr 0x2c6b1f8 <col:9> 'int *' <ArrayToPointerDecay>
-	// |   `-DeclRefExpr 0x2c6b098 <col:9> 'int [6]' lvalue Var 0x2c6a6c0 'values' 'int [6]'
-	// |-ImplicitCastExpr 0x2c6b228 <col:17> 'size_t':'unsigned long' <IntegralCast>
-	// | `-IntegerLiteral 0x2c6b0c0 <col:17> 'int' 6
-	// |-UnaryExprOrTypeTraitExpr 0x2c6b0f8 <col:20, col:30> 'unsigned long' sizeof 'int'
-	// `-ImplicitCastExpr 0x2c6b240 <col:33> 'int (*)(const void *, const void *)' <FunctionToPointerDecay>
-	//   `-DeclRefExpr 0x2c6b118 <col:33> 'int (const void *, const void *)' Function 0x2c6aa70 'compare' 'int (const void *, const void *)'
-	var element [4]goast.Expr
-	for i := 1; i < 5; i++ {
-		el, _, newPre, newPost, err := transpileToExpr(n.Children()[i], p, false)
-		if err != nil {
-			return nil, "", nil, nil, err
+		if resultType == "" {
+			resultType = n.Type
 		}
-		element[i-1] = el
-		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
-	}
-	// found the C type
-	t := n.Children()[3].(*ast.UnaryExprOrTypeTraitExpr).Type2
-	t, err = types.ResolveType(p, t)
+	}()
+	// CallExpr 0x2c6b1b0 'void'
+	// |-ImplicitCastExpr 'void (*)(void *, size_t, size_t, __compar_fn_t)' <FunctionToPointerDecay>
+	// | `-DeclRefExpr 'void (void *, size_t, size_t, __compar_fn_t)' Function 0x2bec110 'qsort' 'void (void *, size_t, size_t, __compar_fn_t)'
+	// |-ImplicitCastExpr 'void *' <BitCast>
+	// | `-ImplicitCastExpr 'int *' <ArrayToPointerDecay>
+	// |   `-DeclRefExpr 'int [6]' lvalue Var 0x2c6a6c0 'values' 'int [6]'
+	// |-ImplicitCastExpr 'size_t':'unsigned long' <IntegralCast>
+	// | `-IntegerLiteral 'int' 6
+	// |-UnaryExprOrTypeTraitExpr 'unsigned long' sizeof 'int'
+	// `-ImplicitCastExpr 'int (*)(const void *, const void *)' <FunctionToPointerDecay>
+	//   `-DeclRefExpr 'int (const void *, const void *)' Function 0x2c6aa70 'compare' 'int (const void *, const void *)'
+	//
+	// CallExpr  'void'
+	// |-ImplicitCastExpr 'void (*)(void *, size_t, size_t, __compar_fn_t)' <FunctionToPointerDecay>
+	// | `-DeclRefExpr 'void (void *, size_t, size_t, __compar_fn_t)' Function 0x361b6d0 'qsort' 'void (void *, size_t, size_t, __compar_fn_t)'
+	// |-ImplicitCastExpr 'void *' <BitCast>
+	// | `-ImplicitCastExpr 'int *' <LValueToRValue>
+	// |   `-DeclRefExpr 'int *' lvalue ParmVar 0x3668088 'id' 'int *'
+	// |-ImplicitCastExpr 'size_t':'unsigned long' <IntegralCast>
+	// | `-ImplicitCastExpr 'int' <LValueToRValue>
+	// |   `-DeclRefExpr 'int' lvalue Var 0x36684e0 'nid' 'int'
+	// |-UnaryExprOrTypeTraitExpr 'unsigned long' sizeof
+	// | `-ParenExpr 'int' lvalue
+	// |   `-ArraySubscriptExpr 'int' lvalue
+	// |     |-ImplicitCastExpr 'int *' <LValueToRValue>
+	// |     | `-DeclRefExpr  'int *' lvalue ParmVar 0x3668088 'id' 'int *'
+	// |     `-IntegerLiteral 'int' 0
+	// `-ImplicitCastExpr '__compar_fn_t':'int (*)(const void *, const void *)' <BitCast>
+	//   `-CStyleCastExpr 'void *' <BitCast>
+	//     `-ImplicitCastExpr 'int (*)(void *, void *)' <FunctionToPointerDecay>
+	//       `-DeclRefExpr 'int (void *, void *)' Function 0x3665148 'intcmp' 'int (void *, void *)'
+	//
+
+	arr, _, newPre, newPost, err := atomicOperation(n.Children()[1], p)
 	if err != nil {
+		err = fmt.Errorf("cannot transpile array node: %v", err)
+		return nil, "", nil, nil, err
+	}
+	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+
+	t, ok := ast.GetTypeIfExist(n.Children()[1].Children()[0])
+	if !ok {
+		err = fmt.Errorf("cannot take type array node")
 		return nil, "", nil, nil, err
 	}
 
-	var compareFunc string
-	if v, ok := element[3].(*goast.Ident); ok {
-		compareFunc = v.Name
-	} else {
-		return nil, "", nil, nil,
-			fmt.Errorf("golang ast for compare function have type %T, expect ast.Ident", element[3])
+	*t = strings.Replace(*t, "*", "", 1)
+
+	arrType, err := types.ResolveType(p, *t)
+	if err != nil {
+		err = fmt.Errorf("cannot resolve array type: %v", err)
+		return nil, "", nil, nil, err
 	}
 
-	var varName string
-	if v, ok := element[0].(*goast.Ident); ok {
-		varName = v.Name
-	} else {
-		return nil, "", nil, nil,
-			fmt.Errorf("golang ast for variable name have type %T, expect ast.Ident", element[3])
+	size, sizeType, newPre, newPost, err := atomicOperation(n.Children()[2], p)
+	if err != nil {
+		err = fmt.Errorf("cannot transpile size node: %v", err)
+		return nil, "", nil, nil, err
+	}
+	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+
+	size, err = types.CastExpr(p, size, sizeType, "int")
+	if err != nil {
+		err = fmt.Errorf("cannot cast size node to int : %v", err)
+		return nil, "", nil, nil, err
+	}
+
+	f, _, newPre, newPost, err := atomicOperation(n.Children()[4], p)
+	if err != nil {
+		err = fmt.Errorf("cannot transpile function node: %v", err)
+		return nil, "", nil, nil, err
+	}
+	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+
+	// cast from `int (void *, void *)` to `bool (int, int)`
+
+	valA := CreateSliceFromReference(arrType, &goast.IndexExpr{
+		X:      arr,
+		Lbrack: 1,
+		Index:  goast.NewIdent("a"),
+	})
+	valB := CreateSliceFromReference(arrType, &goast.IndexExpr{
+		X:      arr,
+		Lbrack: 1,
+		Index:  goast.NewIdent("b"),
+	})
+	f = &goast.FuncLit{
+		Type: &goast.FuncType{
+			Params: &goast.FieldList{
+				List: []*goast.Field{
+					&goast.Field{
+						Names: []*goast.Ident{goast.NewIdent("a"), goast.NewIdent("b")},
+						Type:  goast.NewIdent("int"),
+					},
+				},
+			},
+			Results: &goast.FieldList{
+				List: []*goast.Field{
+					&goast.Field{Type: goast.NewIdent("bool")},
+				},
+			},
+		},
+		Body: &goast.BlockStmt{
+			List: []goast.Stmt{
+				&goast.ReturnStmt{
+					Results: []goast.Expr{
+						&goast.BinaryExpr{
+							X: &goast.CallExpr{
+								Fun: f,
+								Args: []goast.Expr{
+									valA,
+									valB,
+								},
+							},
+							Op: token.LEQ, // <=
+							Y:  goast.NewIdent("0"),
+						},
+					},
+				},
+			},
+		},
 	}
 
 	p.AddImport("sort")
-	src := fmt.Sprintf(`package main
-		var %s func(a,b interface{})int
-		var temp = func(i, j int) bool {
-			c4goTempVarA := ([]%s{%s[i]})
-			c4goTempVarB := ([]%s{%s[j]})
-			return %s(c4goTempVarA, c4goTempVarB) <= 0
-		}`, compareFunc, t, varName, t, varName, compareFunc)
 
-	// Create the AST by parsing src.
-	fset := token.NewFileSet() // positions are relative to fset
-	f, err := parser.ParseFile(fset, "", src, 0)
-	if err != nil {
-		return nil, "", nil, nil, err
-	}
-
-	// AST tree part of code after "var temp = ..."
-	convertExpr := f.Decls[1].(*goast.GenDecl).Specs[0].(*goast.ValueSpec).Values[0]
-
-	return &goast.CallExpr{
-		Fun: &goast.SelectorExpr{
-			X:   goast.NewIdent("sort"),
-			Sel: goast.NewIdent("SliceStable"),
+	return util.NewCallExpr("sort.SliceStable",
+		&goast.SliceExpr{
+			X:    arr,
+			High: size,
 		},
-		Args: []goast.Expr{
-			element[0],
-			convertExpr,
-		},
-	}, "", preStmts, postStmts, nil
+		f,
+	), "", preStmts, postStmts, nil
+
 }

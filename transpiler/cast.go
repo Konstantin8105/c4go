@@ -44,6 +44,11 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		return
 	}
 
+	// avoid cast to qsort type function
+	if n.Type == "__compar_fn_t" {
+		return
+	}
+
 	// type casting
 	if n.Kind == "BitCast" && types.IsPointer(exprType, p) && types.IsPointer(n.Type, p) {
 		var newPost []goast.Stmt
