@@ -778,8 +778,8 @@ func TestSpringerproblem(t *testing.T) {
 	}
 
 	// calculate amount unsafe operations
-	unsafeLimit := 1
-	uintptrLimit := 0
+	unsafeLimit := 5
+	uintptrLimit := 2
 	if count := bytes.Count(dat, []byte("unsafe.Pointer")); count > unsafeLimit {
 		t.Fatalf("too much unsafe operations: %d", count)
 	} else {
