@@ -1,7 +1,7 @@
 
 Calculate warnings : ./testdata/9wm
 		After transpiling : 2 warnings.
-		Go build : 3 warnings
+		Go build : 4 warnings
 		Unsafe   : 409
 
 Calculate warnings : ./testdata/ed
@@ -16,7 +16,7 @@ Calculate warnings in file: ./testdata/kilo/kilo.go
 
 Calculate warnings in file: ./testdata/minmad/minmad.go
 		After transpiling : 0 warnings.
-		Go build : 3 warnings
+		Go build : 2 warnings
 		Unsafe   : 66
 
 Calculate warnings in file: ./testdata/neateqn/neateqn.go
