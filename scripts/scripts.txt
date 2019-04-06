@@ -9,20 +9,15 @@ Calculate warnings : ./testdata/ed
 		Go build : 8 warnings
 		Unsafe   : 170
 
-Calculate warnings in file: ./testdata/lang/lang.go
-		After transpiling : 154 warnings.
-		Go build : 1357 warnings
-		Unsafe   : 1179
-
 Calculate warnings in file: ./testdata/kilo/kilo.go
 		After transpiling : 0 warnings.
 		Go build : 0 warnings
 		Unsafe   : 17
 
 Calculate warnings in file: ./testdata/minmad/minmad.go
-		After transpiling : 65 warnings.
+		After transpiling : 0 warnings.
 		Go build : 3 warnings
-		Unsafe   : 17
+		Unsafe   : 66
 
 Calculate warnings in file: ./testdata/neateqn/neateqn.go
 		After transpiling : 0 warnings.
@@ -55,9 +50,9 @@ Calculate warnings in file: ./testdata/neatroff/neatroff.go
 		Unsafe   : 254
 
 Calculate warnings in file: ./testdata/neatvi/neatvi.go
-		After transpiling : 33 warnings.
+		After transpiling : 0 warnings.
 		Go build : 2 warnings
-		Unsafe   : 130
+		Unsafe   : 210
 
 Calculate warnings in file: ./testdata/triangle/triangle.go
 		After transpiling : 2 warnings.
