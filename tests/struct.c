@@ -666,9 +666,48 @@ void typedef_with_union()
 	is_eq((*u3).typet, UDEL);
 }
 
+typedef union {
+  void *p;
+  int b;
+} Value;
+
+#define TValuefields	Value value; int tt
+
+typedef struct lua_TValue {
+  TValuefields;
+} TValue;
+
+
+
+void typedef_struct_with_typedef_union()
+{
+	diag("typedef struct with typedef union");
+	Value v;
+	v.b = 42;
+	is_eq(v.b, 42);
+	TValue tv;
+	tv.value = v;
+	tv.tt    = 55;
+	is_eq(tv.value.b, 42);
+	is_eq(tv.tt     , 55);
+
+	TValue *ptv = &tv;
+	is_eq(ptv->value.b,42);
+	is_eq(ptv->tt     ,55);
+
+	double d = 45.0;
+	v.p = &d;
+	tv.value = v;
+	is_eq(*((double *)(v.p)), d);
+	is_eq(*((double *)(ptv->value.p)), d);
+	is_eq(ptv->tt, 55);
+
+	is_eq(*((double*)((&tv)->value.p)), d);
+}
+
 int main()
 {
-    plan(108);
+    plan(117);
 
     pointer_arithm_in_struct();
     test_extern_vec();
@@ -1071,6 +1110,7 @@ int main()
     struct_inside_union();
 
 	typedef_with_union();
+	typedef_struct_with_typedef_union();
 
     done_testing();
 }
