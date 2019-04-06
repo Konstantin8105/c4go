@@ -257,6 +257,11 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 
 	t := goType
 
+	var has3poins bool
+	if has3poins = strings.HasPrefix(goType, "..."); has3poins {
+		t = goType[3:]
+	}
+
 	if strings.HasPrefix(goType, "[][]") {
 		t = "interface{}"
 	} else if strings.HasPrefix(goType, "[") {
@@ -320,13 +325,10 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 			}), nil
 	}
 
-	return &goast.CallExpr{
-		Fun: &goast.SelectorExpr{
-			X:   goast.NewIdent("C"),
-			Sel: goast.NewIdent(t),
-		},
-		Args: []goast.Expr{expr},
-	}, nil
+	if has3poins {
+		return util.NewCallExpr("...C."+t, expr), nil
+	}
+	return util.NewCallExpr("C."+t, expr), nil
 }
 
 // example:
