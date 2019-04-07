@@ -705,9 +705,38 @@ void typedef_struct_with_typedef_union()
 	is_eq(*((double*)((&tv)->value.p)), d);
 }
 
+int add(int a, int b)
+{
+    return a + b;
+}
+
+struct simon {
+	int (*f)(int, int);
+	long double g;
+};
+
+void test_struct_with_func()
+{
+	struct simon s1;
+	s1.f = add;
+	s1.g = 46.;
+	is_eq(s1.f(12,23), 12+23);
+	is_eq(s1.g       , 46.  );
+	struct simon * ps = &s1;
+	is_eq(ps->f(12,23), 12+23);
+	is_eq(ps->g       , 46.  );
+	struct simon as[2];
+	as[0] = s1;
+	as[1] = *ps;
+	is_eq(as[0].f(12,23), 12+23);
+	is_eq(as[0].g       , 46.  );
+	is_eq(as[1].f(12,23), 12+23);
+	is_eq(as[1].g       , 46.  );
+}
+
 int main()
 {
-    plan(117);
+    plan(125);
 
     pointer_arithm_in_struct();
     test_extern_vec();
@@ -1111,6 +1140,7 @@ int main()
 
 	typedef_with_union();
 	typedef_struct_with_typedef_union();
+	test_struct_with_func();
 
     done_testing();
 }

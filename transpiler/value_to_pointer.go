@@ -645,11 +645,6 @@ func pointerArithmetic(p *program.Program,
 		break
 	}
 
-	resolvedLeftType, err := types.ResolveType(p, leftType)
-	if err != nil {
-		return
-	}
-
 	type pA struct {
 		Name      string // name of variable: 'ptr'
 		Type      string // type of variable: 'int','double'
@@ -658,6 +653,17 @@ func pointerArithmetic(p *program.Program,
 	}
 
 	var s pA
+
+	resolvedLeftType, err := types.ResolveType(p, leftType)
+	if err != nil {
+		return
+	}
+	switch resolvedLeftType {
+	case "interface{}":
+		s.Type = "byte"
+	default:
+		s.Type = resolvedLeftType[2:]
+	}
 
 	{
 		var buf bytes.Buffer
@@ -668,11 +674,6 @@ func pointerArithmetic(p *program.Program,
 		var buf bytes.Buffer
 		_ = printer.Fprint(&buf, token.NewFileSet(), right)
 		s.Condition = buf.String()
-	}
-
-	s.Type = resolvedLeftType
-	if resolvedLeftType != "interface{}" {
-		s.Type = resolvedLeftType[2:]
 	}
 
 	s.Operator = "+"

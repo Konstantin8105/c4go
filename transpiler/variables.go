@@ -44,8 +44,9 @@ func transpileDeclRefExpr(n *ast.DeclRefExpr, p *program.Program) (
 	}
 
 	theType := n.Type
+	expr = util.NewIdent(n.Name)
 
-	return util.NewIdent(n.Name), theType, nil
+	return expr, theType, nil
 }
 
 func getDefaultValueForVar(p *program.Program, a *ast.VarDecl) (

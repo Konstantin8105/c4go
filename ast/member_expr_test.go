@@ -90,6 +90,30 @@ func TestMemberExpr(t *testing.T) {
 			IsPointer:  false,
 			ChildNodes: []Node{},
 		},
+		`0x2a0dbd0 <col:15, col:18> 'int (*)(int, int)' lvalue .f 0x2a0d7c0`: &MemberExpr{
+			Addr:       0x2a0dbd0,
+			Pos:        NewPositionFromString("col:15, col:18"),
+			Type:       "int (*)(int, int)",
+			Type2:      "",
+			IsLvalue:   true,
+			IsBitfield: false,
+			Name:       "f",
+			Address2:   "0x2a0d7c0",
+			IsPointer:  false,
+			ChildNodes: []Node{},
+		},
+		`0x2a0fdf8 <col:15, col:19> 'int (*)(int, int)' lvalue ->f 0x2a0d7c0`: &MemberExpr{
+			Addr:       0x2a0fdf8,
+			Pos:        NewPositionFromString("col:15, col:19"),
+			Type:       "int (*)(int, int)",
+			Type2:      "",
+			IsLvalue:   true,
+			IsBitfield: false,
+			Name:       "f",
+			Address2:   "0x2a0d7c0",
+			IsPointer:  true,
+			ChildNodes: []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)
