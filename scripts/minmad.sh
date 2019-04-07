@@ -29,6 +29,7 @@ mkdir -p ./testdata/
 # transpilation of all projects
 	echo "Transpile to $GO_FILE"
 	$C4GO transpile                         \
+		-s                                  \
 		-o="$GO_FILE"                       \
 		$TEMP_FOLDER/*.c
 

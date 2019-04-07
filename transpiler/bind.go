@@ -245,14 +245,21 @@ func cgoTypes(goType string) (_ string, ok bool) {
 // 	}
 
 func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast.Expr, err error) {
+
+	var has3poins bool
+	if has3poins = strings.HasPrefix(goType, "..."); has3poins {
+		goType = goType[3:]
+	}
+
+	if has3poins {
+		expr = &goast.IndexExpr{
+			X:     expr,
+			Index: goast.NewIdent("0"),
+		}
+	}
+
 	if ct, ok := cgoTypes(goType); ok {
-		return &goast.CallExpr{
-			Fun: &goast.SelectorExpr{
-				X:   goast.NewIdent("C"),
-				Sel: goast.NewIdent(ct),
-			},
-			Args: []goast.Expr{expr},
-		}, nil
+		return util.NewCallExpr("C."+ct, expr), nil
 	}
 
 	t := goType
@@ -320,13 +327,7 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 			}), nil
 	}
 
-	return &goast.CallExpr{
-		Fun: &goast.SelectorExpr{
-			X:   goast.NewIdent("C"),
-			Sel: goast.NewIdent(t),
-		},
-		Args: []goast.Expr{expr},
-	}, nil
+	return util.NewCallExpr("C."+t, expr), nil
 }
 
 // example:

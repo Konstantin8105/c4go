@@ -18,9 +18,6 @@ echo "" >> $OUTPUT_FILE
 ./scripts/ed.sh			2>&1 | grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
 echo "" >> $OUTPUT_FILE
 
-./scripts/lang.sh			2>&1 | grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
-echo "" >> $OUTPUT_FILE
-
 ./scripts/kilo.sh			2>&1 | grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
 echo "" >> $OUTPUT_FILE
 
