@@ -43,28 +43,17 @@ func getName(p *program.Program, firstChild ast.Node) (name string, err error) {
 		return fc.Name, nil
 
 	case *ast.MemberExpr:
-		if isUnionMemberExpr(p, fc) {
-			var expr goast.Expr
-			expr, _, _, _, err = transpileToExpr(fc, p, false)
-			if err != nil {
-				return
-			}
-			var buf bytes.Buffer
-			err = printer.Fprint(&buf, token.NewFileSet(), expr)
-			if err != nil {
-				return
-			}
-			return buf.String(), nil
-		}
-		if len(fc.Children()) == 0 {
-			return fc.Name, nil
-		}
-		var n string
-		n, err = getName(p, fc.Children()[0])
+		var expr goast.Expr
+		expr, _, _, _, err = transpileToExpr(fc, p, false)
 		if err != nil {
 			return
 		}
-		return n + "." + fc.Name, nil
+		var buf bytes.Buffer
+		err = printer.Fprint(&buf, token.NewFileSet(), expr)
+		if err != nil {
+			return
+		}
+		return buf.String(), nil
 
 	case *ast.CallExpr:
 		if len(fc.Children()) == 0 {
