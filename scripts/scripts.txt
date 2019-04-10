@@ -1,46 +1,71 @@
 
 Calculate warnings : ./testdata/9wm
 		After transpiling : 2 warnings.
-		Go build : 12 warnings
-		Unsafe   : 407
+		Go build : 4 warnings
+		Unsafe   : 409
 
 Calculate warnings : ./testdata/ed
-		After transpiling : 2 warnings.
-		Go build : 26 warnings
-		Unsafe   : 169
+		After transpiling : 0 warnings.
+		Go build : 8 warnings
+		Unsafe   : 170
+
+Calculate warnings in file: ./testdata/kilo/kilo.go
+		After transpiling : 0 warnings.
+		Go build : 0 warnings
+		Unsafe   : 17
+
+Calculate warnings in file: ./testdata/minmad/minmad.go
+		After transpiling : 0 warnings.
+		Go build : 2 warnings
+		Unsafe   : 66
 
 Calculate warnings in file: ./testdata/neateqn/neateqn.go
 		After transpiling : 0 warnings.
-		Go build : 3 warnings
+		Go build : 0 warnings
 		Unsafe   : 22
 
 Calculate warnings in file: ./testdata/neatmkfn/neatmkfn.go
-		After transpiling : 555 warnings.
-		Go build : 3 warnings
-		Unsafe   : 44
+		After transpiling : 0 warnings.
+		Go build : 270 warnings
+		Unsafe   : 138
+
+Calculate warnings in file: ./testdata/neatmail/neatmail.go
+		After transpiling : 0 warnings.
+		Go build : 2 warnings
+		Unsafe   : 250
 
 Calculate warnings in file: ./testdata/neatpost/neatpost.go
 		After transpiling : 0 warnings.
-		Go build : 9 warnings
+		Go build : 21 warnings
 		Unsafe   : 40
 
 Calculate warnings in file: ./testdata/neatrefer/neatrefer.go
-		After transpiling : 2 warnings.
+		After transpiling : 0 warnings.
 		Go build : 0 warnings
-		Unsafe   : 14
+		Unsafe   : 15
 
 Calculate warnings in file: ./testdata/neatroff/neatroff.go
-		After transpiling : 1 warnings.
-		Go build : 6 warnings
+		After transpiling : 0 warnings.
+		Go build : 17 warnings
 		Unsafe   : 254
 
 Calculate warnings in file: ./testdata/neatvi/neatvi.go
-		After transpiling : 28 warnings.
-		Go build : 3 warnings
-		Unsafe   : 130
+		After transpiling : 0 warnings.
+		Go build : 2 warnings
+		Unsafe   : 210
+
+Calculate warnings in file: ./testdata/triangle/triangle.go
+		After transpiling : 2 warnings.
+		Go build : 585 warnings
+		Unsafe   : 1411
+
+Calculate warnings in file: ./testdata/SQLITE/sqlite.go
+		After transpiling : 1 warnings.
+		Go build : 1 warnings
+		Unsafe   : 2599
 
 Calculate warnings in file: testdata/vorbis/vorbis.go
-After transpiling : 4 warnings.
-		Go build : 42 warnings
-		Unsafe   : 255
+		After transpiling : 0 warnings.
+		Go build : 3 warnings
+		Unsafe   : 257
 

@@ -590,10 +590,10 @@ void test_ungetc()
 
 void test_FILE()
 {
-	FILE * p = stdout;
-	is_true( p != stderr );
-	is_true( p == stdout );
-	(void) p;
+    FILE* p = stdout;
+    is_true(p != stderr);
+    is_true(p == stdout);
+    (void)p;
 }
 
 int main()

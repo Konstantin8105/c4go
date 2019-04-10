@@ -221,11 +221,9 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 
 	p.AddImport("github.com/Konstantin8105/c4go/noarch")
 
-	functionName := fmt.Sprintf("noarch.Not%s",
-		util.GetExportedName(t))
-	eType = "int"
+	eType = "bool"
 
-	return util.NewCallExpr(functionName, e),
+	return util.NewCallExpr("noarch.Not", e),
 		eType, preStmts, postStmts, nil
 }
 

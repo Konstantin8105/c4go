@@ -173,6 +173,9 @@ func transpileParenExpr(n *ast.ParenExpr, p *program.Program) (
 		}
 	}()
 
+	n.Type = util.GenerateCorrectType(n.Type)
+	n.Type2 = util.GenerateCorrectType(n.Type2)
+
 	expr, exprType, preStmts, postStmts, err := atomicOperation(n.Children()[0], p)
 	if err != nil {
 		return
@@ -744,6 +747,9 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		if v.Kind == "BitCast" {
 			return
 		}
+
+		v.Type = util.GenerateCorrectType(v.Type)
+		v.Type2 = util.GenerateCorrectType(v.Type2)
 
 		// avoid problem :
 		//

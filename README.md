@@ -151,6 +151,7 @@ int main()
 
 package main
 
+// #include </usr/include/math.h>
 import "C"
 
 import "github.com/Konstantin8105/c4go/noarch"
@@ -174,7 +175,7 @@ func c4goUnsafeConvert_int32(c4go_name *int32) []int32 {
 
 // frexp - add c-binding for implemention function
 func frexp(arg0 float64, arg1 []int32) float64 {
-	return float64(C.frexp(C.double(arg0), (*_Ctype_int)(unsafe.Pointer(&arg1[0]))))
+ 	return float64(C.frexp(C.double(arg0), (*C.int)(unsafe.Pointer(&arg1[0]))))
 }
 ```
 
@@ -220,16 +221,6 @@ int main()
     int* i5 = i2[1];
     a(i5);
     b(i5, 1);
-
-    // pointer arithmetic
-    int* i6 = i5 + 1;
-    a(i6);
-    b(i6, 1);
-
-    // pointer arithmetic
-    int* i7 = 1 + 0 + i5 + 0;
-    a(i7);
-    b(i7, 1);
 
     return 0;
 }
@@ -286,14 +277,7 @@ func main() {
 	// C-pointer from array
 	a(i5)
 	b(i5, 1)
-	var i6 []int32 = i5[0+1:]
-	// pointer arithmetic
-	a(i6)
-	b(i6, 1)
-	var i7 []int32 = i5[1+0+0+0:]
-	// pointer arithmetic
-	a(i7)
-	b(i7, 1)
+
 	return
 }
 
@@ -320,7 +304,7 @@ func c4goUnsafeConvert_int32(c4go_name *int32) []int32 {
             stddef.h	       2/6	        33.3%
              stdio.h	     35/46	        76.1%
             stdlib.h	     33/47	        70.2%
-            string.h	     16/24	        66.7%
+            string.h	     21/24	        87.5%
               time.h	     14/15	        93.3%
              wchar.h	      3/68	        4.41%
             wctype.h	      0/22	           0%

@@ -17,7 +17,6 @@ type resolveTestCase struct {
 var resolveTestCases = []resolveTestCase{
 	{"int", "int32"},
 	{"char *[13]", "[][]byte"},
-	{"__uint16_t", "uint16"},
 	{"void *", "interface{}"},
 	{"unsigned short int", "uint16"},
 	{"div_t", "noarch.DivT"},

@@ -38,15 +38,5 @@ int main()
     a(i5);
     b(i5, 1);
 
-    // pointer arithmetic
-    int* i6 = i5 + 1;
-    a(i6);
-    b(i6, 1);
-
-    // pointer arithmetic
-    int* i7 = 1 + 0 + i5 + 0;
-    a(i7);
-    b(i7, 1);
-
     return 0;
 }

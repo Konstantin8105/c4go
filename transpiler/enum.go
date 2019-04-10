@@ -46,13 +46,8 @@ func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (
 		}
 	}()
 
-	if !p.PreprocessorFile.IsUserSource(n.Pos.File) &&
-		!strings.Contains(n.Pos.File, "ctype.h") {
-		return
-	}
-
-	n.Name = util.GenerateCorrectType(n.Name)
 	n.Name = strings.TrimPrefix(n.Name, "enum ")
+	n.Name = util.GenerateCorrectType(n.Name)
 
 	// For case `enum` without name
 	if n.Name == "" {
@@ -103,22 +98,74 @@ func transpileEnumDeclWithType(p *program.Program, n *ast.EnumDecl, enumType str
 	// create all EnumConstant like just constants
 	var counter int
 	var i int
-	for _, child := range n.Children() {
-		switch child.(type) {
-		case *ast.EnumConstantDecl:
-			// go to next
-		default:
+	for _, children := range n.Children() {
+		child, ok := children.(*ast.EnumConstantDecl)
+		if !ok {
 			p.AddMessage(p.GenerateWarningMessage(
 				fmt.Errorf("unsupported type `%T` in enum", child), child))
-			return
+			continue
 		}
-		child := child.(*ast.EnumConstantDecl)
 		var (
 			e       *goast.ValueSpec
 			newPre  []goast.Stmt
 			newPost []goast.Stmt
 			val     *goast.ValueSpec
 		)
+
+		// specific case:
+		//
+		// EnumConstantDecl referenced _ISalpha 'int'
+		// `-ParenExpr 'int'
+		//   `-ConditionalOperator 'int'
+		//     |-BinaryOperator 'int' '<'
+		//     | |-ParenExpr 'int'
+		//     | | `-IntegerLiteral 'int' 2
+		//     | `-IntegerLiteral 'int' 8
+		//     |-ParenExpr 'int'
+		//     | `-BinaryOperator 'int' '<<'
+		//     |   |-ParenExpr 'int'
+		//     |   | `-BinaryOperator 'int' '<<'
+		//     |   |   |-IntegerLiteral 'int' 1
+		//     |   |   `-ParenExpr 0x3b752a8 'int'
+		//     |   |     `-IntegerLiteral 'int' 2
+		//     |   `-IntegerLiteral 'int' 8
+		//     `-ParenExpr 'int'
+		//       `-BinaryOperator 'int' '>>'
+		//         |-ParenExpr 'int'
+		//         | `-BinaryOperator 'int' '<<'
+		//         |   |-IntegerLiteral 'int' 1
+		//         |   `-ParenExpr 'int'
+		//         |     `-IntegerLiteral 'int' 2
+		//         `-IntegerLiteral 'int' 8
+		//
+		//	_ISalpha = func() int32 {
+		//		if 2 < 8 {
+		//			return 1 << uint64(2) << uint64(8)
+		//		}
+		//		return 1 << uint64(2) >> uint64(8)
+		//	}()
+		if len(child.Children()) == 1 {
+			if par, ok := child.Children()[0].(*ast.ParenExpr); ok {
+				if cond, ok := par.Children()[0].(*ast.ConditionalOperator); ok {
+					if bin, ok := cond.Children()[0].(*ast.BinaryOperator); ok && bin.Operator == "<" {
+						if par, ok := bin.Children()[0].(*ast.ParenExpr); ok {
+							xint, xok := par.Children()[0].(*ast.IntegerLiteral)
+							yint, yok := bin.Children()[1].(*ast.IntegerLiteral)
+							if xok && yok {
+								xv, xerr := strconv.Atoi(xint.Value)
+								yv, yerr := strconv.Atoi(yint.Value)
+								if xerr == nil && yerr == nil {
+									child.Children()[0] = cond.Children()[2]
+									if xv < yv {
+										child.Children()[0] = cond.Children()[1]
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 		val, newPre, newPost = transpileEnumConstantDecl(p, child)
 
 		if len(newPre) > 0 || len(newPost) > 0 {
@@ -192,10 +239,14 @@ func transpileEnumDeclWithType(p *program.Program, n *ast.EnumDecl, enumType str
 			counter = value * sign
 			counter++
 
+		case *goast.BinaryExpr:
+			// do nothing
+			e = val
+
 		default:
 			e = val
 			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("Add support of continues counter for type : %T",
+				fmt.Errorf("Add support of continues counter for type : %#v",
 					v), n))
 		}
 

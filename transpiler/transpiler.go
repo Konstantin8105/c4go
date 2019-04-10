@@ -123,6 +123,9 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 	// add convertion value to slice
 	GetUnsafeConvertDecls(p)
 
+	// checking implementation for all called functions
+	bindHeader, bindCode := generateBinding(p)
+
 	// Add the imports after everything else so we can ensure that they are all
 	// placed at the top.
 	for _, quotedImportPath := range p.Imports() {
@@ -143,8 +146,7 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 	// generate Go source
 	source = p.String()
 
-	// checking implementation for all called functions
-	bindHeader, bindCode := generateBinding(p)
+	// inject binding code
 	if len(bindCode) > 0 {
 		index := strings.Index(source, "package")
 		index += strings.Index(source[index:], "\n")
@@ -159,7 +161,7 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 	}
 
 	// only for "stdarg.h"
-	if p.IncludeHeaderIsExists("stdarg.h") && p.IsHaveVaList {
+	if (p.IncludeHeaderIsExists("stdarg.h") && p.IsHaveVaList) || strings.Contains(source, "va_list") {
 		source += getVaListStruct()
 	}
 

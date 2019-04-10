@@ -30,6 +30,7 @@ mkdir -p ./testdata/
 # transpilation of all projects
 	echo "Transpile to $GO_FILE"
 	$C4GO transpile                         \
+		-s                                  \
 		-clang-flag="-DTROFFFDIR=\"MMM\""	\
 		-clang-flag="-DTROFFMDIR=\"WWW\""	\
 		-o="$GO_FILE"                       \

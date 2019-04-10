@@ -6,6 +6,7 @@ import (
 	goast "go/ast"
 	"go/format"
 	"go/token"
+	"sort"
 	"strings"
 
 	"github.com/Konstantin8105/c4go/program"
@@ -19,6 +20,10 @@ func generateBinding(p *program.Program) (bindHeader, bindCode string) {
 	if len(ds) == 0 {
 		return
 	}
+
+	sort.Slice(ds, func(i, j int) bool {
+		return ds[i].Name < ds[j].Name
+	})
 
 	// automatic binding of function
 	{
@@ -59,9 +64,6 @@ func generateBinding(p *program.Program) (bindHeader, bindCode string) {
 		//		return float64(C.frexp(C.double(arg1), unsafe.Pointer(arg2)))
 		// }
 
-		mess := fmt.Sprintf("// %s - add c-binding for implemention function", ds[i].Name)
-		bindCode += mess
-
 		code, err := getBindFunction(p, ds[i])
 		if err != nil {
 			bindCode += p.GenerateWarningMessage(err, nil) + "\n"
@@ -77,25 +79,36 @@ func generateBinding(p *program.Program) (bindHeader, bindCode string) {
 	return
 }
 
+func getBindArgName(pos int) string {
+	return fmt.Sprintf("arg%d", pos)
+}
+
 func getBindFunction(p *program.Program, d program.DefinitionFunction) (code string, err error) {
 	var f goast.FuncDecl
 	f.Name = goast.NewIdent(d.Name)
 
-	prefix := "arg"
 	// arguments types
 	var ft goast.FuncType
 	var fl goast.FieldList
 	var argResolvedType []string
 	for i := range d.ArgumentTypes {
+		if i == len(d.ArgumentTypes)-1 && d.ArgumentTypes[i] == "..." {
+			argResolvedType[len(argResolvedType)-1] =
+				"..." + argResolvedType[len(argResolvedType)-1]
+			continue
+		}
 		resolveType, err := types.ResolveType(p, d.ArgumentTypes[i])
 		if err != nil {
 			return "", fmt.Errorf("cannot generate argument binding function `%s`: %v", d.Name, err)
 		}
+		argResolvedType = append(argResolvedType, resolveType)
+	}
+	for i := range argResolvedType {
+		resolveType := argResolvedType[i]
 		fl.List = append(fl.List, &goast.Field{
-			Names: []*goast.Ident{goast.NewIdent(fmt.Sprintf("%s%d", prefix, i))},
+			Names: []*goast.Ident{goast.NewIdent(getBindArgName(i))},
 			Type:  goast.NewIdent(resolveType),
 		})
-		argResolvedType = append(argResolvedType, resolveType)
 	}
 	ft.Params = &fl
 	f.Type = &ft
@@ -118,7 +131,7 @@ func getBindFunction(p *program.Program, d program.DefinitionFunction) (code str
 	var arg []goast.Expr
 	for i := range argResolvedType {
 		// convert from Go type to Cgo type
-		cgoExpr, err := ResolveCgoType(p, argResolvedType[i], goast.NewIdent(fmt.Sprintf("%s%d", prefix, i)))
+		cgoExpr, err := ResolveCgoType(p, argResolvedType[i], goast.NewIdent(getBindArgName(i)))
 		if err != nil {
 			return "", fmt.Errorf("cannot resolve cgo type for function `%s`: %v", d.Name, err)
 		}
@@ -126,28 +139,20 @@ func getBindFunction(p *program.Program, d program.DefinitionFunction) (code str
 		arg = append(arg, cgoExpr)
 	}
 
-	if returnResolvedType != "" {
-		f.Body = &goast.BlockStmt{
-			List: []goast.Stmt{
-				&goast.ReturnStmt{
-					Results: []goast.Expr{
-						util.NewCallExpr(returnResolvedType,
-							util.NewCallExpr(fmt.Sprintf("C.%s", d.Name), arg...),
-						),
-					},
-				},
+	f.Body = &goast.BlockStmt{}
+
+	stmts := prepareIfForNilArgs(argResolvedType, returnResolvedType)
+	f.Body.List = append(f.Body.List, stmts...)
+	stmts = bindFromCtoGo(p, d.ReturnType, returnResolvedType, util.NewCallExpr(fmt.Sprintf("C.%s", d.Name), arg...))
+	f.Body.List = append(f.Body.List, stmts...)
+
+	// add comment for function
+	f.Doc = &goast.CommentGroup{
+		List: []*goast.Comment{
+			&goast.Comment{
+				Text: fmt.Sprintf("// %s - add c-binding for implemention function", d.Name),
 			},
-		}
-	} else {
-		f.Body = &goast.BlockStmt{
-			List: []goast.Stmt{
-				&goast.ReturnStmt{
-					Results: []goast.Expr{
-						util.NewCallExpr(fmt.Sprintf("C.%s", d.Name), arg...),
-					},
-				},
-			},
-		}
+		},
 	}
 
 	var buf bytes.Buffer
@@ -240,19 +245,30 @@ func cgoTypes(goType string) (_ string, ok bool) {
 // 	}
 
 func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast.Expr, err error) {
+
+	var has3poins bool
+	if has3poins = strings.HasPrefix(goType, "..."); has3poins {
+		goType = goType[3:]
+	}
+
+	if has3poins {
+		expr = &goast.IndexExpr{
+			X:     expr,
+			Index: goast.NewIdent("0"),
+		}
+	}
+
 	if ct, ok := cgoTypes(goType); ok {
-		return &goast.CallExpr{
-			Fun: &goast.SelectorExpr{
-				X:   goast.NewIdent("C"),
-				Sel: goast.NewIdent(ct),
-			},
-			Args: []goast.Expr{expr},
-		}, nil
+		return util.NewCallExpr("C."+ct, expr), nil
 	}
 
 	t := goType
 
-	if strings.HasPrefix(goType, "[") {
+	if t == "*noarch.File" {
+		return util.NewCallExpr("*C.struct__IO_FILE", expr), nil
+	} else if strings.HasPrefix(goType, "[][]") {
+		t = "interface{}"
+	} else if strings.HasPrefix(goType, "[") {
 		// []int  -> * _Ctype_int
 		t = goType[2:]
 		var ok bool
@@ -261,7 +277,12 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 			// TODO: check next
 			t = goType[2:]
 		}
-		t = "( * _Ctype_" + t + " ) "
+
+		if _, ok := p.Structs[t]; ok {
+			t = "( * C.struct_" + t + " ) "
+		} else {
+			t = "( * C." + t + " ) "
+		}
 		t = strings.Replace(t, " ", "", -1)
 
 		p.AddImport("unsafe")
@@ -285,7 +306,7 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 			// TODO: check next
 			t = goType[1:]
 		}
-		t = "( * _Ctype_" + t + " ) "
+		t = "( * C." + t + " ) "
 		t = strings.Replace(t, " ", "", -1)
 
 		p.AddImport("unsafe")
@@ -308,11 +329,98 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 			}), nil
 	}
 
-	return &goast.CallExpr{
-		Fun: &goast.SelectorExpr{
-			X:   goast.NewIdent("C"),
-			Sel: goast.NewIdent(t),
-		},
-		Args: []goast.Expr{expr},
-	}, nil
+	return util.NewCallExpr("C."+t, expr), nil
+}
+
+// example:
+//
+// returnValue := ...
+// return cast_from_C_to_Go_type(returnValue)
+//
+func bindFromCtoGo(p *program.Program, cType string, goType string, expr goast.Expr) (stmts []goast.Stmt) {
+
+	if expr == nil {
+		expr = goast.NewIdent("C4GO_UNDEFINE_EXPR")
+	}
+	if goType == "" {
+		goType = "C4GO_UNDEFINE_GO_TYPE"
+	}
+
+	if cType == "" || cType == "void" {
+		stmts = append(stmts, &goast.ExprStmt{expr})
+		return
+	}
+
+	// from documentation : https://golang.org/cmd/cgo/
+	//
+	// C string to Go string
+	// func C.GoString(*C.char) string
+	//
+
+	switch cType {
+	case "char *":
+		stmts = append(stmts, &goast.ReturnStmt{Results: []goast.Expr{
+			util.NewCallExpr("[]byte",
+				util.NewCallExpr("C.GoString", expr),
+			),
+		}})
+
+	default:
+		stmts = append(stmts, &goast.ReturnStmt{Results: []goast.Expr{
+			util.NewCallExpr(goType, expr),
+		}})
+	}
+
+	return
+}
+
+// add if`s for nil cases
+//
+// strtok - add c-binding for implemention function
+// func strtok(arg0 []byte, arg1 []byte) []byte {
+//	if arg0 == nil {
+//		return []byte{}
+//	}
+//	if arg1 == nil {
+//		return []byte{}
+//	}
+//	return (.....)
+//}
+//
+func prepareIfForNilArgs(argType []string, returnType string) (stmts []goast.Stmt) {
+	var ret goast.Stmt
+	switch {
+	case strings.Contains(returnType, "[]"):
+		ret = &goast.ReturnStmt{
+			Results: []goast.Expr{
+				goast.NewIdent(returnType + "{}"),
+			},
+		}
+
+	default:
+		return
+	}
+
+	for i := range argType {
+		// for slices : []byte, []int, ...
+		// 	if arg... == nil{
+		//		return []...{}
+		//	}
+		if strings.Contains(argType[i], "[]") {
+			stmts = append(stmts, &goast.IfStmt{
+				Cond: &goast.BinaryExpr{
+					X:  goast.NewIdent(getBindArgName(i)),
+					Op: token.EQL,
+					Y:  goast.NewIdent("nil"),
+				},
+				Body: &goast.BlockStmt{
+					List: []goast.Stmt{
+						ret,
+					},
+				},
+			})
+			continue
+		}
+	}
+	return
 }

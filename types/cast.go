@@ -111,7 +111,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	if util.IsFunction(cFromType) && toType == "bool" {
 		return &goast.BinaryExpr{
 			X:  expr,
-			Op: token.NEQ,
+			Op: token.NEQ, // !=
 			Y:  goast.NewIdent("nil"),
 		}, nil
 	}
@@ -133,18 +133,23 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	}
 
 	// Exceptions for va_list
-	if fromType == "va_list" && toType == "struct __va_list_tag *" {
+	if fromType == "va_list" {
 		return expr, nil
 	}
 
 	// casting
-	if fromType == "void *" && toType[len(toType)-1] == '*' &&
-		toType[len(toType)-2] != '*' {
-		toType = strings.Replace(toType, "*", " ", -1)
+	// void * --> char *
+	// void * --> int **
+	if fromType == "void *" && IsPointer(toType, p) {
+		countStar := strings.Count(toType, "*")
+		countParen := strings.Count(toType, "[")
+
+		toType = GetBaseType(toType)
 		t, err := ResolveType(p, toType)
 		if err != nil {
 			return nil, err
 		}
+
 		if strings.Contains(toType, "FILE") {
 			return &goast.TypeAssertExpr{
 				X:      expr,
@@ -152,13 +157,14 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 				Type:   goast.NewIdent("*noarch.File"),
 			}, nil
 		} else {
+			for i := 0; i < countStar+countParen; i++ {
+				t = "[]" + t
+			}
 			return &goast.TypeAssertExpr{
 				X:      expr,
 				Lparen: 1,
-				Type: &goast.ArrayType{
-					Lbrack: 1,
-					Elt:    util.NewIdent(t),
-				}}, nil
+				Type:   util.NewTypeIdent(t),
+			}, nil
 		}
 	}
 
@@ -235,7 +241,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	}
 
 	// convert enum to int and recursive
-	if strings.Contains(fromType, "enum") && !strings.Contains(toType, "enum") {
+	if strings.Contains(fromType, "enum ") && !strings.Contains(toType, "enum ") {
 		in := goast.CallExpr{
 			Fun: &goast.Ident{
 				Name: "int32",
@@ -253,10 +259,10 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return CastExpr(p, &in, "int", toType)
 	}
 	// convert int to enum and recursive
-	if !strings.Contains(fromType, "enum") && strings.Contains(toType, "enum") {
+	if !strings.Contains(fromType, "enum ") && strings.Contains(toType, "enum ") {
 		in := goast.CallExpr{
 			Fun: &goast.Ident{
-				Name: strings.TrimSpace(strings.Replace(toType, "enum", "", -1)),
+				Name: strings.TrimSpace(strings.Replace(toType, "enum ", "", -1)),
 			},
 			Lparen: 1,
 			Args: []goast.Expr{
@@ -335,9 +341,6 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		// Floating-point types.
 		"float32", "float64",
 
-		// Known aliases
-		"__uint16_t", "size_t",
-
 		"noarch.SsizeT",
 	}
 	for _, v := range types {
@@ -353,10 +356,8 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 			return e, nil
 		}
 		if fromType == "bool" && toType == v {
-			e := util.NewGoExpr(`map[bool]int32{false: 0, true: 1}[replaceme]`)
-			// Swap replaceme with the current expression
-			e.(*goast.IndexExpr).Index = expr
-			return CastExpr(p, e, "int", cToType)
+			expr = util.NewCallExpr("noarch.BoolToInt", expr)
+			return CastExpr(p, expr, "int", cToType)
 		}
 	}
 

@@ -627,9 +627,116 @@ void pointer_arithm_in_struct()
     is_true(ps->hvm == &str[3]);
 }
 
+typedef struct
+  {
+  enum { UADD = 0, UDEL = 1, UMOV = 2, VMOV = 3 } typet;
+  int * head;
+  int * tail;
+  }
+undo;
+
+void typedef_with_union()
+{
+	diag("typedef with union");
+	undo   u ;
+	(void)(u);
+	u.typet = UMOV;
+	is_eq(u.typet, UMOV);
+	(void)(u.typet);
+	int y = 53;
+	u.head = &y;
+	is_eq(*u.head, y);
+
+	undo u2;
+	u2.typet = VMOV;
+	int y2 = 42;
+	u2.head = &y2;
+	is_eq(u2.typet, VMOV);
+	is_eq(*u2.head, y2  );
+
+	undo * u3 = &u2;
+	is_eq((*u3).typet, VMOV);
+	is_eq(*(*u3).head, y2  );
+
+	(*u3).typet = u.typet;
+	is_eq((*u3).typet, UMOV);
+
+	int bd = UDEL;
+	(*u3).typet = bd;
+	is_eq((*u3).typet, UDEL);
+}
+
+typedef union {
+  void *p;
+  int b;
+} Value;
+
+#define TValuefields	Value value; int tt
+
+typedef struct lua_TValue {
+  TValuefields;
+} TValue;
+
+
+
+void typedef_struct_with_typedef_union()
+{
+	diag("typedef struct with typedef union");
+	Value v;
+	v.b = 42;
+	is_eq(v.b, 42);
+	TValue tv;
+	tv.value = v;
+	tv.tt    = 55;
+	is_eq(tv.value.b, 42);
+	is_eq(tv.tt     , 55);
+
+	TValue *ptv = &tv;
+	is_eq(ptv->value.b,42);
+	is_eq(ptv->tt     ,55);
+
+	double d = 45.0;
+	v.p = &d;
+	tv.value = v;
+	is_eq(*((double *)(v.p)), d);
+	is_eq(*((double *)(ptv->value.p)), d);
+	is_eq(ptv->tt, 55);
+
+	is_eq(*((double*)((&tv)->value.p)), d);
+}
+
+int add(int a, int b)
+{
+    return a + b;
+}
+
+struct simon {
+	int (*f)(int, int);
+	long double g;
+};
+
+void test_struct_with_func()
+{
+	struct simon s1;
+	s1.f = add;
+	s1.g = 46.;
+	is_eq(s1.f(12,23), 12+23);
+	is_eq(s1.g       , 46.  );
+	struct simon * ps = &s1;
+	is_eq(ps->f(12,23), 12+23);
+	is_eq(ps->g       , 46.  );
+	struct simon as[2];
+	as[0] = s1;
+	as[1] = *ps;
+	is_eq(as[0].f(12,23), 12+23);
+	is_eq(as[0].g       , 46.  );
+	is_eq(as[1].f(12,23), 12+23);
+	is_eq(as[1].g       , 46.  );
+}
+
 int main()
 {
-    plan(100);
+    plan(125);
 
     pointer_arithm_in_struct();
     test_extern_vec();
@@ -1030,6 +1137,10 @@ int main()
     func_in_func_in_struct();
 
     struct_inside_union();
+
+	typedef_with_union();
+	typedef_struct_with_typedef_union();
+	test_struct_with_func();
 
     done_testing();
 }

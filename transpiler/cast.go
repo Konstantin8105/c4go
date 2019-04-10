@@ -44,6 +44,11 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		return
 	}
 
+	// avoid cast to qsort type function
+	if n.Type == "__compar_fn_t" {
+		return
+	}
+
 	// type casting
 	if n.Kind == "BitCast" && types.IsPointer(exprType, p) && types.IsPointer(n.Type, p) {
 		var newPost []goast.Stmt
@@ -250,6 +255,13 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 		return
 	}
 
+	//
+	// BinaryOperator 'const char **' '='
+	// |-DeclRefExpr 'const char **' lvalue Var 0x39a4380 'non_options' 'const char **'
+	// `-CStyleCastExpr 'const char **' <BitCast>
+	//   `-ImplicitCastExpr 'void *' <LValueToRValue>
+	//     `-DeclRefExpr 'void *' lvalue Var 0x39a62b0 'tmp' 'void *'
+	//
 	// type casting
 	if n.Kind == "BitCast" && types.IsPointer(exprType, p) && types.IsPointer(n.Type, p) {
 		var newPost []goast.Stmt

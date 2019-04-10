@@ -22,7 +22,7 @@
     printf("%s = (%d) %d bytes\n", #v, p, sizeof(v));
 
 struct MyStruct {
-    double a,aa,aaa,aaaa;
+    double a, aa, aaa, aaaa;
     char b;
     char c;
 };
@@ -42,8 +42,8 @@ struct MyNums {
     int numbers[];
 };
 
-struct s{
-	FILE * p;
+struct s {
+    FILE* p;
 };
 
 int main()
@@ -88,11 +88,11 @@ int main()
 
     diag("Structures");
     is_eq(sizeof(struct MyStruct), 40);
-    is_eq(sizeof(struct MyStruct *), 8);
+    is_eq(sizeof(struct MyStruct*), 8);
 
     diag("Unions");
     is_eq(sizeof(union MyUnion), 16);
-    is_eq(sizeof(union MyUnion *), 8);
+    is_eq(sizeof(union MyUnion*), 8);
 
     diag("Function pointers");
     is_eq(sizeof(main), 1);
@@ -117,9 +117,9 @@ int main()
     diag("MyNums");
     is_eq(sizeof(struct MyNums), 104);
 
-	diag("FILE *");
-	is_eq(sizeof(FILE   *), 8);
-	is_eq(sizeof(struct s), 8);
+    diag("FILE *");
+    is_eq(sizeof(FILE*), 8);
+    is_eq(sizeof(struct s), 8);
 
     done_testing();
 }

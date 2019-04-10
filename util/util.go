@@ -100,6 +100,9 @@ func ParseFunction(s string) (prefix string, funcname string, f []string, r []st
 		}
 	}()
 
+	// remove specific attribute for function longjmp
+	s = strings.Replace(s, "__attribute__((noreturn))", "", -1)
+
 	s = strings.TrimSpace(s)
 	if !IsFunction(s) {
 		err = fmt.Errorf("Is not function : %s", s)
@@ -380,7 +383,7 @@ func CleanCType(s string) (out string) {
 
 // GenerateCorrectType - generate correct type
 // Example: 'union (anonymous union at tests/union.c:46:3)'
-func GenerateCorrectType(name string) string {
+func GenerateCorrectType(name string) (result string) {
 	if !strings.Contains(name, "anonymous") {
 		return CleanCType(name)
 	}

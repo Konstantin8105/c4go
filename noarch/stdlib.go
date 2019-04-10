@@ -517,7 +517,11 @@ func AtexitRun() {
 }
 
 func Int32() int32 {
-	return int32(rand.Int())
+	r := int32(rand.Int())
+	if r < 0 {
+		return Int32()
+	}
+	return r
 }
 
 func Exit(e int32) {

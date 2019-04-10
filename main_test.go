@@ -863,6 +863,20 @@ func TestExamples(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
+
+			t.Run("run", func(t *testing.T) {
+				cmd := exec.Command("go", "run", args.outputFile)
+				cmdOutput := &bytes.Buffer{}
+				cmdErr := &bytes.Buffer{}
+				cmd.Stdout = cmdOutput
+				cmd.Stdin = bytes.NewBuffer([]byte("47"))
+				cmd.Stderr = cmdErr
+				err = cmd.Run()
+				if err != nil {
+					t.Fatalf("Go build test `%v` : err = %v\n%v",
+						args.outputFile, err, cmdErr.String())
+				}
+			})
 		})
 	}
 }

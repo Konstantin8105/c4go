@@ -79,10 +79,6 @@ func TestBookSources(t *testing.T) {
 		ignoreFileList []string
 	}{
 		{
-			prefix:    "Tinn",
-			gitSource: "https://github.com/glouw/tinn.git",
-		},
-		{
 			prefix:    "brainfuck",
 			gitSource: "https://github.com/kgabis/brainfuck-c.git",
 		},
@@ -384,67 +380,6 @@ func TestCsparse(t *testing.T) {
 	}
 }
 
-func TestTriangle(t *testing.T) {
-	folder := "./testdata/git-source/triangle/"
-
-	// Create build folder
-	if _, err := os.Stat(folder); os.IsNotExist(err) {
-		err = os.MkdirAll(folder, os.ModePerm)
-		if err != nil {
-			t.Fatalf("Cannot create folder %v . %v", folder, err)
-		}
-
-		// download file
-		t.Logf("Download file")
-		fileUrl := "http://www.netlib.org/voronoi/triangle.zip"
-		err := downloadFile(folder+"triangle.zip", fileUrl)
-		if err != nil {
-			t.Logf("Cannot download : %v", err)
-			return
-		}
-
-		// extract zip
-		t.Logf("Extract")
-		_, err = unzip(folder+"triangle.zip", folder)
-		if err != nil {
-			t.Fatalf("Cannot unzip : %v", err)
-		}
-	}
-
-	args := DefaultProgramArgs()
-	args.inputFiles = []string{
-		folder + "triangle.c",
-	}
-	args.clangFlags = []string{}
-	args.outputFile = folder + "main.go"
-	args.ast = false
-	args.verbose = false
-
-	if err := Start(args); err != nil {
-		t.Fatalf("Cannot transpile `%v`: %v", args, err)
-	}
-
-	// print logs
-	ls, err := getLogs(folder + "main.go")
-	if err != nil {
-		t.Fatalf("Cannot show logs: %v", err)
-	}
-	for _, l := range ls {
-		t.Log(l)
-	}
-
-	cmd := exec.Command("go", "build", "-o", folder+"triangle", "-gcflags", "-e",
-		args.outputFile)
-	var stdout, stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	err = cmd.Run()
-	if err != nil {
-		parseError(t, stderr.String())
-		t.Logf("cmd.Run() failed with %s : %v\n", err, stderr.String())
-	}
-}
-
 func parseError(t *testing.T, str string) {
 	// Example:
 	// testdata/git-source/triangle/main.go:2478:41: invalid operation: (operator & not defined on slice)
@@ -546,6 +481,7 @@ func downloadFile(filepath string, url string) error {
 	// Create the file
 	out, err := os.Create(filepath)
 	if err != nil {
+		err = fmt.Errorf("cannot create %v", err)
 		return err
 	}
 	defer out.Close()
@@ -726,4 +662,165 @@ func TestKiloEditor(t *testing.T) {
 		t.Fatalf("Go build test `%v` : err = %v\n%v",
 			goFile, err, cmdErr.String())
 	}
+}
+
+func TestTinn(t *testing.T) {
+
+	prefix := "Tinn"
+	gitSource := "https://github.com/glouw/tinn.git"
+
+	fileList, err := getFileList(prefix, gitSource)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	goFile := fileList[0] + ".go"
+	args := DefaultProgramArgs()
+	args.inputFiles = fileList
+	args.outputFile = goFile
+	args.ast = false
+	args.verbose = false
+
+	if err := Start(args); err != nil {
+		t.Fatalf("Cannot transpile `%v`: %v", args, err)
+	}
+
+	// warning is not acceptable
+	dat, err := ioutil.ReadFile(goFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if bytes.Contains(dat, []byte(program.WarningMessage)) {
+		t.Fatalf("find warning message")
+	}
+
+	// calculate amount unsafe operations
+	unsafeLimit := 15
+	uintptrLimit := 15
+	if count := bytes.Count(dat, []byte("unsafe.Pointer")); count > unsafeLimit {
+		t.Fatalf("too much unsafe operations: %d", count)
+	} else {
+		t.Logf("amount unsafe operations: %d", count)
+	}
+	if count := bytes.Count(dat, []byte("uintptr")); count > uintptrLimit {
+		t.Fatalf("too much uintptr operations: %d", count)
+	} else {
+		t.Logf("amount uintptr operations: %d", count)
+	}
+
+	cmd := exec.Command("go", "build",
+		"-o", goFile+".app",
+		"-gcflags", "-e",
+		goFile)
+	cmdOutput := &bytes.Buffer{}
+	cmdErr := &bytes.Buffer{}
+	cmd.Stdout = cmdOutput
+	cmd.Stderr = cmdErr
+	err = cmd.Run()
+	if err != nil {
+		t.Fatalf("Go build test `%v` : err = %v\n%v",
+			goFile, err, cmdErr.String())
+	}
+
+	// wget http://archive.ics.uci.edu/ml/machine-learning-databases/semeion/semeion.data
+	index := strings.LastIndex(fileList[0], "/")
+	filepath := fileList[0][:index+1]
+	os.Chdir(filepath)
+	if err := downloadFile(filepath+"semeion.data", "http://archive.ics.uci.edu/ml/machine-learning-databases/semeion/semeion.data"); err != nil {
+		t.Fatalf("%v", err)
+	}
+
+	cmd = exec.Command("./Tinn.c.go.app")
+	cmdOutput = &bytes.Buffer{}
+	cmdErr = &bytes.Buffer{}
+	cmd.Stdout = cmdOutput
+	cmd.Stderr = cmdErr
+	err = cmd.Run()
+	if err != nil {
+		t.Fatalf("Go run `%v` : err = %v\n%v\n%v",
+			goFile, err, cmdOutput.String(), cmdErr.String())
+	}
+	t.Logf("%s", cmdOutput.String())
+
+	// TODO : add result compare
+}
+
+func TestSpringerproblem(t *testing.T) {
+
+	prefix := "Springerproblem"
+	gitSource := "https://github.com/carstenhag/springerproblem.git"
+
+	fileList, err := getFileList(prefix, gitSource)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	goFile := fileList[0] + ".go"
+	args := DefaultProgramArgs()
+	args.inputFiles = fileList
+	args.outputFile = goFile
+	args.ast = false
+	args.verbose = false
+
+	if err := Start(args); err != nil {
+		t.Fatalf("Cannot transpile `%v`: %v", args, err)
+	}
+
+	// warning is not acceptable
+	dat, err := ioutil.ReadFile(goFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if bytes.Contains(dat, []byte(program.WarningMessage)) {
+		t.Fatalf("find warning message")
+	}
+
+	// calculate amount unsafe operations
+	unsafeLimit := 5
+	uintptrLimit := 2
+	if count := bytes.Count(dat, []byte("unsafe.Pointer")); count > unsafeLimit {
+		t.Fatalf("too much unsafe operations: %d", count)
+	} else {
+		t.Logf("amount unsafe operations: %d", count)
+	}
+	if count := bytes.Count(dat, []byte("uintptr")); count > uintptrLimit {
+		t.Fatalf("too much uintptr operations: %d", count)
+	} else {
+		t.Logf("amount uintptr operations: %d", count)
+	}
+
+	cmd := exec.Command("go", "build",
+		"-o", goFile+".app",
+		"-gcflags", "-e",
+		goFile)
+	cmdOutput := &bytes.Buffer{}
+	cmdErr := &bytes.Buffer{}
+	cmd.Stdout = cmdOutput
+	cmd.Stderr = cmdErr
+	err = cmd.Run()
+	if err != nil {
+		t.Fatalf("Go build test `%v` : err = %v\n%v",
+			goFile, err, cmdErr.String())
+	}
+
+	index := strings.LastIndex(fileList[0], "/")
+	filepath := fileList[0][:index+1]
+	os.Chdir(filepath)
+
+	cmd = exec.Command("./main.c.go.app")
+	cmdOutput = &bytes.Buffer{}
+	cmdErr = &bytes.Buffer{}
+	cmd.Stdout = cmdOutput
+	cmd.Stdin = bytes.NewBuffer([]byte("1\n12\n12\n\n\n\n"))
+	cmd.Stderr = cmdErr
+	err = cmd.Run()
+	if err != nil {
+		t.Fatalf("Go run `%v` : err = %v\n%v\n%v",
+			goFile, err, cmdOutput.String(), cmdErr.String())
+	}
+	t.Logf("%s", cmdOutput.String())
+
+	// TODO : add result compare
 }
