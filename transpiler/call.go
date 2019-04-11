@@ -816,7 +816,7 @@ func transpileCallExprQsort(n *ast.CallExpr, p *program.Program) (
 		Type: &goast.FuncType{
 			Params: &goast.FieldList{
 				List: []*goast.Field{
-					&goast.Field{
+					{
 						Names: []*goast.Ident{goast.NewIdent("a"), goast.NewIdent("b")},
 						Type:  goast.NewIdent("int"),
 					},
@@ -824,7 +824,7 @@ func transpileCallExprQsort(n *ast.CallExpr, p *program.Program) (
 			},
 			Results: &goast.FieldList{
 				List: []*goast.Field{
-					&goast.Field{Type: goast.NewIdent("bool")},
+					{Type: goast.NewIdent("bool")},
 				},
 			},
 		},

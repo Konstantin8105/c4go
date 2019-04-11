@@ -106,7 +106,7 @@ func GetUnsafeConvertDecls(p *program.Program) {
 		p.File.Decls = append(p.File.Decls, &goast.FuncDecl{
 			Doc: &goast.CommentGroup{
 				List: []*goast.Comment{
-					&goast.Comment{
+					{
 						Text: fmt.Sprintf("// %s : created by c4go\n", functionName),
 					},
 				},
