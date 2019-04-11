@@ -683,9 +683,18 @@ func pointerArithmetic(p *program.Program,
 
 	src := `package main
 func main(){
-	a := (*(*[1000000]{{ .Type }})(unsafe.Pointer(uintptr(
-			unsafe.Pointer(&{{ .Name }}[0])) {{ .Operator }}
-			(uintptr)({{ .Condition }})*unsafe.Sizeof({{ .Name }}[0]))))[:]
+	a := func()[]{{ .Type }} {
+		var position int64 = int64({{ .Condition }})
+		switch {
+		case position > 0:
+			return (*(*[1000000]{{ .Type }})(unsafe.Pointer(uintptr(unsafe.Pointer(&{{ .Name }}[0])) + (uintptr)(uint64(position))*unsafe.Sizeof({{ .Name }}[0]))))[:]
+		case position < 0:
+			position = -position
+			return (*(*[1000000]{{ .Type }})(unsafe.Pointer(uintptr(unsafe.Pointer(&{{ .Name }}[0])) - (uintptr)(uint64(position))*unsafe.Sizeof({{ .Name }}[0]))))[:]
+		}
+		// position == 0:
+		return {{ .Name }}[:]
+	}()
 }`
 	tmpl := template.Must(template.New("").Parse(src))
 	var source bytes.Buffer

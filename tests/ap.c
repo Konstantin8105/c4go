@@ -17,6 +17,11 @@ long get()
     return (long)(0);
 }
 
+long negative()
+{
+    return (long)(-1);
+}
+
 double global;
 
 double* get_value()
@@ -89,6 +94,12 @@ int main()
     global = 42;
     double* i12 = get_value();
     is_eq(*i12, global);
+
+    diag("pointer arithmetic 7");
+    int* tmp_i2 = i2 + 1;
+    int* i13 = tmp_i2 + negative();
+    a(i13);
+    b(i13, 1);
 
     diag("pointer for some type");
     typedef int NUMBER;
