@@ -363,7 +363,7 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 //   `-DeclRefExpr <col:26> 'char *' lvalue Var 0x3c05ae8 'pos' 'char *'
 //
 func pointerParts(node *ast.Node, p *program.Program) (
-	pnt ast.Node, value ast.Node, back func(), err error) {
+	pnt ast.Node, value ast.Node, back func(), undefineIndex bool, err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("Cannot pointerParts: err = %v", err)
@@ -402,6 +402,7 @@ func pointerParts(node *ast.Node, p *program.Program) (
 			case *ast.BinaryOperator,
 				*ast.ImplicitCastExpr,
 				*ast.ParenExpr:
+				undefineIndex = true // is index probably negative
 				// go deeper
 			default:
 				return true
@@ -414,6 +415,7 @@ func pointerParts(node *ast.Node, p *program.Program) (
 				*ast.MemberExpr,
 				*ast.UnaryExprOrTypeTraitExpr, // ignore sizeof
 				*ast.CStyleCastExpr:
+				undefineIndex = true // is index probably negative
 				return
 			}
 		}
@@ -486,10 +488,12 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 
 	var pnt, value ast.Node
 	var back func()
-	pnt, value, back, err = pointerParts(&(n.Children()[0]), p)
+	var undefineIndex bool
+	pnt, value, back,undefineIndex, err = pointerParts(&(n.Children()[0]), p)
 	if err != nil {
 		return
 	}
+	_ = undefineIndex
 
 	e, eType, newPre, newPost, err := atomicOperation(value, p)
 	if err != nil {

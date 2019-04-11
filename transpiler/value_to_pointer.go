@@ -649,7 +649,6 @@ func pointerArithmetic(p *program.Program,
 		Name      string // name of variable: 'ptr'
 		Type      string // type of variable: 'int','double'
 		Condition string // condition : '-1' ,'(-1+2-2)'
-		Operator  string // operator : '+', '-'
 	}
 
 	var s pA
@@ -676,18 +675,13 @@ func pointerArithmetic(p *program.Program,
 		s.Condition = buf.String()
 	}
 
-	s.Operator = "+"
-	if operator == token.SUB {
-		s.Operator = "-"
-	}
-
 	src := `package main
 func main(){
 	a := func()[]{{ .Type }} {
 		var position int64 = int64({{ .Condition }})
 		switch {
 		case position > 0:
-			return (*(*[1000000]{{ .Type }})(unsafe.Pointer(uintptr(unsafe.Pointer(&{{ .Name }}[0])) + (uintptr)(uint64(position))*unsafe.Sizeof({{ .Name }}[0]))))[:]
+			return {{ .Name }} [position:]
 		case position < 0:
 			position = -position
 			return (*(*[1000000]{{ .Type }})(unsafe.Pointer(uintptr(unsafe.Pointer(&{{ .Name }}[0])) - (uintptr)(uint64(position))*unsafe.Sizeof({{ .Name }}[0]))))[:]

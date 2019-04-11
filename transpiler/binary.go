@@ -419,7 +419,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			var pnt, value ast.Node
 			var back func()
 			var nodeN ast.Node = n
-			pnt, value, back, err = pointerParts(&nodeN, p)
+			pnt, value, back, _, err = pointerParts(&nodeN, p)
 			if err != nil {
 				err = fmt.Errorf("cannot separate on parts: %v", err)
 				return
