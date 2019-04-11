@@ -7,6 +7,8 @@
 
 package code_quality
 
+import "reflect"
+import "runtime"
 import "unsafe"
 import "github.com/Konstantin8105/c4go/noarch"
 
@@ -60,14 +62,19 @@ func main() {
 	var val int32 = 2 - 2
 	var i7 []int32 = func() []int32 {
 		var position int64 = int64(1 + (1 - 1) + val + 0*(100-2) + 0 + 0 - 0*0)
-		switch {
-		case position > 0:
-			return i5[position:]
-		case position < 0:
+		slice := i5
+		if position < 0 {
 			position = -position
-			return (*(*[1000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) - (uintptr)(uint64(position))*unsafe.Sizeof(i5[0]))))[:]
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&slice[0]))
+			sliceLen := len(slice)
+			hdr.Data = uintptr(unsafe.Pointer(&slice[0])) - (uintptr(position))*unsafe.Sizeof(slice[0])
+			runtime.KeepAlive(&slice[0])
+			hdr.Len = sliceLen + int(position)
+			hdr.Cap = hdr.Len
+			slice = *((*[]int32)(unsafe.Pointer(hdr)))
+			return slice
 		}
-		return i5[:]
+		return slice[position:]
 	}()
 	// pointer arithmetic
 	a(i7)
@@ -86,14 +93,19 @@ func main() {
 	b(i10, 1)
 	var i11 []int32 = func() []int32 {
 		var position int64 = int64(1 + 0 + 0 + 5*get() + get() - (12+3)*get())
-		switch {
-		case position > 0:
-			return i5[position:]
-		case position < 0:
+		slice := i5
+		if position < 0 {
 			position = -position
-			return (*(*[1000000]int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&i5[0])) - (uintptr)(uint64(position))*unsafe.Sizeof(i5[0]))))[:]
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&slice[0]))
+			sliceLen := len(slice)
+			hdr.Data = uintptr(unsafe.Pointer(&slice[0])) - (uintptr(position))*unsafe.Sizeof(slice[0])
+			runtime.KeepAlive(&slice[0])
+			hdr.Len = sliceLen + int(position)
+			hdr.Cap = hdr.Len
+			slice = *((*[]int32)(unsafe.Pointer(hdr)))
+			return slice
 		}
-		return i5[:]
+		return slice[position:]
 	}()
 	// pointer arithmetic
 	a(i11)
