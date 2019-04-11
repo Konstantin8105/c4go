@@ -679,15 +679,23 @@ func pointerArithmetic(p *program.Program,
 func main(){
 	a := func()[]{{ .Type }} {
 		var position int64 = int64({{ .Condition }})
-		switch {
-		case position > 0:
-			return {{ .Name }} [position:]
-		case position < 0:
+		slice := {{ .Name }}
+		if position < 0 {
+			// invert sign
 			position = -position
-			return (*(*[1000000]{{ .Type }})(unsafe.Pointer(uintptr(unsafe.Pointer(&{{ .Name }}[0])) - (uintptr)(uint64(position))*unsafe.Sizeof({{ .Name }}[0]))))[:]
+
+			// Example from: go101.org/article/unsafe.html	
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&slice[0]))
+			sliceLen := len(slice)
+			hdr.Data = uintptr(unsafe.Pointer(&slice[0])) - (uintptr(position))*unsafe.Sizeof(slice[0])
+			runtime.KeepAlive(&slice[0]) // needed!
+			hdr.Len = sliceLen + int(position)
+			hdr.Cap = hdr.Len
+			slice = *((*[]{{ .Type }})(unsafe.Pointer(hdr)))
+			return slice
 		}
-		// position == 0:
-		return {{ .Name }}[:]
+		// position >= 0:
+		return slice[position:]
 	}()
 }`
 	tmpl := template.Must(template.New("").Parse(src))
@@ -715,6 +723,8 @@ func main(){
 	}
 
 	p.AddImport("unsafe")
+	p.AddImport("runtime")
+	p.AddImport("reflect")
 
 	return f.Decls[0].(*goast.FuncDecl).Body.List[0].(*goast.AssignStmt).Rhs[0],
 		leftType, preStmts, postStmts, nil

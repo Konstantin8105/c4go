@@ -22,50 +22,50 @@ Calculate warnings in file: ./testdata/minmad/minmad.go
 Calculate warnings in file: ./testdata/neateqn/neateqn.go
 		After transpiling : 0 warnings.
 		Go build : 6 warnings
-		Unsafe   : 22
+		Unsafe   : 24
 
 Calculate warnings in file: ./testdata/neatmkfn/neatmkfn.go
 		After transpiling : 0 warnings.
-		Go build : 275 warnings
-		Unsafe   : 138
+		Go build : 281 warnings
+		Unsafe   : 142
 
 Calculate warnings in file: ./testdata/neatmail/neatmail.go
 		After transpiling : 0 warnings.
 		Go build : 2 warnings
-		Unsafe   : 257
+		Unsafe   : 273
 
 Calculate warnings in file: ./testdata/neatpost/neatpost.go
 		After transpiling : 0 warnings.
-		Go build : 25 warnings
-		Unsafe   : 40
+		Go build : 31 warnings
+		Unsafe   : 46
 
 Calculate warnings in file: ./testdata/neatrefer/neatrefer.go
 		After transpiling : 0 warnings.
 		Go build : 0 warnings
-		Unsafe   : 16
+		Unsafe   : 20
 
 Calculate warnings in file: ./testdata/neatroff/neatroff.go
 		After transpiling : 3 warnings.
 		Go build : 16 warnings
-		Unsafe   : 251
+		Unsafe   : 273
 
 Calculate warnings in file: ./testdata/neatvi/neatvi.go
 		After transpiling : 0 warnings.
 		Go build : 2 warnings
-		Unsafe   : 215
+		Unsafe   : 245
 
 Calculate warnings in file: ./testdata/triangle/triangle.go
 		After transpiling : 2 warnings.
 		Go build : 585 warnings
-		Unsafe   : 1413
+		Unsafe   : 1415
 
 Calculate warnings in file: ./testdata/SQLITE/sqlite.go
 		After transpiling : 1 warnings.
 		Go build : 1 warnings
-		Unsafe   : 2914
+		Unsafe   : 4060
 
 Calculate warnings in file: testdata/vorbis/vorbis.go
 		After transpiling : 0 warnings.
 		Go build : 3 warnings
-		Unsafe   : 338
+		Unsafe   : 762
 
