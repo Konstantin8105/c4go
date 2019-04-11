@@ -489,7 +489,7 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 	var pnt, value ast.Node
 	var back func()
 	var undefineIndex bool
-	pnt, value, back,undefineIndex, err = pointerParts(&(n.Children()[0]), p)
+	pnt, value, back, undefineIndex, err = pointerParts(&(n.Children()[0]), p)
 	if err != nil {
 		return
 	}
