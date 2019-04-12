@@ -39,6 +39,9 @@ func Pipe(p []int32) int32 {
 }
 
 func Read(fd int32, p []byte, num uint) SsizeT {
+	if num == 0 {
+		return 0
+	}
 	p = p[:num]
 	n, err := syscall.Read(int(fd), p)
 	if err != nil {
@@ -48,6 +51,7 @@ func Read(fd int32, p []byte, num uint) SsizeT {
 }
 
 func Write(fd int32, p []byte, num uint) SsizeT {
+	p = p[:num]
 	n, err := syscall.Write(int(fd), p)
 	if err != nil {
 		return SsizeT(-1)

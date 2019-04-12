@@ -44,17 +44,20 @@ void test_write()
 
 void test_read()
 {
+    int fd = STDIN_FILENO;
     char data[128];
     for (int i = 0; i < 128; i++) {
         data[i] = '\x00';
     }
     printf("data = %s\n", data);
-    ssize_t s = read(STDIN_FILENO, data, 128);
+    is_streq(data, "");
+    ssize_t s = read(fd, data, 128);
     if (s < 0) {
         fail("not good");
         write(2, "An error occurred in the read.\n", 31);
     }
     printf("data = %s\n", data);
+    is_streq(data, "7");
     is_true(strlen(data) > 0);
 
     diag("wrong read");
@@ -102,7 +105,7 @@ typedef struct {
 
 int main()
 {
-    plan(8);
+    plan(10);
 
     START_TEST(write);
     START_TEST(read);
