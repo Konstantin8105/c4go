@@ -78,6 +78,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseAttributedType(line), nil
 	case "AvailabilityAttr":
 		return parseAvailabilityAttr(line), nil
+	case "BinaryConditionalOperator":
+		return parseBinaryConditionalOperator(line), nil
 	case "BinaryOperator":
 		return parseBinaryOperator(line), nil
 	case "BlockCommandComment":
@@ -218,6 +220,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseNotTailCalledAttr(line), nil
 	case "OffsetOfExpr":
 		return parseOffsetOfExpr(line), nil
+	case "OpaqueValueExpr":
+		return parseOpaqueValueExpr(line), nil
 	case "OverloadableAttr":
 		return parseOverloadableAttr(line), nil
 	case "PackedAttr":

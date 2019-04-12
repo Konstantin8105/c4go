@@ -14,6 +14,46 @@ import (
 	"github.com/Konstantin8105/c4go/util"
 )
 
+// ternary without middle operation
+//
+// Example:
+//
+// BinaryConditionalOperator  'int'
+// |-BinaryOperator 'int' '>'
+// | |-IntegerLiteral 'int' 19
+// | `-UnaryOperator 'int' prefix '-'
+// |   `-IntegerLiteral 'int' 9
+// |-OpaqueValueExpr 'int'
+// | `-BinaryOperator 'int' '>'
+// |   |-IntegerLiteral 'int' 19
+// |   `-UnaryOperator 'int' prefix '-'
+// |     `-IntegerLiteral 'int' 9
+// |-OpaqueValueExpr  'int'
+// | `-BinaryOperator  'int' '>'
+// |   |-IntegerLiteral 'int' 19
+// |   `-UnaryOperator 'int' prefix '-'
+// |     `-IntegerLiteral 'int' 9
+// `-IntegerLiteral 0x3646f70 <col:18> 'int' 23
+func transpileBinaryConditionalOperator(n *ast.BinaryConditionalOperator, p *program.Program) (
+	_ *goast.CallExpr, theType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("Cannot transpile BinaryConditionalOperator : err = %v", err)
+		}
+	}()
+
+	var co ast.ConditionalOperator
+	co.Type = n.Type
+	co.AddChild(n.Children()[0])
+	co.AddChild(&ast.IntegerLiteral{
+		Type:  co.Type,
+		Value: "1",
+	})
+	co.AddChild(n.Children()[3])
+
+	return transpileConditionalOperator(&co, p)
+}
+
 // transpileConditionalOperator transpiles a conditional (also known as a
 // ternary) operator:
 //
@@ -27,6 +67,22 @@ import (
 //
 // It is also important to note that C only evaulates the "b" or "c" condition
 // based on the result of "a" (from the above example).
+//
+// Example AST:
+// ConditionalOperator 'int'
+// |-ImplicitCastExpr 'int (*)(int)' <LValueToRValue>
+// | `-DeclRefExpr 'int (*)(int)' lvalue Var 'v' 'int (*)(int)'
+// |-IntegerLiteral 'int' 1
+// `-CallExpr 'int'
+//   |-...
+//
+// ConditionalOperator 'int'
+// |-BinaryOperator 'int' '!='
+// | |-...
+// |-BinaryOperator 'int' '-'
+// | |-...
+// `-BinaryOperator 'int' '-'
+//   |-...
 func transpileConditionalOperator(n *ast.ConditionalOperator, p *program.Program) (
 	_ *goast.CallExpr, theType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
