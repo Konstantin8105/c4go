@@ -643,7 +643,7 @@ func pointerArithmetic(p *program.Program,
 
 	// try use simplification for pointer arithmetic.
 	// typically used only for Go base types.
-	if strings.Count(resolvedLeftType, "[") == 1 {
+	if strings.Count(resolvedLeftType, "[") > 0 {
 		shortType := types.GetBaseType(leftType)
 
 		var resolvedShortType string
@@ -652,7 +652,21 @@ func pointerArithmetic(p *program.Program,
 			return
 		}
 
+		var acceptable bool
+
 		if types.IsGoBaseType(resolvedShortType) {
+			acceptable = true
+		}
+
+		if str, ok := p.Structs[resolvedShortType]; ok && str.IsGlobal {
+			acceptable = true
+		}
+
+		if str, ok := p.Unions[resolvedShortType]; ok && str.IsGlobal {
+			acceptable = true
+		}
+
+		if acceptable {
 			// save for future generate code
 			p.UnsafeConvertPointerArith[resolvedShortType] = true
 			return util.NewCallExpr(fmt.Sprintf("%s%s", unsafePointerArithFunctionName, resolvedShortType), left, util.NewCallExpr("int", right)), leftType, nil, nil, nil
