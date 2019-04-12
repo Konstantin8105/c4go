@@ -102,8 +102,11 @@ type Program struct {
 	// preprocessor file
 	PreprocessorFile preprocessor.FilePP
 
-	// unsafeConvertValueToPointer - simplification for convert value to pointer
+	// UnsafeConvertValueToPointer - simplification for convert value to pointer
 	UnsafeConvertValueToPointer map[string]bool
+
+	// UnsafeConvertPointerArith - simplification for pointer arithmetic
+	UnsafeConvertPointerArith map[string]bool
 
 	// IsHaveVaList
 	IsHaveVaList bool
@@ -142,6 +145,7 @@ func NewProgram() (p *Program) {
 		functionDefinitions:                      map[string]DefinitionFunction{},
 		builtInFunctionDefinitionsHaveBeenLoaded: false,
 		UnsafeConvertValueToPointer:              map[string]bool{},
+		UnsafeConvertPointerArith:                map[string]bool{},
 	}
 }
 
