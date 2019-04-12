@@ -149,7 +149,7 @@ func getBindFunction(p *program.Program, d program.DefinitionFunction) (code str
 	// add comment for function
 	f.Doc = &goast.CommentGroup{
 		List: []*goast.Comment{
-			&goast.Comment{
+			{
 				Text: fmt.Sprintf("// %s - add c-binding for implemention function", d.Name),
 			},
 		},

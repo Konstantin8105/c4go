@@ -165,6 +165,9 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 		source += getVaListStruct()
 	}
 
+	// generate pointer arithmetic functions
+	source += getPointerArithFunctions(p)
+
 	return
 }
 

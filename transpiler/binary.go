@@ -415,13 +415,39 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 		if operator == token.ADD || // +
 			operator == token.SUB || // -
 			false {
-			if types.IsPointer(leftType, p) {
-				expr, eType, newPre, newPost, err =
-					pointerArithmetic(p, left, leftType, right, rightType, operator)
-			} else {
-				expr, eType, newPre, newPost, err =
-					pointerArithmetic(p, right, rightType, left, leftType, operator)
+
+			var pnt, value ast.Node
+			var back func()
+			var nodeN ast.Node = n
+			pnt, value, back, _, err = pointerParts(&nodeN, p)
+			if err != nil {
+				err = fmt.Errorf("cannot separate on parts: %v", err)
+				return
 			}
+
+			var e goast.Expr
+			e, eType, newPre, newPost, err = atomicOperation(value, p)
+			if err != nil {
+				return
+			}
+			preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+			eType = n.Type
+
+			// return all types
+			back()
+
+			var arr goast.Expr
+			var arrType string
+			arr, arrType, newPre, newPost, err = atomicOperation(pnt, p)
+			if err != nil {
+				return
+			}
+			_ = arrType
+			preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+
+			expr, eType, newPre, newPost, err =
+				pointerArithmetic(p, arr, arrType, e, eType, token.ADD)
+
 			if err != nil {
 				return
 			}
@@ -432,6 +458,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 				combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
 			return
+
 		}
 	}
 

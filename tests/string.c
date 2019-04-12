@@ -66,7 +66,7 @@ void test_strspn()
 
 int main()
 {
-    plan(43);
+    plan(44);
 
     diag("TODO: __builtin_object_size");
     // https://github.com/Konstantin8105/c4go/issues/359
@@ -229,7 +229,7 @@ int main()
 
         printf("%s\n", strstr(str, "three"));
         is_streq(strstr(str, "three"), "three");
-        //TODO: NULL check in is_eq(strstr(str, "four") - str, 0);
+        is_null(strstr(str, "fo"));
     }
     {
         diag("memcpy");
