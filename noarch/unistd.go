@@ -2,6 +2,7 @@ package noarch
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"syscall"
@@ -43,8 +44,19 @@ func Read(fd int32, p []byte, num uint) SsizeT {
 		return 0
 	}
 	p = p[:num]
-	n, err := syscall.Read(int(fd), p)
-	if err != nil {
+	var n int
+	var err error
+	switch fd {
+	case 0:
+		n, err = os.Stdin.Read(p)
+	case 1:
+		n, err = os.Stdout.Read(p)
+	case 2:
+		n, err = os.Stderr.Read(p)
+	default:
+		n, err = syscall.Read(int(fd), p)
+	}
+	if err != nil && err != io.EOF {
 		return SsizeT(-1)
 	}
 	return SsizeT(n)
