@@ -40,6 +40,9 @@ func transpileTranslationUnitDecl(p *program.Program, n *ast.TranslationUnitDecl
 
 	var tryLaterRecordDecl []*ast.RecordDecl
 	for _, sp := range []bool{true, false} {
+		if p.Function == nil {
+			p.DoNotAddComments = sp
+		}
 		for i := 0; i < len(n.Children()); i++ {
 			presentNode := n.Children()[i]
 			if rec, ok := presentNode.(*ast.RecordDecl); ok {

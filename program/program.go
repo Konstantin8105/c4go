@@ -110,6 +110,8 @@ type Program struct {
 
 	// IsHaveVaList
 	IsHaveVaList bool
+
+	DoNotAddComments bool
 }
 
 type commentPos struct {
@@ -204,6 +206,9 @@ func (p *Program) GetMessageComments() (_ *goast.CommentGroup) {
 
 // GetComments - return comments
 func (p *Program) GetComments(n ast.Position) (out []*goast.Comment) {
+	if p.DoNotAddComments {
+		return
+	}
 	beginLine := p.commentLine[n.File]
 	if n.Line < beginLine.line {
 		return
