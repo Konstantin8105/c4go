@@ -202,6 +202,9 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 	case *ast.PredefinedExpr:
 		expr, exprType, err = transpilePredefinedExpr(n, p)
 
+	case *ast.BinaryConditionalOperator:
+		expr, exprType, preStmts, postStmts, err = transpileBinaryConditionalOperator(n, p)
+
 	case *ast.ConditionalOperator:
 		expr, exprType, preStmts, postStmts, err = transpileConditionalOperator(n, p)
 

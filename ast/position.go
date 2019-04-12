@@ -248,6 +248,8 @@ func setPosition(node Node, position Position) {
 		n.Pos = position
 	case *AvailabilityAttr:
 		n.Pos = position
+	case *BinaryConditionalOperator:
+		n.Pos = position
 	case *BinaryOperator:
 		n.Pos = position
 	case *BlockCommandComment:
@@ -367,6 +369,8 @@ func setPosition(node Node, position Position) {
 	case *NonNullAttr:
 		n.Pos = position
 	case *OffsetOfExpr:
+		n.Pos = position
+	case *OpaqueValueExpr:
 		n.Pos = position
 	case *OverloadableAttr:
 		n.Pos = position
