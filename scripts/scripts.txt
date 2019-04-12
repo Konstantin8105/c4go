@@ -62,7 +62,7 @@ Calculate warnings in file: ./testdata/triangle/triangle.go
 Calculate warnings in file: ./testdata/SQLITE/sqlite.go
 		After transpiling : 1 warnings.
 		Go build : 1 warnings
-		Unsafe   : 2403
+		Unsafe   : 2407
 
 Calculate warnings in file: testdata/vorbis/vorbis.go
 		After transpiling : 0 warnings.
