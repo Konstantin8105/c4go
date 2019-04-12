@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"golang.org/x/sys/unix"
 	"syscall"
+
+	"golang.org/x/sys/unix"
 )
 
 func Isatty(fd int32) int32 {
@@ -38,6 +39,7 @@ func Pipe(p []int32) int32 {
 }
 
 func Read(fd int32, p []byte, num uint) SsizeT {
+	p = p[:num]
 	n, err := syscall.Read(int(fd), p)
 	if err != nil {
 		return SsizeT(-1)
