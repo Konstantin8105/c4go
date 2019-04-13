@@ -2,10 +2,12 @@ package noarch
 
 import (
 	"fmt"
+	"io"
 	"os"
 
-	"golang.org/x/sys/unix"
 	"syscall"
+
+	"golang.org/x/sys/unix"
 )
 
 func Isatty(fd int32) int32 {
@@ -38,14 +40,30 @@ func Pipe(p []int32) int32 {
 }
 
 func Read(fd int32, p []byte, num uint) SsizeT {
-	n, err := syscall.Read(int(fd), p)
-	if err != nil {
+	if num == 0 {
+		return 0
+	}
+	p = p[:num]
+	var n int
+	var err error
+	switch fd {
+	case 0:
+		n, err = os.Stdin.Read(p)
+	case 1:
+		n, err = os.Stdout.Read(p)
+	case 2:
+		n, err = os.Stderr.Read(p)
+	default:
+		n, err = syscall.Read(int(fd), p)
+	}
+	if err != nil && err != io.EOF {
 		return SsizeT(-1)
 	}
 	return SsizeT(n)
 }
 
 func Write(fd int32, p []byte, num uint) SsizeT {
+	p = p[:num]
 	n, err := syscall.Write(int(fd), p)
 	if err != nil {
 		return SsizeT(-1)

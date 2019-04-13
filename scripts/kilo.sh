@@ -19,6 +19,16 @@ mkdir -p ./testdata/
     if [ ! -d $TEMP_FOLDER ]; then
 		mkdir -p $TEMP_FOLDER
 		git clone $GIT_SOURCE $TEMP_FOLDER
+		sed -i.bak '370iif(row->rsize > 0)' $TEMP_FOLDER/kilo.c
+		# add debugging output
+		sed -i.bak '243s/(1)/(243)/'     $TEMP_FOLDER/kilo.c
+		sed -i.bak '787s/(1)/(787)/'     $TEMP_FOLDER/kilo.c
+		sed -i.bak '1251s/(1)/(1251)/'   $TEMP_FOLDER/kilo.c
+		sed -i.bak '1259s/(1)/(1259)/'   $TEMP_FOLDER/kilo.c
+		# add debugging file
+		sed -i.bak '53ivoid debug(char *msg){FILE*file;file=fopen("./debug.txt","a");if(file==NULL){exit(53);};fprintf(file,"%s\n",msg);fclose(file);}'  $TEMP_FOLDER/kilo.c
+		# add debug information
+		sed -i.bak '726i{char buffer[500];sprintf(buffer,"line726: filerow=%d",filerow);debug(buffer);}' $TEMP_FOLDER/kilo.c
 	fi
 
 # remove go files from last transpilation

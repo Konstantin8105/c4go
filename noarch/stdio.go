@@ -810,7 +810,11 @@ func Vsnprintf(buffer []byte, n int32, format []byte, varList ...interface{}) in
 	for i := range []byte(result) {
 		buffer[i] = result[i]
 	}
-	buffer[len(result)] = '\x00'
+	if len(buffer) <= len(result) {
+		buffer = append(buffer, '\x00')
+	} else {
+		buffer[len(result)] = '\x00'
+	}
 
 	n = int32(len(result))
 	return n
