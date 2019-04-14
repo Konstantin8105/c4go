@@ -43,6 +43,25 @@ mkdir -p ./testdata/
 		sed -i.bak '1173i{char buffer[500];sprintf(buffer,"%d: key %d",__LINE__, c );debug(buffer);}' $TEMP_FOLDER/kilo.c
 		sed -i.bak '575i{char buffer[500];sprintf(buffer,"%d: sizeof : %d. numrows : %d.  E.row size : %d",__LINE__, sizeof(erow) ,E.numrows, sizeof(erow) * (E.numrows+1)  );debug(buffer);}' $TEMP_FOLDER/kilo.c
 		
+		sed -i.bak '710i{char buffer[500];sprintf(buffer,"%d: row %d. col %d. E.numrows %d",__LINE__, filerow, filecol, E.numrows );debug(buffer);}' $TEMP_FOLDER/kilo.c
+
+		sed -i.bak '588i{char buffer[500];sprintf(buffer,"%d: len %d. at %d. chars: `%s`",__LINE__, len, at, E.row[at].chars );debug(buffer);}' $TEMP_FOLDER/kilo.c
+
+		sed -i.bak '1175i{char buffer[500];sprintf(buffer,"%d: editorProcessKeypress",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '818i{char buffer[500];sprintf(buffer,"%d: editorSave",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '787i{char buffer[500];sprintf(buffer,"%d: editorOpen",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '747i{char buffer[500];sprintf(buffer,"%d: editorDelChar",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '708i{char buffer[500];sprintf(buffer,"%d: editorInsertNewLine",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '686i{char buffer[500];sprintf(buffer,"%d: editorInsertChar",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '604i{char buffer[500];sprintf(buffer,"%d: editorDelRow",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '574i{char buffer[500];sprintf(buffer,"%d: editorInsertRow",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '241i{char buffer[500];sprintf(buffer,"%d: editorReadKey",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
+
+		sed -i.bak '809i{char buffer[500];sprintf(buffer,"%d: loop in editorOpen : `%s` %d",__LINE__, line, linelen);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		
+		sed -i.bak '804i{char buffer[500];sprintf(buffer,"%d: editorOpen: filenames: `%s` `%s`",__LINE__, filename, E.filename);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '815i{char buffer[500];sprintf(buffer,"%d: editorOpen: out of loop",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
+
 	fi
 
 # remove go files from last transpilation
