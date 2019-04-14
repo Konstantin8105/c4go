@@ -26,9 +26,22 @@ mkdir -p ./testdata/
 		sed -i.bak '1251s/(1)/(1251)/'   $TEMP_FOLDER/kilo.c
 		sed -i.bak '1259s/(1)/(1259)/'   $TEMP_FOLDER/kilo.c
 		# add debugging file
-		sed -i.bak '53ivoid debug(char *msg){FILE*file;file=fopen("./debug.txt","a");if(file==NULL){exit(53);};fprintf(file,"%s\n",msg);fclose(file);}'  $TEMP_FOLDER/kilo.c
+		sed -i.bak '53ivoid debug(char *msg){FILE*file;file=fopen("./debug.txt","a");if(file==NULL){exit(53);};fprintf(file,"%s\\n",msg);fclose(file);}'  $TEMP_FOLDER/kilo.c
 		# add debug information
-		sed -i.bak '726i{char buffer[500];sprintf(buffer,"line726: filerow=%d",filerow);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '726i{char buffer[500];sprintf(buffer,"line726: filecol=%d",filecol);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '725i{char buffer[500];sprintf(buffer,"line726: filerow=%d",filerow);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '1273i{char buffer[500];sprintf(buffer,"%d",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '1272i{char buffer[500];sprintf(buffer,"%d",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '1271i{char buffer[500];sprintf(buffer,"%d",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '1268i{char buffer[500];sprintf(buffer,"%d",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '1267i{char buffer[500];sprintf(buffer,"%d",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '1266i{char buffer[500];sprintf(buffer,"%d",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '1265i{char buffer[500];sprintf(buffer,"%d",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '1264i{char buffer[500];sprintf(buffer,"%d",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '1263i{char buffer[500];sprintf(buffer,"%d",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
+
+		sed -i.bak '1173i{char buffer[500];sprintf(buffer,"%d: key %d",__LINE__, c );debug(buffer);}' $TEMP_FOLDER/kilo.c
+		
 	fi
 
 # remove go files from last transpilation
@@ -55,7 +68,22 @@ mkdir -p ./testdata/
 	# amount unsafe
 		UNSAFE=`cat $GO_FILE | grep "unsafe\." | wc -l`
 		echo "		Unsafe   : $UNSAFE"
-
+	# try to run
+		echo "try to run"
+		echo "step 1"
+			cd ./testdata/kilo/
+		echo "step 2"
+			echo "" > debug.txt
+			echo "" > output.txt
+		echo "step 3"
+			echo -e 'Hello my dear friend\x0D\x13\x11' > script.txt
+		echo "step 4"
+			cat script.txt | ./kilo.app output.txt 2>&1 && echo "ok" || echo "not ok"
+		echo "step 5"
+			cat debug.txt
+			cat output.txt
+		echo "step 6"
+			cd ../../
 
 # Arguments menu
 echo "    -s for show detail of Go build errors"
