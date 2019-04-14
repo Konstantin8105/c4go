@@ -187,11 +187,12 @@ func Memcpy(dst, src interface{}, size uint) interface{} {
 		s := reflect.ValueOf(src)
 		d := reflect.ValueOf(dst)
 		size /= uint(int(s.Index(0).Type().Size()))
+		var val reflect.Value
 		for i := 0; i < int(size); i++ {
-			if i >= s.Len() {
-				break
+			if i < s.Len() {
+				val = s.Index(i)
 			}
-			d.Index(i).Set(s.Index(i))
+			d.Index(i).Set(val)
 		}
 	}
 	return dst

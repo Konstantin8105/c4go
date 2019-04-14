@@ -28,8 +28,8 @@ mkdir -p ./testdata/
 		# add debugging file
 		sed -i.bak '53ivoid debug(char *msg){FILE*file;file=fopen("./debug.txt","a");if(file==NULL){exit(53);};fprintf(file,"%s\\n",msg);fclose(file);}'  $TEMP_FOLDER/kilo.c
 		# add debug information
-		sed -i.bak '726i{char buffer[500];sprintf(buffer,"line726: filecol=%d",filecol);debug(buffer);}' $TEMP_FOLDER/kilo.c
-		sed -i.bak '725i{char buffer[500];sprintf(buffer,"line726: filerow=%d",filerow);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '726i{char buffer[500];sprintf(buffer,"line%d: filecol=%d",__LINE__,filecol);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '725i{char buffer[500];sprintf(buffer,"line%d: filerow=%d",__LINE__,filerow);debug(buffer);}' $TEMP_FOLDER/kilo.c
 		sed -i.bak '1273i{char buffer[500];sprintf(buffer,"%d",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
 		sed -i.bak '1272i{char buffer[500];sprintf(buffer,"%d",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
 		sed -i.bak '1271i{char buffer[500];sprintf(buffer,"%d",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
@@ -61,6 +61,10 @@ mkdir -p ./testdata/
 		
 		sed -i.bak '804i{char buffer[500];sprintf(buffer,"%d: editorOpen: filenames: `%s` `%s`",__LINE__, filename, E.filename);debug(buffer);}' $TEMP_FOLDER/kilo.c
 		sed -i.bak '815i{char buffer[500];sprintf(buffer,"%d: editorOpen: out of loop",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		
+		sed -i.bak '546i{char buffer[500];sprintf(buffer,"%d: editorUpdateRow",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '371i{char buffer[500];sprintf(buffer,"%d: editorUpdateSyntax",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '576i{char buffer[500];sprintf(buffer,"%d: editorInsertRow: at %d, s: `%s`, len %d, E.numrows : %d",__LINE__,at,s,len,E.numrows);debug(buffer);}' $TEMP_FOLDER/kilo.c
 
 	fi
 
