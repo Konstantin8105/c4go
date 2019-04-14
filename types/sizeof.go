@@ -103,9 +103,10 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 
 		// The size of a struct is rounded up to fit the size of the pointer of
 		// the OS.
-		if totalBytes%pointerSize != 0 {
-			totalBytes += pointerSize - (totalBytes % pointerSize)
-		}
+		// TODO: check
+		// if totalBytes%pointerSize != 0 {
+		// 	totalBytes += pointerSize - (totalBytes % pointerSize)
+		// }
 
 		return totalBytes, nil
 	}

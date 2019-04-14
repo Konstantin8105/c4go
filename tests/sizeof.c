@@ -65,6 +65,32 @@ typedef struct part1a_erow{
 	int part;
 	int part2;
 } part1a_erow;
+typedef struct part1b_erow{
+	int part;
+	int part2;
+	int part3;
+} part1b_erow;
+typedef struct part1c_erow{
+	int part;
+	int part2;
+	int part3;
+	char * part4;
+} part1c_erow;
+typedef struct part1d_erow{
+	int part;
+	int part2;
+	int part3;
+	char * part4;
+	char * part5;
+} part1d_erow;
+typedef struct part1e_erow{
+	int part;
+	int part2;
+	int part3;
+	char * part4;
+	char * part5;
+	unsigned char * part6;
+} part1e_erow;
 
 typedef struct part2_erow{
 	char * part;
@@ -80,7 +106,7 @@ typedef struct part3_erow{
 
 int main()
 {
-    plan(72);
+    plan(70);
 
     diag("Integer types");
     check_sizes(char, 1);
@@ -155,17 +181,17 @@ int main()
 
 	diag("erow from kilo editor");
 	is_eq(sizeof(part1_erow ),  4);
-	is_eq(sizeof(part1_erow*),  8);
+
 	is_eq(sizeof(part1a_erow ),  8);
-	is_eq(sizeof(part1a_erow*),  8);
+	is_eq(sizeof(part1b_erow ), 12);
+	is_eq(sizeof(part1c_erow ), 24);
+	is_eq(sizeof(part1d_erow ), 32);
+	is_eq(sizeof(part1e_erow ), 40);
+	is_eq(sizeof(erow        ), 48);
+
 	is_eq(sizeof(part2_erow ),  8);
-	is_eq(sizeof(part2_erow*),  8);
-	is_eq(sizeof(part2a_erow ),  16);
-	is_eq(sizeof(part2a_erow*),  8);
+	is_eq(sizeof(part2a_erow),  16);
 	is_eq(sizeof(part3_erow ),  8);
-	is_eq(sizeof(part3_erow*),  8);
-	is_eq(sizeof(erow ), 32);
-	is_eq(sizeof(erow*),  8);
 
     done_testing();
 }
