@@ -41,6 +41,7 @@ mkdir -p ./testdata/
 		sed -i.bak '1263i{char buffer[500];sprintf(buffer,"%d",__LINE__);debug(buffer);}' $TEMP_FOLDER/kilo.c
 
 		sed -i.bak '1173i{char buffer[500];sprintf(buffer,"%d: key %d",__LINE__, c );debug(buffer);}' $TEMP_FOLDER/kilo.c
+		sed -i.bak '575i{char buffer[500];sprintf(buffer,"%d: sizeof : %d. numrows : %d.  E.row size : %d",__LINE__, sizeof(erow) ,E.numrows, sizeof(erow) * (E.numrows+1)  );debug(buffer);}' $TEMP_FOLDER/kilo.c
 		
 	fi
 
@@ -73,15 +74,27 @@ mkdir -p ./testdata/
 		echo "step 1"
 			cd ./testdata/kilo/
 		echo "step 2"
-			echo "" > debug.txt
-			echo "" > output.txt
+			echo "" > output.go.txt
+			echo "" > output.c.txt
 		echo "step 3"
 			echo -e 'Hello my dear friend\x0D\x13\x11' > script.txt
 		echo "step 4"
-			cat script.txt | ./kilo.app output.txt 2>&1 && echo "ok" || echo "not ok"
+			echo "" > debug.txt
+			cat script.txt | ./kilo.app   output.go.txt 2>&1 && echo "ok" || echo "not ok"
+			cp debug.txt debug.go.txt	
+			
+			gcc -o kilo.c.app kilo.c
+			echo "" > debug.txt
+			cat script.txt | ./kilo.c.app output.c.txt  2>&1 && echo "ok" || echo "not ok"
+			cp debug.txt debug.c.txt	
 		echo "step 5"
-			cat debug.txt
-			cat output.txt
+			echo "-----------------------------"
+			echo "debug"
+			diff -y -t debug.c.txt debug.go.txt 2>&1  && echo "ok" || echo "not ok"
+			echo "-----------------------------"
+			echo "output"
+			diff -y -t output.c.txt output.go.txt 2>&1  && echo "ok" || echo "not ok"
+			echo "-----------------------------"
 		echo "step 6"
 			cd ../../
 
