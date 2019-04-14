@@ -46,9 +46,41 @@ struct s {
     FILE* p;
 };
 
+
+typedef struct erow {
+    int idx;            /* Row index in the file, zero-based. */
+    int size;           /* Size of the row, excluding the null term. */
+    int rsize;          /* Size of the rendered row. */
+    char *chars;        /* Row content. */
+    char *render;       /* Row content "rendered" for screen (for TABs). */
+    unsigned char *hl;  /* Syntax highlight type for each character in render.*/
+    int hl_oc;          /* Row had open comment at end in last syntax highlight
+                           check. */
+} erow;
+
+typedef struct part1_erow{
+	int part;
+} part1_erow;
+typedef struct part1a_erow{
+	int part;
+	int part2;
+} part1a_erow;
+
+typedef struct part2_erow{
+	char * part;
+} part2_erow;
+typedef struct part2a_erow{
+	char * part;
+	char * part2;
+} part2a_erow;
+
+typedef struct part3_erow{
+	unsigned char * part;
+} part3_erow;
+
 int main()
 {
-    plan(60);
+    plan(72);
 
     diag("Integer types");
     check_sizes(char, 1);
@@ -120,6 +152,20 @@ int main()
     diag("FILE *");
     is_eq(sizeof(FILE*), 8);
     is_eq(sizeof(struct s), 8);
+
+	diag("erow from kilo editor");
+	is_eq(sizeof(part1_erow ),  4);
+	is_eq(sizeof(part1_erow*),  8);
+	is_eq(sizeof(part1a_erow ),  8);
+	is_eq(sizeof(part1a_erow*),  8);
+	is_eq(sizeof(part2_erow ),  8);
+	is_eq(sizeof(part2_erow*),  8);
+	is_eq(sizeof(part2a_erow ),  16);
+	is_eq(sizeof(part2a_erow*),  8);
+	is_eq(sizeof(part3_erow ),  8);
+	is_eq(sizeof(part3_erow*),  8);
+	is_eq(sizeof(erow ), 32);
+	is_eq(sizeof(erow*),  8);
 
     done_testing();
 }
