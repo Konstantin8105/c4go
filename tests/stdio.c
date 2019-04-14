@@ -542,17 +542,36 @@ void test_perror()
 
 void test_getline()
 {
-    FILE* pFile;
-    pFile = fopen(test_file, "r");
-    is_not_null(pFile);
-
-    size_t len;
-    char* line = NULL;
-    char** pnt = &line;
-    size_t* l = &len;
-    ssize_t pos = getline(pnt, l, pFile);
-    printf("getline = %d\n", pos);
-    is_true(pos == filesize);
+	{
+        diag("getline: not empty file");
+        FILE* pFile;
+        pFile = fopen(test_file, "r");
+        is_not_null(pFile);
+        
+        size_t len;
+        char* line = NULL;
+        char** pnt = &line;
+        size_t* l = &len;
+        ssize_t pos = getline(pnt, l, pFile);
+		for (int i=0;i< pos;i++) {
+			printf("[%d] : `%d`\n", i, line[i]);
+		}
+		printf("pos [%d] == filesize [%d]\n", pos, filesize);
+        is_eq(pos, filesize);
+	}
+	{
+        diag("getline: not empty file");
+        FILE* pFile;
+        pFile = fopen("./tests/empty.txt", "r");
+        is_not_null(pFile);
+        
+        size_t len;
+        char* line = NULL;
+        char** pnt = &line;
+        size_t* l = &len;
+        ssize_t pos = getline(pnt, l, pFile);
+        is_eq(pos, -1);
+	}
 }
 
 void test_sscanf()
@@ -576,7 +595,7 @@ void test_FILE()
 
 int main()
 {
-    plan(67);
+    plan(69);
 
     START_TEST(putchar)
     START_TEST(puts)
