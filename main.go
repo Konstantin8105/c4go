@@ -338,13 +338,13 @@ func avoidGoKeywords(tree []ast.Node) {
 
 // Start begins transpiling an input file.
 func Start(args ProgramArgs) (err error) {
+	if args.verbose {
+		fmt.Fprintln(os.Stdout, "Reading clang AST tree...")
+	}
+
 	lines, filePP, err := generateAstLines(args)
 	if err != nil {
 		return
-	}
-
-	if args.verbose {
-		fmt.Fprintln(os.Stdout, "Reading clang AST tree...")
 	}
 
 	switch args.state {
@@ -356,14 +356,15 @@ func Start(args ProgramArgs) (err error) {
 
 	case StateTranspile:
 		err = generateGoCode(args, lines, filePP)
-		if err != nil {
-			return
-		}
 
 	case StateDebug:
+		err = generateDebugCCode(args, lines, filePP)
+
+	default:
+		err = fmt.Errorf("Program state `%d` is not implemented", args.state)
 	}
 
-	return nil
+	return err
 }
 
 func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.FilePP, err error) {
