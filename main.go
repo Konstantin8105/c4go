@@ -46,22 +46,34 @@ var astout io.Writer = os.Stdout
 // Do not instantiate this directly. Instead use DefaultProgramArgs(); then
 // modify any specific attributes.
 type ProgramArgs struct {
+	state          ProgramState
 	verbose        bool
-	ast            bool
 	inputFiles     []string
 	clangFlags     []string
 	outputFile     string
 	packageName    string
 	cppCode        bool
 	outsideStructs bool
+
+	// for debugging
+	debugPrefix string
 }
+
+type ProgramState int
+
+const (
+	StateAst ProgramState = iota
+	StateTranspile
+	StateDebug
+)
 
 // DefaultProgramArgs default value of ProgramArgs
 func DefaultProgramArgs() ProgramArgs {
 	return ProgramArgs{
 		verbose:     false,
-		ast:         false,
+		state:       StateTranspile,
 		packageName: "main",
+		debugPrefix: "debug.",
 		clangFlags:  []string{},
 	}
 }
@@ -334,18 +346,21 @@ func Start(args ProgramArgs) (err error) {
 	if args.verbose {
 		fmt.Fprintln(os.Stdout, "Reading clang AST tree...")
 	}
-	if args.ast {
+
+	switch args.state {
+	case StateAst:
 		for _, l := range lines {
 			fmt.Fprintln(astout, l)
 		}
 		fmt.Fprintln(astout)
 
-		return nil
-	}
+	case StateTranspile:
+		err = generateGoCode(args, lines, filePP)
+		if err != nil {
+			return
+		}
 
-	err = generateGoCode(args, lines, filePP)
-	if err != nil {
-		return
+	case StateDebug:
 	}
 
 	return nil
@@ -548,12 +563,24 @@ func runCommand() int {
 			"cpp", false, "transpile CPP code")
 		astHelpFlag = astCommand.Bool(
 			"h", false, "print help information")
+
+		debugCommand = flag.NewFlagSet(
+			"debug", flag.ContinueOnError)
+		debugCppFlag = debugCommand.Bool(
+			"cpp", false, "transpile CPP code")
+		prefixDebugFlag = debugCommand.String(
+			"p", "debug.", "prefix of output C filename with addition debug informations")
+		debugHelpFlag = debugCommand.Bool(
+			"h", false, "print help information")
 	)
 	var clangFlags inputDataFlags
 	transpileCommand.Var(&clangFlags,
 		"clang-flag",
 		"Pass arguments to clang. You may provide multiple -clang-flag items.")
 	astCommand.Var(&clangFlags,
+		"clang-flag",
+		"Pass arguments to clang. You may provide multiple -clang-flag items.")
+	debugCommand.Var(&clangFlags,
 		"clang-flag",
 		"Pass arguments to clang. You may provide multiple -clang-flag items.")
 
@@ -564,6 +591,7 @@ func runCommand() int {
 		usage += "Commands:\n"
 		usage += "  transpile\ttranspile an input C source file or files to Go\n"
 		usage += "  ast\t\tprint AST before translated Go code\n"
+		usage += "  debug\t\tadd debug information in C source\n"
 		usage += "  version\tprint version of c4go\n"
 		usage += "\n"
 		fmt.Fprintf(stderr, usage, os.Args[0])
@@ -573,6 +601,7 @@ func runCommand() int {
 
 	transpileCommand.SetOutput(stderr)
 	astCommand.SetOutput(stderr)
+	debugCommand.SetOutput(stderr)
 
 	flag.Parse()
 
@@ -592,15 +621,16 @@ func runCommand() int {
 		}
 
 		if *astHelpFlag || astCommand.NArg() == 0 {
-			fmt.Fprintf(stderr, "Usage: %s ast file.c\n", os.Args[0])
+			fmt.Fprintf(stderr, "Usage: %s ast [-cpp] [-clang-flag values] file.c\n", os.Args[0])
 			astCommand.PrintDefaults()
 			return 3
 		}
 
-		args.ast = true
+		args.state = StateAst
 		args.inputFiles = astCommand.Args()
 		args.clangFlags = clangFlags
 		args.cppCode = *astCppFlag
+
 	case "transpile":
 		err := transpileCommand.Parse(os.Args[2:])
 		if err != nil {
@@ -610,12 +640,13 @@ func runCommand() int {
 
 		if *transpileHelpFlag || transpileCommand.NArg() == 0 {
 			fmt.Fprintf(stderr,
-				"Usage: %s transpile [-V] [-o file.go] [-p package] [-cpuprofile cpu.out] file1.c ...\n",
+				"Usage: %s transpile [-V] [-o file.go] [-cpp] [-p package] [-clang-flag values] [-cpuprofile cpu.out] file1.c ...\n",
 				os.Args[0])
 			transpileCommand.PrintDefaults()
 			return 5
 		}
 
+		args.state = StateTranspile
 		args.inputFiles = transpileCommand.Args()
 		args.outputFile = *outputFlag
 		args.packageName = *packageFlag
@@ -635,6 +666,24 @@ func runCommand() int {
 			pprof.StartCPUProfile(f)
 			defer pprof.StopCPUProfile()
 		}
+
+	case "debug":
+		err := transpileCommand.Parse(os.Args[2:])
+		if err != nil {
+			fmt.Fprintf(os.Stdout, "debug command cannot parse: %v", err)
+			return 12
+		}
+
+		if *debugHelpFlag || debugCommand.NArg() == 0 {
+			fmt.Fprintf(stderr, "Usage: %s debug [-cpp] [-clang-flag values] file.c\n", os.Args[0])
+			debugCommand.PrintDefaults()
+			return 30
+		}
+
+		args.state = StateDebug
+		args.inputFiles = debugCommand.Args()
+		args.debugPrefix = *prefixDebugFlag
+		args.cppCode = *debugCppFlag
 
 	case "version":
 		fmt.Fprint(stderr, version.Version())
