@@ -11,7 +11,6 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -431,29 +430,23 @@ func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.Fil
 	return
 }
 
-func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP) (
-	err error) {
-
-	p := program.NewProgram()
-	p.Verbose = args.verbose
-	p.PreprocessorFile = filePP
-
+func FromLinesToTree(verbose bool, lines []string, filePP preprocessor.FilePP) (tree []ast.Node, errs []error) {
 	// Converting to nodes
-	if args.verbose {
+	if verbose {
 		fmt.Fprintln(os.Stdout, "Converting to nodes...")
 	}
 	nodes, astErrors := convertLinesToNodesParallel(lines)
 	for i := range astErrors {
-		p.AddMessage(fmt.Sprintf(
+		errs = append(errs, fmt.Errorf(
 			"/"+"* AST Error :\n%v\n*"+"/",
 			astErrors[i].Error()))
 	}
 
 	// build tree
-	if args.verbose {
+	if verbose {
 		fmt.Fprintln(os.Stdout, "Building tree...")
 	}
-	tree := buildTree(nodes, 0)
+	tree = buildTree(nodes, 0)
 	ast.FixPositions(tree)
 
 	// Repair the floating literals. See RepairFloatingLiteralsFromSource for
@@ -461,16 +454,36 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 	floatingErrors := ast.RepairFloatingLiteralsFromSource(tree[0], filePP)
 
 	for _, fErr := range floatingErrors {
-		message := fmt.Sprintf("could not read exact floating literal: %s",
-			fErr.Err.Error())
-		p.AddMessage(p.GenerateWarningMessage(errors.New(message), fErr.Node))
+		errs = append(errs, fmt.Errorf("could not read exact floating literal: %s",
+			fErr.Err.Error()))
 	}
 
 	// avoid Go keywords
-	if args.verbose {
+	if verbose {
 		fmt.Fprintln(os.Stdout, "Modify nodes for avoid Go keywords...")
 	}
 	avoidGoKeywords(tree)
+
+	return
+}
+
+func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP) (
+	err error) {
+
+	p := program.NewProgram()
+	p.Verbose = args.verbose
+	p.PreprocessorFile = filePP
+
+	// convert lines to tree ast
+	tree, errs := FromLinesToTree(args.verbose, lines, filePP)
+	for i := range errs {
+		fmt.Fprintf(os.Stderr, "AST error #%d:\n%v\n",
+			i, errs[i].Error())
+		p.AddMessage(errs[i].Error())
+	}
+	if tree == nil {
+		return fmt.Errorf("Cannot create tree: tree is nil. Please try another version of clang")
+	}
 
 	outputFilePath := args.outputFile
 
@@ -494,10 +507,6 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 	source, err = transpiler.TranspileAST(args.outputFile, args.packageName, args.outsideStructs,
 		p, tree[0].(ast.Node))
 	if err != nil {
-		for i := range astErrors {
-			fmt.Fprintf(os.Stderr, "AST error #%d:\n%v\n",
-				i, astErrors[i].Error())
-		}
 		return fmt.Errorf("cannot transpile AST : %v", err)
 	}
 
@@ -513,6 +522,15 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 	// simplify Go code by `gofmt`
 	// error ignored, because it is not change the workflow
 	_, _ = exec.Command("gofmt", "-s", "-w", outputFilePath).Output()
+
+	return nil
+}
+
+func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP) (
+	err error) {
+	// TODO : add implementation
+
+	//
 
 	return nil
 }
