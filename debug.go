@@ -95,3 +95,22 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 
 	return nil
 }
+
+func debugCode() string {
+	return `
+#include <stdio.h>
+#include <stdlib.h>
+
+void c4go_debug_function_name(int line, char * functionName)
+{
+	FILE * file;
+	file = fopen("./debug.txt","a");
+	if(file==NULL){
+		exit(53);
+	};
+	fprintf(file,"Line: %d. Function name: %s",line, functionName);
+	fclose(file);
+}
+
+`
+}
