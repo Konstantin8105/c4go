@@ -526,15 +526,6 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 	return nil
 }
 
-func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP) (
-	err error) {
-	// TODO : add implementation
-
-	//
-
-	return nil
-}
-
 type inputDataFlags []string
 
 func (i *inputDataFlags) String() (s string) {
@@ -587,6 +578,8 @@ func runCommand() int {
 			"debug", flag.ContinueOnError)
 		debugCppFlag = debugCommand.Bool(
 			"cpp", false, "transpile CPP code")
+		debugVerboseFlag = debugCommand.Bool(
+			"V", false, "print progress as comments")
 		prefixDebugFlag = debugCommand.String(
 			"p", "debug.", "prefix of output C filename with addition debug informations")
 		debugHelpFlag = debugCommand.Bool(
@@ -687,7 +680,7 @@ func runCommand() int {
 		}
 
 	case "debug":
-		err := transpileCommand.Parse(os.Args[2:])
+		err := debugCommand.Parse(os.Args[2:])
 		if err != nil {
 			fmt.Fprintf(os.Stdout, "debug command cannot parse: %v", err)
 			return 12
@@ -701,7 +694,9 @@ func runCommand() int {
 
 		args.state = StateDebug
 		args.inputFiles = debugCommand.Args()
+		args.verbose = *debugVerboseFlag
 		args.debugPrefix = *prefixDebugFlag
+		args.clangFlags = clangFlags
 		args.cppCode = *debugCppFlag
 
 	case "version":
