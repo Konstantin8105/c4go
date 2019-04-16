@@ -27,7 +27,7 @@ go test -tags=integration                     \
 	-run=TestIntegrationScripts/tests/ctype.c \
 	-race -v                                  \
 	-coverpkg=$PKGS_DELIM                     \
-	-coverprofile=./testdata/pkg.coverprofile $PKGS
+	-coverprofile=./testdata/pkg_verbose_race.coverprofile $PKGS
 
 # Merge coverage profiles.
 COVERAGE_FILES=`ls -1 ./testdata/*.coverprofile 2>/dev/null | wc -l`
