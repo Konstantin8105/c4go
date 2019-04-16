@@ -178,7 +178,7 @@ void c4go_debug_function_name(int line, char * functionName)
 	if(file==NULL){
 		exit(53);
 	};
-	fprintf(file,"Line: %d. Function name: %s",line, functionName);
+	fprintf(file,"Line: %d. Function name: %s\n",line, functionName);
 	fclose(file);
 }
 
