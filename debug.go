@@ -161,6 +161,21 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 		}
 	}
 
+	// Example for input function input data:
+	//
+	// FunctionDecl used readline 'char *(char *, FILE *, char *)'
+	// |-ParmVarDecl used string 'char *'
+	// |-ParmVarDecl used infile 'FILE *'
+	// |-ParmVarDecl used infilename 'char *'
+	// `-CompoundStmt
+	//   |-...
+	//
+	// FunctionDecl used tolower 'long (int, int)'
+	// |-ParmVarDecl used a 'int'
+	// |-ParmVarDecl used b 'int'
+	// `-CompoundStmt
+	//   `-...
+
 	return nil
 }
 
@@ -187,20 +202,6 @@ void c4go_debug_function_name(int line, char * functionName)
 	fprintf(file,"Line: %d. Function name: %s\n",line, functionName);
 	fclose(file);
 }
-
-#define c4go_function_argument(type, format) \
-void c4go_function_argument_##type(int line, char * value_name, type value)			\
-{																					\
-	FILE * file = c4go_get_debug_file();											\
-	fprintf(file,"Line: %d. Argument value %s : format\n",line, value_name, value);	\
-	fclose(file);																	\
-}																					
-
-c4go_function_argument(int, %d);
-c4go_function_argument(char, %d);
-c4go_function_argument(long, %d);
-c4go_function_argument(float, %f);
-c4go_function_argument(double, %f);
 
 `
 }
