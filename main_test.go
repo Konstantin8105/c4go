@@ -89,10 +89,15 @@ func TestIntegrationScripts(t *testing.T) {
 			}
 
 			// slice of program results
-			progs := [...]func(string, string, string, []string, []string) (string, error){
+			progs := []func(string, string, string, []string, []string) (string, error){
 				runCdebug,
 				runC,
 				runGo,
+			}
+
+			// only for test "assert.c"
+			if strings.Contains(file, "assert.c") {
+				progs = progs[1:]
 			}
 
 			results := make([]string, len(progs))
