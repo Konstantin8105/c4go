@@ -423,7 +423,7 @@ func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.Fil
 		errBody, _ := exec.Command(
 			compiler, append(compilerFlag, ppFilePath)...).CombinedOutput()
 
-		panic("clang failed: " + err.Error() + ":\n\n" + string(errBody))
+		panic(compiler + " failed: " + err.Error() + ":\n\n" + string(errBody))
 	}
 	lines = strings.Split(string(astPP), "\n")
 

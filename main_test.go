@@ -216,6 +216,7 @@ func runCdebug(file, subFolder, stdin string, clangFlags, args []string) (string
 	pArgs.inputFiles = []string{file}
 	pArgs.debugPrefix = "debug."
 	pArgs.state = StateDebug
+	pArgs.cppCode = strings.HasSuffix(file, "cpp")
 	pArgs.clangFlags = clangFlags
 
 	// Compile Go
