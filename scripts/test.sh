@@ -20,11 +20,22 @@ go test                                 \
 				  -timeout=30m          \
 				  -tags integration     \
 	              -coverpkg=$PKGS_DELIM \
-				  -coverprofile=coverage.txt $PKGS
+				  -coverprofile=./testdata/pkg.coverprofile $PKGS
+
+# Merge coverage profiles.
+COVERAGE_FILES=`ls -1 ./testdata/*.coverprofile 2>/dev/null | wc -l`
+if [ $COVERAGE_FILES != 0 ]; then
+	# check program `gocovmerge` is exist
+	if which gocovmerge >/dev/null 2>&1; then
+		export FILES=$(ls testdata/*.coverprofile | tr '\n' ' ')
+		echo "Combine next coverprofiles : $FILES"
+		gocovmerge $FILES > coverage.txt
+	fi
+fi
+
+echo "End of coverage"
 
 # check race
 go test -tags=integration                     \
 	-run=TestIntegrationScripts/tests/ctype.c \
 	-race -v
-
-echo "End of coverage"
