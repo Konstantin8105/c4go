@@ -223,7 +223,7 @@ func runCdebug(file, subFolder, stdin string, clangFlags, args []string) (string
 	pArgs.state = StateDebug
 	pArgs.cppCode = strings.HasSuffix(file, "cpp")
 	pArgs.clangFlags = clangFlags
-	pArgs.verbose = flag.CommandLine.Lookup("test.v").Value.String() == "true"
+	pArgs.verbose = (flag.CommandLine.Lookup("test.v").Value.String() == "true" || strings.Contains(file, "operators.c"))
 
 	// Compile Go
 	err := Start(pArgs)
@@ -426,7 +426,7 @@ func runGo(file, subFolder, stdin string, clangFlags, args []string) (string, er
 	programArgs.inputFiles = []string{file}
 	programArgs.outputFile = subFolder + "main.go"
 	programArgs.clangFlags = clangFlags
-	programArgs.verbose = flag.CommandLine.Lookup("test.v").Value.String() == "true"
+	programArgs.verbose = (flag.CommandLine.Lookup("test.v").Value.String() == "true" || strings.Contains(file, "operators.c"))
 	if strings.HasSuffix(file, "cpp") {
 		programArgs.cppCode = true
 	}
