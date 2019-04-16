@@ -22,6 +22,13 @@ go test                                 \
 	              -coverpkg=$PKGS_DELIM \
 				  -coverprofile=./testdata/pkg.coverprofile $PKGS
 
+# check race
+go test -tags=integration                     \
+	-run=TestIntegrationScripts/tests/ctype.c \
+	-race -v                                  \
+	-coverpkg=$PKGS_DELIM                     \
+	-coverprofile=./testdata/pkg.coverprofile $PKGS
+
 # Merge coverage profiles.
 COVERAGE_FILES=`ls -1 ./testdata/*.coverprofile 2>/dev/null | wc -l`
 if [ $COVERAGE_FILES != 0 ]; then
@@ -34,6 +41,3 @@ if [ $COVERAGE_FILES != 0 ]; then
 fi
 
 echo "End of coverage"
-
-# check race
-go test -tags=integration -run=TestIntegrationScripts/tests/ctype.c -race -v
