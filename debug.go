@@ -17,16 +17,16 @@ type Positioner interface {
 	Inject(lines [][]byte) error
 }
 
-type funcPos struct {
+type compount struct {
 	name string
 	pos  ast.Position
 }
 
-func (f funcPos) Position() ast.Position {
+func (f compount) Position() ast.Position {
 	return f.pos
 }
 
-func (f funcPos) Inject(lines [][]byte) error {
+func (f compount) Inject(lines [][]byte) error {
 
 	b, err := getByte(lines, f.pos)
 	if err != nil {
@@ -175,8 +175,8 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 
 			// function name
 			{
-				f := funcPos{
-					name: fd.Name,
+				f := compount{
+					name: "func " + fd.Name,
 					pos:  mst.Position(),
 				}
 				sl, _ := funcPoses[mst.Position().File]
@@ -198,6 +198,43 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 				sl, _ := funcPoses[mst.Position().File]
 				sl = append(sl, p)
 				funcPoses[mst.Position().File] = sl
+			}
+
+			// if case
+			//
+			// IfStmt
+			// |-<<<NULL>>>
+			// |-<<<NULL>>>
+			// |-BinaryOperator 'int' '!='
+			// | `-...
+			// |-CompoundStmt   # <---- find this -
+			// | `-...
+			// `-<<<NULL>>>
+			for k := range mst.Children() {
+				ifs, ok := mst.Children()[k].(*ast.IfStmt)
+				if !ok {
+					continue
+				}
+				var (
+					comp  *ast.CompoundStmt
+					found bool
+				)
+				for g := range ifs.Children() {
+					if comp, found = ifs.Children()[g].(*ast.CompoundStmt); found {
+						break
+					}
+				}
+				if !found {
+					continue
+				}
+
+				p := compount{
+					name: "if begin",
+					pos:  comp.Position(),
+				}
+				sl, _ := funcPoses[comp.Position().File]
+				sl = append(sl, p)
+				funcPoses[comp.Position().File] = sl
 			}
 		}
 	}
@@ -257,7 +294,7 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 }
 
 const (
-	debugFunctionName string = "c4go_debug_function_name"
+	debugFunctionName string = "c4go_debug_compount"
 	debugArgument     string = "c4go_debug_function_arg_"
 )
 
@@ -276,10 +313,10 @@ FILE * c4go_get_debug_file()
 	return file;
 }
 
-void c4go_debug_function_name(int line, char * functionName)
+void c4go_debug_compount(int line, char * functionName)
 {
 	FILE * file = c4go_get_debug_file();
-	fprintf(file,"Line: %d. Function name: %s\n",line, functionName);
+	fprintf(file,"Line: %d. name: %s\n",line, functionName);
 	fclose(file);
 }
 
