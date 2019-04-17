@@ -19,7 +19,7 @@ func parseLinkageSpecDecl(line string) *LinkageSpecDecl {
 		`<(?P<position>.*)>
 		(?P<position2> col:\d+| line:\d+:\d+)?
 		(?P<implicit> implicit)?
-		(?P<name> \w+?)?
+		(?P<name> .*)?
 		`,
 		line,
 	)

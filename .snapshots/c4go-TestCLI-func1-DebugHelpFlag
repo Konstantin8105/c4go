@@ -1,0 +1,10 @@
+(*bytes.Buffer)(Usage: test debug [-cpp] [-clang-flag values] file.c
+  -V	print progress as comments
+  -clang-flag value
+    	Pass arguments to clang. You may provide multiple -clang-flag items.
+  -cpp
+    	transpile CPP code
+  -h	print help information
+  -p string
+    	prefix of output C filename with addition debug informations (default "debug.")
+)

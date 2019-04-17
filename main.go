@@ -11,7 +11,6 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -46,22 +45,34 @@ var astout io.Writer = os.Stdout
 // Do not instantiate this directly. Instead use DefaultProgramArgs(); then
 // modify any specific attributes.
 type ProgramArgs struct {
+	state          ProgramState
 	verbose        bool
-	ast            bool
 	inputFiles     []string
 	clangFlags     []string
 	outputFile     string
 	packageName    string
 	cppCode        bool
 	outsideStructs bool
+
+	// for debugging
+	debugPrefix string
 }
+
+type ProgramState int
+
+const (
+	StateAst ProgramState = iota
+	StateTranspile
+	StateDebug
+)
 
 // DefaultProgramArgs default value of ProgramArgs
 func DefaultProgramArgs() ProgramArgs {
 	return ProgramArgs{
 		verbose:     false,
-		ast:         false,
+		state:       StateTranspile,
 		packageName: "main",
+		debugPrefix: "debug.",
 		clangFlags:  []string{},
 	}
 }
@@ -326,29 +337,33 @@ func avoidGoKeywords(tree []ast.Node) {
 
 // Start begins transpiling an input file.
 func Start(args ProgramArgs) (err error) {
+	if args.verbose {
+		fmt.Fprintln(os.Stdout, "Reading clang AST tree...")
+	}
+
 	lines, filePP, err := generateAstLines(args)
 	if err != nil {
 		return
 	}
 
-	if args.verbose {
-		fmt.Fprintln(os.Stdout, "Reading clang AST tree...")
-	}
-	if args.ast {
+	switch args.state {
+	case StateAst:
 		for _, l := range lines {
 			fmt.Fprintln(astout, l)
 		}
 		fmt.Fprintln(astout)
 
-		return nil
+	case StateTranspile:
+		err = generateGoCode(args, lines, filePP)
+
+	case StateDebug:
+		err = generateDebugCCode(args, lines, filePP)
+
+	default:
+		err = fmt.Errorf("Program state `%d` is not implemented", args.state)
 	}
 
-	err = generateGoCode(args, lines, filePP)
-	if err != nil {
-		return
-	}
-
-	return nil
+	return err
 }
 
 func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.FilePP, err error) {
@@ -408,9 +423,46 @@ func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.Fil
 		errBody, _ := exec.Command(
 			compiler, append(compilerFlag, ppFilePath)...).CombinedOutput()
 
-		panic("clang failed: " + err.Error() + ":\n\n" + string(errBody))
+		panic(compiler + " failed: " + err.Error() + ":\n\n" + string(errBody))
 	}
 	lines = strings.Split(string(astPP), "\n")
+
+	return
+}
+
+func FromLinesToTree(verbose bool, lines []string, filePP preprocessor.FilePP) (tree []ast.Node, errs []error) {
+	// Converting to nodes
+	if verbose {
+		fmt.Fprintln(os.Stdout, "Converting to nodes...")
+	}
+	nodes, astErrors := convertLinesToNodesParallel(lines)
+	for i := range astErrors {
+		errs = append(errs, fmt.Errorf(
+			"/"+"* AST Error :\n%v\n*"+"/",
+			astErrors[i].Error()))
+	}
+
+	// build tree
+	if verbose {
+		fmt.Fprintln(os.Stdout, "Building tree...")
+	}
+	tree = buildTree(nodes, 0)
+	ast.FixPositions(tree)
+
+	// Repair the floating literals. See RepairFloatingLiteralsFromSource for
+	// more information.
+	floatingErrors := ast.RepairFloatingLiteralsFromSource(tree[0], filePP)
+
+	for _, fErr := range floatingErrors {
+		errs = append(errs, fmt.Errorf("could not read exact floating literal: %s",
+			fErr.Err.Error()))
+	}
+
+	// avoid Go keywords
+	if verbose {
+		fmt.Fprintln(os.Stdout, "Modify nodes for avoid Go keywords...")
+	}
+	avoidGoKeywords(tree)
 
 	return
 }
@@ -422,39 +474,16 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 	p.Verbose = args.verbose
 	p.PreprocessorFile = filePP
 
-	// Converting to nodes
-	if args.verbose {
-		fmt.Fprintln(os.Stdout, "Converting to nodes...")
+	// convert lines to tree ast
+	tree, errs := FromLinesToTree(args.verbose, lines, filePP)
+	for i := range errs {
+		fmt.Fprintf(os.Stderr, "AST error #%d:\n%v\n",
+			i, errs[i].Error())
+		p.AddMessage(errs[i].Error())
 	}
-	nodes, astErrors := convertLinesToNodesParallel(lines)
-	for i := range astErrors {
-		p.AddMessage(fmt.Sprintf(
-			"/"+"* AST Error :\n%v\n*"+"/",
-			astErrors[i].Error()))
+	if tree == nil {
+		return fmt.Errorf("Cannot create tree: tree is nil. Please try another version of clang")
 	}
-
-	// build tree
-	if args.verbose {
-		fmt.Fprintln(os.Stdout, "Building tree...")
-	}
-	tree := buildTree(nodes, 0)
-	ast.FixPositions(tree)
-
-	// Repair the floating literals. See RepairFloatingLiteralsFromSource for
-	// more information.
-	floatingErrors := ast.RepairFloatingLiteralsFromSource(tree[0], filePP)
-
-	for _, fErr := range floatingErrors {
-		message := fmt.Sprintf("could not read exact floating literal: %s",
-			fErr.Err.Error())
-		p.AddMessage(p.GenerateWarningMessage(errors.New(message), fErr.Node))
-	}
-
-	// avoid Go keywords
-	if args.verbose {
-		fmt.Fprintln(os.Stdout, "Modify nodes for avoid Go keywords...")
-	}
-	avoidGoKeywords(tree)
 
 	outputFilePath := args.outputFile
 
@@ -478,10 +507,6 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 	source, err = transpiler.TranspileAST(args.outputFile, args.packageName, args.outsideStructs,
 		p, tree[0].(ast.Node))
 	if err != nil {
-		for i := range astErrors {
-			fmt.Fprintf(os.Stderr, "AST error #%d:\n%v\n",
-				i, astErrors[i].Error())
-		}
 		return fmt.Errorf("cannot transpile AST : %v", err)
 	}
 
@@ -548,12 +573,26 @@ func runCommand() int {
 			"cpp", false, "transpile CPP code")
 		astHelpFlag = astCommand.Bool(
 			"h", false, "print help information")
+
+		debugCommand = flag.NewFlagSet(
+			"debug", flag.ContinueOnError)
+		debugCppFlag = debugCommand.Bool(
+			"cpp", false, "transpile CPP code")
+		debugVerboseFlag = debugCommand.Bool(
+			"V", false, "print progress as comments")
+		prefixDebugFlag = debugCommand.String(
+			"p", "debug.", "prefix of output C filename with addition debug informations")
+		debugHelpFlag = debugCommand.Bool(
+			"h", false, "print help information")
 	)
 	var clangFlags inputDataFlags
 	transpileCommand.Var(&clangFlags,
 		"clang-flag",
 		"Pass arguments to clang. You may provide multiple -clang-flag items.")
 	astCommand.Var(&clangFlags,
+		"clang-flag",
+		"Pass arguments to clang. You may provide multiple -clang-flag items.")
+	debugCommand.Var(&clangFlags,
 		"clang-flag",
 		"Pass arguments to clang. You may provide multiple -clang-flag items.")
 
@@ -564,6 +603,7 @@ func runCommand() int {
 		usage += "Commands:\n"
 		usage += "  transpile\ttranspile an input C source file or files to Go\n"
 		usage += "  ast\t\tprint AST before translated Go code\n"
+		usage += "  debug\t\tadd debug information in C source\n"
 		usage += "  version\tprint version of c4go\n"
 		usage += "\n"
 		fmt.Fprintf(stderr, usage, os.Args[0])
@@ -573,6 +613,7 @@ func runCommand() int {
 
 	transpileCommand.SetOutput(stderr)
 	astCommand.SetOutput(stderr)
+	debugCommand.SetOutput(stderr)
 
 	flag.Parse()
 
@@ -592,15 +633,16 @@ func runCommand() int {
 		}
 
 		if *astHelpFlag || astCommand.NArg() == 0 {
-			fmt.Fprintf(stderr, "Usage: %s ast file.c\n", os.Args[0])
+			fmt.Fprintf(stderr, "Usage: %s ast [-cpp] [-clang-flag values] file.c\n", os.Args[0])
 			astCommand.PrintDefaults()
 			return 3
 		}
 
-		args.ast = true
+		args.state = StateAst
 		args.inputFiles = astCommand.Args()
 		args.clangFlags = clangFlags
 		args.cppCode = *astCppFlag
+
 	case "transpile":
 		err := transpileCommand.Parse(os.Args[2:])
 		if err != nil {
@@ -610,12 +652,13 @@ func runCommand() int {
 
 		if *transpileHelpFlag || transpileCommand.NArg() == 0 {
 			fmt.Fprintf(stderr,
-				"Usage: %s transpile [-V] [-o file.go] [-p package] [-cpuprofile cpu.out] file1.c ...\n",
+				"Usage: %s transpile [-V] [-o file.go] [-cpp] [-p package] [-clang-flag values] [-cpuprofile cpu.out] file1.c ...\n",
 				os.Args[0])
 			transpileCommand.PrintDefaults()
 			return 5
 		}
 
+		args.state = StateTranspile
 		args.inputFiles = transpileCommand.Args()
 		args.outputFile = *outputFlag
 		args.packageName = *packageFlag
@@ -635,6 +678,26 @@ func runCommand() int {
 			pprof.StartCPUProfile(f)
 			defer pprof.StopCPUProfile()
 		}
+
+	case "debug":
+		err := debugCommand.Parse(os.Args[2:])
+		if err != nil {
+			fmt.Fprintf(os.Stdout, "debug command cannot parse: %v", err)
+			return 12
+		}
+
+		if *debugHelpFlag || debugCommand.NArg() == 0 {
+			fmt.Fprintf(stderr, "Usage: %s debug [-cpp] [-clang-flag values] file.c\n", os.Args[0])
+			debugCommand.PrintDefaults()
+			return 30
+		}
+
+		args.state = StateDebug
+		args.inputFiles = debugCommand.Args()
+		args.verbose = *debugVerboseFlag
+		args.debugPrefix = *prefixDebugFlag
+		args.clangFlags = clangFlags
+		args.cppCode = *debugCppFlag
 
 	case "version":
 		fmt.Fprint(stderr, version.Version())

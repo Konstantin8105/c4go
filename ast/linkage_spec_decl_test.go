@@ -14,6 +14,14 @@ func TestLinkageSpecDecl(t *testing.T) {
 			Name:       "C",
 			ChildNodes: []Node{},
 		},
+		`0x266fad0 <line:74:1, line:94:1> line:74:8 C++`: &LinkageSpecDecl{
+			Addr:       0x266fad0,
+			Pos:        NewPositionFromString("line:74:1, line:94:1"),
+			Position2:  "line:74:8",
+			IsImplicit: false,
+			Name:       "C++",
+			ChildNodes: []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)

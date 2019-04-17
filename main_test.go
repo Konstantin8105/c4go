@@ -74,6 +74,11 @@ func TestIntegrationScripts(t *testing.T) {
 	for _, file := range files {
 		t.Run(file, func(t *testing.T) {
 
+			defer func() {
+				// remove debug file
+				_ = os.Remove("debug.txt")
+			}()
+
 			// create subfolders for test
 			subFolder := buildFolder + separator + strings.Split(file, ".")[0] + separator
 
@@ -84,12 +89,18 @@ func TestIntegrationScripts(t *testing.T) {
 			}
 
 			// slice of program results
-			progs := [2]func(string, string, string, []string, []string) (string, error){
+			progs := []func(string, string, string, []string, []string) (string, error){
+				runCdebug,
 				runC,
 				runGo,
 			}
 
-			var results [2]string
+			// only for test "assert.c"
+			if strings.Contains(file, "assert.c") {
+				progs = progs[1:]
+			}
+
+			results := make([]string, len(progs))
 			var clangFlags []string
 
 			// specific of binding
@@ -135,76 +146,104 @@ func TestIntegrationScripts(t *testing.T) {
 				}
 			}
 
-			var (
-				cCombine  = results[0]
-				goCombine = results[1]
-			)
-
-			if cCombine != goCombine {
-				// Add addition debug information for lines like:
-				// build/tests/cast/main_test.go:195:1: expected '}', found 'type'
-				buildPrefix := buildFolder + "/tests/"
-				var output string
-				lines := strings.Split(goCombine, "\n")
-				amountSnippets := 0
-				for _, line := range lines {
-					line = strings.TrimSpace(line)
-					if !strings.HasPrefix(line, buildPrefix) {
-						continue
-					}
-					index := strings.Index(line, ":")
-					if index < 0 {
-						continue
-					}
-					filename := "./" + line[0:index]
-					output += "+========================+\n"
-					output += fmt.Sprintf("File : %s\n\n", filename)
-					if len(line) <= index+1 {
-						continue
-					}
-					line = line[index+1:]
-					index = strings.Index(line, ":")
-					if index < 0 {
-						continue
-					}
-					linePosition, err := strconv.Atoi(line[:index])
-					if err != nil {
-						continue
-					}
-					content, err := ioutil.ReadFile(filename)
-					if err != nil {
-						continue
-					}
-					fileLines := strings.Split(string(content), "\n")
-					start := linePosition - 20
-					if start < 0 {
-						start = 0
-					}
-					var indicator string
-					for i := start; i < linePosition+5 && i < len(fileLines); i++ {
-						if i == linePosition-1 {
-							indicator = "*"
-						} else {
-							indicator = " "
+			for i := 0; i < len(results)-1; i++ {
+				if results[i] != results[i+1] {
+					// Add addition debug information for lines like:
+					// build/tests/cast/main_test.go:195:1: expected '}', found 'type'
+					buildPrefix := buildFolder + "/tests/"
+					var output string
+					lines := strings.Split(results[i+1], "\n")
+					amountSnippets := 0
+					for _, line := range lines {
+						line = strings.TrimSpace(line)
+						if !strings.HasPrefix(line, buildPrefix) {
+							continue
 						}
-						output += fmt.Sprintf("Line : %3d %s: %s\n",
-							i+1, indicator, fileLines[i])
+						index := strings.Index(line, ":")
+						if index < 0 {
+							continue
+						}
+						filename := "./" + line[0:index]
+						output += "+========================+\n"
+						output += fmt.Sprintf("File : %s\n\n", filename)
+						if len(line) <= index+1 {
+							continue
+						}
+						line = line[index+1:]
+						index = strings.Index(line, ":")
+						if index < 0 {
+							continue
+						}
+						linePosition, err := strconv.Atoi(line[:index])
+						if err != nil {
+							continue
+						}
+						content, err := ioutil.ReadFile(filename)
+						if err != nil {
+							continue
+						}
+						fileLines := strings.Split(string(content), "\n")
+						start := linePosition - 20
+						if start < 0 {
+							start = 0
+						}
+						var indicator string
+						for i := start; i < linePosition+5 && i < len(fileLines); i++ {
+							if i == linePosition-1 {
+								indicator = "*"
+							} else {
+								indicator = " "
+							}
+							output += fmt.Sprintf("Line : %3d %s: %s\n",
+								i+1, indicator, fileLines[i])
+						}
+						amountSnippets++
+						if amountSnippets >= 4 {
+							output += fmt.Sprintf("and more other snippets...\n")
+							break
+						}
 					}
-					amountSnippets++
-					if amountSnippets >= 4 {
-						output += fmt.Sprintf("and more other snippets...\n")
-						break
-					}
+					t.Fatalf("\nParts of code:\n%s\n%s",
+						output,
+						util.ShowDiff(results[i], results[i+1]))
 				}
-				t.Fatalf("\nParts of code:\n%s\n%s",
-					output,
-					util.ShowDiff(cCombine, goCombine))
 			}
 			if flag.CommandLine.Lookup("test.v").Value.String() == "true" {
-				t.Log(goCombine)
+				t.Log(results[len(results)-1])
 			}
 		})
 	}
+}
+
+// compile and run C code
+func runCdebug(file, subFolder, stdin string, clangFlags, args []string) (string, error) {
+	pArgs := DefaultProgramArgs()
+	pArgs.inputFiles = []string{file}
+	pArgs.debugPrefix = "debug."
+	pArgs.state = StateDebug
+	pArgs.cppCode = strings.HasSuffix(file, "cpp")
+	pArgs.clangFlags = clangFlags
+	pArgs.verbose = (flag.CommandLine.Lookup("test.v").Value.String() == "true" || strings.Contains(file, "operators.c"))
+
+	// Compile Go
+	err := Start(pArgs)
+	if err != nil {
+		return "", fmt.Errorf("Cannot transpile : %v", err)
+	}
+
+	// create a new filename
+	if index := strings.LastIndex(file, "/"); index >= 0 {
+		file = file[:index+1] + pArgs.debugPrefix + file[index+1:]
+	} else {
+		file = pArgs.debugPrefix + file
+	}
+
+	defer func() {
+		// remove debug file
+		_ = os.Remove(file)
+	}()
+
+	return runC(file, subFolder, stdin, clangFlags, args)
 }
 
 // compile and run C code
@@ -387,6 +426,7 @@ func runGo(file, subFolder, stdin string, clangFlags, args []string) (string, er
 	programArgs.inputFiles = []string{file}
 	programArgs.outputFile = subFolder + "main.go"
 	programArgs.clangFlags = clangFlags
+	programArgs.verbose = (flag.CommandLine.Lookup("test.v").Value.String() == "true" || strings.Contains(file, "operators.c"))
 	if strings.HasSuffix(file, "cpp") {
 		programArgs.cppCode = true
 	}
