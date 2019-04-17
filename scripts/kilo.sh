@@ -66,7 +66,7 @@ if [ "$1" == "-d" ]; then
 			cat script.txt | ./kilo.go.app output.go.txt 2>&1 && echo "ok" || echo "not ok"
 			cp debug.txt debug.go.txt
 		echo "step 5: run C application"
-			gcc -o kilo.c.app debug.kilo.c
+			clang -o kilo.c.app debug.kilo.c
 			echo "" > debug.txt
 			cat script.txt | ./kilo.c.app output.c.txt  2>&1 && echo "ok" || echo "not ok"
 			cp debug.txt debug.c.txt	
