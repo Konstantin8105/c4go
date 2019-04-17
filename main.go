@@ -271,6 +271,10 @@ func avoidGoKeywords(tree []ast.Node) {
 			continue
 		}
 
+		if _, ok := tree[i].(*ast.StringLiteral); ok {
+			continue
+		}
+
 		// going depper
 		avoidGoKeywords(tree[i].Children())
 
@@ -458,12 +462,6 @@ func FromLinesToTree(verbose bool, lines []string, filePP preprocessor.FilePP) (
 			fErr.Err.Error()))
 	}
 
-	// avoid Go keywords
-	if verbose {
-		fmt.Fprintln(os.Stdout, "Modify nodes for avoid Go keywords...")
-	}
-	avoidGoKeywords(tree)
-
 	return
 }
 
@@ -484,6 +482,12 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 	if tree == nil {
 		return fmt.Errorf("Cannot create tree: tree is nil. Please try another version of clang")
 	}
+
+	// avoid Go keywords
+	if args.verbose {
+		fmt.Fprintln(os.Stdout, "Modify nodes for avoid Go keywords...")
+	}
+	avoidGoKeywords(tree)
 
 	outputFilePath := args.outputFile
 
