@@ -55,7 +55,7 @@ int interface() { return 42; }
 int map() { return 42; }
 int package() { return 42; }
 int range() { return 42; }
-int select() { return 42; }
+// int select() { return 42; }
 int type() { return 42; }
 int var() { return 42; }
 int _() { return 42; }
@@ -216,7 +216,7 @@ void NullPointerCheck()
 
 int main()
 {
-    plan(65);
+    plan(64);
 
     test_string();
     test_null_function();
@@ -278,7 +278,7 @@ int main()
     is_eq(map(), 42);
     is_eq(package(), 42);
     is_eq(range(), 42);
-    is_eq(select(), 42);
+    // is_eq(select(), 42);
     is_eq(type(), 42);
     is_eq(var(), 42);
     is_eq(_(), 42);

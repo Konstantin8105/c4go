@@ -148,7 +148,7 @@ func TestBookSources(t *testing.T) {
 					args := DefaultProgramArgs()
 					args.inputFiles = []string{file}
 					args.outputFile = goFile
-					args.ast = false
+					args.state = StateTranspile
 					args.verbose = false
 
 					if err := Start(args); err != nil {
@@ -280,7 +280,7 @@ func TestFrame3dd(t *testing.T) {
 		"-I" + folder + "microstran",
 	}
 	args.outputFile = folder + "src/main.go"
-	args.ast = false
+	args.state = StateTranspile
 	args.verbose = false
 
 	if err := Start(args); err != nil {
@@ -353,7 +353,7 @@ func TestCsparse(t *testing.T) {
 	}
 	args.clangFlags = []string{}
 	args.outputFile = folder + "main.go"
-	args.ast = false
+	args.state = StateTranspile
 	args.verbose = false
 
 	if err := Start(args); err != nil {
@@ -574,7 +574,7 @@ func TestMultifiles(t *testing.T) {
 				args.inputFiles = f.input
 				args.clangFlags = f.clang
 				args.outputFile = f.output
-				args.ast = false
+				args.state = StateTranspile
 				args.verbose = false
 
 				if err := Start(args); err != nil {
@@ -618,7 +618,7 @@ func TestKiloEditor(t *testing.T) {
 	args := DefaultProgramArgs()
 	args.inputFiles = []string{fileList[0]}
 	args.outputFile = goFile
-	args.ast = false
+	args.state = StateTranspile
 	args.verbose = false
 
 	if err := Start(args); err != nil {
@@ -678,7 +678,7 @@ func TestTinn(t *testing.T) {
 	args := DefaultProgramArgs()
 	args.inputFiles = fileList
 	args.outputFile = goFile
-	args.ast = false
+	args.state = StateTranspile
 	args.verbose = false
 
 	if err := Start(args); err != nil {
@@ -760,7 +760,7 @@ func TestSpringerproblem(t *testing.T) {
 	args := DefaultProgramArgs()
 	args.inputFiles = fileList
 	args.outputFile = goFile
-	args.ast = false
+	args.state = StateTranspile
 	args.verbose = false
 
 	if err := Start(args); err != nil {

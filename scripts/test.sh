@@ -36,4 +36,6 @@ fi
 echo "End of coverage"
 
 # check race
-go test -tags=integration -run=TestIntegrationScripts/tests/ctype.c -race -v
+go test -tags=integration                     \
+	-run=TestIntegrationScripts/tests/ctype.c \
+	-race -v
