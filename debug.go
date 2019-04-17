@@ -38,7 +38,8 @@ func (f funcPos) Inject(lines [][]byte) error {
 	}
 
 	lines[f.pos.Line-1] = append(lines[f.pos.Line-1][:f.pos.Column],
-		append([]byte(fmt.Sprintf("%s(%d,\"%s\");", debugFunctionName, f.pos.Line, f.name)), lines[f.pos.Line-1][f.pos.Column:]...)...)
+		append([]byte(fmt.Sprintf("%s(%d,\"%s\");", debugFunctionName, f.pos.Line, f.name)),
+			lines[f.pos.Line-1][f.pos.Column:]...)...)
 
 	return nil
 }
@@ -65,6 +66,25 @@ type variable struct {
 
 func (v variable) Position() ast.Position {
 	return v.pos
+}
+
+func (v variable) Inject(lines [][]byte) error {
+	var index int = -1
+	for i := range FuncArgs {
+		if FuncArgs[i].cType == v.cType {
+			index = i
+		}
+	}
+	if index < 0 {
+		return nil
+	}
+	// find argument type
+	lines[v.pos.Line-1] = append(lines[v.pos.Line-1][:v.pos.Column],
+		append([]byte(fmt.Sprintf("%s%s(%d,\"%s\",%s);",
+			debugArgument, FuncArgs[index].postfix, 0, v.name, v.name)),
+			lines[v.pos.Line-1][v.pos.Column:]...)...)
+
+	return nil
 }
 
 func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP) (
@@ -129,6 +149,11 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 				continue
 			}
 
+			// initialize slice
+			if _, ok := funcPoses[mst.Position().File]; !ok {
+				funcPoses[mst.Position().File] = make([]Positioner, 0, 10)
+			}
+
 			if args.verbose {
 				fmt.Fprintf(os.Stdout, "find function : %s\n", fd.Name)
 			}
@@ -149,19 +174,31 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 			//   `-...
 
 			// function name
-			f := funcPos{
-				name: fd.Name,
-				pos:  mst.Position(),
-			}
-			if sl, ok := funcPoses[mst.Position().File]; ok {
+			{
+				f := funcPos{
+					name: fd.Name,
+					pos:  mst.Position(),
+				}
+				sl, _ := funcPoses[mst.Position().File]
 				sl = append(sl, f)
 				funcPoses[mst.Position().File] = sl
-			} else {
-				funcPoses[mst.Position().File] = append([]Positioner{}, f)
 			}
 
 			// function variable
-
+			for k := range fd.Children() {
+				parm, ok := fd.Children()[k].(*ast.ParmVarDecl)
+				if !ok {
+					continue
+				}
+				p := variable{
+					name:  parm.Name,
+					pos:   mst.Position(),
+					cType: parm.Type,
+				}
+				sl, _ := funcPoses[mst.Position().File]
+				sl = append(sl, p)
+				funcPoses[mst.Position().File] = sl
+			}
 		}
 	}
 
@@ -219,7 +256,10 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 	return nil
 }
 
-const debugFunctionName string = "c4go_debug_function_name"
+const (
+	debugFunctionName string = "c4go_debug_function_name"
+	debugArgument     string = "c4go_debug_function_arg_"
+)
 
 func debugCode() string {
 	body := `
@@ -244,11 +284,12 @@ void c4go_debug_function_name(int line, char * functionName)
 }
 
 #define c4go_arg(type, postfix, format) \
-void c4go_debug_function_arg_##postfix(int arg_pos, type arg_value) \
+void c4go_debug_function_arg_##postfix(int arg_pos, char * name, type arg_value) \
 { \
 	FILE * file = c4go_get_debug_file(); \
-	fprintf(file,"\targ pos: %d", arg_pos); \
-	fprintf(file,"\targ val: "); \
+	fprintf(file,"\targ pos : %d", arg_pos); \
+	fprintf(file,"\tname: %s", name); \
+	fprintf(file,"\tval : "); \
 	fprintf(file,format, arg_value); \
 	fprintf(file,"\n"); \
 	fclose(file); \
