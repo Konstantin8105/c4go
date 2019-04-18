@@ -80,13 +80,27 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 	if isStruct {
 		totalBytes := 0
 
+		// last parameter
+		// -1 - undefine
+		//  0 - value
+		// +1 - pointer
+
+		last := 0
+
 		for _, t := range s.Fields {
 			var bytes int
 			var err error
 
+			var new_par int = -1
+
 			switch f := t.(type) {
 			case string:
 				bytes, err = SizeOf(p, f)
+				if IsPointer(f, p) {
+					new_par = 1
+				} else {
+					new_par = 0
+				}
 
 			case *program.Struct:
 				bytes, err = SizeOf(p, f.Name)
@@ -98,15 +112,19 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 					t, bytes, err)
 				return 0, err
 			}
+
+			if last != new_par {
+				totalBytes = (totalBytes/pointerSize + 1) * pointerSize
+			}
+
 			totalBytes += bytes
 		}
 
 		// The size of a struct is rounded up to fit the size of the pointer of
 		// the OS.
-		// TODO: check
-		// if totalBytes%pointerSize != 0 {
-		// 	totalBytes += pointerSize - (totalBytes % pointerSize)
-		// }
+		if totalBytes%pointerSize != 0 {
+			totalBytes += pointerSize - (totalBytes % pointerSize)
+		}
 
 		return totalBytes, nil
 	}
