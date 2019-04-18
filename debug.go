@@ -200,8 +200,6 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 				funcPoses[mst.Position().File] = sl
 			}
 
-			// if case
-			//
 			// IfStmt
 			// |-<<<NULL>>>
 			// |-<<<NULL>>>
@@ -210,65 +208,34 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 			// |-CompoundStmt   # <---- find this -
 			// | `-...
 			// `-<<<NULL>>>
-			for k := range mst.Children() {
-				ifs, ok := mst.Children()[k].(*ast.IfStmt)
-				if !ok {
-					continue
-				}
-				var (
-					comp  *ast.CompoundStmt
-					found bool
-				)
-				for g := range ifs.Children() {
-					if comp, found = ifs.Children()[g].(*ast.CompoundStmt); found {
-						break
-					}
-				}
-				if !found {
-					continue
-				}
-
-				p := compount{
-					name: "if begin",
-					pos:  comp.Position(),
-				}
-				sl, _ := funcPoses[comp.Position().File]
-				sl = append(sl, p)
-				funcPoses[comp.Position().File] = sl
-			}
-
+			//
 			// WhileStmt 0x33e4b08 <line:25:5, line:28:5>
 			// |-<<<NULL>>>
 			// |-BinaryOperator 'int' '<='
 			// | `-...
 			// `-CompoundStmt
 			//   |-...
-			for k := range mst.Children() {
-				whs, ok := mst.Children()[k].(*ast.WhileStmt)
-				if !ok {
-					continue
+			//
+			// walking by tree
+			var walk func(node ast.Node)
+			walk = func(node ast.Node) {
+				if node == nil {
+					return
 				}
-				var (
-					comp  *ast.CompoundStmt
-					found bool
-				)
-				for g := range whs.Children() {
-					if comp, found = whs.Children()[g].(*ast.CompoundStmt); found {
-						break
+				if comp, ok := node.(*ast.CompoundStmt); ok {
+					p := compount{
+						name: "CompoundStmt",
+						pos:  comp.Position(),
 					}
+					sl, _ := funcPoses[comp.Position().File]
+					sl = append(sl, p)
+					funcPoses[comp.Position().File] = sl
 				}
-				if !found {
-					continue
+				for i := range node.Children() {
+					walk(node.Children()[i])
 				}
-
-				p := compount{
-					name: "while begin",
-					pos:  comp.Position(),
-				}
-				sl, _ := funcPoses[comp.Position().File]
-				sl = append(sl, p)
-				funcPoses[comp.Position().File] = sl
 			}
+			walk(fd)
 		}
 	}
 
