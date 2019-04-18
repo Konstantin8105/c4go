@@ -265,7 +265,8 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 		// inject function
 		lines := bytes.Split(dat, []byte("\n"))
 		for k := len(positions) - 1; k >= 0; k-- {
-			positions[k].Inject(lines)
+			// error is ignored
+			_ = positions[k].Inject(lines)
 		}
 
 		// add main debug function
