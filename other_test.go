@@ -710,6 +710,8 @@ func TestTinn(t *testing.T) {
 	}
 
 	cmd := exec.Command("go", "build",
+		// fix /usr/local/go/pkg/tool/linux_amd64/link:
+		// running gcc failed:
 		"-a",
 		"-o", goFile+".app",
 		"-gcflags", "-e",
