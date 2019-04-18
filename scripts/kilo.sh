@@ -55,7 +55,7 @@ if [ "$1" == "-d" ]; then
 		echo "step 1: create debug file"
 			$C4GO debug kilo.c
 		echo "step 2: prepare output data"
-			echo "" > output.go.txt
+			echo "" > output.g.txt
 			echo "" > output.c.txt
 		echo "step 3: prepare test script"
 			echo -e 'Hello my dear friend\x0D\x13\x11' > script.txt
@@ -63,7 +63,7 @@ if [ "$1" == "-d" ]; then
 			$C4GO transpile -o=debug.kilo.go debug.kilo.c
 			go build -o kilo.go.app	debug.kilo.go
 			echo "" > debug.txt
-			cat script.txt | ./kilo.go.app output.go.txt 2>&1 && echo "ok" || echo "not ok"
+			cat script.txt | ./kilo.go.app output.g.txt 2>&1 && echo "ok" || echo "not ok"
 			cp debug.txt debug.go.txt
 		echo "step 5: run C application"
 			clang -o kilo.c.app debug.kilo.c
@@ -77,7 +77,7 @@ if [ "$1" == "-d" ]; then
 			cat debug.diff
 			echo "-----------------------------"
 			echo "output"
-			diff -y -t output.c.txt output.go.txt 2>&1 > output.diff
+			diff -y -t output.c.txt output.g.txt 2>&1 > output.diff
 			cat output.diff
 			echo "-----------------------------"
 		echo "step 6: move back"

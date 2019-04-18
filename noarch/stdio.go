@@ -772,19 +772,41 @@ func Snprintf(buffer []byte, n int32, format []byte, args ...interface{}) int32 
 }
 
 // convert - convert va_list
-func convert(arg interface{}) (result []interface{}) {
-	typeOfByteSlice := reflect.TypeOf([]byte(nil))
-	if reflect.TypeOf(arg) == typeOfByteSlice {
-		return []interface{}{CStringToString(arg.([]byte))}
-	}
-	if reflect.TypeOf(arg).Kind() == reflect.Slice {
-		arg := arg.([]interface{})
-		for j := 0; j < len(arg); j++ {
-			result = append(result, convert(arg[j])...)
+func convert(args []interface{}) (result []interface{}) {
+	for i := range args {
+		arg := args[i]
+
+		typeOfByteSlice := reflect.TypeOf([]byte(nil))
+		if reflect.TypeOf(arg) == typeOfByteSlice {
+			result = append(result, []interface{}{CStringToString(arg.([]byte))})
+			continue
 		}
-		return result
+
+		if reflect.TypeOf(arg).Kind() == reflect.Slice {
+			arg := arg.([]interface{})
+			for j := 1; j < len(arg); j++ {
+				result = append(result, convert(arg)...)
+			}
+			continue
+		}
+
+		switch v := arg.(type) {
+		case int32:
+			result = append(result, v)
+			continue
+		case string:
+			result = append(result, v)
+			continue
+		case float64:
+			result = append(result, v)
+			continue
+		}
+
+		// TODO: here come &main.va_list{position:0, slice:[]interface {}{2}}
+
+		result = append(result, arg)
 	}
-	return []interface{}{arg}
+	return
 }
 
 // Vsnprintf handles vsnprintf().
@@ -795,15 +817,14 @@ func convert(arg interface{}) (result []interface{}) {
 // resulting string replacing their respective specifiers.
 func Vsnprintf(buffer []byte, n int32, format []byte, varList ...interface{}) int32 {
 	realArgs := []interface{}{}
-
-	if len(varList) > 1 {
-		// TODO : I don`t found the situation with more 1 size
-		return 0
-	}
-
 	realArgs = append(realArgs, convert(varList)...)
 
-	result := fmt.Sprintf(CStringToString(format), realArgs...)
+	var result string
+	if len(realArgs) > 0 {
+		result = fmt.Sprintf(CStringToString(format), realArgs...)
+	} else {
+		result = fmt.Sprintf(CStringToString(format))
+	}
 	if int32(len(result)) > n {
 		result = result[:n]
 	}
