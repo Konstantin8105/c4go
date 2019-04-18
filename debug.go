@@ -236,6 +236,39 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 				sl = append(sl, p)
 				funcPoses[comp.Position().File] = sl
 			}
+
+			// WhileStmt 0x33e4b08 <line:25:5, line:28:5>
+			// |-<<<NULL>>>
+			// |-BinaryOperator 'int' '<='
+			// | `-...
+			// `-CompoundStmt
+			//   |-...
+			for k := range mst.Children() {
+				whs, ok := mst.Children()[k].(*ast.WhileStmt)
+				if !ok {
+					continue
+				}
+				var (
+					comp  *ast.CompoundStmt
+					found bool
+				)
+				for g := range whs.Children() {
+					if comp, found = whs.Children()[g].(*ast.CompoundStmt); found {
+						break
+					}
+				}
+				if !found {
+					continue
+				}
+
+				p := compount{
+					name: "while begin",
+					pos:  comp.Position(),
+				}
+				sl, _ := funcPoses[comp.Position().File]
+				sl = append(sl, p)
+				funcPoses[comp.Position().File] = sl
+			}
 		}
 	}
 
