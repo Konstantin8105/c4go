@@ -803,6 +803,27 @@ func convert(args []interface{}) (result []interface{}) {
 		}
 
 		// TODO: here come &main.va_list{position:0, slice:[]interface {}{2}}
+		if reflect.TypeOf(arg).Kind() == reflect.Ptr {
+			val := reflect.ValueOf(arg)
+			v := reflect.Indirect(val)
+			if v.NumField() == 2 {
+				if v.Field(1).Type().String() == "[]interface {}" {
+					field := v.Field(1)
+					slice := field.Interface().([]interface{})
+					for i := range slice {
+						switch v := slice[i].(type) {
+						case []byte:
+							result = append(result, CStringToString(v))
+
+						default:
+							result = append(result, slice[i])
+						}
+					}
+				}
+			}
+
+			continue
+		}
 
 		result = append(result, arg)
 	}

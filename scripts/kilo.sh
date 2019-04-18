@@ -73,11 +73,11 @@ if [ "$1" == "-d" ]; then
 		echo "step 5"
 			echo "-----------------------------"
 			echo "debug"
-			diff -y -t debug.c.txt debug.go.txt 2>&1  > debug.diff 
-			cat debug.diff
+			diff -y -t debug.c.txt debug.go.txt 2>&1  > debug.diff  && echo "ok" || echo "not ok"
+			# cat debug.diff
 			echo "-----------------------------"
 			echo "output"
-			diff -y -t output.c.txt output.g.txt 2>&1 > output.diff
+			diff -y -t output.c.txt output.g.txt 2>&1 > output.diff && echo "ok" || echo "not ok"
 			cat output.diff
 			echo "-----------------------------"
 		echo "step 6: move back"

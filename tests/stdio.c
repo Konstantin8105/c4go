@@ -488,13 +488,14 @@ int PrintFError(const char* format, ...)
     va_start(args, format);
     int s = vsprintf(buffer, format, args);
     va_end(args);
+	printf("vsnprintf buffer: `%s`\n", buffer);
     return s;
 }
 
 void test_vsprintf()
 {
     int s = PrintFError("Success function '%s' %.2f", "vsprintf", 3.1415926);
-    is_true(s >= 19 + 8 + 5);
+    is_true(s == 19 + 8 + 5);
 }
 
 int PrintFError2(const char* format, ...)
@@ -504,6 +505,7 @@ int PrintFError2(const char* format, ...)
     va_start(args, format);
     int s = vsnprintf(buffer, 256, format, args);
     va_end(args);
+	printf("vsnprintf buffer: `%s`\n", buffer);
     return s;
 }
 
@@ -512,7 +514,7 @@ void test_vsnprintf()
     int s = PrintFError2("Success function '%s' %.2f", "vsprintf", 3.1415926);
     is_true(s >= 19 + 8 + 5);
 	s = PrintFError2("HHELP %d",(int)(2));
-	is_true(s >= 7);
+	is_true(s == 7);
 }
 
 void test_eof()
