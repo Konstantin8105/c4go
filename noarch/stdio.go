@@ -829,23 +829,22 @@ func Getline(line [][]byte, len []uint, f *File) SsizeT {
 	counter := 0
 	for {
 		buf := make([]byte, 1)
-		_, err := f.OsFile.Read(buf)
-		if err == io.EOF {
+		n, err := f.OsFile.Read(buf)
+		buf = buf[:n]
+		if err == io.EOF || err != nil {
 			break
 		}
-		if err != nil {
+		for i := range buf {
+			line[0] = append(line[0], []byte{buf[i]}...)
+		}
+		counter += n
+		if buf[n-1] == '\n' {
 			break
 		}
-		if buf[0] == '\n' {
-			break
-		}
-		line[0] = append(line[0], buf...)
-		counter++
 	}
 	if counter == 0 {
 		return SsizeT(-1)
 	}
 	line[0] = append(line[0], '\x00')
-	counter++
 	return SsizeT(counter)
 }
