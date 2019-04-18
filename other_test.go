@@ -710,6 +710,7 @@ func TestTinn(t *testing.T) {
 	}
 
 	cmd := exec.Command("go", "build",
+		"-a",
 		"-o", goFile+".app",
 		"-gcflags", "-e",
 		goFile)
