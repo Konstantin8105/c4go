@@ -58,17 +58,17 @@ func getByte(lines [][]byte, pos ast.Position) (b byte, err error) {
 	return
 }
 
-type variable struct {
+type argument struct {
 	pos   ast.Position
 	name  string
 	cType string
 }
 
-func (v variable) Position() ast.Position {
+func (v argument) Position() ast.Position {
 	return v.pos
 }
 
-func (v variable) Inject(lines [][]byte) error {
+func (v argument) Inject(lines [][]byte) error {
 	var index int = -1
 	for i := range FuncArgs {
 		if FuncArgs[i].cType == v.cType {
@@ -190,7 +190,7 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 				if !ok {
 					continue
 				}
-				p := variable{
+				p := argument{
 					name:  parm.Name,
 					pos:   mst.Position(),
 					cType: parm.Type,
