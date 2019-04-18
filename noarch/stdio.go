@@ -768,7 +768,7 @@ func Vsprintf(buffer, format []byte, varList ...interface{}) int32 {
 // additional arguments following format are formatted and inserted in the
 // resulting string replacing their respective specifiers.
 func Snprintf(buffer []byte, n int32, format []byte, args ...interface{}) int32 {
-	return Vsnprintf(buffer, n, format, args)
+	return Vsnprintf(buffer, n, format, args...)
 }
 
 // convert - convert va_list
@@ -778,15 +778,7 @@ func convert(args []interface{}) (result []interface{}) {
 
 		typeOfByteSlice := reflect.TypeOf([]byte(nil))
 		if reflect.TypeOf(arg) == typeOfByteSlice {
-			result = append(result, []interface{}{CStringToString(arg.([]byte))})
-			continue
-		}
-
-		if reflect.TypeOf(arg).Kind() == reflect.Slice {
-			arg := arg.([]interface{})
-			for j := 1; j < len(arg); j++ {
-				result = append(result, convert(arg)...)
-			}
+			result = append(result, CStringToString(arg.([]byte)))
 			continue
 		}
 
@@ -802,7 +794,7 @@ func convert(args []interface{}) (result []interface{}) {
 			continue
 		}
 
-		// TODO: here come &main.va_list{position:0, slice:[]interface {}{2}}
+		// here come &main.va_list{position:0, slice:[]interface {}{2}}
 		if reflect.TypeOf(arg).Kind() == reflect.Ptr {
 			val := reflect.ValueOf(arg)
 			v := reflect.Indirect(val)

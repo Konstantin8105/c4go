@@ -477,8 +477,19 @@ void test_snprintf()
     char buffer[50];
     int n, a = 5, b = 3;
     n = sprintf(buffer, "%d plus %d is %d", a, b, a + b);
-    is_streq(buffer, "5 plus 3 is 8")
-        is_eq(n, 13)
+    is_streq(buffer, "5 plus 3 is 8");
+    is_eq(n, 13);
+	
+
+
+    char status[80];
+	char * filename = "out.txt";
+	int numrows = 10;
+	int dirty = 1;
+    int len = snprintf(status, sizeof(status), "%.20s - %d lines %s",
+        filename, numrows, dirty ? "(modified)" : "");
+	printf("%s\n",status);
+	is_eq(len,29);
 }
 
 int PrintFError(const char* format, ...)
@@ -599,7 +610,7 @@ void test_FILE()
 
 int main()
 {
-    plan(70);
+    plan(71);
 
     START_TEST(putchar)
     START_TEST(puts)
