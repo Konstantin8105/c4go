@@ -523,7 +523,7 @@ int PrintFError2(const char* format, ...)
 void test_vsnprintf()
 {
     int s = PrintFError2("Success function '%s' %.2f", "vsprintf", 3.1415926);
-    is_true(s >= 19 + 8 + 5);
+    is_true(s == 19 + 8 + 5);
 	s = PrintFError2("HHELP %d",(int)(2));
 	is_true(s == 7);
 }
