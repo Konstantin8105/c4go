@@ -59,9 +59,10 @@ func getByte(lines [][]byte, pos ast.Position) (b byte, err error) {
 }
 
 type argument struct {
-	pos   ast.Position
-	name  string
-	cType string
+	pos        ast.Position
+	itemNumber int
+	name       string
+	cType      string
 }
 
 func (v argument) Position() ast.Position {
@@ -70,6 +71,7 @@ func (v argument) Position() ast.Position {
 
 func (v argument) Inject(lines [][]byte) error {
 	var index int = -1
+	v.cType = strings.Replace(v.cType, "const ", "", -1)
 	for i := range FuncArgs {
 		if FuncArgs[i].cType == v.cType {
 			index = i
@@ -81,7 +83,7 @@ func (v argument) Inject(lines [][]byte) error {
 	// find argument type
 	lines[v.pos.Line-1] = append(lines[v.pos.Line-1][:v.pos.Column],
 		append([]byte(fmt.Sprintf("%s%s(%d,\"%s\",%s);",
-			debugArgument, FuncArgs[index].postfix, 0, v.name, v.name)),
+			debugArgument, FuncArgs[index].postfix, v.itemNumber, v.name, v.name)),
 			lines[v.pos.Line-1][v.pos.Column:]...)...)
 
 	return nil
@@ -191,9 +193,10 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 					continue
 				}
 				p := argument{
-					name:  parm.Name,
-					pos:   mst.Position(),
-					cType: parm.Type,
+					name:       parm.Name,
+					pos:        mst.Position(),
+					itemNumber: k,
+					cType:      parm.Type,
 				}
 				sl, _ := funcPoses[mst.Position().File]
 				sl = append(sl, p)
@@ -325,11 +328,11 @@ void c4go_debug_compount(int line, char * functionName)
 void c4go_debug_function_arg_##postfix(int arg_pos, char * name, type arg_value) \
 { \
 	FILE * file = c4go_get_debug_file(); \
-	fprintf(file,"\targ pos : %d", arg_pos); \
-	fprintf(file,"\tname: %s", name); \
-	fprintf(file,"\tval : "); \
+	fprintf(file,"\targ pos : %d\n", arg_pos); \
+	fprintf(file,"\tname: %s\n", name); \
+	fprintf(file,"\tval : \""); \
 	fprintf(file,format, arg_value); \
-	fprintf(file,"\n"); \
+	fprintf(file,"\"\n"); \
 	fclose(file); \
 } 
 
