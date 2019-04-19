@@ -279,7 +279,7 @@ func runC(file, subFolder, stdin string, clangFlags, args []string) (string, err
 	cmd.Stderr = &cProgram.stderr
 	err = cmd.Run()
 	if err != nil {
-		fmt.Fprintf(os.Stdout, "Error: %v\n", err)
+		fmt.Fprintf(os.Stdout, "Error run C program: %v. %v\n", cProgram.stderr.String(), err)
 	}
 	cProgram.isZero = err == nil
 

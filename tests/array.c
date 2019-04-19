@@ -567,12 +567,13 @@ void test_typedef_pointer()
 
 int** getArray()
 {
-    int twod[4][3] = { { 2, 4, 6 }, { 8, 10, 12 }, { 14, 16, 18 }, { 20, 22, 24 } };
-    int* twodPass[4];
+    int twod[5][4] = { { 2, 4, 6 , 7}, { 8, 10, 12,13 }, { 14, 16, 18, 19 }, { 20, 22, 24, 25 }, {26,28,30,32} };
+    int* twodPass[5];
     twodPass[0] = twod[0];
     twodPass[1] = twod[1];
     twodPass[2] = twod[2];
     twodPass[3] = twod[3];
+    twodPass[4] = twod[4];
     return twodPass;
 }
 
