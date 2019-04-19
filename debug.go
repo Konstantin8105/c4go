@@ -14,7 +14,7 @@ import (
 
 type Positioner interface {
 	Position() ast.Position
-	Inject(lines [][]byte) error
+	Inject(lines [][]byte, filePP preprocessor.FilePP) error
 }
 
 type compount struct {
@@ -26,7 +26,7 @@ func (f compount) Position() ast.Position {
 	return f.pos
 }
 
-func (f compount) Inject(lines [][]byte) error {
+func (f compount) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
 
 	b, err := getByte(lines, f.pos)
 	if err != nil {
@@ -35,6 +35,17 @@ func (f compount) Inject(lines [][]byte) error {
 
 	if b != '{' {
 		return fmt.Errorf("unacceptable char '{' : %c", lines[f.pos.Line-1][f.pos.Column-1])
+	}
+
+	// compare line of code
+	{
+		buf, err := filePP.GetSnippet(f.pos.File, f.pos.Line, f.pos.Line, 0, 100000)
+		if err != nil {
+			return err
+		}
+		if !bytes.Equal(lines[f.pos.Line-1], buf) {
+			return fmt.Errorf("lines in source and pp source is not equal")
+		}
 	}
 
 	lines[f.pos.Line-1] = append(lines[f.pos.Line-1][:f.pos.Column],
@@ -69,9 +80,9 @@ func (v argument) Position() ast.Position {
 	return v.pos
 }
 
-func (v argument) Inject(lines [][]byte) error {
+func (v argument) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
 	var index int = -1
-	v.cType = strings.Replace(v.cType, "const ", "", -1)
+	// v.cType = strings.Replace(v.cType, "const ", "", -1)
 	for i := range FuncArgs {
 		if FuncArgs[i].cType == v.cType {
 			index = i
@@ -268,8 +279,13 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 		// inject function
 		lines := bytes.Split(dat, []byte("\n"))
 		for k := len(positions) - 1; k >= 0; k-- {
-			// error is ignored
-			_ = positions[k].Inject(lines)
+			err2 := positions[k].Inject(lines, filePP)
+			if err2 != nil {
+				// error is ignored
+				_ = err2
+			} else {
+				// non error is ignored
+			}
 		}
 
 		// add main debug function
@@ -352,7 +368,7 @@ var FuncArgs = []struct {
 	format  string
 }{
 	{"int", "int", "%d"},
-	{"long", "long", "%d"},
+	{"long", "long", "%ld"},
 	{"float", "float", "%f"},
 	{"double", "double", "%f"},
 	{"char *", "string", "%s"},

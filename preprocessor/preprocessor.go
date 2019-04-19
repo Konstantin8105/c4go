@@ -391,6 +391,12 @@ again:
 			err = fmt.Errorf("Empty snippet")
 			return
 		}
+		if col <= 0 {
+			col = 1
+		}
+		if colEnd > len((*l)) {
+			return []byte((*l)[col-1:]), nil
+		}
 		return []byte((*l)[col-1 : colEnd]), nil
 	}
 
