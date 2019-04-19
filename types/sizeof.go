@@ -87,7 +87,10 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 
 		last := 0
 
-		for _, t := range s.Fields {
+		for k := 0; k < len(s.FieldNames); k++ {
+			fn := s.FieldNames[k]
+			t := s.Fields[fn]
+
 			var bytes int
 			var err error
 
@@ -145,7 +148,10 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 			return 0, fmt.Errorf("error in union")
 		}
 
-		for _, t := range s.Fields {
+		for k := 0; k < len(s.FieldNames); k++ {
+			fn := s.FieldNames[k]
+			t := s.Fields[fn]
+
 			var bytes int
 
 			switch f := t.(type) {
