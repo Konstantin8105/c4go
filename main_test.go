@@ -300,7 +300,7 @@ func (pr ProgramArgs) runGoTest(stdin string, args []string) (_ string, err erro
 
 	// get report
 	{
-		stdoutStderr, err := exec.Command("go", "build", "-o", subFolder+"app", pr.outputFile).CombinedOutput()
+		stdoutStderr, err := exec.Command("go", "build", "-a", "-o", subFolder+"app", pr.outputFile).CombinedOutput()
 		if err != nil {
 			return "1", fmt.Errorf("Go build error: %v %v", string(stdoutStderr), err)
 		}
