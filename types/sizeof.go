@@ -237,15 +237,9 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 	}
 
 	// Get size for array types like: `base_type [count]`
-	totalArraySize := 1
 	arrayType, arraySize := GetArrayTypeAndSize(cType)
 	if arraySize <= 0 {
 		return 0, nil
-	}
-
-	for arraySize != -1 {
-		totalArraySize *= arraySize
-		arrayType, arraySize = GetArrayTypeAndSize(arrayType)
 	}
 
 	baseSize, err := SizeOf(p, arrayType)
@@ -254,5 +248,5 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 			arrayType)
 	}
 
-	return baseSize * totalArraySize, nil
+	return baseSize * arraySize, nil
 }
