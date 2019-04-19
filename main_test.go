@@ -905,7 +905,7 @@ func TestExamples(t *testing.T) {
 			}
 
 			t.Run("run", func(t *testing.T) {
-				cmd := exec.Command("go", "run", args.outputFile)
+				cmd := exec.Command("go", "run", "-a", args.outputFile)
 				cmdOutput := &bytes.Buffer{}
 				cmdErr := &bytes.Buffer{}
 				cmd.Stdout = cmdOutput
