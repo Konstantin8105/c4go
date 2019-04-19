@@ -734,9 +734,36 @@ void test_post_pointer()
     }
 }
 
+struct po_ni {
+	int * fl;
+};
+
+void test_array_nil()
+{
+	struct po_ni ss;
+	struct po_ni *s = &ss;
+	if (s->fl[0]) {
+		pass("array_nil");
+	} else {
+		fail("array_nil");
+	}
+	if (s->fl[0] != NULL) {
+		pass("array_nil");
+	} else {
+		fail("array_nil");
+	}
+	int y = 42;
+	ss.fl = &y;
+	if (s->fl[0] == NULL) {
+		fail("array_nil");
+	} else {
+		pass("array_nil");
+	}
+}
+
 int main()
 {
-    plan(199);
+    plan(202);
 
     test_parg_struct();
     START_TEST(struct_init);
@@ -1276,6 +1303,7 @@ int main()
     START_TEST(negative_index);
     START_TEST(matrix_init);
     START_TEST(post_pointer);
+	START_TEST(array_nil);
 
     done_testing();
 }
