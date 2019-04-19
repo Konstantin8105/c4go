@@ -741,29 +741,46 @@ struct po_ni {
 void test_array_nil()
 {
 	struct po_ni ss;
+	ss.fl = NULL;
 	struct po_ni *s = &ss;
-	if (s->fl[0]) {
+	if (s->fl) {
+		fail("array_nil");
+	} else {
+		pass("array_nil");
+	}
+	if (s->fl == NULL) {
 		pass("array_nil");
 	} else {
 		fail("array_nil");
 	}
-	if (s->fl[0] != NULL) {
-		pass("array_nil");
-	} else {
+	if (s->fl != NULL) {
 		fail("array_nil");
+	} else {
+		pass("array_nil");
 	}
+
 	int y = 42;
 	ss.fl = &y;
-	if (s->fl[0] == NULL) {
+	if (s->fl) {
+		pass("array_nil");
+	} else {
+		fail("array_nil");
+	}
+	if (s->fl == NULL) {
 		fail("array_nil");
 	} else {
 		pass("array_nil");
+	}
+	if (s->fl != NULL) {
+		pass("array_nil");
+	} else {
+		fail("array_nil");
 	}
 }
 
 int main()
 {
-    plan(202);
+    plan(205);
 
     test_parg_struct();
     START_TEST(struct_init);
