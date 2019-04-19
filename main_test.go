@@ -72,6 +72,9 @@ func TestIntegrationScripts(t *testing.T) {
 	// t.Parallel()
 
 	for _, file := range files {
+		if strings.Contains(file, "debug.") {
+			continue
+		}
 		t.Run(file, func(t *testing.T) {
 
 			defer func() {
@@ -203,7 +206,8 @@ func TestIntegrationScripts(t *testing.T) {
 							break
 						}
 					}
-					t.Fatalf("\nParts of code:\n%s\n%s",
+					t.Fatalf("\nParts of code:\n compare %d and %d\n%s\n%s",
+						i, i+1,
 						output,
 						util.ShowDiff(results[i], results[i+1]))
 				}
