@@ -710,6 +710,9 @@ func TestTinn(t *testing.T) {
 	}
 
 	cmd := exec.Command("go", "build",
+		// fix /usr/local/go/pkg/tool/linux_amd64/link:
+		// running gcc failed:
+		"-a",
 		"-o", goFile+".app",
 		"-gcflags", "-e",
 		goFile)
@@ -726,7 +729,16 @@ func TestTinn(t *testing.T) {
 	// wget http://archive.ics.uci.edu/ml/machine-learning-databases/semeion/semeion.data
 	index := strings.LastIndex(fileList[0], "/")
 	filepath := fileList[0][:index+1]
+
+	currentDir, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
 	os.Chdir(filepath)
+	defer func() {
+		os.Chdir(currentDir)
+	}()
+
 	if err := downloadFile(filepath+"semeion.data", "http://archive.ics.uci.edu/ml/machine-learning-databases/semeion/semeion.data"); err != nil {
 		t.Fatalf("%v", err)
 	}

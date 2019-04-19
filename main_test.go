@@ -72,6 +72,9 @@ func TestIntegrationScripts(t *testing.T) {
 	// t.Parallel()
 
 	for _, file := range files {
+		if strings.Contains(file, "debug.") {
+			continue
+		}
 		t.Run(file, func(t *testing.T) {
 
 			defer func() {
@@ -203,7 +206,8 @@ func TestIntegrationScripts(t *testing.T) {
 							break
 						}
 					}
-					t.Fatalf("\nParts of code:\n%s\n%s",
+					t.Fatalf("\nParts of code:\n compare %d and %d\n%s\n%s",
+						i, i+1,
 						output,
 						util.ShowDiff(results[i], results[i+1]))
 				}
@@ -275,7 +279,7 @@ func runC(file, subFolder, stdin string, clangFlags, args []string) (string, err
 	cmd.Stderr = &cProgram.stderr
 	err = cmd.Run()
 	if err != nil {
-		fmt.Fprintf(os.Stdout, "Error: %v\n", err)
+		fmt.Fprintf(os.Stdout, "Error run C program: %v. %v\n", cProgram.stderr.String(), err)
 	}
 	cProgram.isZero = err == nil
 
@@ -300,7 +304,7 @@ func (pr ProgramArgs) runGoTest(stdin string, args []string) (_ string, err erro
 
 	// get report
 	{
-		stdoutStderr, err := exec.Command("go", "build", "-o", subFolder+"app", pr.outputFile).CombinedOutput()
+		stdoutStderr, err := exec.Command("go", "build", "-a", "-o", subFolder+"app", pr.outputFile).CombinedOutput()
 		if err != nil {
 			return "1", fmt.Errorf("Go build error: %v %v", string(stdoutStderr), err)
 		}
@@ -905,7 +909,7 @@ func TestExamples(t *testing.T) {
 			}
 
 			t.Run("run", func(t *testing.T) {
-				cmd := exec.Command("go", "run", args.outputFile)
+				cmd := exec.Command("go", "run", "-a", args.outputFile)
 				cmdOutput := &bytes.Buffer{}
 				cmdErr := &bytes.Buffer{}
 				cmd.Stdout = cmdOutput

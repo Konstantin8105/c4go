@@ -55,7 +55,8 @@ if [ "$1" == "-d" ]; then
 		echo "step 1: create debug file"
 			$C4GO debug kilo.c
 		echo "step 2: prepare output data"
-			echo "" > output.go.txt
+			echo "" > output.txt
+			echo "" > output.g.txt
 			echo "" > output.c.txt
 		echo "step 3: prepare test script"
 			echo -e 'Hello my dear friend\x0D\x13\x11' > script.txt
@@ -63,21 +64,39 @@ if [ "$1" == "-d" ]; then
 			$C4GO transpile -o=debug.kilo.go debug.kilo.c
 			go build -o kilo.go.app	debug.kilo.go
 			echo "" > debug.txt
-			cat script.txt | ./kilo.go.app output.go.txt 2>&1 && echo "ok" || echo "not ok"
+			cat script.txt | ./kilo.go.app output.txt 2>&1 && echo "ok" || echo "not ok"
+			cp output.txt output.g.txt
+			echo "" > output.txt
 			cp debug.txt debug.go.txt
+			echo ""
+			echo ""
+			echo ""
+			echo ""
+			echo ""
+			echo ""
+			echo ""
+			echo ""
+			echo ""
+			echo ""
+			echo ""
+			echo ""
+			echo ""
+			echo ""
 		echo "step 5: run C application"
-			clang -o kilo.c.app debug.kilo.c
+			clang -o kilo.c.app debug.kilo.c 2>&1
 			echo "" > debug.txt
-			cat script.txt | ./kilo.c.app output.c.txt  2>&1 && echo "ok" || echo "not ok"
-			cp debug.txt debug.c.txt	
+			cat script.txt | ./kilo.c.app output.txt  2>&1 && echo "ok" || echo "not ok"
+			cp output.txt output.c.txt
+			echo "" > output.txt
+			cp debug.txt debug.c.txt
 		echo "step 5"
 			echo "-----------------------------"
 			echo "debug"
-			diff -y -t debug.c.txt debug.go.txt 2>&1  > debug.diff 
-			cat debug.diff
+			diff -y -t debug.c.txt debug.go.txt 2>&1  > debug.diff  && echo "ok" || echo "not ok"
+			# cat debug.diff
 			echo "-----------------------------"
 			echo "output"
-			diff -y -t output.c.txt output.go.txt 2>&1 > output.diff
+			diff -y -t output.c.txt output.g.txt 2>&1 > output.diff && echo "ok" || echo "not ok"
 			cat output.diff
 			echo "-----------------------------"
 		echo "step 6: move back"

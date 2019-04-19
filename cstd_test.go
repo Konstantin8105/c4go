@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -449,10 +450,6 @@ func TestCSTD(t *testing.T) {
 			strings.TrimSpace(ps[j].inc)) == -1
 	})
 
-	for _, l := range ps {
-		fmt.Fprintf(os.Stdout, "%s\n", l.line)
-	}
-
 	// checking with README.md
 	b, err := ioutil.ReadFile("README.md")
 	if err != nil {
@@ -465,25 +462,31 @@ func TestCSTD(t *testing.T) {
 		}
 	}
 
-	// Detail information
-	fmt.Fprintln(os.Stdout, "\nDetail information:")
-	for _, l := range ps {
-		fmt.Fprintf(os.Stdout, "%s\n", l.line)
-		var ps []pair
-		for function := range amount[l.inc] {
-			ps = append(ps, pair{
-				inc:  function,
-				line: fmt.Sprintf("\t%20s\t%v", function, amount[l.inc][function]),
-			})
-		}
-		sort.Slice(ps, func(i, j int) bool {
-			return strings.Compare(
-				strings.TrimSpace(ps[i].inc),
-				strings.TrimSpace(ps[j].inc)) == -1
-		})
-
+	if flag.CommandLine.Lookup("test.v").Value.String() == "true" {
 		for _, l := range ps {
 			fmt.Fprintf(os.Stdout, "%s\n", l.line)
+		}
+
+		// Detail information
+		fmt.Fprintln(os.Stdout, "\nDetail information:")
+		for _, l := range ps {
+			fmt.Fprintf(os.Stdout, "%s\n", l.line)
+			var ps []pair
+			for function := range amount[l.inc] {
+				ps = append(ps, pair{
+					inc:  function,
+					line: fmt.Sprintf("\t%20s\t%v", function, amount[l.inc][function]),
+				})
+			}
+			sort.Slice(ps, func(i, j int) bool {
+				return strings.Compare(
+					strings.TrimSpace(ps[i].inc),
+					strings.TrimSpace(ps[j].inc)) == -1
+			})
+
+			for _, l := range ps {
+				fmt.Fprintf(os.Stdout, "%s\n", l.line)
+			}
 		}
 	}
 }

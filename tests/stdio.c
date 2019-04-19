@@ -477,8 +477,19 @@ void test_snprintf()
     char buffer[50];
     int n, a = 5, b = 3;
     n = sprintf(buffer, "%d plus %d is %d", a, b, a + b);
-    is_streq(buffer, "5 plus 3 is 8")
-        is_eq(n, 13)
+    is_streq(buffer, "5 plus 3 is 8");
+    is_eq(n, 13);
+	
+
+
+    char status[80];
+	char * filename = "out.txt";
+	int numrows = 10;
+	int dirty = 1;
+    int len = snprintf(status, sizeof(status), "%.20s - %d lines %s",
+        filename, numrows, dirty ? "(modified)" : "");
+	printf("%s\n",status);
+	is_eq(len,29);
 }
 
 int PrintFError(const char* format, ...)
@@ -488,13 +499,14 @@ int PrintFError(const char* format, ...)
     va_start(args, format);
     int s = vsprintf(buffer, format, args);
     va_end(args);
+	printf("vsnprintf buffer: `%s`\n", buffer);
     return s;
 }
 
 void test_vsprintf()
 {
     int s = PrintFError("Success function '%s' %.2f", "vsprintf", 3.1415926);
-    is_true(s >= 19 + 8 + 5);
+    is_true(s == 19 + 8 + 5);
 }
 
 int PrintFError2(const char* format, ...)
@@ -504,13 +516,16 @@ int PrintFError2(const char* format, ...)
     va_start(args, format);
     int s = vsnprintf(buffer, 256, format, args);
     va_end(args);
+	printf("vsnprintf buffer: `%s`\n", buffer);
     return s;
 }
 
 void test_vsnprintf()
 {
     int s = PrintFError2("Success function '%s' %.2f", "vsprintf", 3.1415926);
-    is_true(s >= 19 + 8 + 5);
+    is_true(s == 19 + 8 + 5);
+	s = PrintFError2("HHELP %d",(int)(2));
+	is_true(s == 7);
 }
 
 void test_eof()
@@ -595,7 +610,7 @@ void test_FILE()
 
 int main()
 {
-    plan(69);
+    plan(71);
 
     START_TEST(putchar)
     START_TEST(puts)

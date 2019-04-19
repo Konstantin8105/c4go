@@ -17,3 +17,4 @@ tests/debug*.c
 tests/debug*.h
 examples/*.go
 debug.txt
+tests/bind/debug.bind.h

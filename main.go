@@ -341,6 +341,12 @@ func avoidGoKeywords(tree []ast.Node) {
 
 // Start begins transpiling an input file.
 func Start(args ProgramArgs) (err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("error in function Start: %v", err)
+		}
+	}()
+
 	if args.verbose {
 		fmt.Fprintln(os.Stdout, "Reading clang AST tree...")
 	}

@@ -14,7 +14,7 @@ import (
 
 type Positioner interface {
 	Position() ast.Position
-	Inject(lines [][]byte) error
+	Inject(lines [][]byte, filePP preprocessor.FilePP) error
 }
 
 type compount struct {
@@ -26,7 +26,7 @@ func (f compount) Position() ast.Position {
 	return f.pos
 }
 
-func (f compount) Inject(lines [][]byte) error {
+func (f compount) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
 
 	b, err := getByte(lines, f.pos)
 	if err != nil {
@@ -35,6 +35,17 @@ func (f compount) Inject(lines [][]byte) error {
 
 	if b != '{' {
 		return fmt.Errorf("unacceptable char '{' : %c", lines[f.pos.Line-1][f.pos.Column-1])
+	}
+
+	// compare line of code
+	{
+		buf, err := filePP.GetSnippet(f.pos.File, f.pos.Line, f.pos.Line, 0, 100000)
+		if err != nil {
+			return err
+		}
+		if !bytes.Equal(lines[f.pos.Line-1], buf) {
+			return fmt.Errorf("lines in source and pp source is not equal")
+		}
 	}
 
 	lines[f.pos.Line-1] = append(lines[f.pos.Line-1][:f.pos.Column],
@@ -58,18 +69,20 @@ func getByte(lines [][]byte, pos ast.Position) (b byte, err error) {
 	return
 }
 
-type variable struct {
-	pos   ast.Position
-	name  string
-	cType string
+type argument struct {
+	pos        ast.Position
+	itemNumber int
+	name       string
+	cType      string
 }
 
-func (v variable) Position() ast.Position {
+func (v argument) Position() ast.Position {
 	return v.pos
 }
 
-func (v variable) Inject(lines [][]byte) error {
+func (v argument) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
 	var index int = -1
+	// v.cType = strings.Replace(v.cType, "const ", "", -1)
 	for i := range FuncArgs {
 		if FuncArgs[i].cType == v.cType {
 			index = i
@@ -81,7 +94,7 @@ func (v variable) Inject(lines [][]byte) error {
 	// find argument type
 	lines[v.pos.Line-1] = append(lines[v.pos.Line-1][:v.pos.Column],
 		append([]byte(fmt.Sprintf("%s%s(%d,\"%s\",%s);",
-			debugArgument, FuncArgs[index].postfix, 0, v.name, v.name)),
+			debugArgument, FuncArgs[index].postfix, v.itemNumber, v.name, v.name)),
 			lines[v.pos.Line-1][v.pos.Column:]...)...)
 
 	return nil
@@ -190,18 +203,17 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 				if !ok {
 					continue
 				}
-				p := variable{
-					name:  parm.Name,
-					pos:   mst.Position(),
-					cType: parm.Type,
+				p := argument{
+					name:       parm.Name,
+					pos:        mst.Position(),
+					itemNumber: k,
+					cType:      parm.Type,
 				}
 				sl, _ := funcPoses[mst.Position().File]
 				sl = append(sl, p)
 				funcPoses[mst.Position().File] = sl
 			}
 
-			// if case
-			//
 			// IfStmt
 			// |-<<<NULL>>>
 			// |-<<<NULL>>>
@@ -210,32 +222,34 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 			// |-CompoundStmt   # <---- find this -
 			// | `-...
 			// `-<<<NULL>>>
-			for k := range mst.Children() {
-				ifs, ok := mst.Children()[k].(*ast.IfStmt)
-				if !ok {
-					continue
+			//
+			// WhileStmt 0x33e4b08 <line:25:5, line:28:5>
+			// |-<<<NULL>>>
+			// |-BinaryOperator 'int' '<='
+			// | `-...
+			// `-CompoundStmt
+			//   |-...
+			//
+			// walking by tree
+			var walk func(node ast.Node)
+			walk = func(node ast.Node) {
+				if node == nil {
+					return
 				}
-				var (
-					comp  *ast.CompoundStmt
-					found bool
-				)
-				for g := range ifs.Children() {
-					if comp, found = ifs.Children()[g].(*ast.CompoundStmt); found {
-						break
+				if comp, ok := node.(*ast.CompoundStmt); ok {
+					p := compount{
+						name: "CompoundStmt",
+						pos:  comp.Position(),
 					}
+					sl, _ := funcPoses[comp.Position().File]
+					sl = append(sl, p)
+					funcPoses[comp.Position().File] = sl
 				}
-				if !found {
-					continue
+				for i := range node.Children() {
+					walk(node.Children()[i])
 				}
-
-				p := compount{
-					name: "if begin",
-					pos:  comp.Position(),
-				}
-				sl, _ := funcPoses[comp.Position().File]
-				sl = append(sl, p)
-				funcPoses[comp.Position().File] = sl
 			}
+			walk(fd)
 		}
 	}
 
@@ -265,7 +279,13 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 		// inject function
 		lines := bytes.Split(dat, []byte("\n"))
 		for k := len(positions) - 1; k >= 0; k-- {
-			positions[k].Inject(lines)
+			err2 := positions[k].Inject(lines, filePP)
+			if err2 != nil {
+				// error is ignored
+				_ = err2
+			} else {
+				// non error is ignored
+			}
 		}
 
 		// add main debug function
@@ -324,11 +344,11 @@ void c4go_debug_compount(int line, char * functionName)
 void c4go_debug_function_arg_##postfix(int arg_pos, char * name, type arg_value) \
 { \
 	FILE * file = c4go_get_debug_file(); \
-	fprintf(file,"\targ pos : %d", arg_pos); \
-	fprintf(file,"\tname: %s", name); \
-	fprintf(file,"\tval : "); \
+	fprintf(file,"\targ pos : %d\n", arg_pos); \
+	fprintf(file,"\tname: %s\n", name); \
+	fprintf(file,"\tval : \""); \
 	fprintf(file,format, arg_value); \
-	fprintf(file,"\n"); \
+	fprintf(file,"\"\n"); \
 	fclose(file); \
 } 
 
@@ -348,7 +368,7 @@ var FuncArgs = []struct {
 	format  string
 }{
 	{"int", "int", "%d"},
-	{"long", "long", "%d"},
+	{"long", "long", "%ld"},
 	{"float", "float", "%f"},
 	{"double", "double", "%f"},
 	{"char *", "string", "%s"},
