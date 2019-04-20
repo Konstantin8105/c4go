@@ -17,6 +17,48 @@ type Positioner interface {
 	Inject(lines [][]byte, filePP preprocessor.FilePP) error
 }
 
+type cases struct {
+	name string
+	pos  ast.Position
+}
+
+func (f cases) Position() ast.Position {
+	return f.pos
+}
+
+func (f cases) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
+
+	b, err := getByte(lines, f.pos)
+	if err != nil {
+		return err
+	}
+
+	if b != 'c' {
+		return fmt.Errorf("unacceptable char 'c' : %c", lines[f.pos.Line-1][f.pos.Column-1])
+	}
+
+	col := f.pos.Column - 1
+	found := false
+	for ; col < len(lines[f.pos.Line-1]); col++ {
+		if lines[f.pos.Line-1][col] == ':' {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return fmt.Errorf("cannot find char ':' : %s", lines[f.pos.Line-1])
+	}
+
+	f.pos.Column = col + 1
+
+	lines[f.pos.Line-1] = append(lines[f.pos.Line-1][:f.pos.Column],
+		append([]byte(fmt.Sprintf("%s(%d,\"%s\");", debugFunctionName, f.pos.Line, f.name)),
+			lines[f.pos.Line-1][f.pos.Column:]...)...)
+
+	return nil
+}
+
 type compount struct {
 	name string
 	pos  ast.Position
@@ -39,11 +81,11 @@ func (f compount) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
 
 	// compare line of code
 	{
-		buf, err := filePP.GetSnippet(f.pos.File, f.pos.Line, f.pos.Line, 0, 100000)
+		buf, err := filePP.GetSnippet(f.pos.File, f.pos.Line, f.pos.Line, 0, f.pos.Column)
 		if err != nil {
 			return err
 		}
-		if !bytes.Equal(lines[f.pos.Line-1], buf) {
+		if !bytes.Equal(lines[f.pos.Line-1][:f.pos.Column], buf) {
 			return fmt.Errorf("lines in source and pp source is not equal")
 		}
 	}
@@ -231,21 +273,39 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 			//   |-...
 			//
 			// walking by tree
+			addCompount := func(name string, node ast.Node) {
+				sl, _ := funcPoses[node.Position().File]
+				sl = append(sl, compount{name: name, pos: node.Position()})
+				funcPoses[node.Position().File] = sl
+			}
+			addCase := func(name string, node ast.Node) {
+				sl, _ := funcPoses[node.Position().File]
+				sl = append(sl, cases{name: name, pos: node.Position()})
+				funcPoses[node.Position().File] = sl
+			}
 			var walk func(node ast.Node)
 			walk = func(node ast.Node) {
 				if node == nil {
 					return
 				}
-				if comp, ok := node.(*ast.CompoundStmt); ok {
-					p := compount{
-						name: "CompoundStmt",
-						pos:  comp.Position(),
-					}
-					sl, _ := funcPoses[comp.Position().File]
-					sl = append(sl, p)
-					funcPoses[comp.Position().File] = sl
+				if _, ok := node.(*ast.CompoundStmt); ok {
+					addCompount("CompoundStmt", node)
+				}
+				if _, ok := node.(*ast.CaseStmt); ok {
+					addCase("case", node)
 				}
 				for i := range node.Children() {
+					if _, ok := node.Children()[i].(*ast.CompoundStmt); ok {
+						chi := node.Children()[i]
+						switch node.(type) {
+						case *ast.IfStmt:
+							addCompount("if", chi)
+						case *ast.ForStmt:
+							addCompount("for", chi)
+						case *ast.WhileStmt:
+							addCompount("while", chi)
+						}
+					}
 					walk(node.Children()[i])
 				}
 			}
