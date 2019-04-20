@@ -112,10 +112,10 @@ func getByte(lines [][]byte, pos ast.Position) (b byte, err error) {
 }
 
 type argument struct {
-	pos        ast.Position
-	itemNumber int
-	name       string
-	cType      string
+	pos         ast.Position
+	description string
+	varName     string
+	cType       string
 }
 
 func (v argument) Position() ast.Position {
@@ -133,11 +133,27 @@ func (v argument) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
 	if index < 0 {
 		return nil
 	}
+	if v.pos.Column-1 >= len(lines[v.pos.Line-1]) {
+		return fmt.Errorf("column is outside line")
+	}
+
+	// compare line of code
+	{
+		buf, err := filePP.GetSnippet(v.pos.File, v.pos.Line, v.pos.Line, 0, v.pos.Column)
+		if err != nil {
+			return err
+		}
+		if !bytes.Equal(lines[v.pos.Line-1][:v.pos.Column], buf) {
+			return fmt.Errorf("lines in source and pp source is not equal")
+		}
+	}
+
 	// find argument type
+	function := fmt.Sprintf("%s%s(\"%s\",\"%s\",%s);",
+		debugArgument, FuncArgs[index].postfix,
+		v.description, v.varName, v.varName)
 	lines[v.pos.Line-1] = append(lines[v.pos.Line-1][:v.pos.Column],
-		append([]byte(fmt.Sprintf("%s%s(%d,\"%s\",%s);",
-			debugArgument, FuncArgs[index].postfix, v.itemNumber, v.name, v.name)),
-			lines[v.pos.Line-1][v.pos.Column:]...)...)
+		append([]byte(function), lines[v.pos.Line-1][v.pos.Column:]...)...)
 
 	return nil
 }
@@ -246,10 +262,10 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 					continue
 				}
 				p := argument{
-					name:       parm.Name,
-					pos:        mst.Position(),
-					itemNumber: k,
-					cType:      parm.Type,
+					varName:     parm.Name,
+					pos:         mst.Position(),
+					description: fmt.Sprintf("%d", k),
+					cType:       parm.Type,
 				}
 				sl, _ := funcPoses[mst.Position().File]
 				sl = append(sl, p)
@@ -273,6 +289,18 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 			//   |-...
 			//
 			// walking by tree
+			var varDecls []argument
+			addVarDecl := func(vd argument, node ast.Node) {
+				sl, _ := funcPoses[node.Position().File]
+				v := argument{
+					pos:         node.Position(),
+					description: vd.description,
+					varName:     vd.varName,
+					cType:       vd.cType,
+				}
+				sl = append(sl, v)
+				funcPoses[node.Position().File] = sl
+			}
 			addCompount := func(name string, node ast.Node) {
 				sl, _ := funcPoses[node.Position().File]
 				sl = append(sl, compount{name: name, pos: node.Position()})
@@ -294,8 +322,17 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 				if _, ok := node.(*ast.CaseStmt); ok {
 					addCase("case", node)
 				}
+				if vd, ok := node.(*ast.VarDecl); ok && len(vd.Children()) > 0 {
+					varDecls = append(varDecls, argument{
+						// Not define Position
+						description: "VarDecl",
+						varName:     vd.Name,
+						cType:       vd.Type,
+					})
+				}
 				for i := range node.Children() {
-					if _, ok := node.Children()[i].(*ast.CompoundStmt); ok {
+					_, ok := node.Children()[i].(*ast.CompoundStmt)
+					if ok {
 						chi := node.Children()[i]
 						switch node.(type) {
 						case *ast.IfStmt:
@@ -306,7 +343,17 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 							addCompount("while", chi)
 						}
 					}
-					walk(node.Children()[i])
+
+					size := len(varDecls)
+					if ok { // add all ast.VarDecl
+						for k := range varDecls {
+							addVarDecl(varDecls[k], node.Children()[i])
+						}
+					}
+					walk(node.Children()[i])        // walking inside
+					if ok && size < len(varDecls) { // remove last VarDecls, if some added
+						varDecls = varDecls[:size]
+					}
 				}
 			}
 			walk(fd)
@@ -401,10 +448,10 @@ void c4go_debug_compount(int line, char * functionName)
 }
 
 #define c4go_arg(type, postfix, format) \
-void c4go_debug_function_arg_##postfix(int arg_pos, char * name, type arg_value) \
+void c4go_debug_function_arg_##postfix(char * arg_pos, char * name, type arg_value) \
 { \
 	FILE * file = c4go_get_debug_file(); \
-	fprintf(file,"\targ pos : %d\n", arg_pos); \
+	fprintf(file,"\tdescription: %s\n", arg_pos); \
 	fprintf(file,"\tname: %s\n", name); \
 	fprintf(file,"\tval : \""); \
 	fprintf(file,format, arg_value); \
@@ -428,8 +475,11 @@ var FuncArgs = []struct {
 	format  string
 }{
 	{"int", "int", "%d"},
+	{"unsigned int", "uint", "%d"},
 	{"long", "long", "%ld"},
 	{"float", "float", "%f"},
 	{"double", "double", "%f"},
 	{"char *", "string", "%s"},
+	{"char **", "sstring", "%s"},
+	{"unsigned char *", "ustring", "%s"},
 }
