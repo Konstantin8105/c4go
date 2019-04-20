@@ -117,7 +117,8 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 			}
 
 			if last != new_par {
-				totalBytes = (totalBytes/pointerSize + 1) * pointerSize
+				var deli float64 = float64(totalBytes)/float64(pointerSize) + 1
+				totalBytes = int(deli) * pointerSize
 			}
 
 			totalBytes += bytes

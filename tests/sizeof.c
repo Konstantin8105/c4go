@@ -145,9 +145,25 @@ struct editorSyntax HLDB[] = {
 
 #define HLDB_ENTRIES ((sizeof(HLDB))/(sizeof(HLDB[0])))
 
+
+typedef struct SP SP;
+
+struct SP {
+    union SP_UN {
+        int i;
+        char l;
+    };
+    double d;
+    char c;
+};
+
+typedef struct SP Mem;
+typedef SP Mem2;
+
+
 int main()
 {
-    plan(74);
+    plan(83);
 
     diag("Integer types");
     check_sizes(char, 1);
@@ -239,6 +255,25 @@ int main()
 	is_not_less(sizeof(HLDB[0]), 32);
 	is_true(sizeof(HLDB) == sizeof(HLDB[0]));
 	is_eq((HLDB_ENTRIES) , 1);
+
+	diag("sqlite examples");
+	is_not_less(sizeof(union SP_UN), 4);
+    Mem m;
+	is_not_less(sizeof(m), 16);
+    is_not_less(sizeof(m), sizeof(double) + sizeof(char));
+    (void)(m);
+    Mem2 m2;
+	is_not_less(sizeof(m2), 16);
+    is_not_less(sizeof(m2), sizeof(double) + sizeof(char));
+    (void)(m2);
+    SP s;
+	is_not_less(sizeof(s), 16);
+    is_not_less(sizeof(s), sizeof(double) + sizeof(char));
+    (void)(s);
+    union SP_UN sp;
+	is_not_less(sizeof(sp), 4);
+    is_not_less(sizeof(sp), sizeof(int));
+    (void)(sp);
 
     done_testing();
 }
