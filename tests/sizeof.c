@@ -108,9 +108,62 @@ typedef struct part3_erow{
 	unsigned char * part;
 } part3_erow;
 
+struct editorSyntax {
+    char **filematch;
+    char **keywords;
+    char singleline_comment_start[2];
+    char multiline_comment_start[3];
+    char multiline_comment_end[3];
+    int flags;
+};
+
+/* C / C++ */
+char *C_HL_extensions[] = {".c",".cpp",NULL};
+char *C_HL_keywords[] = {
+        /* A few C / C++ keywords */
+        "switch","if","while","for","break","continue","return","else",
+        "struct","union","typedef","static","enum","class",
+        /* C types */
+        "int|","long|","double|","float|","char|","unsigned|","signed|",
+        "void|",NULL
+};
+
+#define HL_HIGHLIGHT_STRINGS (1<<0)
+#define HL_HIGHLIGHT_NUMBERS (1<<1)
+
+/* Here we define an array of syntax highlights by extensions, keywords,
+ * comments delimiters and flags. */
+struct editorSyntax HLDB[] = {
+    {
+        /* C / C++ */
+        C_HL_extensions,
+        C_HL_keywords,
+        "//","/*","*/",
+        HL_HIGHLIGHT_STRINGS | HL_HIGHLIGHT_NUMBERS
+    }
+};
+
+#define HLDB_ENTRIES ((sizeof(HLDB))/(sizeof(HLDB[0])))
+
+
+typedef struct SP SP;
+
+struct SP {
+    union SP_UN {
+        int i;
+        char l;
+    };
+    double d;
+    char c;
+};
+
+typedef struct SP Mem;
+typedef SP Mem2;
+
+
 int main()
 {
-    plan(70);
+    plan(83);
 
     diag("Integer types");
     check_sizes(char, 1);
@@ -196,6 +249,31 @@ int main()
 	is_not_less(sizeof(part2_erow ),  8);
 	is_not_less(sizeof(part2a_erow),  16);
 	is_not_less(sizeof(part3_erow ),  8);
+
+	diag("HLDB");
+	is_not_less(sizeof(HLDB   ), 32);
+	is_not_less(sizeof(HLDB[0]), 32);
+	is_true(sizeof(HLDB) == sizeof(HLDB[0]));
+	is_eq((HLDB_ENTRIES) , 1);
+
+	diag("sqlite examples");
+	is_not_less(sizeof(union SP_UN), 4);
+    Mem m;
+	is_not_less(sizeof(m), 16);
+    is_not_less(sizeof(m), sizeof(double) + sizeof(char));
+    (void)(m);
+    Mem2 m2;
+	is_not_less(sizeof(m2), 16);
+    is_not_less(sizeof(m2), sizeof(double) + sizeof(char));
+    (void)(m2);
+    SP s;
+	is_not_less(sizeof(s), 16);
+    is_not_less(sizeof(s), sizeof(double) + sizeof(char));
+    (void)(s);
+    union SP_UN sp;
+	is_not_less(sizeof(sp), 4);
+    is_not_less(sizeof(sp), sizeof(int));
+    (void)(sp);
 
     done_testing();
 }
