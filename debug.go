@@ -17,6 +17,48 @@ type Positioner interface {
 	Inject(lines [][]byte, filePP preprocessor.FilePP) error
 }
 
+type cases struct {
+	name string
+	pos  ast.Position
+}
+
+func (f cases) Position() ast.Position {
+	return f.pos
+}
+
+func (f cases) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
+
+	b, err := getByte(lines, f.pos)
+	if err != nil {
+		return err
+	}
+
+	if b != 'c' {
+		return fmt.Errorf("unacceptable char 'c' : %c", lines[f.pos.Line-1][f.pos.Column-1])
+	}
+
+	col := f.pos.Column - 1
+	found := false
+	for ; col < len(lines[f.pos.Line-1]); col++ {
+		if lines[f.pos.Line-1][col] == ':' {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return fmt.Errorf("cannot find char ':' : %s", lines[f.pos.Line-1])
+	}
+
+	f.pos.Column = col + 1
+
+	lines[f.pos.Line-1] = append(lines[f.pos.Line-1][:f.pos.Column],
+		append([]byte(fmt.Sprintf("%s(%d,\"%s\");", debugFunctionName, f.pos.Line, f.name)),
+			lines[f.pos.Line-1][f.pos.Column:]...)...)
+
+	return nil
+}
+
 type compount struct {
 	name string
 	pos  ast.Position
@@ -236,6 +278,11 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 				sl = append(sl, compount{name: name, pos: node.Position()})
 				funcPoses[node.Position().File] = sl
 			}
+			addCase := func(name string, node ast.Node) {
+				sl, _ := funcPoses[node.Position().File]
+				sl = append(sl, cases{name: name, pos: node.Position()})
+				funcPoses[node.Position().File] = sl
+			}
 			var walk func(node ast.Node)
 			walk = func(node ast.Node) {
 				if node == nil {
@@ -243,6 +290,9 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 				}
 				if _, ok := node.(*ast.CompoundStmt); ok {
 					addCompount("CompoundStmt", node)
+				}
+				if _, ok := node.(*ast.CaseStmt); ok {
+					addCase("case", node)
 				}
 				for i := range node.Children() {
 					if _, ok := node.Children()[i].(*ast.CompoundStmt); ok {
