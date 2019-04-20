@@ -367,7 +367,6 @@ void switch_stat()
 int case_inside_block(int a)
 {
     switch (a) {
-		fail("fail after switch");
     case 1:
         break;
     case 2: {

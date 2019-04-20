@@ -246,18 +246,13 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 	body.ChildNodes = parts
 
 	if len(pre) > 0 {
-		// ignore pre:
-		p.AddMessage(p.GenerateWarningMessage(fmt.Errorf("some operators is outside of switch-case: %#v", pre), n))
-		pre = nil
-		// in last revition:
-		//
-		// stmt, newPre, newPost, err := transpileCompoundStmt(&ast.CompoundStmt{
-		//	 ChildNodes: pre,
-		// }, p)
-		// p.AddMessage(p.GenerateWarningMessage(err, n))
-		// preStmts = append(preStmts, newPre...)
-		// preStmts = append(preStmts, stmt.List...)
-		// preStmts = append(preStmts, newPost...)
+		stmt, newPre, newPost, err := transpileCompoundStmt(&ast.CompoundStmt{
+			ChildNodes: pre,
+		}, p)
+		p.AddMessage(p.GenerateWarningMessage(err, n))
+		preStmts = append(preStmts, newPre...)
+		preStmts = append(preStmts, stmt.List...)
+		preStmts = append(preStmts, newPost...)
 	}
 
 	// The body will always be a CompoundStmt because a switch statement is not
