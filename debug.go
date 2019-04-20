@@ -50,6 +50,17 @@ func (f cases) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
 		return fmt.Errorf("cannot find char ':' : %s", lines[f.pos.Line-1])
 	}
 
+	// compare line of code
+	{
+		buf, err := filePP.GetSnippet(f.pos.File, f.pos.Line, f.pos.Line, 0, f.pos.Column)
+		if err != nil {
+			return err
+		}
+		if !bytes.Equal(lines[f.pos.Line-1][:f.pos.Column], buf) {
+			return fmt.Errorf("lines in source and pp source is not equal")
+		}
+	}
+
 	f.pos.Column = col + 1
 
 	lines[f.pos.Line-1] = append(lines[f.pos.Line-1][:f.pos.Column],
@@ -318,6 +329,10 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 				}
 				if _, ok := node.(*ast.CompoundStmt); ok {
 					addCompount("CompoundStmt", node)
+					// add all ast.VarDecl
+					for k := range varDecls {
+						addVarDecl(varDecls[k], node)
+					}
 				}
 				if _, ok := node.(*ast.CaseStmt); ok {
 					addCase("case", node)
@@ -330,7 +345,19 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 						cType:       vd.Type,
 					})
 				}
-				for i := range node.Children() {
+
+				var i int
+				if _, gok := node.(*ast.IfStmt); gok {
+					i = 3
+				}
+				if _, gok := node.(*ast.ForStmt); gok {
+					i = 4
+				}
+				if _, gok := node.(*ast.WhileStmt); gok {
+					i = 2
+				}
+
+				for ; i < len(node.Children()); i++ {
 					_, ok := node.Children()[i].(*ast.CompoundStmt)
 					if ok {
 						chi := node.Children()[i]
@@ -341,15 +368,14 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 							addCompount("for", chi)
 						case *ast.WhileStmt:
 							addCompount("while", chi)
+						case *ast.DefaultStmt:
+							// that node bug in column identification
+							continue
 						}
 					}
 
 					size := len(varDecls)
-					if ok { // add all ast.VarDecl
-						for k := range varDecls {
-							addVarDecl(varDecls[k], node.Children()[i])
-						}
-					}
+
 					walk(node.Children()[i])        // walking inside
 					if ok && size < len(varDecls) { // remove last VarDecls, if some added
 						varDecls = varDecls[:size]
@@ -479,7 +505,8 @@ var FuncArgs = []struct {
 	{"long", "long", "%ld"},
 	{"float", "float", "%f"},
 	{"double", "double", "%f"},
-	{"char *", "string", "%s"},
-	{"char **", "sstring", "%s"},
-	{"unsigned char *", "ustring", "%s"},
+	// {"int *", "pnt_int", "%d"},
+	// {"char *", "string", "%s"},
+	// {"char **", "double_string", "%s"},
+	// {"unsigned char *", "ustring", "%s"},
 }
