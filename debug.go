@@ -64,7 +64,7 @@ func (f cases) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
 	f.pos.Column = col + 1
 
 	lines[f.pos.Line-1] = append(lines[f.pos.Line-1][:f.pos.Column],
-		append([]byte(fmt.Sprintf("%s(%d,\"%s\");", debugFunctionName, f.pos.Line, f.name)),
+		append([]byte(fmt.Sprintf(";%s(%d,\"%s\");", debugFunctionName, f.pos.Line, f.name)),
 			lines[f.pos.Line-1][f.pos.Column:]...)...)
 
 	return nil
@@ -102,13 +102,17 @@ func (f compount) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
 	}
 
 	lines[f.pos.Line-1] = append(lines[f.pos.Line-1][:f.pos.Column],
-		append([]byte(fmt.Sprintf("%s(%d,\"%s\");", debugFunctionName, f.pos.Line, f.name)),
+		append([]byte(fmt.Sprintf(";%s(%d,\"%s\");", debugFunctionName, f.pos.Line, f.name)),
 			lines[f.pos.Line-1][f.pos.Column:]...)...)
 
 	return nil
 }
 
 func getByte(lines [][]byte, pos ast.Position) (b byte, err error) {
+	if pos.Line-1 <= 0 {
+		err = fmt.Errorf("outside line")
+		return
+	}
 	if pos.Line-1 >= len(lines) {
 		err = fmt.Errorf("try to add debug on outside of allowable line: %v", pos)
 		return
@@ -136,6 +140,10 @@ func (v argument) Position() ast.Position {
 func (v argument) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
 	// v.cType = strings.Replace(v.cType, "const ", "", -1)
 
+	if v.pos.Line-1 <= 0 {
+		return fmt.Errorf("outside lines")
+	}
+
 	if v.pos.Column-1 >= len(lines[v.pos.Line-1]) {
 		return fmt.Errorf("column is outside line")
 	}
@@ -159,13 +167,13 @@ func (v argument) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
 	}
 	if index >= 0 {
 		// find argument type
-		function := fmt.Sprintf("%s%s(\"%s\",\"%s\",%s);",
+		function := fmt.Sprintf(";%s%s(\"%s\",\"%s\",%s);",
 			debugArgument, FuncArgs[index].postfix,
 			v.description, v.varName, v.varName)
 		lines[v.pos.Line-1] = append(lines[v.pos.Line-1][:v.pos.Column],
 			append([]byte(function), lines[v.pos.Line-1][v.pos.Column:]...)...)
 	} else if v.cType == "char *" || v.cType == "const char *" {
-		function := fmt.Sprintf("%s(\"%s\",\"%s\",%s);",
+		function := fmt.Sprintf(";%s(\"%s\",\"%s\",%s);",
 			debugArgumentString,
 			v.description, v.varName, v.varName)
 		lines[v.pos.Line-1] = append(lines[v.pos.Line-1][:v.pos.Column],
@@ -443,8 +451,9 @@ var FuncArgs = []struct {
 }
 
 type inj struct {
-	poss     []Positioner
-	varDecls []argument
+	poss                 []Positioner
+	varDecls             []argument
+	insideBinaryOperator bool
 }
 
 func (in *inj) addVarDecl(arg argument) {
@@ -481,13 +490,17 @@ func (in *inj) walk(node ast.Node) {
 	case *ast.CompoundStmt:
 		in.poss = append(in.poss, compount{name: "CompoundStmt", pos: node.Position()})
 		in.newAllowablePosition(node.Position())
+		size := len(in.varDecls)
 		for i := 0; i < len(node.Children()); i++ {
-			size := len(in.varDecls)
-			in.walk(node.Children()[i])  // walking inside
-			if size < len(in.varDecls) { // remove last VarDecls, if some added
-				in.varDecls = in.varDecls[:size]
-			}
+			in.walk(node.Children()[i]) // walking inside
 		}
+		if size < len(in.varDecls) { // remove last VarDecls, if some added
+			in.varDecls = in.varDecls[:size]
+		}
+
+	case *ast.ArraySubscriptExpr:
+		// ignore
+		return
 
 	case *ast.IfStmt:
 		// IfStmt
@@ -504,7 +517,13 @@ func (in *inj) walk(node ast.Node) {
 		return
 
 	case *ast.ForStmt:
-		for i := 4; i < len(v.Children()); i++ {
+		// ForStmt
+		// |-... // check this
+		// |-<<<NULL>>>
+		// |-...
+		// |-...
+		// `-CompoundStmt  // check this
+		for i := 0; i < len(v.Children()); i++ {
 			in.walk(v.Children()[i])
 		}
 		return
@@ -523,6 +542,35 @@ func (in *inj) walk(node ast.Node) {
 
 	case *ast.DefaultStmt:
 		// that node bug in column identification
+		return
+
+	case *ast.ImplicitCastExpr:
+		in.walk(v.Children()[0])
+		return
+
+	case *ast.CallExpr:
+		// CallExpr  'double'
+		// |-ImplicitCastExpr 'double (*)(int, float, double)' <LValueToRValue>
+		// | `-DeclRefExpr 'double (*)(int, float, double)' lvalue ParmVar 0x42be310 'F' 'double (*)(int, float, double)'
+		// |-...
+		// |-...
+		// `-...
+		for i := 1; i < len(v.Children()); i++ {
+			in.walk(v.Children()[i])
+		}
+		// not in BinaryOperator
+		if in.insideBinaryOperator {
+			return
+		}
+		// new place at the end of CallExpr:
+		// memmove(...,...,...);
+		//                    |--- end position is here
+		if v.Pos.LineEnd != 0 {
+			v.Pos.Line = v.Pos.LineEnd
+		}
+		v.Pos.Column = v.Pos.ColumnEnd + 1
+		in.newAllowablePosition(v.Pos)
+		in.poss = append(in.poss, compount{name: "After CallExpr", pos: v.Pos})
 		return
 
 	case *ast.CaseStmt:
@@ -562,9 +610,30 @@ func (in *inj) walk(node ast.Node) {
 			in.addVarDecl(argument{
 				// Not define Position
 				description: "BinEQ_MemDecl",
-				varName:     fmt.Sprintf("%s[%s]", v.Name, decl.Name),
+				varName:     fmt.Sprintf("%s.%s", decl.Name, v.Name),
 				cType:       v.Type,
 			})
+			return
+		}
+		if impl, ok := v.Children()[0].(*ast.ImplicitCastExpr); ok {
+			if decl, ok := impl.Children()[0].(*ast.DeclRefExpr); ok {
+				if v.IsPointer {
+					in.addVarDecl(argument{
+						// Not define Position
+						description: "BinEQ_MemImpDeclP",
+						varName:     fmt.Sprintf("%s->%s", decl.Name, v.Name),
+						cType:       v.Type,
+					})
+					return
+				}
+				in.addVarDecl(argument{
+					// Not define Position
+					description: "BinEQ_MemImpDecl",
+					varName:     fmt.Sprintf("%s.%s", decl.Name, v.Name),
+					cType:       v.Type,
+				})
+				return
+			}
 		}
 
 	case *ast.UnaryOperator:
@@ -582,6 +651,10 @@ func (in *inj) walk(node ast.Node) {
 		}
 
 	case *ast.BinaryOperator:
+		in.insideBinaryOperator = true
+		defer func() {
+			in.insideBinaryOperator = false
+		}()
 		for pos := range v.Children() {
 			in.walk(v.Children()[pos])
 		}
