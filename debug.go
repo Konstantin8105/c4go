@@ -573,7 +573,7 @@ func (in *inj) walk(node ast.Node) {
 				if decl, ok := impl.Children()[0].(*ast.DeclRefExpr); ok {
 					in.addVarDecl(argument{
 						// Not define Position
-						description: "BinEQ_UID",
+						description: "UID",
 						varName:     fmt.Sprintf("*%s", decl.Name),
 						cType:       v.Type,
 					})
@@ -582,6 +582,11 @@ func (in *inj) walk(node ast.Node) {
 		}
 
 	case *ast.BinaryOperator:
+		for pos := range v.Children() {
+			in.walk(v.Children()[pos])
+		}
+
+	case *ast.DeclStmt:
 		for pos := range v.Children() {
 			in.walk(v.Children()[pos])
 		}
