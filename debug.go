@@ -447,6 +447,16 @@ type inj struct {
 	varDecls []argument
 }
 
+func (in *inj) addVarDecl(arg argument) {
+	// add only uniq VarDecls
+	for i := range in.varDecls {
+		if in.varDecls[i].varName == arg.varName {
+			return
+		}
+	}
+	in.varDecls = append(in.varDecls, arg)
+}
+
 func (in *inj) getPositioner() []Positioner {
 	return in.poss
 }
@@ -455,12 +465,9 @@ func (in *inj) newAllowablePosition(pos ast.Position) {
 	// add Positioner after symbol `pos`
 	for k := range in.varDecls {
 		// add all ast.VarDecl
-		in.varDecls = append(in.varDecls, argument{
-			pos:         pos,
-			description: in.varDecls[k].description,
-			varName:     in.varDecls[k].varName,
-			cType:       in.varDecls[k].cType,
-		})
+		vd := in.varDecls[k]
+		vd.pos = pos
+		in.poss = append(in.poss, vd)
 	}
 }
 
@@ -534,7 +541,7 @@ func (in *inj) walk(node ast.Node) {
 	case *ast.VarDecl:
 		// VarDecl with initialization
 		if len(v.Children()) > 0 {
-			in.varDecls = append(in.varDecls, argument{
+			in.addVarDecl(argument{
 				// Not define Position
 				description: "VarDecl",
 				varName:     v.Name,
@@ -542,47 +549,41 @@ func (in *inj) walk(node ast.Node) {
 			})
 		}
 
-	case *ast.BinaryOperator:
-		for pos := range v.Children() {
+	case *ast.DeclRefExpr:
+		in.addVarDecl(argument{
+			// Not define Position
+			description: "BinEQ_Decl",
+			varName:     v.Name,
+			cType:       v.Type,
+		})
 
-			switch v := v.Children()[pos].(type) {
-			case *ast.DeclRefExpr:
-				in.varDecls = append(in.varDecls, argument{
-					// Not define Position
-					description: "BinEQ_Decl",
-					varName:     v.Name,
-					cType:       v.Type,
-				})
+	case *ast.MemberExpr:
+		if decl, ok := v.Children()[0].(*ast.DeclRefExpr); ok {
+			in.addVarDecl(argument{
+				// Not define Position
+				description: "BinEQ_MemDecl",
+				varName:     fmt.Sprintf("%s[%s]", v.Name, decl.Name),
+				cType:       v.Type,
+			})
+		}
 
-			case *ast.MemberExpr:
-				if decl, ok := v.Children()[0].(*ast.DeclRefExpr); ok {
-					in.varDecls = append(in.varDecls, argument{
+	case *ast.UnaryOperator:
+		if v.Operator == "*" {
+			if impl, ok := v.Children()[0].(*ast.ImplicitCastExpr); ok {
+				if decl, ok := impl.Children()[0].(*ast.DeclRefExpr); ok {
+					in.addVarDecl(argument{
 						// Not define Position
-						description: "BinEQ_MemDecl",
-						varName:     fmt.Sprintf("%s[%s]", v.Name, decl.Name),
+						description: "BinEQ_UID",
+						varName:     fmt.Sprintf("*%s", decl.Name),
 						cType:       v.Type,
 					})
 				}
-
-			case *ast.UnaryOperator:
-				if v.Operator == "*" {
-					if impl, ok := v.Children()[0].(*ast.ImplicitCastExpr); ok {
-						if decl, ok := impl.Children()[0].(*ast.DeclRefExpr); ok {
-							in.varDecls = append(in.varDecls, argument{
-								// Not define Position
-								description: "BinEQ_UID",
-								varName:     fmt.Sprintf("*%s", decl.Name),
-								cType:       v.Type,
-							})
-						}
-					}
-				}
-
-			case *ast.BinaryOperator:
-				for g := range v.Children() {
-					in.walk(v.Children()[g])
-				}
 			}
+		}
+
+	case *ast.BinaryOperator:
+		for pos := range v.Children() {
+			in.walk(v.Children()[pos])
 		}
 	}
 }
