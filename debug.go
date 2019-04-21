@@ -134,16 +134,8 @@ func (v argument) Position() ast.Position {
 }
 
 func (v argument) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
-	var index int = -1
 	// v.cType = strings.Replace(v.cType, "const ", "", -1)
-	for i := range FuncArgs {
-		if FuncArgs[i].cType == v.cType {
-			index = i
-		}
-	}
-	if index < 0 {
-		return nil
-	}
+
 	if v.pos.Column-1 >= len(lines[v.pos.Line-1]) {
 		return fmt.Errorf("column is outside line")
 	}
@@ -159,12 +151,26 @@ func (v argument) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
 		}
 	}
 
-	// find argument type
-	function := fmt.Sprintf("%s%s(\"%s\",\"%s\",%s);",
-		debugArgument, FuncArgs[index].postfix,
-		v.description, v.varName, v.varName)
-	lines[v.pos.Line-1] = append(lines[v.pos.Line-1][:v.pos.Column],
-		append([]byte(function), lines[v.pos.Line-1][v.pos.Column:]...)...)
+	var index int = -1
+	for i := range FuncArgs {
+		if FuncArgs[i].cType == v.cType {
+			index = i
+		}
+	}
+	if index >= 0 {
+		// find argument type
+		function := fmt.Sprintf("%s%s(\"%s\",\"%s\",%s);",
+			debugArgument, FuncArgs[index].postfix,
+			v.description, v.varName, v.varName)
+		lines[v.pos.Line-1] = append(lines[v.pos.Line-1][:v.pos.Column],
+			append([]byte(function), lines[v.pos.Line-1][v.pos.Column:]...)...)
+	} else if v.cType == "char *" || v.cType == "const char *" {
+		function := fmt.Sprintf("%s(\"%s\",\"%s\",%s);",
+			debugArgumentString,
+			v.description, v.varName, v.varName)
+		lines[v.pos.Line-1] = append(lines[v.pos.Line-1][:v.pos.Column],
+			append([]byte(function), lines[v.pos.Line-1][v.pos.Column:]...)...)
+	}
 
 	return nil
 }
@@ -309,6 +315,15 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 					varName:     vd.varName,
 					cType:       vd.cType,
 				}
+				found := false
+				for p := range varDecls {
+					if v.varName == varDecls[p].varName {
+						found = true
+					}
+				}
+				if found {
+					return
+				}
 				sl = append(sl, v)
 				funcPoses[node.Position().File] = sl
 			}
@@ -344,6 +359,49 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 						varName:     vd.Name,
 						cType:       vd.Type,
 					})
+				}
+				if bin, ok := node.(*ast.BinaryOperator); ok {
+					for pos := range bin.Children() {
+						switch v := bin.Children()[pos].(type) {
+						case *ast.DeclRefExpr:
+							varDecls = append(varDecls, argument{
+								// Not define Position
+								description: "BinEQ_Decl",
+								varName:     v.Name,
+								cType:       v.Type,
+							})
+
+						case *ast.MemberExpr:
+							if decl, ok := v.Children()[0].(*ast.DeclRefExpr); ok {
+								varDecls = append(varDecls, argument{
+									// Not define Position
+									description: "BinEQ_MemDecl",
+									varName:     fmt.Sprintf("%s[%s]", v.Name, decl.Name),
+									cType:       v.Type,
+								})
+							}
+
+						case *ast.UnaryOperator:
+							if v.Operator == "*" {
+								if impl, ok := v.Children()[0].(*ast.ImplicitCastExpr); ok {
+									if decl, ok := impl.Children()[0].(*ast.DeclRefExpr); ok {
+										varDecls = append(varDecls, argument{
+											// Not define Position
+											description: "BinEQ_UID",
+											varName:     fmt.Sprintf("*%s", decl.Name),
+											cType:       v.Type,
+										})
+									}
+								}
+							}
+
+						case *ast.BinaryOperator:
+							for g := range v.Children() {
+								walk(v.Children()[g])
+							}
+
+						}
+					}
 				}
 
 				var i int
@@ -447,8 +505,9 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 }
 
 const (
-	debugFunctionName string = "c4go_debug_compount"
-	debugArgument     string = "c4go_debug_function_arg_"
+	debugFunctionName   string = "c4go_debug_compount"
+	debugArgument       string = "c4go_debug_function_arg_"
+	debugArgumentString string = "c4go_debug_function_arg_string"
 )
 
 func debugCode() string {
@@ -483,7 +542,22 @@ void c4go_debug_function_arg_##postfix(char * arg_pos, char * name, type arg_val
 	fprintf(file,format, arg_value); \
 	fprintf(file,"\"\n"); \
 	fclose(file); \
-} 
+}
+
+void c4go_debug_function_arg_string(const char * arg_pos, const char * name,const char * arg_value)
+{
+	FILE * file = c4go_get_debug_file();
+	fprintf(file,"\tdescription: %s\n", arg_pos);
+	fprintf(file,"\tname: %s\n", name);
+	fprintf(file,"\tval : \"");
+	if (arg_value == NULL) {
+		fprintf(file, "<null>");
+	} else {
+		fprintf(file, "%s" , arg_value);
+	}
+	fprintf(file,"\"\n");
+	fclose(file);
+}
 
 `
 
@@ -501,6 +575,7 @@ var FuncArgs = []struct {
 	format  string
 }{
 	{"int", "int", "%d"},
+	{"char", "char", "%d"},
 	{"unsigned int", "uint", "%d"},
 	{"long", "long", "%ld"},
 	{"float", "float", "%f"},
