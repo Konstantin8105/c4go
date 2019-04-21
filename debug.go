@@ -289,158 +289,14 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 				funcPoses[mst.Position().File] = sl
 			}
 
-			// IfStmt
-			// |-<<<NULL>>>
-			// |-<<<NULL>>>
-			// |-BinaryOperator 'int' '!='
-			// | `-...
-			// |-CompoundStmt   # <---- find this -
-			// | `-...
-			// `-<<<NULL>>>
-			//
-			// WhileStmt 0x33e4b08 <line:25:5, line:28:5>
-			// |-<<<NULL>>>
-			// |-BinaryOperator 'int' '<='
-			// | `-...
-			// `-CompoundStmt
-			//   |-...
-			//
-			// walking by tree
-			var varDecls []argument
-			addVarDecl := func(vd argument, node ast.Node) {
-				sl, _ := funcPoses[node.Position().File]
-				v := argument{
-					pos:         node.Position(),
-					description: vd.description,
-					varName:     vd.varName,
-					cType:       vd.cType,
-				}
-				found := false
-				for p := range varDecls {
-					if v.varName == varDecls[p].varName {
-						found = true
-					}
-				}
-				if found {
-					return
-				}
-				sl = append(sl, v)
-				funcPoses[node.Position().File] = sl
+			var injector inj
+			injector.walk(fd.Children()[len(fd.Children())-1])
+			list := injector.getPositioner()
+			for p := range list {
+				file := list[p].Position().File
+				sl, _ := funcPoses[file]
+				funcPoses[file] = append(sl, list[p])
 			}
-			addCompount := func(name string, node ast.Node) {
-				sl, _ := funcPoses[node.Position().File]
-				sl = append(sl, compount{name: name, pos: node.Position()})
-				funcPoses[node.Position().File] = sl
-			}
-			addCase := func(name string, node ast.Node) {
-				sl, _ := funcPoses[node.Position().File]
-				sl = append(sl, cases{name: name, pos: node.Position()})
-				funcPoses[node.Position().File] = sl
-			}
-			var walk func(node ast.Node)
-			walk = func(node ast.Node) {
-				if node == nil {
-					return
-				}
-				if _, ok := node.(*ast.CompoundStmt); ok {
-					addCompount("CompoundStmt", node)
-					// add all ast.VarDecl
-					for k := range varDecls {
-						addVarDecl(varDecls[k], node)
-					}
-				}
-				if _, ok := node.(*ast.CaseStmt); ok {
-					addCase("case", node)
-				}
-				if vd, ok := node.(*ast.VarDecl); ok && len(vd.Children()) > 0 {
-					varDecls = append(varDecls, argument{
-						// Not define Position
-						description: "VarDecl",
-						varName:     vd.Name,
-						cType:       vd.Type,
-					})
-				}
-				if bin, ok := node.(*ast.BinaryOperator); ok {
-					for pos := range bin.Children() {
-						switch v := bin.Children()[pos].(type) {
-						case *ast.DeclRefExpr:
-							varDecls = append(varDecls, argument{
-								// Not define Position
-								description: "BinEQ_Decl",
-								varName:     v.Name,
-								cType:       v.Type,
-							})
-
-						case *ast.MemberExpr:
-							if decl, ok := v.Children()[0].(*ast.DeclRefExpr); ok {
-								varDecls = append(varDecls, argument{
-									// Not define Position
-									description: "BinEQ_MemDecl",
-									varName:     fmt.Sprintf("%s[%s]", v.Name, decl.Name),
-									cType:       v.Type,
-								})
-							}
-
-						case *ast.UnaryOperator:
-							if v.Operator == "*" {
-								if impl, ok := v.Children()[0].(*ast.ImplicitCastExpr); ok {
-									if decl, ok := impl.Children()[0].(*ast.DeclRefExpr); ok {
-										varDecls = append(varDecls, argument{
-											// Not define Position
-											description: "BinEQ_UID",
-											varName:     fmt.Sprintf("*%s", decl.Name),
-											cType:       v.Type,
-										})
-									}
-								}
-							}
-
-						case *ast.BinaryOperator:
-							for g := range v.Children() {
-								walk(v.Children()[g])
-							}
-
-						}
-					}
-				}
-
-				var i int
-				if _, gok := node.(*ast.IfStmt); gok {
-					i = 3
-				}
-				if _, gok := node.(*ast.ForStmt); gok {
-					i = 4
-				}
-				if _, gok := node.(*ast.WhileStmt); gok {
-					i = 2
-				}
-
-				for ; i < len(node.Children()); i++ {
-					_, ok := node.Children()[i].(*ast.CompoundStmt)
-					if ok {
-						chi := node.Children()[i]
-						switch node.(type) {
-						case *ast.IfStmt:
-							addCompount("if", chi)
-						case *ast.ForStmt:
-							addCompount("for", chi)
-						case *ast.WhileStmt:
-							addCompount("while", chi)
-						case *ast.DefaultStmt:
-							// that node bug in column identification
-							continue
-						}
-					}
-
-					size := len(varDecls)
-
-					walk(node.Children()[i])        // walking inside
-					if ok && size < len(varDecls) { // remove last VarDecls, if some added
-						varDecls = varDecls[:size]
-					}
-				}
-			}
-			walk(fd)
 		}
 	}
 
@@ -584,4 +440,149 @@ var FuncArgs = []struct {
 	// {"char *", "string", "%s"},
 	// {"char **", "double_string", "%s"},
 	// {"unsigned char *", "ustring", "%s"},
+}
+
+type inj struct {
+	poss     []Positioner
+	varDecls []argument
+}
+
+func (in *inj) getPositioner() []Positioner {
+	return in.poss
+}
+
+func (in *inj) newAllowablePosition(pos ast.Position) {
+	// add Positioner after symbol `pos`
+	for k := range in.varDecls {
+		// add all ast.VarDecl
+		in.varDecls = append(in.varDecls, argument{
+			pos:         pos,
+			description: in.varDecls[k].description,
+			varName:     in.varDecls[k].varName,
+			cType:       in.varDecls[k].cType,
+		})
+	}
+}
+
+func (in *inj) walk(node ast.Node) {
+	// ignore nil node
+	if node == nil {
+		return
+	}
+
+	switch v := node.(type) {
+	case *ast.CompoundStmt:
+		in.poss = append(in.poss, compount{name: "CompoundStmt", pos: node.Position()})
+		in.newAllowablePosition(node.Position())
+		for i := 0; i < len(node.Children()); i++ {
+			size := len(in.varDecls)
+			in.walk(node.Children()[i])  // walking inside
+			if size < len(in.varDecls) { // remove last VarDecls, if some added
+				in.varDecls = in.varDecls[:size]
+			}
+		}
+
+	case *ast.IfStmt:
+		// IfStmt
+		// |-<<<NULL>>>
+		// |-<<<NULL>>>
+		// |-BinaryOperator 'int' '!='
+		// | `-...
+		// |-CompoundStmt
+		// | `-...
+		// `-<<<NULL>>>
+		for i := 3; i < len(v.Children()); i++ {
+			in.walk(v.Children()[i])
+		}
+		return
+
+	case *ast.ForStmt:
+		for i := 4; i < len(v.Children()); i++ {
+			in.walk(v.Children()[i])
+		}
+		return
+
+	case *ast.WhileStmt:
+		// WhileStmt
+		// |-<<<NULL>>>
+		// |-BinaryOperator 'int' '<='
+		// | `-...
+		// `-CompoundStmt
+		//   |-...
+		for i := 2; i < len(v.Children()); i++ {
+			in.walk(v.Children()[i])
+		}
+		return
+
+	case *ast.DefaultStmt:
+		// that node bug in column identification
+		return
+
+	case *ast.CaseStmt:
+	// TODO: is same source line
+	// TODO: create a newAllowablePosition
+	// TODO: addCase("case", node)
+	//
+	// walking by tree
+	// addCase := func(name string, node ast.Node) {
+	// sl, _ := funcPoses[node.Position().File]
+	// sl = append(sl, cases{name: name, pos: node.Position()})
+	// funcPoses[node.Position().File] = sl
+	// }
+	// }
+
+	case *ast.VarDecl:
+		// VarDecl with initialization
+		if len(v.Children()) > 0 {
+			in.varDecls = append(in.varDecls, argument{
+				// Not define Position
+				description: "VarDecl",
+				varName:     v.Name,
+				cType:       v.Type,
+			})
+		}
+
+	case *ast.BinaryOperator:
+		for pos := range v.Children() {
+
+			switch v := v.Children()[pos].(type) {
+			case *ast.DeclRefExpr:
+				in.varDecls = append(in.varDecls, argument{
+					// Not define Position
+					description: "BinEQ_Decl",
+					varName:     v.Name,
+					cType:       v.Type,
+				})
+
+			case *ast.MemberExpr:
+				if decl, ok := v.Children()[0].(*ast.DeclRefExpr); ok {
+					in.varDecls = append(in.varDecls, argument{
+						// Not define Position
+						description: "BinEQ_MemDecl",
+						varName:     fmt.Sprintf("%s[%s]", v.Name, decl.Name),
+						cType:       v.Type,
+					})
+				}
+
+			case *ast.UnaryOperator:
+				if v.Operator == "*" {
+					if impl, ok := v.Children()[0].(*ast.ImplicitCastExpr); ok {
+						if decl, ok := impl.Children()[0].(*ast.DeclRefExpr); ok {
+							in.varDecls = append(in.varDecls, argument{
+								// Not define Position
+								description: "BinEQ_UID",
+								varName:     fmt.Sprintf("*%s", decl.Name),
+								cType:       v.Type,
+							})
+						}
+					}
+				}
+
+			case *ast.BinaryOperator:
+				for g := range v.Children() {
+					in.walk(v.Children()[g])
+				}
+			}
+		}
+	}
 }
