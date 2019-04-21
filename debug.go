@@ -483,7 +483,9 @@ func (in *inj) walk(node ast.Node) {
 		in.newAllowablePosition(node.Position())
 		for i := 0; i < len(node.Children()); i++ {
 			size := len(in.varDecls)
-			in.walk(node.Children()[i])  // walking inside
+			fmt.Println(size)
+			in.walk(node.Children()[i]) // walking inside
+			fmt.Println(len(in.varDecls))
 			if size < len(in.varDecls) { // remove last VarDecls, if some added
 				in.varDecls = in.varDecls[:size]
 			}
