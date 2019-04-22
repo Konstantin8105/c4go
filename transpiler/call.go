@@ -251,6 +251,17 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		}
 	}
 
+	if p.IncludeHeaderIsExists("stdlib.h") && functionName == "realloc" {
+		functionName = "Realloc"
+		p.IsHaveRealloc = true
+		p.IsHaveMemcpy = true
+	}
+
+	if p.IncludeHeaderIsExists("string.h") && functionName == "memcpy" {
+		functionName = "Memcpy"
+		p.IsHaveMemcpy = true
+	}
+
 	// function "calloc" from stdlib.h
 	if p.IncludeHeaderIsExists("stdlib.h") {
 		if functionName == "calloc" && len(n.Children()) == 3 {

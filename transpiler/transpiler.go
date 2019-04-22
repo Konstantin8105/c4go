@@ -126,6 +126,11 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 	// checking implementation for all called functions
 	bindHeader, bindCode := generateBinding(p)
 
+	// for memcpy and realloc
+	if p.IsHaveMemcpy || p.IsHaveRealloc {
+		p.AddImport("reflect")
+	}
+
 	// Add the imports after everything else so we can ensure that they are all
 	// placed at the top.
 	for _, quotedImportPath := range p.Imports() {
@@ -167,6 +172,13 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 
 	// generate pointer arithmetic functions
 	source += getPointerArithFunctions(p)
+
+	if p.IsHaveMemcpy || p.IsHaveRealloc {
+		source += memcpy
+	}
+	if p.IsHaveRealloc {
+		source += realloc
+	}
 
 	return
 }

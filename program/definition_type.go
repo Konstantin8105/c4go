@@ -40,7 +40,7 @@ var DefinitionType = map[string]string{
 	"unsigned short int":     "uint16",
 	"void":                   "",
 	"_Bool":                  "int32",
-	"size_t":                 "uint",
+	"size_t":                 "uint32",
 	"ptrdiff_t":              "github.com/Konstantin8105/c4go/noarch.PtrdiffT",
 	"github.com/Konstantin8105/c4go/noarch.PtrdiffT": "uint64",
 	"wchar_t": "github.com/Konstantin8105/c4go/noarch.WcharT",

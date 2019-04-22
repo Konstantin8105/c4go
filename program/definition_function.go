@@ -277,7 +277,6 @@ var builtInFunctionDefinitions = map[string][]string{
 		"char * memset(char *, char, unsigned int) -> noarch.Memset",
 		"char * memmove(char *, char *, unsigned int) -> noarch.Memmove",
 		"int memcmp(const char *, const char *, unsigned int) -> noarch.Memcmp",
-		"void * memcpy(void *, const void *, size_t) -> noarch.Memcpy",
 		"const char * strrchr( const char *, int) -> noarch.Strrchr",
 		"char * strdup(const char *) -> noarch.Strdup",
 		"char * strerror(int ) -> noarch.Strerror",
@@ -312,7 +311,6 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int system(const char *) -> noarch.System",
 		"void free(void*) -> _",
 		"int atexit(void*) -> noarch.Atexit",
-		"void* realloc(void * , size_t ) -> noarch.Realloc",
 	},
 	"time.h": {
 		// time.h

@@ -2,7 +2,6 @@ package noarch
 
 import (
 	"bytes"
-	"reflect"
 	"unsafe"
 )
 
@@ -179,28 +178,6 @@ func Memcmp(lhs []byte, rhs []byte, count uint32) int32 {
 		}
 	}
 	return 0
-}
-
-func Memcpy(dst, src interface{}, size uint) interface{} {
-	switch reflect.TypeOf(src).Kind() {
-	case reflect.Slice:
-		s := reflect.ValueOf(src)
-		d := reflect.ValueOf(dst)
-		if s.Len() == 0 {
-			return dst
-		}
-		if s.Len() > 0 {
-			size /= uint(int(s.Index(0).Type().Size()))
-		}
-		var val reflect.Value
-		for i := 0; i < int(size); i++ {
-			if i < s.Len() {
-				val = s.Index(i)
-			}
-			d.Index(i).Set(val)
-		}
-	}
-	return dst
 }
 
 func Strrchr(source []byte, c32 int32) []byte {
