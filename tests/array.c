@@ -1271,7 +1271,7 @@ int main()
         (void)(t);
     }
 
-    test_pointer_arith_size_t();
+    START_TEST(pointer_arith_size_t);
     START_TEST(pointer_minus_pointer);
 
     diag("calloc with struct");
