@@ -861,7 +861,7 @@ func Perror(msg []byte) {
 	fmt.Fprintf(os.Stderr, "%s: No such file or directory\n", m)
 }
 
-func Getline(line [][]byte, len []uint, f *File) SsizeT {
+func Getline(line [][]byte, len []uint32, f *File) SsizeT {
 	counter := 0
 	for {
 		buf := make([]byte, 1)

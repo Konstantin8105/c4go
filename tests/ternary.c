@@ -97,15 +97,15 @@ int main()
         is_eq(d, 12);
     }
 
-	diag("ternaty without middle");
-	{
-		int a = 42;
-		a = 19 > -9? : 23;
-		is_eq(a, 1);
-		a = 54;
-		a = 4 < -1? : 25;
-		is_eq(a, 25);
-	}
+    diag("ternaty without middle");
+    {
+        int a = 42;
+        a = 19 > -9 ?: 23;
+        is_eq(a, 1);
+        a = 54;
+        a = 4 < -1 ?: 25;
+        is_eq(a, 25);
+    }
 
     done_testing();
 }

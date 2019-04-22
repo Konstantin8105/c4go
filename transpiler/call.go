@@ -251,60 +251,15 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		}
 	}
 
-	//
-	// Change from "realloc" to "calloc"
-	//
-	// CallExpr <> 'void *'
-	// |-ImplicitCastExpr <> 'void *(*)(void *, unsigned long)' <FunctionToPointerDecay>
-	// | `-DeclRefExpr <> 'void *(void *, unsigned long)' Function 0x2c7e3e0 'realloc' 'void *(void *, unsigned long)'
-	// |-ImplicitCastExpr <> 'void *' <BitCast>
-	// | `-CStyleCastExpr <> 'char *' <BitCast>
-	// |   `-ParenExpr <> 'void *'
-	// |     `-ParenExpr <> 'void *'
-	// |       `-CStyleCastExpr <> 'void *' <NullToPointer>
-	// |         `-IntegerLiteral <> 'int' 0
-	// `-ImplicitCastExpr <> 'unsigned long' <IntegralCast>
-	//   `-BinaryOperator <> 'int' '*'
-	//     |-ImplicitCastExpr <> 'int' <LValueToRValue>
-	//     | `-DeclRefExpr <> 'int' lvalue Var 0x2ca14e8 'size' 'int'
-	//     `-ImplicitCastExpr <> 'int' <LValueToRValue>
-	//       `-DeclRefExpr <> 'int' lvalue Var 0x2ca14e8 'size' 'int'
-	//
-	// CallExpr <> 'void *'
-	// |-ImplicitCastExpr <> 'void *(*)(unsigned long, unsigned long)' <FunctionToPointerDecay>
-	// | `-DeclRefExpr <> 'void *(unsigned long, unsigned long)' Function 'calloc' 'void *(unsigned long, unsigned long)'
-	// |-ImplicitCastExpr <> 'unsigned long' <IntegralCast>
-	// | `- ...
-	// `-UnaryExprOrTypeTraitExpr <> 'unsigned long' sizeof 'char'
-	//
-	// function "realloc" from stdlib.h
-	if p.IncludeHeaderIsExists("stdlib.h") {
-		if functionName == "realloc" && len(n.Children()) == 3 {
-			n.ChildNodes[0] = &ast.ImplicitCastExpr{
-				Type: "void *(*)(unsigned long, unsigned long)",
-			}
-			n.ChildNodes[0].(*ast.ImplicitCastExpr).AddChild(&ast.DeclRefExpr{
-				Type: "void *(unsigned long, unsigned long)",
-				Name: "calloc",
-			})
-			sizeofType := "char"
-			if impl, ok := n.Children()[1].(*ast.ImplicitCastExpr); ok {
-				switch v := impl.Children()[0].(type) {
-				case *ast.ImplicitCastExpr:
-					sizeofType = v.Type
-				case *ast.CStyleCastExpr:
-					sizeofType = v.Type
-				}
-			}
-			sizeofType = types.GetBaseType(sizeofType)
-			n.AddChild(&ast.UnaryExprOrTypeTraitExpr{
-				Type1:    "unsigned long",
-				Function: "sizeof",
-				Type2:    sizeofType,
-			})
-			n.ChildNodes = []ast.Node{n.ChildNodes[0], n.ChildNodes[2], n.ChildNodes[3]}
-			return transpileCallExpr(n, p)
-		}
+	if p.IncludeHeaderIsExists("stdlib.h") && functionName == "realloc" {
+		p.IsHaveRealloc = true
+		p.IsHaveMemcpy = true
+		p.SetCalled(functionName)
+	}
+
+	if p.IncludeHeaderIsExists("string.h") && functionName == "memcpy" {
+		p.IsHaveMemcpy = true
+		p.SetCalled(functionName)
 	}
 
 	// function "calloc" from stdlib.h
