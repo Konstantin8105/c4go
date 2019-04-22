@@ -743,12 +743,6 @@ func Sprintf(buffer, format []byte, args ...interface{}) int32 {
 // resulting string replacing their respective specifiers.
 func Vsprintf(buffer, format []byte, varList ...interface{}) int32 {
 	realArgs := []interface{}{}
-
-	if len(varList) > 1 {
-		// TODO : I don`t found the situation with more 1 size
-		return 0
-	}
-
 	realArgs = append(realArgs, convert(varList)...)
 
 	result := fmt.Sprintf(CStringToString(format), realArgs...)
@@ -758,6 +752,14 @@ func Vsprintf(buffer, format []byte, varList ...interface{}) int32 {
 	buffer[len(result)] = '\x00'
 
 	n := int32(len(result))
+	return n
+}
+
+func Vprintf(format []byte, varList ...interface{}) int32 {
+	buffer := make([]byte, 1000)
+	n := Vsprintf(buffer, format, varList...)
+	buf := CStringToString(buffer)
+	fmt.Fprintf(os.Stdout, "%s", buf)
 	return n
 }
 
