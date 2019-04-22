@@ -64,7 +64,7 @@ func (f cases) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
 	f.pos.Column = col + 1
 
 	lines[f.pos.Line-1] = append(lines[f.pos.Line-1][:f.pos.Column],
-		append([]byte(fmt.Sprintf("%s(%d,\"%s\");", debugFunctionName, f.pos.Line, f.name)),
+		append([]byte(fmt.Sprintf(";%s(%d,\"%s\");", debugFunctionName, f.pos.Line, f.name)),
 			lines[f.pos.Line-1][f.pos.Column:]...)...)
 
 	return nil
@@ -102,13 +102,17 @@ func (f compount) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
 	}
 
 	lines[f.pos.Line-1] = append(lines[f.pos.Line-1][:f.pos.Column],
-		append([]byte(fmt.Sprintf("%s(%d,\"%s\");", debugFunctionName, f.pos.Line, f.name)),
+		append([]byte(fmt.Sprintf(";%s(%d,\"%s\");", debugFunctionName, f.pos.Line, f.name)),
 			lines[f.pos.Line-1][f.pos.Column:]...)...)
 
 	return nil
 }
 
 func getByte(lines [][]byte, pos ast.Position) (b byte, err error) {
+	if pos.Line-1 <= 0 {
+		err = fmt.Errorf("outside line")
+		return
+	}
 	if pos.Line-1 >= len(lines) {
 		err = fmt.Errorf("try to add debug on outside of allowable line: %v", pos)
 		return
@@ -136,6 +140,10 @@ func (v argument) Position() ast.Position {
 func (v argument) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
 	// v.cType = strings.Replace(v.cType, "const ", "", -1)
 
+	if v.pos.Line-1 <= 0 {
+		return fmt.Errorf("outside lines")
+	}
+
 	if v.pos.Column-1 >= len(lines[v.pos.Line-1]) {
 		return fmt.Errorf("column is outside line")
 	}
@@ -159,13 +167,13 @@ func (v argument) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
 	}
 	if index >= 0 {
 		// find argument type
-		function := fmt.Sprintf("%s%s(\"%s\",\"%s\",%s);",
+		function := fmt.Sprintf(";%s%s(\"%s\",\"%s\",%s);",
 			debugArgument, FuncArgs[index].postfix,
 			v.description, v.varName, v.varName)
 		lines[v.pos.Line-1] = append(lines[v.pos.Line-1][:v.pos.Column],
 			append([]byte(function), lines[v.pos.Line-1][v.pos.Column:]...)...)
 	} else if v.cType == "char *" || v.cType == "const char *" {
-		function := fmt.Sprintf("%s(\"%s\",\"%s\",%s);",
+		function := fmt.Sprintf(";%s(\"%s\",\"%s\",%s);",
 			debugArgumentString,
 			v.description, v.varName, v.varName)
 		lines[v.pos.Line-1] = append(lines[v.pos.Line-1][:v.pos.Column],
@@ -289,158 +297,14 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 				funcPoses[mst.Position().File] = sl
 			}
 
-			// IfStmt
-			// |-<<<NULL>>>
-			// |-<<<NULL>>>
-			// |-BinaryOperator 'int' '!='
-			// | `-...
-			// |-CompoundStmt   # <---- find this -
-			// | `-...
-			// `-<<<NULL>>>
-			//
-			// WhileStmt 0x33e4b08 <line:25:5, line:28:5>
-			// |-<<<NULL>>>
-			// |-BinaryOperator 'int' '<='
-			// | `-...
-			// `-CompoundStmt
-			//   |-...
-			//
-			// walking by tree
-			var varDecls []argument
-			addVarDecl := func(vd argument, node ast.Node) {
-				sl, _ := funcPoses[node.Position().File]
-				v := argument{
-					pos:         node.Position(),
-					description: vd.description,
-					varName:     vd.varName,
-					cType:       vd.cType,
-				}
-				found := false
-				for p := range varDecls {
-					if v.varName == varDecls[p].varName {
-						found = true
-					}
-				}
-				if found {
-					return
-				}
-				sl = append(sl, v)
-				funcPoses[node.Position().File] = sl
+			var injector inj
+			injector.walk(fd.Children()[len(fd.Children())-1])
+			list := injector.getPositioner()
+			for p := range list {
+				file := list[p].Position().File
+				sl, _ := funcPoses[file]
+				funcPoses[file] = append(sl, list[p])
 			}
-			addCompount := func(name string, node ast.Node) {
-				sl, _ := funcPoses[node.Position().File]
-				sl = append(sl, compount{name: name, pos: node.Position()})
-				funcPoses[node.Position().File] = sl
-			}
-			addCase := func(name string, node ast.Node) {
-				sl, _ := funcPoses[node.Position().File]
-				sl = append(sl, cases{name: name, pos: node.Position()})
-				funcPoses[node.Position().File] = sl
-			}
-			var walk func(node ast.Node)
-			walk = func(node ast.Node) {
-				if node == nil {
-					return
-				}
-				if _, ok := node.(*ast.CompoundStmt); ok {
-					addCompount("CompoundStmt", node)
-					// add all ast.VarDecl
-					for k := range varDecls {
-						addVarDecl(varDecls[k], node)
-					}
-				}
-				if _, ok := node.(*ast.CaseStmt); ok {
-					addCase("case", node)
-				}
-				if vd, ok := node.(*ast.VarDecl); ok && len(vd.Children()) > 0 {
-					varDecls = append(varDecls, argument{
-						// Not define Position
-						description: "VarDecl",
-						varName:     vd.Name,
-						cType:       vd.Type,
-					})
-				}
-				if bin, ok := node.(*ast.BinaryOperator); ok {
-					for pos := range bin.Children() {
-						switch v := bin.Children()[pos].(type) {
-						case *ast.DeclRefExpr:
-							varDecls = append(varDecls, argument{
-								// Not define Position
-								description: "BinEQ_Decl",
-								varName:     v.Name,
-								cType:       v.Type,
-							})
-
-						case *ast.MemberExpr:
-							if decl, ok := v.Children()[0].(*ast.DeclRefExpr); ok {
-								varDecls = append(varDecls, argument{
-									// Not define Position
-									description: "BinEQ_MemDecl",
-									varName:     fmt.Sprintf("%s[%s]", v.Name, decl.Name),
-									cType:       v.Type,
-								})
-							}
-
-						case *ast.UnaryOperator:
-							if v.Operator == "*" {
-								if impl, ok := v.Children()[0].(*ast.ImplicitCastExpr); ok {
-									if decl, ok := impl.Children()[0].(*ast.DeclRefExpr); ok {
-										varDecls = append(varDecls, argument{
-											// Not define Position
-											description: "BinEQ_UID",
-											varName:     fmt.Sprintf("*%s", decl.Name),
-											cType:       v.Type,
-										})
-									}
-								}
-							}
-
-						case *ast.BinaryOperator:
-							for g := range v.Children() {
-								walk(v.Children()[g])
-							}
-
-						}
-					}
-				}
-
-				var i int
-				if _, gok := node.(*ast.IfStmt); gok {
-					i = 3
-				}
-				if _, gok := node.(*ast.ForStmt); gok {
-					i = 4
-				}
-				if _, gok := node.(*ast.WhileStmt); gok {
-					i = 2
-				}
-
-				for ; i < len(node.Children()); i++ {
-					_, ok := node.Children()[i].(*ast.CompoundStmt)
-					if ok {
-						chi := node.Children()[i]
-						switch node.(type) {
-						case *ast.IfStmt:
-							addCompount("if", chi)
-						case *ast.ForStmt:
-							addCompount("for", chi)
-						case *ast.WhileStmt:
-							addCompount("while", chi)
-						case *ast.DefaultStmt:
-							// that node bug in column identification
-							continue
-						}
-					}
-
-					size := len(varDecls)
-
-					walk(node.Children()[i])        // walking inside
-					if ok && size < len(varDecls) { // remove last VarDecls, if some added
-						varDecls = varDecls[:size]
-					}
-				}
-			}
-			walk(fd)
 		}
 	}
 
@@ -584,4 +448,238 @@ var FuncArgs = []struct {
 	// {"char *", "string", "%s"},
 	// {"char **", "double_string", "%s"},
 	// {"unsigned char *", "ustring", "%s"},
+}
+
+type inj struct {
+	poss                 []Positioner
+	varDecls             []argument
+	insideBinaryOperator bool
+}
+
+func (in *inj) addVarDecl(arg argument) {
+	// add only uniq VarDecls
+	for i := range in.varDecls {
+		if in.varDecls[i].varName == arg.varName &&
+			in.varDecls[i].cType == arg.cType {
+			return
+		}
+	}
+	in.varDecls = append(in.varDecls, arg)
+}
+
+func (in *inj) getPositioner() []Positioner {
+	return in.poss
+}
+
+func (in *inj) newAllowablePosition(pos ast.Position) {
+	// add Positioner after symbol `pos`
+	for k := len(in.varDecls) - 1; k >= 0; k-- {
+		// avoid names intersection
+		var ignore bool
+		for g := len(in.varDecls) - 1; g > k; g-- {
+			if in.varDecls[k].varName == in.varDecls[g].varName ||
+				"*"+in.varDecls[k].varName == in.varDecls[g].varName ||
+				in.varDecls[k].varName == "*"+in.varDecls[g].varName {
+				ignore = true
+				break
+			}
+		}
+		if ignore {
+			continue
+		}
+		// add all ast.VarDecl
+		vd := in.varDecls[k]
+		vd.pos = pos
+		in.poss = append(in.poss, vd)
+	}
+}
+
+func (in *inj) walk(node ast.Node) {
+	// ignore nil node
+	if node == nil {
+		return
+	}
+
+	switch v := node.(type) {
+	case *ast.CompoundStmt:
+		in.poss = append(in.poss, compount{name: "CompoundStmt", pos: node.Position()})
+		in.newAllowablePosition(node.Position())
+		size := len(in.varDecls)
+		for i := 0; i < len(node.Children()); i++ {
+			in.walk(node.Children()[i]) // walking inside
+		}
+		if size < len(in.varDecls) { // remove last VarDecls, if some added
+			in.varDecls = in.varDecls[:size]
+		}
+
+	case *ast.ArraySubscriptExpr:
+		// ignore
+		return
+
+	case *ast.IfStmt:
+		// IfStmt
+		// |-<<<NULL>>>
+		// |-<<<NULL>>>
+		// |-BinaryOperator 'int' '!='
+		// | `-...
+		// |-CompoundStmt
+		// | `-...
+		// `-<<<NULL>>>
+		for i := 3; i < len(v.Children()); i++ {
+			in.walk(v.Children()[i])
+		}
+		return
+
+	case *ast.ForStmt:
+		// ForStmt
+		// |-... // check this
+		// |-<<<NULL>>>
+		// |-...
+		// |-...
+		// `-CompoundStmt  // check this
+		size := len(in.varDecls)
+		for i := 0; i < len(v.Children()); i++ {
+			in.walk(v.Children()[i])
+		}
+		if size < len(in.varDecls) { // remove last VarDecls, if some added
+			in.varDecls = in.varDecls[:size]
+		}
+		return
+
+	case *ast.WhileStmt:
+		// WhileStmt
+		// |-<<<NULL>>>
+		// |-BinaryOperator 'int' '<='
+		// | `-...
+		// `-CompoundStmt
+		//   |-...
+		for i := 2; i < len(v.Children()); i++ {
+			in.walk(v.Children()[i])
+		}
+		return
+
+	case *ast.DefaultStmt:
+		// that node bug in column identification
+		return
+
+	case *ast.ImplicitCastExpr:
+		in.walk(v.Children()[0])
+		return
+
+	case *ast.CallExpr:
+		// CallExpr  'double'
+		// |-ImplicitCastExpr 'double (*)(int, float, double)' <LValueToRValue>
+		// | `-DeclRefExpr 'double (*)(int, float, double)' lvalue ParmVar 0x42be310 'F' 'double (*)(int, float, double)'
+		// |-...
+		// |-...
+		// `-...
+		for i := 1; i < len(v.Children()); i++ {
+			in.walk(v.Children()[i])
+		}
+		// not in BinaryOperator
+		if in.insideBinaryOperator {
+			return
+		}
+		// new place at the end of CallExpr:
+		// memmove(...,...,...);
+		//                    |--- end position is here
+		if v.Pos.LineEnd != 0 {
+			v.Pos.Line = v.Pos.LineEnd
+		}
+		v.Pos.Column = v.Pos.ColumnEnd + 1
+		in.newAllowablePosition(v.Pos)
+		in.poss = append(in.poss, compount{name: "After CallExpr", pos: v.Pos})
+		return
+
+	case *ast.CaseStmt:
+	// TODO: is same source line
+	// TODO: create a newAllowablePosition
+	// TODO: addCase("case", node)
+	//
+	// walking by tree
+	// addCase := func(name string, node ast.Node) {
+	// sl, _ := funcPoses[node.Position().File]
+	// sl = append(sl, cases{name: name, pos: node.Position()})
+	// funcPoses[node.Position().File] = sl
+	// }
+	// }
+
+	case *ast.VarDecl:
+		// VarDecl with initialization
+		if len(v.Children()) > 0 {
+			in.addVarDecl(argument{
+				// Not define Position
+				description: "VarDecl",
+				varName:     v.Name,
+				cType:       v.Type,
+			})
+		}
+
+	case *ast.DeclRefExpr:
+		in.addVarDecl(argument{
+			// Not define Position
+			description: "BinEQ_Decl",
+			varName:     v.Name,
+			cType:       v.Type,
+		})
+
+	case *ast.MemberExpr:
+		if decl, ok := v.Children()[0].(*ast.DeclRefExpr); ok {
+			in.addVarDecl(argument{
+				// Not define Position
+				description: "BinEQ_MemDecl",
+				varName:     fmt.Sprintf("%s.%s", decl.Name, v.Name),
+				cType:       v.Type,
+			})
+			return
+		}
+		if impl, ok := v.Children()[0].(*ast.ImplicitCastExpr); ok {
+			if decl, ok := impl.Children()[0].(*ast.DeclRefExpr); ok {
+				if v.IsPointer {
+					in.addVarDecl(argument{
+						// Not define Position
+						description: "BinEQ_MemImpDeclP",
+						varName:     fmt.Sprintf("%s->%s", decl.Name, v.Name),
+						cType:       v.Type,
+					})
+					return
+				}
+				in.addVarDecl(argument{
+					// Not define Position
+					description: "BinEQ_MemImpDecl",
+					varName:     fmt.Sprintf("%s.%s", decl.Name, v.Name),
+					cType:       v.Type,
+				})
+				return
+			}
+		}
+
+	case *ast.UnaryOperator:
+		if v.Operator == "*" {
+			if impl, ok := v.Children()[0].(*ast.ImplicitCastExpr); ok {
+				if decl, ok := impl.Children()[0].(*ast.DeclRefExpr); ok {
+					in.addVarDecl(argument{
+						// Not define Position
+						description: "UID",
+						varName:     fmt.Sprintf("*%s", decl.Name),
+						cType:       v.Type,
+					})
+				}
+			}
+		}
+
+	case *ast.BinaryOperator:
+		in.insideBinaryOperator = true
+		defer func() {
+			in.insideBinaryOperator = false
+		}()
+		for pos := range v.Children() {
+			in.walk(v.Children()[pos])
+		}
+
+	case *ast.DeclStmt:
+		for pos := range v.Children() {
+			in.walk(v.Children()[pos])
+		}
+	}
 }
