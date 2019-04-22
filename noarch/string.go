@@ -186,7 +186,12 @@ func Memcpy(dst, src interface{}, size uint) interface{} {
 	case reflect.Slice:
 		s := reflect.ValueOf(src)
 		d := reflect.ValueOf(dst)
-		size /= uint(int(s.Index(0).Type().Size()))
+		if s.Len() == 0 {
+			return dst
+		}
+		if s.Len() > 0 {
+			size /= uint(int(s.Index(0).Type().Size()))
+		}
 		var val reflect.Value
 		for i := 0; i < int(size); i++ {
 			if i < s.Len() {
