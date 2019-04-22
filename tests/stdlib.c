@@ -166,13 +166,44 @@ void test_malloc5()
 
 void test_realloc()
 {
-    int size = 5;
-    void* v = realloc((char*)(NULL), size * size);
-    char* c = (char*)v;
-    for (int n = 0; n < size * size - 1; n++)
-        c[n] = n % 26 + 'a';
-    c[size * size - 1] = '\0';
-    printf("realloc: %s\n", c);
+    {
+        int size = 5;
+        void* v = realloc((char*)(NULL), size * size);
+        char* c = (char*)v;
+        for (int n = 0; n < size * size - 1; n++)
+            c[n] = n % 26 + 'a';
+        c[size * size - 1] = '\0';
+        printf("realloc: %s\n", c);
+    }
+    {
+        // from : https://www.geeksforgeeks.org/g-fact-66/
+       int* ptr = (int*)malloc(sizeof(int) * 2);
+       int* ptr_new;
+
+       *ptr = 10;
+       *(ptr + 1) = 20;
+
+       ptr_new = (int*)realloc(ptr, sizeof(int) * 3);
+       *(ptr_new + 2) = 30;
+
+       is_eq(*(ptr_new + 0), 10);
+       is_eq(*(ptr_new + 1), 20);
+       is_eq(*(ptr_new + 2), 30);
+   }
+   {
+       // from : https://www.tutorialspoint.com/c_standard_library/c_function_realloc.htm
+       char* str;
+
+       /* Initial memory allocation */
+       str = (char*)malloc(15);
+       strcpy(str, "tutorialspoint");
+       printf("String = %s\n", str);
+
+       /* Reallocating memory */
+       str = (char*)realloc(str, 25);
+       strcat(str, ".com");
+       printf("String = %s\n", str);
+   }
 }
 
 // calloc() works exactly the same as malloc() however the memory is zeroed out.
@@ -295,7 +326,7 @@ void test_atoi_post()
 //		// pointer checking: m + n - 1 - i
 //		return NULL;
 //	}
-//	
+//
 //	void test_my_memrchr()
 //	{
 //		unsigned char * word = "Hello my dear world";
@@ -307,7 +338,7 @@ void test_atoi_post()
 
 int main()
 {
-    plan(763);
+    plan(766);
 
     struct_with_define();
 

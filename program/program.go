@@ -112,6 +112,9 @@ type Program struct {
 	IsHaveVaList bool
 
 	DoNotAddComments bool
+
+	IsHaveMemcpy  bool
+	IsHaveRealloc bool
 }
 
 type commentPos struct {
@@ -148,6 +151,8 @@ func NewProgram() (p *Program) {
 		builtInFunctionDefinitionsHaveBeenLoaded: false,
 		UnsafeConvertValueToPointer:              map[string]bool{},
 		UnsafeConvertPointerArith:                map[string]bool{},
+		IsHaveMemcpy:                             false,
+		IsHaveRealloc:                            false,
 	}
 }
 

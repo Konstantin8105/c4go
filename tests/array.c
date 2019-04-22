@@ -567,7 +567,7 @@ void test_typedef_pointer()
 
 int** getArray()
 {
-    int twod[5][4] = { { 2, 4, 6 , 7}, { 8, 10, 12,13 }, { 14, 16, 18, 19 }, { 20, 22, 24, 25 }, {26,28,30,32} };
+    int twod[5][4] = { { 2, 4, 6, 7 }, { 8, 10, 12, 13 }, { 14, 16, 18, 19 }, { 20, 22, 24, 25 }, { 26, 28, 30, 32 } };
     int* twodPass[5];
     twodPass[0] = twod[0];
     twodPass[1] = twod[1];
@@ -586,7 +586,7 @@ void view_matrix(int** p, int size1, int size2)
     }
 }
 
-// TODO : it is not Ok for Debug case 
+// TODO : it is not Ok for Debug case
 void test_double_array()
 {
     // see https://forums.macrumors.com/threads/understanding-double-pointers-in-c.701091/
@@ -595,71 +595,71 @@ void test_double_array()
     // printf("*p + 1 is: %d\n", *(*p + 1));
     // p = getArray();
     // {
-        // diag("cases 1:");
-        // int* pp = *p;
-        // printf("    1: %d\n", *(pp++));
-        // printf("    2: %d\n", *(pp++));
-        // printf("    3: %d\n", *(pp++));
+    // diag("cases 1:");
+    // int* pp = *p;
+    // printf("    1: %d\n", *(pp++));
+    // printf("    2: %d\n", *(pp++));
+    // printf("    3: %d\n", *(pp++));
     // }
     // TODO : view_matrix(p,4,3);
 
     // p = getArray();
     // {
-        // diag("cases 1a:");
-        // int* pp = *p;
-        // printf("    1: %d\n", (*pp)++);
-        // printf("    2: %d\n", (*pp)++);
-        // printf("    3: %d\n", (*pp)++);
+    // diag("cases 1a:");
+    // int* pp = *p;
+    // printf("    1: %d\n", (*pp)++);
+    // printf("    2: %d\n", (*pp)++);
+    // printf("    3: %d\n", (*pp)++);
     // }
     // TODO : view_matrix(p,4,3);
 
     // p = getArray();
     // {
-        // diag("cases 2:");
-        // int** pp = p;
-        // printf("    1: %d\n", *((*(pp))++));
-        // printf("    2: %d\n", *((*(pp))++));
-        // printf("    3: %d\n", *((*(pp))++));
+    // diag("cases 2:");
+    // int** pp = p;
+    // printf("    1: %d\n", *((*(pp))++));
+    // printf("    2: %d\n", *((*(pp))++));
+    // printf("    3: %d\n", *((*(pp))++));
     // }
     // TODO : view_matrix(p,4,3);
 
     // p = getArray();
     // {
-        // diag("cases 3:");
-        // int** pp = p;
-        // printf("    1: %d\n", (*pp)[0]);
-        // printf("    2: %d\n", (*pp)[1]);
-        // printf("    3: %d\n", (*pp)[2]);
+    // diag("cases 3:");
+    // int** pp = p;
+    // printf("    1: %d\n", (*pp)[0]);
+    // printf("    2: %d\n", (*pp)[1]);
+    // printf("    3: %d\n", (*pp)[2]);
     // }
     // TODO : view_matrix(p,4,3);
 
     // p = getArray();
     // {
-        // diag("cases 4:");
-        // int** pp = p;
-        // printf("    1: %d\n", *(*((pp)++)));
-        // printf("    2: %d\n", *(*((pp)++)));
-        // printf("    3: %d\n", *(*((pp)++)));
+    // diag("cases 4:");
+    // int** pp = p;
+    // printf("    1: %d\n", *(*((pp)++)));
+    // printf("    2: %d\n", *(*((pp)++)));
+    // printf("    3: %d\n", *(*((pp)++)));
     // }
     // TODO : view_matrix(p,4,3);
 
     // p = getArray();
     // {
-        // diag("cases 5:");
-        // int** pp = p;
-        // printf("    1: %d\n", *((*pp)++));
-        // printf("    2: %d\n", *((*pp)++));
-        // printf("    3: %d\n", *((*pp)++));
+    // diag("cases 5:");
+    // int** pp = p;
+    // printf("    1: %d\n", *((*pp)++));
+    // printf("    2: %d\n", *((*pp)++));
+    // printf("    3: %d\n", *((*pp)++));
     // }
     // TODO : view_matrix(p,4,3);
 
     // p = getArray();
     // {
-        // diag("cases 6:");
-        // int** pp = p;
-        // printf("    1: %d\n", pp[0][0]);
-        // printf("    2: %d\n", pp[0][1]);
-        // printf("    3: %d\n", pp[0][2]);
+    // diag("cases 6:");
+    // int** pp = p;
+    // printf("    1: %d\n", pp[0][0]);
+    // printf("    2: %d\n", pp[0][1]);
+    // printf("    3: %d\n", pp[0][2]);
     // }
     // TODO : view_matrix(p,4,3);
 }
@@ -735,47 +735,47 @@ void test_post_pointer()
 }
 
 struct po_ni {
-	int * fl;
+    int* fl;
 };
 
 void test_array_nil()
 {
-	struct po_ni ss;
-	ss.fl = NULL;
-	struct po_ni *s = &ss;
-	if (s->fl) {
-		fail("array_nil");
-	} else {
-		pass("array_nil");
-	}
-	if (s->fl == NULL) {
-		pass("array_nil");
-	} else {
-		fail("array_nil");
-	}
-	if (s->fl != NULL) {
-		fail("array_nil");
-	} else {
-		pass("array_nil");
-	}
+    struct po_ni ss;
+    ss.fl = NULL;
+    struct po_ni* s = &ss;
+    if (s->fl) {
+        fail("array_nil");
+    } else {
+        pass("array_nil");
+    }
+    if (s->fl == NULL) {
+        pass("array_nil");
+    } else {
+        fail("array_nil");
+    }
+    if (s->fl != NULL) {
+        fail("array_nil");
+    } else {
+        pass("array_nil");
+    }
 
-	int y = 42;
-	ss.fl = &y;
-	if (s->fl) {
-		pass("array_nil");
-	} else {
-		fail("array_nil");
-	}
-	if (s->fl == NULL) {
-		fail("array_nil");
-	} else {
-		pass("array_nil");
-	}
-	if (s->fl != NULL) {
-		pass("array_nil");
-	} else {
-		fail("array_nil");
-	}
+    int y = 42;
+    ss.fl = &y;
+    if (s->fl) {
+        pass("array_nil");
+    } else {
+        fail("array_nil");
+    }
+    if (s->fl == NULL) {
+        fail("array_nil");
+    } else {
+        pass("array_nil");
+    }
+    if (s->fl != NULL) {
+        pass("array_nil");
+    } else {
+        fail("array_nil");
+    }
 }
 
 int main()
@@ -1271,7 +1271,7 @@ int main()
         (void)(t);
     }
 
-    test_pointer_arith_size_t();
+    START_TEST(pointer_arith_size_t);
     START_TEST(pointer_minus_pointer);
 
     diag("calloc with struct");
@@ -1320,7 +1320,7 @@ int main()
     START_TEST(negative_index);
     START_TEST(matrix_init);
     START_TEST(post_pointer);
-	START_TEST(array_nil);
+    START_TEST(array_nil);
 
     done_testing();
 }

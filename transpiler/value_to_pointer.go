@@ -703,7 +703,7 @@ func pointerArithmetic(p *program.Program,
 	src := `package main
 func main(){
 	a := func()[]{{ .Type }} {
-		var position int64 = int64({{ .Condition }})
+		var position int32 = int32({{ .Condition }})
 		slice := {{ .Name }}
 		if position < 0 {
 			// invert sign
