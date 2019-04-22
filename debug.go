@@ -459,7 +459,8 @@ type inj struct {
 func (in *inj) addVarDecl(arg argument) {
 	// add only uniq VarDecls
 	for i := range in.varDecls {
-		if in.varDecls[i].varName == arg.varName {
+		if in.varDecls[i].varName == arg.varName &&
+			in.varDecls[i].cType == arg.cType {
 			return
 		}
 	}
@@ -472,7 +473,20 @@ func (in *inj) getPositioner() []Positioner {
 
 func (in *inj) newAllowablePosition(pos ast.Position) {
 	// add Positioner after symbol `pos`
-	for k := range in.varDecls {
+	for k := len(in.varDecls) - 1; k >= 0; k-- {
+		// avoid names intersection
+		var ignore bool
+		for g := len(in.varDecls) - 1; g > k; g-- {
+			if in.varDecls[k].varName == in.varDecls[g].varName ||
+				"*"+in.varDecls[k].varName == in.varDecls[g].varName ||
+				in.varDecls[k].varName == "*"+in.varDecls[g].varName {
+				ignore = true
+				break
+			}
+		}
+		if ignore {
+			continue
+		}
 		// add all ast.VarDecl
 		vd := in.varDecls[k]
 		vd.pos = pos
@@ -523,8 +537,12 @@ func (in *inj) walk(node ast.Node) {
 		// |-...
 		// |-...
 		// `-CompoundStmt  // check this
+		size := len(in.varDecls)
 		for i := 0; i < len(v.Children()); i++ {
 			in.walk(v.Children()[i])
+		}
+		if size < len(in.varDecls) { // remove last VarDecls, if some added
+			in.varDecls = in.varDecls[:size]
 		}
 		return
 
