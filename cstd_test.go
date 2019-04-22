@@ -147,8 +147,8 @@ var cstd = map[string][]string{
 		"sqrt",
 		"tan",
 		"tanh",
-		"tgamma",
-		"trunc",
+		//c++ "tgamma",
+		//c++ "trunc",
 	},
 	"setjmp.h": {
 		"jmp_buf",

@@ -14,6 +14,14 @@ int main()
 {
     plan(488);
 
+	{
+		diag("modf");
+		double param, fractpart, intpart;
+		param = 3.14159265;
+		fractpart = modf (param , &intpart);
+		printf ("%f = %f + %f \n", param, intpart, fractpart);
+	}
+
     double w1 = 100;
     double w2 = 2;
     double x1 = 3;

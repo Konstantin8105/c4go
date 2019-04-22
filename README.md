@@ -297,13 +297,13 @@ func c4goUnsafeConvert_int32(c4go_name *int32) []int32 {
             iso646.h	          	    undefined
             limits.h	          	    undefined
             locale.h	       3/3	         100%
-              math.h	     21/25	          84%
+              math.h	     22/23	        95.7%
             setjmp.h	       0/3	           0%
             signal.h	       3/3	         100%
             stdarg.h	       4/4	         100%
-            stddef.h	       2/4	          50%
+            stddef.h	       3/4	          75%
              stdio.h	     35/41	        85.4%
-            stdlib.h	     26/37	        70.3%
+            stdlib.h	     30/37	        81.1%
             string.h	     21/24	        87.5%
               time.h	     14/15	        93.3%
              wchar.h	      3/60	           5%

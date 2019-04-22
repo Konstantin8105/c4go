@@ -28,6 +28,9 @@ void test_ptrdiff_t()
         diag("ptrdiff_t : int");
         int numbers[100];
         int *p1 = &numbers[18], *p2 = &numbers[29];
+		if (p1 == NULL || p2 == NULL){
+			fail("NULL fail");
+		}
         ptrdiff_t diff = p2 - p1;
         is_eq(diff, 11);
     }
