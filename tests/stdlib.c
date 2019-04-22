@@ -166,13 +166,82 @@ void test_malloc5()
 
 void test_realloc()
 {
-    int size = 5;
-    void* v = realloc((char*)(NULL), size * size);
-    char* c = (char*)v;
-    for (int n = 0; n < size * size - 1; n++)
-        c[n] = n % 26 + 'a';
-    c[size * size - 1] = '\0';
-    printf("realloc: %s\n", c);
+    {
+        int size = 5;
+        void* v = realloc((char*)(NULL), size * size);
+        char* c = (char*)v;
+        for (int n = 0; n < size * size - 1; n++)
+            c[n] = n % 26 + 'a';
+        c[size * size - 1] = '\0';
+        printf("realloc: %s\n", c);
+    }
+    {
+
+        // from : https://www.geeksforgeeks.org/g-fact-66/
+        int arr[2], i;
+        int* ptr = arr;
+        int* ptr_new;
+
+        arr[0] = 10;
+        arr[1] = 20;
+
+        // incorrect use of new_ptr: undefined behaviour
+        ptr_new = (int*)realloc(ptr, sizeof(int) * 3);
+        *(ptr_new + 2) = 30;
+
+        is_eq(*(ptr_new + 0), 10);
+        is_eq(*(ptr_new + 1), 20);
+        is_eq(*(ptr_new + 2), 30);
+    }
+    {
+        int* ptr = (int*)malloc(sizeof(int) * 2);
+        int i;
+        int* ptr_new;
+
+        *ptr = 10;
+        *(ptr + 1) = 20;
+
+        ptr_new = (int*)realloc(ptr, sizeof(int) * 3);
+        *(ptr_new + 2) = 30;
+
+        is_eq(*(ptr_new + 0), 10);
+        is_eq(*(ptr_new + 1), 20);
+        is_eq(*(ptr_new + 2), 30);
+    }
+    {
+
+        // from : https://www.tutorialspoint.com/c_standard_library/c_function_realloc.htm
+        char* str;
+
+        /* Initial memory allocation */
+        str = (char*)malloc(15);
+        strcpy(str, "tutorialspoint");
+        printf("String = %s\n", str);
+
+        /* Reallocating memory */
+        str = (char*)realloc(str, 25);
+        strcat(str, ".com");
+        printf("String = %s\n", str);
+    }
+    {
+        // from: https://en.cppreference.com/w/c/memory/realloc
+        int* pa = malloc(10 * sizeof *pa); // allocate an array of 10 int
+        if (pa) {
+            printf("%zu bytes allocated. Storing ints: ", 10 * sizeof(int));
+            for (int n = 0; n < 10; ++n)
+                printf("%d ", pa[n] = n);
+        }
+
+        int* pb = realloc(pa, 100 * sizeof *pb); // reallocate array to a larger size
+        if (pb) {
+            printf("\n%zu bytes allocated, first 10 ints are: ", 100 * sizeof(int));
+            for (int n = 0; n < 10; ++n)
+                printf("%d ", pb[n]); // show the array
+            free(pb);
+        } else { // if realloc failed, the original pointer needs to be freed
+            free(pa);
+        }
+    }
 }
 
 // calloc() works exactly the same as malloc() however the memory is zeroed out.
@@ -295,7 +364,7 @@ void test_atoi_post()
 //		// pointer checking: m + n - 1 - i
 //		return NULL;
 //	}
-//	
+//
 //	void test_my_memrchr()
 //	{
 //		unsigned char * word = "Hello my dear world";
