@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -526,4 +527,16 @@ func Int32() int32 {
 
 func Exit(e int32) {
 	os.Exit(int(e))
+}
+
+// Realloc - realloc from stdlib.h
+func Realloc(ptr interface{}, size uint) interface{} {
+	if ptr == nil {
+		return make([]byte, size)
+	}
+	elemType := reflect.TypeOf(ptr).Elem()
+	ptrNew := reflect.MakeSlice(reflect.SliceOf(elemType), int(size), int(size)).Interface()
+	// copy elements
+	Memcpy(ptrNew, ptr, size)
+	return ptrNew
 }

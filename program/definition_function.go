@@ -312,6 +312,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int system(const char *) -> noarch.System",
 		"void free(void*) -> _",
 		"int atexit(void*) -> noarch.Atexit",
+		"void* realloc(void * , size_t ) -> noarch.Realloc",
 	},
 	"time.h": {
 		// time.h
