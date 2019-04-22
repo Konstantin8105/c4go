@@ -50,10 +50,21 @@ func (f cases) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
 		return fmt.Errorf("cannot find char ':' : %s", lines[f.pos.Line-1])
 	}
 
+	// compare line of code
+	{
+		buf, err := filePP.GetSnippet(f.pos.File, f.pos.Line, f.pos.Line, 0, f.pos.Column)
+		if err != nil {
+			return err
+		}
+		if !bytes.Equal(lines[f.pos.Line-1][:f.pos.Column], buf) {
+			return fmt.Errorf("lines in source and pp source is not equal")
+		}
+	}
+
 	f.pos.Column = col + 1
 
 	lines[f.pos.Line-1] = append(lines[f.pos.Line-1][:f.pos.Column],
-		append([]byte(fmt.Sprintf("%s(%d,\"%s\");", debugFunctionName, f.pos.Line, f.name)),
+		append([]byte(fmt.Sprintf(";%s(%d,\"%s\");", debugFunctionName, f.pos.Line, f.name)),
 			lines[f.pos.Line-1][f.pos.Column:]...)...)
 
 	return nil
@@ -91,13 +102,17 @@ func (f compount) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
 	}
 
 	lines[f.pos.Line-1] = append(lines[f.pos.Line-1][:f.pos.Column],
-		append([]byte(fmt.Sprintf("%s(%d,\"%s\");", debugFunctionName, f.pos.Line, f.name)),
+		append([]byte(fmt.Sprintf(";%s(%d,\"%s\");", debugFunctionName, f.pos.Line, f.name)),
 			lines[f.pos.Line-1][f.pos.Column:]...)...)
 
 	return nil
 }
 
 func getByte(lines [][]byte, pos ast.Position) (b byte, err error) {
+	if pos.Line-1 <= 0 {
+		err = fmt.Errorf("outside line")
+		return
+	}
 	if pos.Line-1 >= len(lines) {
 		err = fmt.Errorf("try to add debug on outside of allowable line: %v", pos)
 		return
@@ -112,10 +127,10 @@ func getByte(lines [][]byte, pos ast.Position) (b byte, err error) {
 }
 
 type argument struct {
-	pos        ast.Position
-	itemNumber int
-	name       string
-	cType      string
+	pos         ast.Position
+	description string
+	varName     string
+	cType       string
 }
 
 func (v argument) Position() ast.Position {
@@ -123,21 +138,47 @@ func (v argument) Position() ast.Position {
 }
 
 func (v argument) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
-	var index int = -1
 	// v.cType = strings.Replace(v.cType, "const ", "", -1)
+
+	if v.pos.Line-1 <= 0 {
+		return fmt.Errorf("outside lines")
+	}
+
+	if v.pos.Column-1 >= len(lines[v.pos.Line-1]) {
+		return fmt.Errorf("column is outside line")
+	}
+
+	// compare line of code
+	{
+		buf, err := filePP.GetSnippet(v.pos.File, v.pos.Line, v.pos.Line, 0, v.pos.Column)
+		if err != nil {
+			return err
+		}
+		if !bytes.Equal(lines[v.pos.Line-1][:v.pos.Column], buf) {
+			return fmt.Errorf("lines in source and pp source is not equal")
+		}
+	}
+
+	var index int = -1
 	for i := range FuncArgs {
 		if FuncArgs[i].cType == v.cType {
 			index = i
 		}
 	}
-	if index < 0 {
-		return nil
+	if index >= 0 {
+		// find argument type
+		function := fmt.Sprintf(";%s%s(%d,\"%s\",\"%s\",%s);",
+			debugArgument, FuncArgs[index].postfix,
+			v.pos.Line, v.description, v.varName, v.varName)
+		lines[v.pos.Line-1] = append(lines[v.pos.Line-1][:v.pos.Column],
+			append([]byte(function), lines[v.pos.Line-1][v.pos.Column:]...)...)
+	} else if v.cType == "char *" || v.cType == "const char *" {
+		function := fmt.Sprintf(";%s(%d,\"%s\",\"%s\",%s);",
+			debugArgumentString,
+			v.pos.Line, v.description, v.varName, v.varName)
+		lines[v.pos.Line-1] = append(lines[v.pos.Line-1][:v.pos.Column],
+			append([]byte(function), lines[v.pos.Line-1][v.pos.Column:]...)...)
 	}
-	// find argument type
-	lines[v.pos.Line-1] = append(lines[v.pos.Line-1][:v.pos.Column],
-		append([]byte(fmt.Sprintf("%s%s(%d,\"%s\",%s);",
-			debugArgument, FuncArgs[index].postfix, v.itemNumber, v.name, v.name)),
-			lines[v.pos.Line-1][v.pos.Column:]...)...)
 
 	return nil
 }
@@ -246,70 +287,24 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 					continue
 				}
 				p := argument{
-					name:       parm.Name,
-					pos:        mst.Position(),
-					itemNumber: k,
-					cType:      parm.Type,
+					varName:     parm.Name,
+					pos:         mst.Position(),
+					description: fmt.Sprintf("%d", k),
+					cType:       parm.Type,
 				}
 				sl, _ := funcPoses[mst.Position().File]
 				sl = append(sl, p)
 				funcPoses[mst.Position().File] = sl
 			}
 
-			// IfStmt
-			// |-<<<NULL>>>
-			// |-<<<NULL>>>
-			// |-BinaryOperator 'int' '!='
-			// | `-...
-			// |-CompoundStmt   # <---- find this -
-			// | `-...
-			// `-<<<NULL>>>
-			//
-			// WhileStmt 0x33e4b08 <line:25:5, line:28:5>
-			// |-<<<NULL>>>
-			// |-BinaryOperator 'int' '<='
-			// | `-...
-			// `-CompoundStmt
-			//   |-...
-			//
-			// walking by tree
-			addCompount := func(name string, node ast.Node) {
-				sl, _ := funcPoses[node.Position().File]
-				sl = append(sl, compount{name: name, pos: node.Position()})
-				funcPoses[node.Position().File] = sl
+			var injector inj
+			injector.walk(fd.Children()[len(fd.Children())-1])
+			list := injector.getPositioner()
+			for p := range list {
+				file := list[p].Position().File
+				sl, _ := funcPoses[file]
+				funcPoses[file] = append(sl, list[p])
 			}
-			addCase := func(name string, node ast.Node) {
-				sl, _ := funcPoses[node.Position().File]
-				sl = append(sl, cases{name: name, pos: node.Position()})
-				funcPoses[node.Position().File] = sl
-			}
-			var walk func(node ast.Node)
-			walk = func(node ast.Node) {
-				if node == nil {
-					return
-				}
-				if _, ok := node.(*ast.CompoundStmt); ok {
-					addCompount("CompoundStmt", node)
-				}
-				if _, ok := node.(*ast.CaseStmt); ok {
-					addCase("case", node)
-				}
-				for i := range node.Children() {
-					if _, ok := node.Children()[i].(*ast.CompoundStmt); ok {
-						chi := node.Children()[i]
-						switch node.(type) {
-						case *ast.IfStmt:
-							addCompount("if", chi)
-						case *ast.ForStmt:
-							addCompount("for", chi)
-						case *ast.WhileStmt:
-							addCompount("while", chi)
-						}
-					}
-					walk(node.Children()[i])
-				}
-			}
-			walk(fd)
 		}
 	}
 
@@ -374,8 +369,9 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 }
 
 const (
-	debugFunctionName string = "c4go_debug_compount"
-	debugArgument     string = "c4go_debug_function_arg_"
+	debugFunctionName   string = "c4go_debug_compount"
+	debugArgument       string = "c4go_debug_function_arg_"
+	debugArgumentString string = "c4go_debug_function_arg_string"
 )
 
 func debugCode() string {
@@ -401,16 +397,33 @@ void c4go_debug_compount(int line, char * functionName)
 }
 
 #define c4go_arg(type, postfix, format) \
-void c4go_debug_function_arg_##postfix(int arg_pos, char * name, type arg_value) \
+void c4go_debug_function_arg_##postfix(int line, char * arg_pos, char * name, type arg_value) \
 { \
 	FILE * file = c4go_get_debug_file(); \
-	fprintf(file,"\targ pos : %d\n", arg_pos); \
+	fprintf(file,"Line: %d\n",line); \
+	fprintf(file,"\tdescription: %s\n", arg_pos); \
 	fprintf(file,"\tname: %s\n", name); \
 	fprintf(file,"\tval : \""); \
 	fprintf(file,format, arg_value); \
 	fprintf(file,"\"\n"); \
 	fclose(file); \
-} 
+}
+
+void c4go_debug_function_arg_string(int line, const char * arg_pos, const char * name,const char * arg_value)
+{
+	FILE * file = c4go_get_debug_file();
+	fprintf(file,"Line: %d\n",line);
+	fprintf(file,"\tdescription: %s\n", arg_pos);
+	fprintf(file,"\tname: %s\n", name);
+	fprintf(file,"\tval : \"");
+	if (arg_value == NULL) {
+		fprintf(file, "<null>");
+	} else {
+		fprintf(file, "%s" , arg_value);
+	}
+	fprintf(file,"\"\n");
+	fclose(file);
+}
 
 `
 
@@ -428,8 +441,247 @@ var FuncArgs = []struct {
 	format  string
 }{
 	{"int", "int", "%d"},
+	{"char", "char", "%d"},
+	{"unsigned int", "uint", "%d"},
 	{"long", "long", "%ld"},
 	{"float", "float", "%f"},
 	{"double", "double", "%f"},
-	{"char *", "string", "%s"},
+	// {"int *", "pnt_int", "%d"},
+	// {"char *", "string", "%s"},
+	// {"char **", "double_string", "%s"},
+	// {"unsigned char *", "ustring", "%s"},
+}
+
+type inj struct {
+	poss                 []Positioner
+	varDecls             []argument
+	insideBinaryOperator bool
+}
+
+func (in *inj) addVarDecl(arg argument) {
+	// add only uniq VarDecls
+	for i := range in.varDecls {
+		if in.varDecls[i].varName == arg.varName &&
+			in.varDecls[i].cType == arg.cType {
+			return
+		}
+	}
+	in.varDecls = append(in.varDecls, arg)
+}
+
+func (in *inj) getPositioner() []Positioner {
+	return in.poss
+}
+
+func (in *inj) newAllowablePosition(pos ast.Position) {
+	// add Positioner after symbol `pos`
+	for k := len(in.varDecls) - 1; k >= 0; k-- {
+		// avoid names intersection
+		var ignore bool
+		for g := len(in.varDecls) - 1; g > k; g-- {
+			if in.varDecls[k].varName == in.varDecls[g].varName ||
+				"*"+in.varDecls[k].varName == in.varDecls[g].varName ||
+				in.varDecls[k].varName == "*"+in.varDecls[g].varName {
+				ignore = true
+				break
+			}
+		}
+		if ignore {
+			continue
+		}
+		// add all ast.VarDecl
+		vd := in.varDecls[k]
+		vd.pos = pos
+		in.poss = append(in.poss, vd)
+	}
+}
+
+func (in *inj) walk(node ast.Node) {
+	// ignore nil node
+	if node == nil {
+		return
+	}
+
+	switch v := node.(type) {
+	case *ast.CompoundStmt:
+		in.poss = append(in.poss, compount{name: "CompoundStmt", pos: node.Position()})
+		in.newAllowablePosition(node.Position())
+		size := len(in.varDecls)
+		for i := 0; i < len(node.Children()); i++ {
+			in.walk(node.Children()[i]) // walking inside
+		}
+		if size < len(in.varDecls) { // remove last VarDecls, if some added
+			in.varDecls = in.varDecls[:size]
+		}
+
+	case *ast.ArraySubscriptExpr:
+		// ignore
+		return
+
+	case *ast.IfStmt:
+		// IfStmt
+		// |-<<<NULL>>>
+		// |-<<<NULL>>>
+		// |-BinaryOperator 'int' '!='
+		// | `-...
+		// |-CompoundStmt
+		// | `-...
+		// `-<<<NULL>>>
+		for i := 3; i < len(v.Children()); i++ {
+			in.walk(v.Children()[i])
+		}
+		return
+
+	case *ast.ForStmt:
+		// ForStmt
+		// |-... // check this
+		// |-<<<NULL>>>
+		// |-...
+		// |-...
+		// `-CompoundStmt  // check this
+		size := len(in.varDecls)
+		for i := 0; i < len(v.Children()); i++ {
+			in.walk(v.Children()[i])
+		}
+		if size < len(in.varDecls) { // remove last VarDecls, if some added
+			in.varDecls = in.varDecls[:size]
+		}
+		return
+
+	case *ast.WhileStmt:
+		// WhileStmt
+		// |-<<<NULL>>>
+		// |-BinaryOperator 'int' '<='
+		// | `-...
+		// `-CompoundStmt
+		//   |-...
+		for i := 2; i < len(v.Children()); i++ {
+			in.walk(v.Children()[i])
+		}
+		return
+
+	case *ast.DefaultStmt:
+		// that node bug in column identification
+		return
+
+	case *ast.ImplicitCastExpr:
+		in.walk(v.Children()[0])
+		return
+
+	case *ast.CallExpr:
+		// CallExpr  'double'
+		// |-ImplicitCastExpr 'double (*)(int, float, double)' <LValueToRValue>
+		// | `-DeclRefExpr 'double (*)(int, float, double)' lvalue ParmVar 0x42be310 'F' 'double (*)(int, float, double)'
+		// |-...
+		// |-...
+		// `-...
+		for i := 1; i < len(v.Children()); i++ {
+			in.walk(v.Children()[i])
+		}
+		// not in BinaryOperator
+		if in.insideBinaryOperator {
+			return
+		}
+		// new place at the end of CallExpr:
+		// memmove(...,...,...);
+		//                    |--- end position is here
+		if v.Pos.LineEnd != 0 {
+			v.Pos.Line = v.Pos.LineEnd
+		}
+		v.Pos.Column = v.Pos.ColumnEnd + 1
+		in.newAllowablePosition(v.Pos)
+		in.poss = append(in.poss, compount{name: "After CallExpr", pos: v.Pos})
+		return
+
+	case *ast.CaseStmt:
+	// TODO: is same source line
+	// TODO: create a newAllowablePosition
+	// TODO: addCase("case", node)
+	//
+	// walking by tree
+	// addCase := func(name string, node ast.Node) {
+	// sl, _ := funcPoses[node.Position().File]
+	// sl = append(sl, cases{name: name, pos: node.Position()})
+	// funcPoses[node.Position().File] = sl
+	// }
+	// }
+
+	case *ast.VarDecl:
+		// VarDecl with initialization
+		if len(v.Children()) > 0 {
+			in.addVarDecl(argument{
+				// Not define Position
+				description: "VarDecl",
+				varName:     v.Name,
+				cType:       v.Type,
+			})
+		}
+
+	case *ast.DeclRefExpr:
+		in.addVarDecl(argument{
+			// Not define Position
+			description: "BinEQ_Decl",
+			varName:     v.Name,
+			cType:       v.Type,
+		})
+
+	case *ast.MemberExpr:
+		if decl, ok := v.Children()[0].(*ast.DeclRefExpr); ok {
+			in.addVarDecl(argument{
+				// Not define Position
+				description: "BinEQ_MemDecl",
+				varName:     fmt.Sprintf("%s.%s", decl.Name, v.Name),
+				cType:       v.Type,
+			})
+			return
+		}
+		if impl, ok := v.Children()[0].(*ast.ImplicitCastExpr); ok {
+			if decl, ok := impl.Children()[0].(*ast.DeclRefExpr); ok {
+				if v.IsPointer {
+					in.addVarDecl(argument{
+						// Not define Position
+						description: "BinEQ_MemImpDeclP",
+						varName:     fmt.Sprintf("%s->%s", decl.Name, v.Name),
+						cType:       v.Type,
+					})
+					return
+				}
+				in.addVarDecl(argument{
+					// Not define Position
+					description: "BinEQ_MemImpDecl",
+					varName:     fmt.Sprintf("%s.%s", decl.Name, v.Name),
+					cType:       v.Type,
+				})
+				return
+			}
+		}
+
+	case *ast.UnaryOperator:
+		if v.Operator == "*" {
+			if impl, ok := v.Children()[0].(*ast.ImplicitCastExpr); ok {
+				if decl, ok := impl.Children()[0].(*ast.DeclRefExpr); ok {
+					in.addVarDecl(argument{
+						// Not define Position
+						description: "UID",
+						varName:     fmt.Sprintf("*%s", decl.Name),
+						cType:       v.Type,
+					})
+				}
+			}
+		}
+
+	case *ast.BinaryOperator:
+		in.insideBinaryOperator = true
+		defer func() {
+			in.insideBinaryOperator = false
+		}()
+		for pos := range v.Children() {
+			in.walk(v.Children()[pos])
+		}
+
+	case *ast.DeclStmt:
+		for pos := range v.Children() {
+			in.walk(v.Children()[pos])
+		}
+	}
 }

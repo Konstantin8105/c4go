@@ -3,11 +3,10 @@
 #include "tests.h"
 #include <stdio.h>
 
-#define is_not_less(arg1, arg2)\
-	is_true(arg1 >= arg2) \
-	// printf("arg1 = %d\n",arg1);
+#define is_not_less(arg1, arg2) \
+    is_true(arg1 >= arg2) // printf("arg1 = %d\n",arg1);
 
-#define check_sizes(type, size)         \
+#define check_sizes(type, size)               \
     is_not_less(sizeof(type), size);          \
     is_not_less(sizeof(unsigned type), size); \
     is_not_less(sizeof(signed type), size);   \
@@ -50,67 +49,66 @@ struct s {
     FILE* p;
 };
 
-
 typedef struct erow {
-    int idx;            /* Row index in the file, zero-based. */
-    int size;           /* Size of the row, excluding the null term. */
-    int rsize;          /* Size of the rendered row. */
-    char *chars;        /* Row content. */
-    char *render;       /* Row content "rendered" for screen (for TABs). */
-    unsigned char *hl;  /* Syntax highlight type for each character in render.*/
-    int hl_oc;          /* Row had open comment at end in last syntax highlight
+    int idx; /* Row index in the file, zero-based. */
+    int size; /* Size of the row, excluding the null term. */
+    int rsize; /* Size of the rendered row. */
+    char* chars; /* Row content. */
+    char* render; /* Row content "rendered" for screen (for TABs). */
+    unsigned char* hl; /* Syntax highlight type for each character in render.*/
+    int hl_oc; /* Row had open comment at end in last syntax highlight
                            check. */
 } erow;
 
-typedef struct part1_erow{
-	int part;
+typedef struct part1_erow {
+    int part;
 } part1_erow;
-typedef struct part1a_erow{
-	int part;
-	int part2;
+typedef struct part1a_erow {
+    int part;
+    int part2;
 } part1a_erow;
-typedef struct part1b_erow{
-	int part;
-	int part2;
-	int part3;
+typedef struct part1b_erow {
+    int part;
+    int part2;
+    int part3;
 } part1b_erow;
-typedef struct part1c_erow{
-	int part;
-	int part2;
-	int part3;
-	char * part4;
+typedef struct part1c_erow {
+    int part;
+    int part2;
+    int part3;
+    char* part4;
 } part1c_erow;
-typedef struct part1d_erow{
-	int part;
-	int part2;
-	int part3;
-	char * part4;
-	char * part5;
+typedef struct part1d_erow {
+    int part;
+    int part2;
+    int part3;
+    char* part4;
+    char* part5;
 } part1d_erow;
-typedef struct part1e_erow{
-	int part;
-	int part2;
-	int part3;
-	char * part4;
-	char * part5;
-	unsigned char * part6;
+typedef struct part1e_erow {
+    int part;
+    int part2;
+    int part3;
+    char* part4;
+    char* part5;
+    unsigned char* part6;
 } part1e_erow;
 
-typedef struct part2_erow{
-	char * part;
+typedef struct part2_erow {
+    char* part;
 } part2_erow;
-typedef struct part2a_erow{
-	char * part;
-	char * part2;
+typedef struct part2a_erow {
+    char* part;
+    char* part2;
 } part2a_erow;
 
-typedef struct part3_erow{
-	unsigned char * part;
+typedef struct part3_erow {
+    unsigned char* part;
 } part3_erow;
 
 struct editorSyntax {
-    char **filematch;
-    char **keywords;
+    char** filematch;
+    char** keywords;
     char singleline_comment_start[2];
     char multiline_comment_start[3];
     char multiline_comment_end[3];
@@ -118,33 +116,30 @@ struct editorSyntax {
 };
 
 /* C / C++ */
-char *C_HL_extensions[] = {".c",".cpp",NULL};
-char *C_HL_keywords[] = {
-        /* A few C / C++ keywords */
-        "switch","if","while","for","break","continue","return","else",
-        "struct","union","typedef","static","enum","class",
-        /* C types */
-        "int|","long|","double|","float|","char|","unsigned|","signed|",
-        "void|",NULL
+char* C_HL_extensions[] = { ".c", ".cpp", NULL };
+char* C_HL_keywords[] = {
+    /* A few C / C++ keywords */
+    "switch", "if", "while", "for", "break", "continue", "return", "else",
+    "struct", "union", "typedef", "static", "enum", "class",
+    /* C types */
+    "int|", "long|", "double|", "float|", "char|", "unsigned|", "signed|",
+    "void|", NULL
 };
 
-#define HL_HIGHLIGHT_STRINGS (1<<0)
-#define HL_HIGHLIGHT_NUMBERS (1<<1)
+#define HL_HIGHLIGHT_STRINGS (1 << 0)
+#define HL_HIGHLIGHT_NUMBERS (1 << 1)
 
 /* Here we define an array of syntax highlights by extensions, keywords,
  * comments delimiters and flags. */
 struct editorSyntax HLDB[] = {
-    {
-        /* C / C++ */
+    { /* C / C++ */
         C_HL_extensions,
         C_HL_keywords,
-        "//","/*","*/",
-        HL_HIGHLIGHT_STRINGS | HL_HIGHLIGHT_NUMBERS
-    }
+        "//", "/*", "*/",
+        HL_HIGHLIGHT_STRINGS | HL_HIGHLIGHT_NUMBERS }
 };
 
-#define HLDB_ENTRIES ((sizeof(HLDB))/(sizeof(HLDB[0])))
-
+#define HLDB_ENTRIES ((sizeof(HLDB)) / (sizeof(HLDB[0])))
 
 typedef struct SP SP;
 
@@ -159,7 +154,6 @@ struct SP {
 
 typedef struct SP Mem;
 typedef SP Mem2;
-
 
 int main()
 {
@@ -236,42 +230,42 @@ int main()
     is_not_less(sizeof(FILE*), 8);
     is_not_less(sizeof(struct s), 8);
 
-	diag("erow from kilo editor");
-	is_not_less(sizeof(part1_erow ),  4);
+    diag("erow from kilo editor");
+    is_not_less(sizeof(part1_erow), 4);
 
-	is_not_less(sizeof(part1a_erow ),  8);
-	is_not_less(sizeof(part1b_erow ), 12);
-	is_not_less(sizeof(part1c_erow ), 24);
-	is_not_less(sizeof(part1d_erow ), 32);
-	is_not_less(sizeof(part1e_erow ), 40);
-	is_not_less(sizeof(erow        ), 48);
+    is_not_less(sizeof(part1a_erow), 8);
+    is_not_less(sizeof(part1b_erow), 12);
+    is_not_less(sizeof(part1c_erow), 24);
+    is_not_less(sizeof(part1d_erow), 32);
+    is_not_less(sizeof(part1e_erow), 40);
+    is_not_less(sizeof(erow), 48);
 
-	is_not_less(sizeof(part2_erow ),  8);
-	is_not_less(sizeof(part2a_erow),  16);
-	is_not_less(sizeof(part3_erow ),  8);
+    is_not_less(sizeof(part2_erow), 8);
+    is_not_less(sizeof(part2a_erow), 16);
+    is_not_less(sizeof(part3_erow), 8);
 
-	diag("HLDB");
-	is_not_less(sizeof(HLDB   ), 32);
-	is_not_less(sizeof(HLDB[0]), 32);
-	is_true(sizeof(HLDB) == sizeof(HLDB[0]));
-	is_eq((HLDB_ENTRIES) , 1);
+    diag("HLDB");
+    is_not_less(sizeof(HLDB), 32);
+    is_not_less(sizeof(HLDB[0]), 32);
+    is_true(sizeof(HLDB) == sizeof(HLDB[0]));
+    is_eq((HLDB_ENTRIES), 1);
 
-	diag("sqlite examples");
-	is_not_less(sizeof(union SP_UN), 4);
+    diag("sqlite examples");
+    is_not_less(sizeof(union SP_UN), 4);
     Mem m;
-	is_not_less(sizeof(m), 16);
+    is_not_less(sizeof(m), 16);
     is_not_less(sizeof(m), sizeof(double) + sizeof(char));
     (void)(m);
     Mem2 m2;
-	is_not_less(sizeof(m2), 16);
+    is_not_less(sizeof(m2), 16);
     is_not_less(sizeof(m2), sizeof(double) + sizeof(char));
     (void)(m2);
     SP s;
-	is_not_less(sizeof(s), 16);
+    is_not_less(sizeof(s), 16);
     is_not_less(sizeof(s), sizeof(double) + sizeof(char));
     (void)(s);
     union SP_UN sp;
-	is_not_less(sizeof(sp), 4);
+    is_not_less(sizeof(sp), 4);
     is_not_less(sizeof(sp), sizeof(int));
     (void)(sp);
 

@@ -479,17 +479,15 @@ void test_snprintf()
     n = sprintf(buffer, "%d plus %d is %d", a, b, a + b);
     is_streq(buffer, "5 plus 3 is 8");
     is_eq(n, 13);
-	
-
 
     char status[80];
-	char * filename = "out.txt";
-	int numrows = 10;
-	int dirty = 1;
+    char* filename = "out.txt";
+    int numrows = 10;
+    int dirty = 1;
     int len = snprintf(status, sizeof(status), "%.20s - %d lines %s",
         filename, numrows, dirty ? "(modified)" : "");
-	printf("%s\n",status);
-	is_eq(len,29);
+    printf("%s\n", status);
+    is_eq(len, 29);
 }
 
 int PrintFError(const char* format, ...)
@@ -499,7 +497,7 @@ int PrintFError(const char* format, ...)
     va_start(args, format);
     int s = vsprintf(buffer, format, args);
     va_end(args);
-	printf("vsnprintf buffer: `%s`\n", buffer);
+    printf("vsnprintf buffer: `%s`\n", buffer);
     return s;
 }
 
@@ -516,7 +514,7 @@ int PrintFError2(const char* format, ...)
     va_start(args, format);
     int s = vsnprintf(buffer, 256, format, args);
     va_end(args);
-	printf("vsnprintf buffer: `%s`\n", buffer);
+    printf("vsnprintf buffer: `%s`\n", buffer);
     return s;
 }
 
@@ -524,8 +522,8 @@ void test_vsnprintf()
 {
     int s = PrintFError2("Success function '%s' %.2f", "vsprintf", 3.1415926);
     is_true(s == 19 + 8 + 5);
-	s = PrintFError2("HHELP %d",(int)(2));
-	is_true(s == 7);
+    s = PrintFError2("HHELP %d", (int)(2));
+    is_true(s == 7);
 }
 
 void test_eof()
@@ -557,36 +555,36 @@ void test_perror()
 
 void test_getline()
 {
-	{
+    {
         diag("getline: not empty file");
         FILE* pFile;
         pFile = fopen(test_file, "r");
         is_not_null(pFile);
-        
+
         size_t len;
         char* line = NULL;
         char** pnt = &line;
         size_t* l = &len;
         ssize_t pos = getline(pnt, l, pFile);
-		for (int i=0;i< pos;i++) {
-			printf("[%d] : `%d`\n", i, line[i]);
-		}
-		printf("pos [%d] == filesize [%d]\n", pos, filesize);
+        for (int i = 0; i < pos; i++) {
+            printf("[%d] : `%d`\n", i, line[i]);
+        }
+        printf("pos [%d] == filesize [%d]\n", pos, filesize);
         is_eq(pos, filesize);
-	}
-	{
+    }
+    {
         diag("getline: not empty file");
         FILE* pFile;
         pFile = fopen("./tests/empty.txt", "r");
         is_not_null(pFile);
-        
+
         size_t len;
         char* line = NULL;
         char** pnt = &line;
         size_t* l = &len;
         ssize_t pos = getline(pnt, l, pFile);
         is_eq(pos, -1);
-	}
+    }
 }
 
 void test_sscanf()

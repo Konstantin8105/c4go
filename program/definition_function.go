@@ -277,7 +277,6 @@ var builtInFunctionDefinitions = map[string][]string{
 		"char * memset(char *, char, unsigned int) -> noarch.Memset",
 		"char * memmove(char *, char *, unsigned int) -> noarch.Memmove",
 		"int memcmp(const char *, const char *, unsigned int) -> noarch.Memcmp",
-		"void * memcpy(void *, const void *, size_t) -> noarch.Memcpy",
 		"const char * strrchr( const char *, int) -> noarch.Strrchr",
 		"char * strdup(const char *) -> noarch.Strdup",
 		"char * strerror(int ) -> noarch.Strerror",
@@ -538,6 +537,12 @@ func (p *Program) GetOutsideCalledFunctions() (ds []DefinitionFunction) {
 			continue
 		}
 		if !v.IsCalled {
+			continue
+		}
+		if v.Name == "memcpy" && p.IsHaveMemcpy {
+			continue
+		}
+		if v.Name == "realloc" && p.IsHaveRealloc {
 			continue
 		}
 		ds = append(ds, v)
