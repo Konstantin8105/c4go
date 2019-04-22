@@ -167,15 +167,15 @@ func (v argument) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
 	}
 	if index >= 0 {
 		// find argument type
-		function := fmt.Sprintf(";%s%s(\"%s\",\"%s\",%s);",
+		function := fmt.Sprintf(";%s%s(%d,\"%s\",\"%s\",%s);",
 			debugArgument, FuncArgs[index].postfix,
-			v.description, v.varName, v.varName)
+			v.pos.Line, v.description, v.varName, v.varName)
 		lines[v.pos.Line-1] = append(lines[v.pos.Line-1][:v.pos.Column],
 			append([]byte(function), lines[v.pos.Line-1][v.pos.Column:]...)...)
 	} else if v.cType == "char *" || v.cType == "const char *" {
-		function := fmt.Sprintf(";%s(\"%s\",\"%s\",%s);",
+		function := fmt.Sprintf(";%s(%d,\"%s\",\"%s\",%s);",
 			debugArgumentString,
-			v.description, v.varName, v.varName)
+			v.pos.Line, v.description, v.varName, v.varName)
 		lines[v.pos.Line-1] = append(lines[v.pos.Line-1][:v.pos.Column],
 			append([]byte(function), lines[v.pos.Line-1][v.pos.Column:]...)...)
 	}
@@ -397,9 +397,10 @@ void c4go_debug_compount(int line, char * functionName)
 }
 
 #define c4go_arg(type, postfix, format) \
-void c4go_debug_function_arg_##postfix(char * arg_pos, char * name, type arg_value) \
+void c4go_debug_function_arg_##postfix(int line, char * arg_pos, char * name, type arg_value) \
 { \
 	FILE * file = c4go_get_debug_file(); \
+	fprintf(file,"Line: %d\n",line); \
 	fprintf(file,"\tdescription: %s\n", arg_pos); \
 	fprintf(file,"\tname: %s\n", name); \
 	fprintf(file,"\tval : \""); \
@@ -408,9 +409,10 @@ void c4go_debug_function_arg_##postfix(char * arg_pos, char * name, type arg_val
 	fclose(file); \
 }
 
-void c4go_debug_function_arg_string(const char * arg_pos, const char * name,const char * arg_value)
+void c4go_debug_function_arg_string(int line, const char * arg_pos, const char * name,const char * arg_value)
 {
 	FILE * file = c4go_get_debug_file();
+	fprintf(file,"Line: %d\n",line);
 	fprintf(file,"\tdescription: %s\n", arg_pos);
 	fprintf(file,"\tname: %s\n", name);
 	fprintf(file,"\tval : \"");
