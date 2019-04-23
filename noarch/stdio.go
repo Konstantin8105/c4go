@@ -763,6 +763,14 @@ func Vprintf(format []byte, varList ...interface{}) int32 {
 	return n
 }
 
+func Vfprintf(f *File, format []byte, varList ...interface{}) int32 {
+	buffer := make([]byte, 1000)
+	n := Vsprintf(buffer, format, varList...)
+	buf := CStringToString(buffer)
+	fmt.Fprintf(f.OsFile, "%s", buf)
+	return n
+}
+
 // Snprintf handles snprintf().
 //
 // Writes the C string pointed by format to the standard output (stdout). If
