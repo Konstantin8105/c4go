@@ -490,6 +490,13 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 	}
 	if str := p.GetStruct("c4go_" + lhsType); str != nil {
 		if alias, ok := str.Fields[rhs]; ok {
+			// change type
+			if str, ok := p.Structs[lhsType]; ok {
+				if name, ok := str.Fields[rhs].(string); ok {
+					n.Type = name
+				}
+			}
+			// change field
 			rhs = alias.(string)
 			goto Selector
 		}

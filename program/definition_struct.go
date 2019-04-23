@@ -274,4 +274,44 @@ func (p *Program) initializationStructs() {
 			"l_pid":    "Pid",
 		},
 	}
+
+	// sys/stat.h
+	p.Structs["struct stat"] = &Struct{
+		Name: "struct stat",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"st_dev":     "unsigned long long",
+			"st_ino":     "unsigned long long",
+			"st_mode":    "unsigned int",
+			"st_nlink":   "unsigned long long",
+			"st_uid":     "unsigned int",
+			"st_gid":     "unsigned int",
+			"st_rdev":    "unsigned long long",
+			"st_size":    "long long int",
+			"st_blksize": "long long int",
+			"st_blocks":  "long long int",
+			"st_atime":   "time_t",
+			"st_mtime":   "time_t",
+			"st_ctime":   "time_t",
+		},
+	}
+	p.Structs["c4go_struct stat"] = &Struct{
+		Name: "syscall.Stat_t",
+		Type: StructType,
+		Fields: map[string]interface{}{
+			"st_dev":     "Dev",
+			"st_ino":     "Ino",
+			"st_mode":    "Mode",
+			"st_nlink":   "Nlink",
+			"st_uid":     "Uid",
+			"st_gid":     "Gid",
+			"st_rdev":    "Rdev",
+			"st_size":    "Size",
+			"st_blksize": "Blksize",
+			"st_blocks":  "Blocks",
+			"st_atime":   "Atim",
+			"st_mtime":   "Mtim",
+			"st_ctime":   "Ctim",
+		},
+	}
 }
