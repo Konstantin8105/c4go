@@ -245,6 +245,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int sprintf(char*, const char *, ...) -> noarch.Sprintf",
 		"int snprintf(char*, int, const char *, ...) -> noarch.Snprintf",
 		"int vsprintf(char*, const char *, ...) -> noarch.Vsprintf",
+		"int vprintf(const char *, ...) -> noarch.Vprintf",
 		"int vsnprintf(char*, int, const char *, ...) -> noarch.Vsnprintf",
 		"void perror( const char *) -> noarch.Perror",
 		"ssize_t getline(char **, size_t *, FILE *) -> noarch.Getline",

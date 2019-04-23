@@ -606,6 +606,20 @@ void test_FILE()
     (void)p;
 }
 
+void WriteFormatted ( const char * format, ... )
+{
+  va_list args;
+  va_start (args, format);
+  vprintf (format, args);
+  va_end (args);
+}
+
+void test_vfprintf()
+{
+   WriteFormatted ("Call with %d variable argument.\n",1);
+   WriteFormatted ("Call with %d variable %s.\n",2,"arguments");
+}
+
 int main()
 {
     plan(71);
@@ -645,6 +659,7 @@ int main()
     START_TEST(getline)
     START_TEST(sscanf)
     START_TEST(FILE)
+    START_TEST(vfprintf)
 
     // that test must be last test
     START_TEST(perror)

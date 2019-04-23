@@ -336,6 +336,47 @@ void test_atoi_post()
 //		is_null(p);
 //	}
 
+// TODO:
+// void printbuffer (const char* pt, size_t max)
+// {
+  // int length;
+  // wchar_t dest;
+// 
+  // mblen (NULL, 0);         /* reset mblen */
+  // mbtowc (NULL, NULL, 0);  /* reset mbtowc */
+// 
+  // while (max>0) {
+    // length = mblen (pt, max);
+    // if (length<1) break;
+    // mbtowc(&dest,pt,length);
+    // printf ("[%lc]",dest);
+    // pt+=length; max-=length;
+  // }
+// }
+// 
+// void test_mblen()
+// {
+  // const char str [] = "test string";
+  // printbuffer (str,sizeof(str));
+// }
+
+// TODO:
+// void test_wctomb()
+// {
+  // const wchar_t str[] = L"wctomb example";
+  // const wchar_t* pt;
+  // char buffer [MB_CUR_MAX];
+  // int i,length;
+// 
+  // pt = str;
+  // while (*pt) {
+    // length = wctomb(buffer,*pt);
+    // if (length<1) break;
+    // for (i=0;i<length;++i) printf ("[%c]",buffer[i]);
+    // ++pt;
+  // }
+// }
+
 int main()
 {
     plan(766);
@@ -627,6 +668,9 @@ int main()
 
     diag("q_sort");
     q_sort();
+
+	// test_mblen();
+	// test_wctomb();
 
     // TODO:
     // diag("my_memrchr");
