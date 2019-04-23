@@ -148,6 +148,9 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 	if len(n.Type) != 0 && len(n.Type2) != 0 && n.Type != n.Type2 && cast {
 		var tt string
 		tt, err = types.ResolveType(p, n.Type)
+		if err != nil && n.Type2 != "" {
+			tt, err = types.ResolveType(p, n.Type2)
+		}
 		expr = util.NewCallExpr(tt, expr)
 		exprType = n.Type
 		return

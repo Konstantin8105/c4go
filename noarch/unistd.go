@@ -80,3 +80,15 @@ func Ftruncate(fd int32, length int64) int32 {
 	}
 	return 0
 }
+
+func Fstat(fd int32, stat []syscall.Stat_t) int32 {
+	if len(stat) == 0 {
+		return -1
+	}
+	// func Fstat(fd int, stat *Stat_t) (err error)
+	err := syscall.Fstat(int(fd), &(stat[0]))
+	if err != nil {
+		return -1
+	}
+	return 0
+}
