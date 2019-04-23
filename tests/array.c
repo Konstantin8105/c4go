@@ -565,65 +565,50 @@ void test_typedef_pointer()
     }
 }
 
-int** getArray()
-{
-    int twod[5][4] = { { 2, 4, 6, 7 }, { 8, 10, 12, 13 }, { 14, 16, 18, 19 }, { 20, 22, 24, 25 }, { 26, 28, 30, 32 } };
-    int* twodPass[5];
-    twodPass[0] = twod[0];
-    twodPass[1] = twod[1];
-    twodPass[2] = twod[2];
-    twodPass[3] = twod[3];
-    twodPass[4] = twod[4];
-    return twodPass;
-}
-
-void view_matrix(int** p, int size1, int size2)
-{
-    for (int i = 0; i < size1; i++) {
-        for (int j = 0; j < size2; j++) {
-            printf("      p[%d,%d] = %d\n", i, j, p[i][j]);
-        }
-    }
-}
-
 // TODO : it is not Ok for Debug case
 void test_double_array()
 {
     // see https://forums.macrumors.com/threads/understanding-double-pointers-in-c.701091/
-    // int** p = getArray();
-    // printf(" p is: %d\n", **p);
-    // printf("*p + 1 is: %d\n", *(*p + 1));
-    // p = getArray();
-    // {
-    // diag("cases 1:");
-    // int* pp = *p;
-    // printf("    1: %d\n", *(pp++));
-    // printf("    2: %d\n", *(pp++));
-    // printf("    3: %d\n", *(pp++));
-    // }
+    int twod[5][5] = { { 2, 4, 6 , 7, 77}, { 8, 10, 12,13,133 }, { 14, 16, 18, 19,199 }, { 20, 22, 24, 25,255 }, {26,28,30,32,322} };
+	printf("%d\n", twod[0][0]);
+	int * pp;
+	pp = twod[0];
+	int ** p = &pp;
+	(void)(p);
+	printf("%d\n", p[0][0]);
+
+    printf(" p is: %d\n", **p);
+    printf("*p + 1 is: %d\n", *(*p + 1));
+    {
+        diag("cases 1:");
+        int* pp = *p;
+        printf("    1: %d\n", *(pp++));
+        printf("    2: %d\n", *(pp++));
+        printf("    3: %d\n", *(pp++));
+    }
     // TODO : view_matrix(p,4,3);
 
-    // p = getArray();
-    // {
-    // diag("cases 1a:");
-    // int* pp = *p;
-    // printf("    1: %d\n", (*pp)++);
-    // printf("    2: %d\n", (*pp)++);
-    // printf("    3: %d\n", (*pp)++);
-    // }
+	p = &pp;
+    {
+        diag("cases 1a:");
+        int* pp = *p;
+        printf("    1: %d\n", (*pp)++);
+        printf("    2: %d\n", (*pp)++);
+        printf("    3: %d\n", (*pp)++);
+    }
     // TODO : view_matrix(p,4,3);
 
-    // p = getArray();
-    // {
-    // diag("cases 2:");
-    // int** pp = p;
-    // printf("    1: %d\n", *((*(pp))++));
-    // printf("    2: %d\n", *((*(pp))++));
-    // printf("    3: %d\n", *((*(pp))++));
-    // }
+	p = &pp;
+    {
+        diag("cases 2:");
+        int** pp = p;
+        printf("    1: %d\n", *((*(pp))++));
+        printf("    2: %d\n", *((*(pp))++));
+        printf("    3: %d\n", *((*(pp))++));
+    }
     // TODO : view_matrix(p,4,3);
 
-    // p = getArray();
+	p = &pp;
     // {
     // diag("cases 3:");
     // int** pp = p;
@@ -633,7 +618,7 @@ void test_double_array()
     // }
     // TODO : view_matrix(p,4,3);
 
-    // p = getArray();
+	p = &pp;
     // {
     // diag("cases 4:");
     // int** pp = p;
@@ -643,7 +628,7 @@ void test_double_array()
     // }
     // TODO : view_matrix(p,4,3);
 
-    // p = getArray();
+	p = &pp;
     // {
     // diag("cases 5:");
     // int** pp = p;
@@ -653,7 +638,7 @@ void test_double_array()
     // }
     // TODO : view_matrix(p,4,3);
 
-    // p = getArray();
+	p = &pp;
     // {
     // diag("cases 6:");
     // int** pp = p;
