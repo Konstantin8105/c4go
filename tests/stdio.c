@@ -614,10 +614,28 @@ void WriteFormatted ( const char * format, ... )
   va_end (args);
 }
 
-void test_vfprintf()
+void test_vprintf()
 {
    WriteFormatted ("Call with %d variable argument.\n",1);
    WriteFormatted ("Call with %d variable %s.\n",2,"arguments");
+}
+
+
+void FWriteFormatted (FILE * stream, const char * format, ...)
+{
+  va_list args;
+  va_start (args, format);
+  vfprintf (stream, format, args);
+  va_end (args);
+}
+
+void test_vfprintf()
+{
+   FILE * pFile;
+   pFile = fopen ("./testdata/vfprintf.txt","w");
+   FWriteFormatted (pFile,"Call with %d variable argument.\n",1);
+   FWriteFormatted (pFile,"Call with %d variable %s.\n",2,"arguments");
+   fclose (pFile);
 }
 
 int main()
@@ -659,6 +677,7 @@ int main()
     START_TEST(getline)
     START_TEST(sscanf)
     START_TEST(FILE)
+    START_TEST(vprintf)
     START_TEST(vfprintf)
 
     // that test must be last test
