@@ -262,6 +262,12 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		p.SetCalled(functionName)
 	}
 
+	if p.IncludeHeaderIsExists("stdio.h") &&
+		(functionName == "setbuf" || functionName == "setvbuf") {
+		// ignore function
+		return
+	}
+
 	// function "calloc" from stdlib.h
 	if p.IncludeHeaderIsExists("stdlib.h") {
 		if functionName == "calloc" && len(n.Children()) == 3 {

@@ -655,6 +655,7 @@ void test_setbuf()
 
   fclose (pFile1);
   fclose (pFile2);
+  (void)(buffer);
 }
 
 void test_setvbuf()
