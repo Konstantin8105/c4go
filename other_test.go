@@ -78,10 +78,10 @@ func TestBookSources(t *testing.T) {
 		gitSource      string
 		ignoreFileList []string
 	}{
-		{
-			prefix:    "brainfuck",
-			gitSource: "https://github.com/kgabis/brainfuck-c.git",
-		},
+		// {
+		// 	prefix:    "brainfuck",
+		// 	gitSource: "https://github.com/kgabis/brainfuck-c.git",
+		// },
 		// TODO : some travis haven`t enought C libraries
 		// {
 		// 	prefix:    "tiny-web-server",
