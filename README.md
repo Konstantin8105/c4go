@@ -302,7 +302,7 @@ func c4goUnsafeConvert_int32(c4go_name *int32) []int32 {
             signal.h	       3/3	         100%
             stdarg.h	       4/4	         100%
             stddef.h	       3/4	          75%
-             stdio.h	     35/41	        85.4%
+             stdio.h	     37/41	        90.2%
             stdlib.h	     30/37	        81.1%
             string.h	     21/24	        87.5%
               time.h	     14/15	        93.3%
