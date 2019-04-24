@@ -1,4 +1,9 @@
 
+Calculate warnings in file: ./testdata/brainfuck/brainfuck.go
+		After transpiling : 0 warnings.
+		Go build : 0 warnings
+		Unsafe   : 0
+
 Calculate warnings : ./testdata/9wm
 		After transpiling : 5 warnings.
 		Go build : 4 warnings
@@ -59,10 +64,20 @@ Calculate warnings in file: ./testdata/triangle/triangle.go
 		Go build : 585 warnings
 		Unsafe   : 1416
 
+Calculate warnings in file: ./testdata/progress/progress.go
+		After transpiling : 0 warnings.
+		Go build : 2 warnings
+		Unsafe   : 0
+
 Calculate warnings in file: ./testdata/SQLITE/sqlite.go
 		After transpiling : 1 warnings.
 		Go build : 1 warnings
 		Unsafe   : 2405
+
+Calculate warnings in file: ./testdata/tiny-web-server/tiny-web-server.go
+		After transpiling : 0 warnings.
+		Go build : 2 warnings
+		Unsafe   : 148
 
 Calculate warnings in file: testdata/vorbis/vorbis.go
 		After transpiling : 0 warnings.
