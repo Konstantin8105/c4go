@@ -563,6 +563,21 @@ void test_typedef_pointer()
         p = 0 + p + 0 + 1 - 0 + 1 - 1; // p = p + 1
         is_eq(*p, v[1]);
     }
+	{
+		diag("typedef pointer char");
+		typedef char *tcp;
+		char * word = "Hello";
+		tcp w = word;
+		is_streq(w, "Hello");
+		tcp p = w + 2;
+		is_streq(p, "llo");
+		p = &(p[-1]);
+		is_streq(p, "ello");
+		p = w + 2;
+		p = p - 1;
+		is_streq(p, "ello");
+		is_eq((int)(p[-1]),(int)('H'));
+	}
 }
 
 // TODO : it is not Ok for Debug case
@@ -765,7 +780,7 @@ void test_array_nil()
 
 int main()
 {
-    plan(205);
+    plan(210);
 
     test_parg_struct();
     START_TEST(struct_init);
