@@ -736,9 +736,24 @@ void test_struct_with_func()
     is_eq(as[1].g, 46.);
 }
 
+struct bitstr{
+   unsigned int a : 1;
+   unsigned int b : 2;
+};
+
+void test_struct_bit()
+{
+	diag("struct bit");
+	struct bitstr bs;
+	bs.a = 1;
+	bs.b = 2;
+	is_eq((int)(bs.a) , 1);
+	is_eq((int)(bs.b) , 2);
+}
+
 int main()
 {
-    plan(125);
+    plan(127);
 
     pointer_arithm_in_struct();
     test_extern_vec();
@@ -1143,6 +1158,7 @@ int main()
     typedef_with_union();
     typedef_struct_with_typedef_union();
     test_struct_with_func();
+	test_struct_bit();
 
     done_testing();
 }
