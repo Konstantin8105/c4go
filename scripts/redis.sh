@@ -28,6 +28,17 @@ mkdir -p ./testdata/
 	rm -f $TEMP_FOLDER/*.go
 	rm -f $TEMP_FOLDER/*.app
 
+# AST tree
+	echo "AST generate to $GO_FILE"
+if [ "$1" == "-a" ]; then
+	$C4GO ast                                                \
+		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/hiredis"   \
+		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/jemalloc"  \
+		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/linenoise" \
+		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/lua"       \
+		$TEMP_FOLDER/$VERSION/src/redis-cli.c
+fi
+
 # transpilation of all projects
 	echo "Transpile to $GO_FILE"
 	$C4GO transpile                                          \
