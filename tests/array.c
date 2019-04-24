@@ -577,6 +577,26 @@ void test_typedef_pointer()
 		p = p - 1;
 		is_streq(p, "ello");
 		is_eq((int)(p[-1]),(int)('H'));
+
+		unsigned char ch = p[-1];
+		is_eq(ch, 'H');
+	}
+	{
+		diag("typedef pointer char");
+		typedef short *tcp2;
+		short word[]= {12,13,24,45,11};
+		tcp2 w = word;
+		tcp2 p = w + 2;
+		is_eq(*p, 24);
+		p = &(p[-1]);
+		is_eq(*p, 13);
+		p = w + 2;
+		p = p - 1;
+		is_eq(*p, 13);
+		is_eq((int)(p[-1]),(int)(12));
+
+		unsigned char ch = p[-1];
+		is_eq(ch, 12);
 	}
 }
 
@@ -780,7 +800,7 @@ void test_array_nil()
 
 int main()
 {
-    plan(210);
+    plan(216);
 
     test_parg_struct();
     START_TEST(struct_init);

@@ -517,6 +517,30 @@ func PntBitCast(expr goast.Expr, cFrom, cTo string, p *program.Program) (
 		return
 	}
 
+	// check typedef
+	{
+		typedefFromType := cFrom
+		typedefToType := cTo
+		for {
+			if t, ok := p.TypedefType[typedefFromType]; ok {
+				typedefFromType = t
+				continue
+			}
+			break
+		}
+		for {
+			if t, ok := p.TypedefType[typedefToType]; ok {
+				typedefToType = t
+				continue
+			}
+			break
+		}
+		if typedefFromType == typedefToType {
+			// no need cast
+			return
+		}
+	}
+
 	{
 		from, errf := types.ResolveType(p, cFrom)
 		to, errto := types.ResolveType(p, cTo)
