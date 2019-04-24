@@ -12,7 +12,7 @@ Calculate warnings : ./testdata/9wm
 Calculate warnings : ./testdata/ed
 		After transpiling : 0 warnings.
 		Go build : 7 warnings
-		Unsafe   : 168
+		Unsafe   : 167
 
 Calculate warnings in file: ./testdata/kilo/kilo.go
 		After transpiling : 0 warnings.
@@ -77,7 +77,7 @@ Calculate warnings in file: ./testdata/progress/progress.go
 Calculate warnings in file: ./testdata/SQLITE/sqlite.go
 		After transpiling : 1 warnings.
 		Go build : 1 warnings
-		Unsafe   : 2405
+		Unsafe   : 2404
 
 Calculate warnings in file: ./testdata/tiny-web-server/tiny-web-server.go
 		After transpiling : 0 warnings.
