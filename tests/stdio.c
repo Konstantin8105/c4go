@@ -638,50 +638,79 @@ void test_vfprintf()
    fclose (pFile);
 }
 
+void test_setbuf()
+{
+  char buffer[BUFSIZ];
+  FILE *pFile1, *pFile2;
+
+  pFile1=fopen ("./testdata/setbuf.txt","w");
+  pFile2=fopen ("./testdata/setbuf2.txt","a");
+
+  setbuf ( pFile1 , buffer );
+  fputs ("This is sent to a buffered stream",pFile1);
+  fflush (pFile1);
+
+  setbuf ( pFile2 , NULL );
+  fputs ("This is sent to an unbuffered stream",pFile2);
+
+  fclose (pFile1);
+  fclose (pFile2);
+}
+
+void test_setvbuf()
+{
+  FILE *pFile;
+  pFile=fopen ("./testdata/detvbuf.txt","w");
+  setvbuf ( pFile , NULL , _IOFBF , 1024 );
+  fclose (pFile);
+}
+
 int main()
 {
     plan(71);
 
-    START_TEST(putchar)
-    START_TEST(puts)
-    START_TEST(printf)
-    START_TEST(remove)
-    START_TEST(rename)
-    START_TEST(fopen)
-    START_TEST(tmpfile)
-    START_TEST(tmpnam)
-    START_TEST(fclose)
-    START_TEST(fflush)
-    START_TEST(printf)
-    START_TEST(fprintf)
-    START_TEST(fscanf)
-    START_TEST(fgetc)
-    START_TEST(fgets)
-    START_TEST(fputc)
-    START_TEST(fputs)
-    START_TEST(getc)
-    START_TEST(putc)
-    START_TEST(fseek)
-    START_TEST(ftell)
-    START_TEST(fread)
-    START_TEST(fwrite)
-    START_TEST(fgetpos)
-    START_TEST(fsetpos)
-    START_TEST(rewind)
-    START_TEST(feof)
-    START_TEST(sprintf)
-    START_TEST(snprintf)
-    START_TEST(vsprintf)
-    START_TEST(vsnprintf)
-    START_TEST(eof)
-    START_TEST(getline)
-    START_TEST(sscanf)
-    START_TEST(FILE)
-    START_TEST(vprintf)
-    START_TEST(vfprintf)
+    START_TEST(putchar);
+    START_TEST(puts);
+    START_TEST(printf);
+    START_TEST(remove);
+    START_TEST(rename);
+    START_TEST(fopen);
+    START_TEST(tmpfile);
+    START_TEST(tmpnam);
+    START_TEST(fclose);
+    START_TEST(fflush);
+    START_TEST(printf);
+    START_TEST(fprintf);
+    START_TEST(fscanf);
+    START_TEST(fgetc);
+    START_TEST(fgets);
+    START_TEST(fputc);
+    START_TEST(fputs);
+    START_TEST(getc);
+    START_TEST(putc);
+    START_TEST(fseek);
+    START_TEST(ftell);
+    START_TEST(fread);
+    START_TEST(fwrite);
+    START_TEST(fgetpos);
+    START_TEST(fsetpos);
+    START_TEST(rewind);
+    START_TEST(feof);
+    START_TEST(sprintf);
+    START_TEST(snprintf);
+    START_TEST(vsprintf);
+    START_TEST(vsnprintf);
+    START_TEST(eof);
+    START_TEST(getline);
+    START_TEST(sscanf);
+    START_TEST(FILE);
+    START_TEST(vprintf);
+    START_TEST(vfprintf);
+    START_TEST(setbuf);
+    START_TEST(setvbuf);
 
     // that test must be last test
-    START_TEST(perror)
+    START_TEST(perror);
 
     done_testing();
 }
