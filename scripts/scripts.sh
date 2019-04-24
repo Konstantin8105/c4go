@@ -51,6 +51,9 @@ echo "" >> $OUTPUT_FILE
 ./scripts/triangle.sh		2>&1 | grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
 echo "" >> $OUTPUT_FILE
 
+./scripts/progress.sh		2>&1 | grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
+echo "" >> $OUTPUT_FILE
+
 ./scripts/sqlite.sh		2>&1 | grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
 echo "" >> $OUTPUT_FILE
 
