@@ -50,6 +50,7 @@ fi
 		-o="$TEMP_FOLDER/redis_cli.go"                       \
 		$TEMP_FOLDER/$VERSION/src/redis-cli.c
 
+
 	$C4GO transpile                                          \
 		-s                                                   \
 		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/hiredis"   \
@@ -59,14 +60,19 @@ fi
 		-o="$TEMP_FOLDER/dict.go"                            \
 		$TEMP_FOLDER/$VERSION/src/dict.c
 
-	$C4GO transpile                                          \
-		-s                                                   \
-		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/hiredis"   \
-		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/jemalloc"  \
-		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/linenoise" \
-		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/lua"       \
-		-o="$TEMP_FOLDER/sds.go"                             \
+	$C4GO transpile                                              \
+		-s                                                       \
+		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/hiredis"       \
+		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/jemalloc"      \
+		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/linenoise"     \
+		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/lua"           \
+		-o="$TEMP_FOLDER/sds.go"                                 \
 		$TEMP_FOLDER/$VERSION/src/sds.c
+
+	$C4GO transpile                                          \
+		-o="$TEMP_FOLDER/linenoise.go"                       \
+		$TEMP_FOLDER/$VERSION/deps/linenoise/linenoise.c     \
+		$TEMP_FOLDER/$VERSION/deps/linenoise/example.c
 
 # Arguments menu
 echo "    -s for show detail of Go build errors"
