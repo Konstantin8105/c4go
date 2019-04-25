@@ -205,6 +205,14 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double hypot(double, double) -> math.Hypot",
 		"float hypotf(float) -> noarch.Hypotf",
 		"long double hypotl(long double, long double) -> math.Hypot",
+
+		"long int lround(double ) -> noarch.LRound",
+		"long int lroundf(float ) -> noarch.LRound",
+		"long int lroundl(long double ) -> noarch.LRoundl",
+
+		"long long int llround(double ) -> noarch.LLRound",
+		"long long int llroundf(float ) -> noarch.LLRound",
+		"long long int llroundl(long double ) -> noarch.LLRoundl",
 	},
 	"stdio.h": {
 

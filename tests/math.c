@@ -12,7 +12,7 @@ unsigned long long ullmax = 18446744073709551615ull;
 
 int main()
 {
-    plan(488);
+    plan(496);
 
 	{
 		diag("modf");
@@ -786,6 +786,19 @@ int main()
         is_eq(result, 0.5000);
         is_eq(n, 4);
     }
+
+	diag("round");
+	{
+	   is_eq(lround(2.3), 2);
+	   is_eq(lround(3.8), 4);
+	   is_eq(lround(-2.3), -2);
+	   is_eq(lround(-3.8), -4);
+
+	   is_eq(llround(2.3), 2);
+	   is_eq(llround(3.8), 4);
+	   is_eq(llround(-2.3), -2);
+	   is_eq(llround(-3.8), -4);
+	}
 
     done_testing();
 }
