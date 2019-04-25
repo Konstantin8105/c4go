@@ -56,7 +56,7 @@ Calculate warnings in file: ./testdata/neatroff/neatroff.go
 
 Calculate warnings in file: ./testdata/redis/redis.go
 		After transpiling : 0 warnings.
-		Go build : 4 warnings
+		Go build : 50 warnings
 		Unsafe   : 262
 
 Calculate warnings in file: ./testdata/neatvi/neatvi.go
