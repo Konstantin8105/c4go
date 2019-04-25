@@ -40,41 +40,60 @@ if [ "$1" == "-a" ]; then
 fi
 
 # transpilation of all projects
-	echo "Transpile to $GO_FILE"
+	echo "Transpile to Go"
 	$C4GO transpile                                          \
 		-s                                                   \
 		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/hiredis"   \
 		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/jemalloc"  \
 		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/linenoise" \
 		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/lua"       \
-		-o="$GO_FILE"                       \
+		-o="$TEMP_FOLDER/redis_cli.go"                       \
 		$TEMP_FOLDER/$VERSION/src/redis-cli.c
 
-# show warnings comments in Go source
-	echo "Calculate warnings in file: $GO_FILE"
-	WARNINGS=`cat $GO_FILE | grep "^// Warning" | sort | uniq | wc -l`
-	echo "		After transpiling : $WARNINGS warnings."
+	$C4GO transpile                                          \
+		-s                                                   \
+		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/hiredis"   \
+		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/jemalloc"  \
+		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/linenoise" \
+		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/lua"       \
+		-o="$TEMP_FOLDER/dict.go"                            \
+		$TEMP_FOLDER/$VERSION/src/dict.c
 
-# show other warnings
-	# show amount error from `go build`:
-		echo "Build to $GO_APP file"
-		WARNINGS_GO=`go build -o $GO_APP -gcflags="-e" $GO_FILE 2>&1 | wc -l`
-		echo "		Go build : $WARNINGS_GO warnings"
-	# amount unsafe
-		UNSAFE=`cat $GO_FILE | grep "unsafe\." | wc -l`
-		echo "		Unsafe   : $UNSAFE"
-
+	$C4GO transpile                                          \
+		-s                                                   \
+		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/hiredis"   \
+		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/jemalloc"  \
+		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/linenoise" \
+		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/lua"       \
+		-o="$TEMP_FOLDER/sds.go"                             \
+		$TEMP_FOLDER/$VERSION/src/sds.c
 
 # Arguments menu
 echo "    -s for show detail of Go build errors"
-if [ "$1" == "-s" ]; then
-	# show go build warnings	
-		# c4go warnings
-			cat $GO_FILE | grep "^// Warning" | sort | uniq
-		# show amount error from `go build`:
-			go build -o $GO_APP -gcflags="-e" $GO_FILE 2>&1
-fi
 
+# transpilation each file
+	for f in $TEMP_FOLDER/*.go; do
+			# iteration by C projects
+				echo "***** transpilation folder : $f"
+			# show warnings comments in Go source
+				export FILE="$f"
+				echo "Calculate warnings : $FILE"
+				WARNINGS=`cat $FILE | grep "^// Warning" | sort | uniq | wc -l`
+				echo "		After transpiling : $WARNINGS warnings."
+			# show amount error from `go build`:
+				echo "Build to $GO_APP file"
+				WARNINGS_GO=`go build -o $GO_APP -gcflags="-e" $f 2>&1 | wc -l`
+				echo "		Go build : $WARNINGS_GO warnings"
+			# amount unsafe
+				UNSAFE=`cat $FILE | grep "unsafe\." | wc -l`
+				echo "		Unsafe   : $UNSAFE"
 
-
+			if [ "$1" == "-s" ]; then
+				# show go build warnings	
+					# c4go warnings
+						cat $f | grep "^// Warning" | sort | uniq
+					# show amount error from `go build`:
+						go build -o $GO_APP -gcflags="-e" $f 2>&1 && echo "OK" || echo "NOK"
+			fi
+	done
 
