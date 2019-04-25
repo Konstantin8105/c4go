@@ -611,7 +611,7 @@ void test_typedef_pointer()
 		}
 	}
 	{
-		diag("typedef pointer char");
+		diag("typedef pointer short");
 		typedef short *tcp2;
 		short word[]= {12,13,24,45,11};
 		tcp2 w = word;

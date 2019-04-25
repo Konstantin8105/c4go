@@ -90,7 +90,7 @@ static int last_test_was_ok = 1;
 //
 // diag() takes the same format and arguments as a printf().
 #define diag(...)        \
-    printf("# ");        \
+    printf("\n# ");      \
     printf(__VA_ARGS__); \
     printf("\n");
 
