@@ -96,13 +96,13 @@ func c4goPointerArithInt32Slice(slice []int32, position int) []int32 {
 
 		// Example from: go101.org/article/unsafe.html
 		// repair size of slice
-		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&slice[0]))
+		var hdr reflect.SliceHeader
 		sliceLen := len(slice)
 		hdr.Data = uintptr(unsafe.Pointer(&slice[0])) - (uintptr(position))*unsafe.Sizeof(slice[0])
 		runtime.KeepAlive(&slice[0]) // needed!
 		hdr.Len = sliceLen + int(position)
 		hdr.Cap = hdr.Len
-		slice = *((*[]int32)(unsafe.Pointer(hdr)))
+		slice = *((*[]int32)(unsafe.Pointer(&hdr)))
 		return slice
 	}
 	// position >= 0:
