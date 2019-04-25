@@ -286,14 +286,11 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 		p.AddImport("unsafe")
 
 		return util.NewCallExpr(t, util.NewCallExpr("unsafe.Pointer",
-			&goast.UnaryExpr{
-				Op: token.AND,
-				X: &goast.IndexExpr{
-					X:      expr,
-					Lbrack: 1,
-					Index:  goast.NewIdent("0"),
-				},
-			})), nil
+			util.NewUnaryExpr(&goast.IndexExpr{
+				X:      expr,
+				Lbrack: 1,
+				Index:  goast.NewIdent("0"),
+			}, token.AND))), nil
 
 	} else if strings.HasPrefix(goType, "*") {
 		// *int  -> * _Ctype_int
@@ -310,10 +307,7 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 		p.AddImport("unsafe")
 
 		return util.NewCallExpr(t, util.NewCallExpr("unsafe.Pointer",
-			&goast.UnaryExpr{
-				Op: token.AND,
-				X:  expr,
-			})), nil
+			util.NewUnaryExpr(expr, token.AND))), nil
 	}
 
 	if t == "interface{}" {
@@ -321,10 +315,7 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 		p.AddImport("unsafe")
 
 		return util.NewCallExpr("unsafe.Pointer",
-			&goast.UnaryExpr{
-				Op: token.AND,
-				X:  expr,
-			}), nil
+			util.NewUnaryExpr(expr, token.AND)), nil
 	}
 
 	return util.NewCallExpr("C."+t, expr), nil

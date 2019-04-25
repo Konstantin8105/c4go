@@ -29,9 +29,44 @@ mkdir -p ./testdata/
 # transpilation of all projects
 	echo "Transpile to $GO_FILE"
 	$C4GO transpile                         \
-		-o="$GO_FILE"                       \
+		-s                                  \
+		-clang-flag="-I$TEMP_FOLDER/"       \
+		-o=$TEMP_FOLDER/x11.go              \
 		$TEMP_FOLDER/demo/x11/*.c
 
 	$C4GO transpile                         \
-		-o="$GO_FILE"                       \
+		-s                                  \
+		-clang-flag="-I$TEMP_FOLDER/"       \
+		-o=$TEMP_FOLDER/x11_opengl2.go      \
 		$TEMP_FOLDER/demo/x11_opengl2/*.c
+
+
+# Arguments menu
+echo "    -s for show detail of Go build errors"
+
+# transpilation each file
+	for f in $TEMP_FOLDER/*.go; do
+			# iteration by C projects
+				echo "***** transpilation folder : $f"
+			# show warnings comments in Go source
+				export FILE="$f"
+				echo "Calculate warnings : $FILE"
+				WARNINGS=`cat $FILE | grep "^// Warning" | sort | uniq | wc -l`
+				echo "		After transpiling : $WARNINGS warnings."
+			# show amount error from `go build`:
+				echo "Build to $GO_APP file"
+				WARNINGS_GO=`go build -o $GO_APP -gcflags="-e" $f 2>&1 | wc -l`
+				echo "		Go build : $WARNINGS_GO warnings"
+			# amount unsafe
+				UNSAFE=`cat $FILE | grep "unsafe\." | wc -l`
+				echo "		Unsafe   : $UNSAFE"
+
+			if [ "$1" == "-s" ]; then
+				# show go build warnings	
+					# c4go warnings
+						cat $f | grep "^// Warning" | sort | uniq
+					# show amount error from `go build`:
+						go build -o $GO_APP -gcflags="-e" $f 2>&1 && echo "OK" || echo "NOK"
+			fi
+	done
+

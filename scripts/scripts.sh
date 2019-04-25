@@ -42,6 +42,9 @@ echo "" >> $OUTPUT_FILE
 ./scripts/neatrefer.sh	2>&1 | grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
 echo "" >> $OUTPUT_FILE
 
+./scripts/nuklear.sh	2>&1 | grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
+echo "" >> $OUTPUT_FILE
+
 ./scripts/neatroff.sh	2>&1 | grep -E 'warning|unsafe|Unsafe' | tee -a $OUTPUT_FILE
 echo "" >> $OUTPUT_FILE
 

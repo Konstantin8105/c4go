@@ -256,14 +256,14 @@ func NewNil() *goast.Ident {
 // NewUnaryExpr creates a new Go unary expression. You should use this function
 // instead of instantiating the UnaryExpr directly because this function has
 // extra error checking.
-func NewUnaryExpr(operator token.Token, right goast.Expr) *goast.UnaryExpr {
-	if right == nil {
-		panic("right is nil")
+func NewUnaryExpr(expr goast.Expr, operator token.Token) *goast.UnaryExpr {
+	if expr == nil {
+		expr = goast.NewIdent("C4GO_RECOVER_EXPR_NIL")
 	}
 
 	return &goast.UnaryExpr{
+		X:  expr,
 		Op: operator,
-		X:  right,
 	}
 }
 

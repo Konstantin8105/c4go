@@ -618,10 +618,10 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		body := append(preStmts, &goast.AssignStmt{
 			Lhs: []goast.Expr{util.NewIdent(varName)},
 			Tok: token.DEFINE,
-			Rhs: []goast.Expr{&goast.UnaryExpr{
-				Op: token.AND,
-				X:  expr,
-			}},
+			Rhs: []goast.Expr{util.NewUnaryExpr(
+				expr,
+				token.AND,
+			)},
 		})
 
 		deferBody := postStmts
@@ -716,10 +716,10 @@ func atomicOperation(n ast.Node, p *program.Program) (
 						expr = util.NewAnonymousFunction(
 							append(preStmts, &goast.ExprStmt{X: expr}),
 							postStmts,
-							&goast.UnaryExpr{
-								Op: token.AND,
-								X:  util.NewIdent(varName),
-							},
+							util.NewUnaryExpr(
+								util.NewIdent(varName),
+								token.AND,
+							),
 							exprResolveType)
 						preStmts = nil
 						postStmts = nil
@@ -740,10 +740,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		body := append(preStmts, &goast.AssignStmt{
 			Lhs: []goast.Expr{util.NewIdent(varName)},
 			Tok: token.DEFINE,
-			Rhs: []goast.Expr{&goast.UnaryExpr{
-				Op: token.AND,
-				X:  expr,
-			}},
+			Rhs: []goast.Expr{util.NewUnaryExpr(expr, token.AND)},
 		})
 		preStmts = nil
 
@@ -961,10 +958,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			body = append(body, &goast.AssignStmt{
 				Lhs: []goast.Expr{util.NewIdent(varName)},
 				Tok: token.DEFINE,
-				Rhs: []goast.Expr{&goast.UnaryExpr{
-					Op: token.AND,
-					X:  expr,
-				}},
+				Rhs: []goast.Expr{util.NewUnaryExpr(expr, token.AND)},
 			})
 
 			var exprResolveType string
@@ -975,10 +969,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			}
 
 			expr = util.NewAnonymousFunction(body, postStmts,
-				&goast.UnaryExpr{
-					Op: token.MUL,
-					X:  util.NewIdent(varName),
-				},
+				util.NewUnaryExpr(util.NewIdent(varName), token.MUL),
 				exprResolveType)
 			preStmts = nil
 			postStmts = nil

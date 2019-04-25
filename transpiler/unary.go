@@ -187,10 +187,7 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 	}
 
 	if eType == "bool" {
-		return &goast.UnaryExpr{
-			X:  e,
-			Op: token.NOT,
-		}, "bool", preStmts, postStmts, nil
+		return util.NewUnaryExpr(e, token.NOT), "bool", preStmts, postStmts, nil
 	}
 
 	if strings.HasSuffix(eType, "*") {
@@ -207,7 +204,7 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 
 	if t == "[]byte" {
 		return util.NewUnaryExpr(
-			token.NOT, util.NewCallExpr("noarch.CStringIsNull", e),
+			util.NewCallExpr("noarch.CStringIsNull", e), token.NOT,
 		), "bool", preStmts, postStmts, nil
 	}
 
@@ -610,10 +607,7 @@ func transpileUnaryOperator(n *ast.UnaryOperator, p *program.Program) (
 
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
-	return &goast.UnaryExpr{
-		Op: operator,
-		X:  e,
-	}, eType, preStmts, postStmts, nil
+	return util.NewUnaryExpr(e, operator), eType, preStmts, postStmts, nil
 }
 
 func transpileUnaryExprOrTypeTraitExpr(n *ast.UnaryExprOrTypeTraitExpr, p *program.Program) (
