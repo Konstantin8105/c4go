@@ -27,47 +27,47 @@ Calculate warnings in file: ./testdata/minmad/minmad.go
 Calculate warnings in file: ./testdata/neateqn/neateqn.go
 		After transpiling : 0 warnings.
 		Go build : 0 warnings
-		Unsafe   : 25
+		Unsafe   : 24
 
 Calculate warnings in file: ./testdata/neatmkfn/neatmkfn.go
 		After transpiling : 0 warnings.
-		Go build : 281 warnings
-		Unsafe   : 142
+		Go build : 279 warnings
+		Unsafe   : 140
 
 Calculate warnings in file: ./testdata/neatmail/neatmail.go
 		After transpiling : 0 warnings.
 		Go build : 2 warnings
-		Unsafe   : 253
+		Unsafe   : 252
 
 Calculate warnings in file: ./testdata/neatpost/neatpost.go
 		After transpiling : 0 warnings.
-		Go build : 15 warnings
-		Unsafe   : 45
+		Go build : 13 warnings
+		Unsafe   : 42
 
 Calculate warnings in file: ./testdata/neatrefer/neatrefer.go
 		After transpiling : 0 warnings.
 		Go build : 0 warnings
-		Unsafe   : 18
+		Unsafe   : 17
 
 Calculate warnings in file: ./testdata/neatroff/neatroff.go
 		After transpiling : 3 warnings.
 		Go build : 8 warnings
-		Unsafe   : 251
+		Unsafe   : 248
 
 Calculate warnings in file: ./testdata/redis/redis.go
-		After transpiling : 59 warnings.
+		After transpiling : 0 warnings.
 		Go build : 4 warnings
-		Unsafe   : 339
+		Unsafe   : 262
 
 Calculate warnings in file: ./testdata/neatvi/neatvi.go
 		After transpiling : 0 warnings.
 		Go build : 2 warnings
-		Unsafe   : 204
+		Unsafe   : 203
 
 Calculate warnings in file: ./testdata/triangle/triangle.go
 		After transpiling : 2 warnings.
 		Go build : 585 warnings
-		Unsafe   : 1416
+		Unsafe   : 1415
 
 Calculate warnings in file: ./testdata/progress/progress.go
 		After transpiling : 0 warnings.
@@ -77,7 +77,7 @@ Calculate warnings in file: ./testdata/progress/progress.go
 Calculate warnings in file: ./testdata/SQLITE/sqlite.go
 		After transpiling : 1 warnings.
 		Go build : 1 warnings
-		Unsafe   : 2404
+		Unsafe   : 2373
 
 Calculate warnings in file: ./testdata/tiny-web-server/tiny-web-server.go
 		After transpiling : 0 warnings.
@@ -87,5 +87,5 @@ Calculate warnings in file: ./testdata/tiny-web-server/tiny-web-server.go
 Calculate warnings in file: testdata/vorbis/vorbis.go
 		After transpiling : 0 warnings.
 		Go build : 3 warnings
-		Unsafe   : 134
+		Unsafe   : 132
 

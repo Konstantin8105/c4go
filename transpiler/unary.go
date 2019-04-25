@@ -396,8 +396,20 @@ func pointerParts(node *ast.Node, p *program.Program) (
 		}
 		baseTypes = append(baseTypes, t)
 
+		*t = util.CleanCType(*t)
+
+		// typedef type
+		var td string = util.CleanCType(*t)
+		for {
+			if te, ok := p.TypedefType[td]; ok {
+				td = util.CleanCType(te)
+				continue
+			}
+			break
+		}
 		// find
-		if types.IsCPointer(*t, p) || types.IsCArray(*t, p) {
+		if types.IsCPointer(*t, p) || types.IsCArray(*t, p) ||
+			types.IsCPointer(td, p) || types.IsCArray(td, p) {
 			switch (*node).(type) {
 			case *ast.BinaryOperator,
 				*ast.ImplicitCastExpr,

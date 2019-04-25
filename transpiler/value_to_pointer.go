@@ -517,6 +517,30 @@ func PntBitCast(expr goast.Expr, cFrom, cTo string, p *program.Program) (
 		return
 	}
 
+	// check typedef
+	{
+		typedefFromType := cFrom
+		typedefToType := cTo
+		for {
+			if t, ok := p.TypedefType[typedefFromType]; ok {
+				typedefFromType = t
+				continue
+			}
+			break
+		}
+		for {
+			if t, ok := p.TypedefType[typedefToType]; ok {
+				typedefToType = t
+				continue
+			}
+			break
+		}
+		if typedefFromType == typedefToType {
+			// no need cast
+			return
+		}
+	}
+
 	{
 		from, errf := types.ResolveType(p, cFrom)
 		to, errto := types.ResolveType(p, cTo)
@@ -710,13 +734,13 @@ func main(){
 			position = -position
 
 			// Example from: go101.org/article/unsafe.html	
-			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&slice[0]))
+			var hdr reflect.SliceHeader
 			sliceLen := len(slice)
 			hdr.Data = uintptr(unsafe.Pointer(&slice[0])) - (uintptr(position))*unsafe.Sizeof(slice[0])
 			runtime.KeepAlive(&slice[0]) // needed!
 			hdr.Len = sliceLen + int(position)
 			hdr.Cap = hdr.Len
-			slice = *((*[]{{ .Type }})(unsafe.Pointer(hdr)))
+			slice = *((*[]{{ .Type }})(unsafe.Pointer(&hdr)))
 			return slice
 		}
 		// position >= 0:
@@ -768,13 +792,13 @@ func %s(slice %s, position int)%s {
 
 		// Example from: go101.org/article/unsafe.html
 		// repair size of slice
-		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&slice[0]))
+		var hdr reflect.SliceHeader
 		sliceLen := len(slice)
 		hdr.Data = uintptr(unsafe.Pointer(&slice[0])) - (uintptr(position))*unsafe.Sizeof(slice[0])
 		runtime.KeepAlive(&slice[0]) // needed!
 		hdr.Len = sliceLen + int(position)
 		hdr.Cap = hdr.Len
-		slice = *((*%s)(unsafe.Pointer(hdr)))
+		slice = *((*%s)(unsafe.Pointer(&hdr)))
 		return slice
 	}
 	// position >= 0:

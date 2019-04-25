@@ -563,6 +563,70 @@ void test_typedef_pointer()
         p = 0 + p + 0 + 1 - 0 + 1 - 1; // p = p + 1
         is_eq(*p, v[1]);
     }
+	{
+		diag("typedef pointer char");
+		typedef char *tcp;
+		char * word = "Hello";
+		tcp w = word;
+		is_streq(w, "Hello");
+		tcp p = w + 2;
+		is_streq(p, "llo");
+		p = &(p[-1]);
+		is_streq(p, "ello");
+		p = w + 2;
+		p = p - 1;
+		is_streq(p, "ello");
+		is_eq((int)(p[-1]),(int)('H'));
+
+		unsigned char ch = p[-1];
+		is_eq(ch, 'H');
+	}
+	{
+		diag("typedef pointer const char");
+		typedef char *tcp3;
+		char const * word = "Hello";
+		tcp3 w = word;
+		is_streq(w, "Hello");
+		{
+			tcp3 p = w + 2;
+			is_streq(p, "llo");
+			(void)(p);
+		}
+		{
+			tcp3 const p = w + 2;
+			is_streq(&(p[-1]), "ello");
+			(void)(p);
+		}
+		{
+			tcp3 const p = w + 2 - 1;
+			is_streq(p, "ello");
+			is_eq((int)(p[-1]),(int)('H'));
+			(void)(p);
+		}
+		{
+			tcp3 p = w + 2 - 1;
+			unsigned char ch = p[-1];
+			is_eq(ch, 'H');
+			(void)(p);
+		}
+	}
+	{
+		diag("typedef pointer short");
+		typedef short *tcp2;
+		short word[]= {12,13,24,45,11};
+		tcp2 w = word;
+		tcp2 p = w + 2;
+		is_eq(*p, 24);
+		p = &(p[-1]);
+		is_eq(*p, 13);
+		p = w + 2;
+		p = p - 1;
+		is_eq(*p, 13);
+		is_eq((int)(p[-1]),(int)(12));
+
+		unsigned char ch = p[-1];
+		is_eq(ch, 12);
+	}
 }
 
 // TODO : it is not Ok for Debug case
@@ -765,7 +829,7 @@ void test_array_nil()
 
 int main()
 {
-    plan(205);
+    plan(222);
 
     test_parg_struct();
     START_TEST(struct_init);
