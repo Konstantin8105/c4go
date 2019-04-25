@@ -582,6 +582,35 @@ void test_typedef_pointer()
 		is_eq(ch, 'H');
 	}
 	{
+		diag("typedef pointer const char");
+		typedef char *tcp3;
+		char const * word = "Hello";
+		tcp3 w = word;
+		is_streq(w, "Hello");
+		{
+			tcp3 p = w + 2;
+			is_streq(p, "llo");
+			(void)(p);
+		}
+		{
+			tcp3 const p = w + 2;
+			is_streq(&(p[-1]), "ello");
+			(void)(p);
+		}
+		{
+			tcp3 const p = w + 2 - 1;
+			is_streq(p, "ello");
+			is_eq((int)(p[-1]),(int)('H'));
+			(void)(p);
+		}
+		{
+			tcp3 p = w + 2 - 1;
+			unsigned char ch = p[-1];
+			is_eq(ch, 'H');
+			(void)(p);
+		}
+	}
+	{
 		diag("typedef pointer char");
 		typedef short *tcp2;
 		short word[]= {12,13,24,45,11};
@@ -800,7 +829,7 @@ void test_array_nil()
 
 int main()
 {
-    plan(216);
+    plan(222);
 
     test_parg_struct();
     START_TEST(struct_init);
