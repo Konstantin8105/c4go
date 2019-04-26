@@ -150,8 +150,20 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	// |   |-DeclRefExpr 0x368e848 <col:9> 'int' lvalue Var 0x368e6d8 'x' 'int'
 	// |   `-ImplicitCastExpr 0x368e898 <col:13> 'int' <LValueToRValue>
 	// |     `-DeclRefExpr 0x368e870 <col:13> 'int' lvalue Var 0x368e748 'y' 'int'
+	//
+	// Example
+	// BinaryOperator 'const char *' '='
+	// |-...
+	// `-ImplicitCastExpr 'const char *' <BitCast>
+	//   `-BinaryOperator 'char *' '='
+	//     |-...
+	//     `-...
 	if getTokenForOperator(n.Operator) == token.ASSIGN {
-		switch c := n.Children()[1].(type) {
+		child := n.Children()[1]
+		if impl, ok := child.(*ast.ImplicitCastExpr); ok {
+			child = impl.Children()[0]
+		}
+		switch c := child.(type) {
 		case *ast.BinaryOperator:
 			if getTokenForOperator(c.Operator) == token.ASSIGN {
 				bSecond := ast.BinaryOperator{

@@ -26,7 +26,7 @@ Calculate warnings in file: ./testdata/minmad/minmad.go
 
 Calculate warnings in file: ./testdata/neateqn/neateqn.go
 		After transpiling : 0 warnings.
-		Go build : 0 warnings
+		Go build : 6 warnings
 		Unsafe   : 24
 
 Calculate warnings in file: ./testdata/neatmkfn/neatmkfn.go
@@ -49,6 +49,15 @@ Calculate warnings in file: ./testdata/neatrefer/neatrefer.go
 		Go build : 0 warnings
 		Unsafe   : 17
 
+Calculate warnings : ./testdata/nuklear/x11.go
+		After transpiling : 9 warnings.
+		Go build : 12 warnings
+		Unsafe   : 883
+Calculate warnings : ./testdata/nuklear/x11_opengl2.go
+		After transpiling : 19 warnings.
+		Go build : 12 warnings
+		Unsafe   : 1069
+
 Calculate warnings in file: ./testdata/neatroff/neatroff.go
 		After transpiling : 3 warnings.
 		Go build : 8 warnings
@@ -58,6 +67,10 @@ Calculate warnings : ./testdata/redis/dict.go
 		After transpiling : 0 warnings.
 		Go build : 40 warnings
 		Unsafe   : 73
+Calculate warnings : ./testdata/redis/linenoise.go
+		After transpiling : 0 warnings.
+		Go build : 2 warnings
+		Unsafe   : 21
 Calculate warnings : ./testdata/redis/redis_cli.go
 		After transpiling : 0 warnings.
 		Go build : 50 warnings
@@ -94,6 +107,6 @@ Calculate warnings in file: ./testdata/tiny-web-server/tiny-web-server.go
 
 Calculate warnings in file: testdata/vorbis/vorbis.go
 		After transpiling : 0 warnings.
-		Go build : 3 warnings
+		Go build : 18 warnings
 		Unsafe   : 132
 

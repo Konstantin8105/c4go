@@ -72,10 +72,7 @@ func ConvertValueToPointer(nodes []ast.Node, p *program.Program) (expr goast.Exp
 
 	return util.NewCallExpr(fmt.Sprintf("%s%s", unsafeConvertFunctionName,
 		typeToFuncname(resolvedType)),
-		&goast.UnaryExpr{
-			Op: token.AND,
-			X:  goast.NewIdent(decl.Name),
-		}), true
+		util.NewUnaryExpr(goast.NewIdent(decl.Name), token.AND)), true
 }
 
 func typeToFuncname(typeName string) (functionName string) {
@@ -181,6 +178,11 @@ func GetUnsafeConvertDecls(p *program.Program) {
 //		            Each stmt has `defer` functions.
 func GetPointerAddress(expr goast.Expr, cType string, sizeof int) (
 	rs goast.Expr, postStmts []goast.Stmt, err error) {
+
+	if expr == nil {
+		err = fmt.Errorf("Cannot get pointer address for nil expr")
+		return
+	}
 
 	// generate postStmts
 
@@ -296,10 +298,7 @@ func GetPointerAddress(expr goast.Expr, cType string, sizeof int) (
 							Fun:    goast.NewIdent("unsafe.Pointer"),
 							Lparen: 1,
 							Args: []goast.Expr{
-								&goast.UnaryExpr{
-									Op: token.AND,
-									X:  goast.NewIdent(name),
-								},
+								util.NewUnaryExpr(goast.NewIdent(name), token.AND),
 							},
 						}},
 					},
@@ -323,7 +322,7 @@ func GetPointerAddress(expr goast.Expr, cType string, sizeof int) (
 		rs = &goast.BinaryExpr{
 			X: util.NewCallExpr("int64", util.NewCallExpr("uintptr",
 				util.NewCallExpr("unsafe.Pointer",
-					&goast.UnaryExpr{Op: token.AND, X: expr},
+					util.NewUnaryExpr(expr, token.AND),
 				),
 			)),
 			Op: token.QUO,
@@ -604,10 +603,7 @@ func CreateSliceFromReference(goType string, expr goast.Expr) goast.Expr {
 	return &goast.SliceExpr{
 		X: util.NewCallExpr(fmt.Sprintf("(*[1000000]%s)", goType),
 			util.NewCallExpr("unsafe.Pointer",
-				&goast.UnaryExpr{
-					X:  expr,
-					Op: token.AND,
-				}),
+				util.NewUnaryExpr(expr, token.AND)),
 		),
 	}
 }

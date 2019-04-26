@@ -215,13 +215,13 @@ func transpileEnumDeclWithType(p *program.Program, n *ast.EnumDecl, enumType str
 			if sign == -1 {
 				e = &goast.ValueSpec{
 					Names: []*goast.Ident{{Name: child.Name}},
-					Values: []goast.Expr{&goast.UnaryExpr{
-						X: &goast.BasicLit{
+					Values: []goast.Expr{util.NewUnaryExpr(
+						&goast.BasicLit{
 							Kind:  token.INT,
 							Value: v.Value,
 						},
-						Op: token.SUB,
-					}},
+						token.SUB,
+					)},
 					Type: val.Type,
 					Doc:  p.GetMessageComments(),
 				}

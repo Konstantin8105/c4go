@@ -140,14 +140,19 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	// casting
 	// void * --> char *
 	// void * --> int **
+	// void * --> void **
 	if fromType == "void *" && IsPointer(toType, p) {
 		countStar := strings.Count(toType, "*")
-		countParen := strings.Count(toType, "[")
+		countStar += strings.Count(toType, "[")
 
 		toType = GetBaseType(toType)
 		t, err := ResolveType(p, toType)
 		if err != nil {
 			return nil, err
+		}
+		if toType == "void" {
+			countStar--
+			t = "interface{}"
 		}
 
 		if strings.Contains(toType, "FILE") {
@@ -157,7 +162,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 				Type:   goast.NewIdent("*noarch.File"),
 			}, nil
 		} else {
-			for i := 0; i < countStar+countParen; i++ {
+			for i := 0; i < countStar; i++ {
 				t = "[]" + t
 			}
 			return &goast.TypeAssertExpr{
@@ -442,7 +447,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 
 	if fromType == "[]byte" && toType == "bool" {
 		return util.NewUnaryExpr(
-			token.NOT, util.NewCallExpr("noarch.CStringIsNull", expr),
+			util.NewCallExpr("noarch.CStringIsNull", expr), token.NOT,
 		), nil
 	}
 

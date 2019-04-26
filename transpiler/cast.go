@@ -259,6 +259,21 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 	}
 
 	//
+	// struct sqlite3_pcache_page {
+	//   void *pBuf;        /* The content of the page */
+	//   void *pExtra;      /* Extra information associated with the page */
+	// };
+	//
+	// *(void **)pPage->page.pExtra = 0;
+	//
+	// UnaryOperator 'void *' lvalue prefix '*'
+	// `-CStyleCastExpr 'void **' <BitCast>
+	//   `-ImplicitCastExpr 'void *' <LValueToRValue>
+	//     `-MemberExpr 'void *' lvalue .pExtra 0x2876098
+	//       `-MemberExpr 'sqlite3_pcache_page':'struct sqlite3_pcache_page' lvalue ->page 0x2bdc9d0
+	//         `-ImplicitCastExpr 'PgHdr1 *' <LValueToRValue>
+	//           `-DeclRefExpr 'PgHdr1 *' lvalue Var 0x2bf5cd0 'pPage' 'PgHdr1 *'
+	//
 	// BinaryOperator 'const char **' '='
 	// |-DeclRefExpr 'const char **' lvalue Var 0x39a4380 'non_options' 'const char **'
 	// `-CStyleCastExpr 'const char **' <BitCast>
