@@ -107,6 +107,6 @@ Calculate warnings in file: ./testdata/tiny-web-server/tiny-web-server.go
 
 Calculate warnings in file: testdata/vorbis/vorbis.go
 		After transpiling : 0 warnings.
-		Go build : 3 warnings
+		Go build : 18 warnings
 		Unsafe   : 132
 
