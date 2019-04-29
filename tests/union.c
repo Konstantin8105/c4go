@@ -267,6 +267,54 @@ void union_with_func()
     (void)(s.uf);
 }
 
+
+union MyNumber {
+    int n;
+    char s[200];
+} obj;
+
+
+union MyNumber getNumber(char x, int state)
+{
+    union MyNumber tmp;
+    if (state)
+        tmp.n = (int)(x + 10 - 'A');
+    else {
+        switch (x) {
+            case 'A':
+                strcpy(tmp.s, "десять");
+                break;
+            case 'B':
+                strcpy(tmp.s, "одиннадцать");
+                break;
+            case 'C':
+                strcpy(tmp.s, "двенадцать");
+                break;
+            case 'D':
+                strcpy(tmp.s, "тринадцать");
+                break;
+            case 'E':
+                strcpy(tmp.s, "четырнадцать");
+                break;
+            case 'F':
+                strcpy(tmp.s, "пятнадцать");
+        }
+    }
+    return tmp;
+}
+
+
+void test_union_function()
+{
+    char k;
+    for (k = 'A'; k <= 'F'; k++)
+        printf("%c - %d\n", k, getNumber(k, 1).n);
+    for (k = 'A'; k <= 'F'; k++) {
+        obj = getNumber(k, 0);
+        printf("%c - %s\n", k, obj.s);
+    }
+}
+
 int main()
 {
     plan(50);
@@ -286,6 +334,7 @@ int main()
     union_arr_in_str();
     union_with_struct();
     union_with_func();
+	test_union_function();
 
     done_testing();
 }
