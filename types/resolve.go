@@ -412,7 +412,7 @@ func IsTypedefFunction(p *program.Program, s string) bool {
 	if v, ok := p.TypedefType[s]; ok && util.IsFunction(v) {
 		return true
 	}
-	s = string(s[0 : len(s)-len(" *")])
+	s = GetBaseType(s)
 	if v, ok := p.TypedefType[s]; ok && util.IsFunction(v) {
 		return true
 	}
