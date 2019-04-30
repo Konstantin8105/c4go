@@ -88,6 +88,11 @@ func TestBookSources(t *testing.T) {
 		// 	gitSource: "https://github.com/shenfeng/tiny-web-server.git",
 		// },
 		{
+			prefix:         "c-testsuite",
+			gitSource:      "https://github.com/c-testsuite/c-testsuite.git",
+			ignoreFileList: []string{},
+		},
+		{
 			prefix:    "VasielBook",
 			gitSource: "https://github.com/olegbukatchuk/book-c-the-examples-and-tasks.git",
 			ignoreFileList: []string{
