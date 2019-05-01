@@ -77,7 +77,7 @@ struct UUU000 {
 
 int main()
 {
-    plan(160);
+    plan(161);
 
     is_eq(valGlobInt, 42);
     is_eq(valGlobDouble, 45);
@@ -699,6 +699,12 @@ int main()
         (void)pos;
         (void)ptr;
     }
+	diag("simplificator");
+	{
+		char * s = "words";
+		int c = (unsigned char) *s++;
+		is_eq(c, 119);
+	}
 
     done_testing();
 }
