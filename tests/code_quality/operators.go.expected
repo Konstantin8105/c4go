@@ -63,13 +63,7 @@ func operators_equals() {
 	var ss []byte = []byte("words\x00")
 	var cc int32 = int32(uint8((func() []byte {
 		defer func() {
-			func() []byte {
-				tempVarUnary := ss
-				defer func() {
-					ss = ss[0+1:]
-				}()
-				return tempVarUnary
-			}()
+			ss = ss[0+1:]
 		}()
 		return ss
 	}())[0]))
