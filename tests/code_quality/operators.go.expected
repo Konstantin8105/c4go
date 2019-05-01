@@ -60,6 +60,14 @@ func operators_equals() {
 	// function
 	f(42)
 	var arr []float32 = make([]float32, 500)
+	var ss []byte = []byte("words\x00")
+	var cc int32 = int32(uint8((func() []byte {
+		defer func() {
+			ss = ss[0+1:]
+		}()
+		return ss
+	}())[0]))
 }
 
 // array
+// simplificator
