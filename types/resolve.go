@@ -497,6 +497,10 @@ func IsCArray(s string, p *program.Program) bool {
 	return false
 }
 
+func IsCUnsignedType(s string) bool {
+	return strings.Contains(s, "unsigned ")
+}
+
 // IsPointer - check type is pointer
 func IsPointer(s string, p *program.Program) bool {
 	return IsCPointer(s, p) || IsCArray(s, p)

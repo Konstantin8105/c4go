@@ -4,6 +4,7 @@ package transpiler
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/Konstantin8105/c4go/ast"
@@ -595,6 +596,23 @@ func transpileUnaryOperator(n *ast.UnaryOperator, p *program.Program) (
 	}
 
 	// Example:
+	// UnaryOperator 'unsigned int' prefix '-'
+	// `-IntegerLiteral 'unsigned int' 1
+	if il, ok := n.Children()[0].(*ast.IntegerLiteral); ok && types.IsCUnsignedType(n.Type) {
+		var value float64
+		value, err = strconv.ParseFloat(il.Value, 64)
+		if err == nil && value > 0 {
+			var resolveType string
+			resolveType, err = types.ResolveType(p, n.Type)
+			if err == nil && resolveType != "" {
+				return util.ConvertToUnsigned(goast.NewIdent(fmt.Sprintf("-%s", il.Value)), resolveType),
+					n.Type, preStmts, postStmts, nil
+			}
+		}
+		err = nil
+	}
+
+	// Example:
 	// UnaryOperator 'int' prefix '-'
 	// `-ImplicitCastExpr 'int' <LValueToRValue>
 	//   `-DeclRefExpr 'int' lvalue Var 0x3b42898 'c' 'int'
@@ -604,7 +622,6 @@ func transpileUnaryOperator(n *ast.UnaryOperator, p *program.Program) (
 	if err != nil {
 		return nil, "", nil, nil, err
 	}
-
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
 	return util.NewUnaryExpr(e, operator), eType, preStmts, postStmts, nil

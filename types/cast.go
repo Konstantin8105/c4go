@@ -362,6 +362,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		}
 		if fromType == "bool" && toType == v {
 			expr = util.NewCallExpr("noarch.BoolToInt", expr)
+			p.AddImport("github.com/Konstantin8105/c4go/noarch")
 			return CastExpr(p, expr, "int", cToType)
 		}
 	}
