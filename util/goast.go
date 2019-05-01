@@ -382,15 +382,11 @@ func NewAnonymousFunction(body, deferBody []goast.Stmt,
 // s := func() uint {
 //		var x int64
 //		x = -1
-//		if x < 0 {
-//			x += 5
-//		}
 //		return uint(x)
 //	}()
 func ConvertToUnsigned(expr goast.Expr, returnType string) goast.Expr {
 
 	varName := "c4go_temp_name"
-	// maxValue := "123123123"
 
 	if u, ok := expr.(*goast.CallExpr); ok {
 		if i, ok := u.Fun.(*goast.Ident); ok {
@@ -425,22 +421,6 @@ func ConvertToUnsigned(expr goast.Expr, returnType string) goast.Expr {
 					Tok: token.ASSIGN,
 					Rhs: []goast.Expr{expr},
 				},
-				// &goast.IfStmt{
-				// 	Cond: &goast.BinaryExpr{
-				// 		X:  goast.NewIdent(varName),
-				// 		Op: token.LSS, // <
-				// 		Y:  goast.NewIdent("0"),
-				// 	},
-				// 	Body: &goast.BlockStmt{
-				// 		List: []goast.Stmt{
-				// 			&goast.AssignStmt{
-				// 				Lhs: []goast.Expr{goast.NewIdent(varName)},
-				// 				Tok: token.ADD_ASSIGN, // +=
-				// 				Rhs: []goast.Expr{goast.NewIdent(maxValue)},
-				// 			},
-				// 		},
-				// 	},
-				// },
 				&goast.ReturnStmt{
 					Results: []goast.Expr{
 						&goast.CallExpr{

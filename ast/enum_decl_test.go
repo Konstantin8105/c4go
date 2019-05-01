@@ -30,6 +30,14 @@ func TestEnumDecl(t *testing.T) {
 			Name:       "EnumTwo",
 			ChildNodes: []Node{},
 		},
+		`0x2b002c0 prev 0x2affd78 <line:28:1, line:31:1> line:28:6 efoo`: &EnumDecl{
+			Addr:       0x2b002c0,
+			Prev:       "0x2affd78",
+			Pos:        NewPositionFromString("line:28:1, line:31:1"),
+			Position2:  " line:28:6",
+			Name:       "efoo",
+			ChildNodes: []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)

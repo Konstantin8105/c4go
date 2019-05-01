@@ -111,6 +111,14 @@ func caseSplitter(nodes ...ast.Node) (cs []ast.Node) {
 			return false
 		}
 
+		if node == (*ast.CompoundStmt)(nil) {
+			return false
+		}
+
+		if len(node.Children()) == 0 {
+			return false
+		}
+
 		switch node.(type) {
 		case *ast.CaseStmt, *ast.DefaultStmt:
 			return true
@@ -154,7 +162,8 @@ func caseSplitter(nodes ...ast.Node) (cs []ast.Node) {
 func caseMerge(nodes []ast.Node) (pre, cs []ast.Node) {
 	for i := range nodes {
 		// ignore empty *ast.CompountStmt
-		if comp, ok := nodes[i].(*ast.CompoundStmt); ok && len(comp.Children()) == 0 {
+		if comp, ok := nodes[i].(*ast.CompoundStmt); ok &&
+			(comp == (*ast.CompoundStmt)(nil) || len(comp.Children()) == 0) {
 			continue
 		}
 
@@ -222,9 +231,12 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
 	// separation body of switch on cases
-	body, ok := n.Children()[len(n.Children())-1].(*ast.CompoundStmt)
+	var body *ast.CompoundStmt
+	var ok bool
+	body, ok = n.Children()[len(n.Children())-1].(*ast.CompoundStmt)
 	if !ok {
-		err = fmt.Errorf("body is not ast.CompoundStmt : %T", n.Children()[len(n.Children())-1])
+		body = &ast.CompoundStmt{}
+		body.AddChild(n.Children()[len(n.Children())-1])
 	}
 
 	// CompoundStmt
@@ -241,6 +253,9 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 	//       |-<<<NULL>>>
 	//       `-DefaultStmt
 	//         `- ...
+	if body == (*ast.CompoundStmt)(nil) {
+		body = &ast.CompoundStmt{}
+	}
 	parts := caseSplitter(body.Children()...)
 	pre, parts := caseMerge(parts)
 	body.ChildNodes = parts

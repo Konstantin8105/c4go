@@ -34,6 +34,15 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		return
 	}
 
+	// avoid unsigned overflow
+	// ImplicitCastExpr 0x2e649b8 <col:6, col:7> 'unsigned int' <IntegralCast>
+	// `-UnaryOperator 0x2e64998 <col:6, col:7> 'int' prefix '-'
+	if types.IsCUnsignedType(n.Type) {
+		if un, ok := n.Children()[0].(*ast.UnaryOperator); ok && un.Operator == "-" {
+			un.Type = n.Type
+		}
+	}
+
 	expr, exprType, preStmts, postStmts, err = transpileToExpr(
 		n.Children()[0], p, exprIsStmt)
 	if err != nil {
