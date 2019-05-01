@@ -202,7 +202,7 @@ func simplificationCallExprPrintf(call *ast.CallExpr, p *program.Program) (
 // returned by the function) and any error. If there is an error returned you
 // can assume the first two arguments will not contain any useful information.
 func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
-	expr goast.Expr, resultType string,
+	expr *goast.CallExpr, resultType string,
 	preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
@@ -215,13 +215,9 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 
 	functionName, err := getName(p, n)
 	if err != nil {
-		if functionName == "nil" {
-			return goast.NewIdent("nil"), n.Type, preStmts, postStmts, nil
-		} else {
-			p.AddMessage(p.GenerateWarningMessage(err, n))
-			err = nil
-			functionName = undefineFunctionName
-		}
+		p.AddMessage(p.GenerateWarningMessage(err, n))
+		err = nil
+		functionName = undefineFunctionName
 	}
 	functionName = util.ConvertFunctionNameFromCtoGo(functionName)
 
