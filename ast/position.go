@@ -324,6 +324,8 @@ func setPosition(node Node, position Position) {
 		n.Pos = position
 	case *ForStmt:
 		n.Pos = position
+	case *GenericSelectionExpr:
+		n.Pos = position
 	case *GCCAsmStmt:
 		n.Pos = position
 	case *HTMLStartTagComment:

@@ -117,14 +117,14 @@ func TestBookSources(t *testing.T) {
 				"4-10.c",
 			},
 		},
-		{
-			prefix:    "KochanBook",
-			gitSource: "https://github.com/eugenetriguba/programming-in-c.git",
-			ignoreFileList: []string{
-				"5.9d.c",
-				"5.9c.c",
-			},
-		},
+		//{
+		//	prefix:    "KochanBook",
+		//	gitSource: "https://github.com/eugenetriguba/programming-in-c.git",
+		//	ignoreFileList: []string{
+		//		"5.9d.c",
+		//		"5.9c.c",
+		//	},
+		//},
 		{
 			prefix:    "DeitelBook",
 			gitSource: "https://github.com/Emmetttt/C-Deitel-Book.git",
