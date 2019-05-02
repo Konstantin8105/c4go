@@ -465,8 +465,9 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 				Tok: token.TYPE,
 				Specs: []goast.Spec{
 					&goast.TypeSpec{
-						Name: util.NewIdent(name),
-						Type: field.Type,
+						Name:   util.NewIdent(name),
+						Assign: 1,
+						Type:   field.Type,
 					},
 				},
 			})
@@ -487,8 +488,9 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 			Tok: token.TYPE,
 			Specs: []goast.Spec{
 				&goast.TypeSpec{
-					Name: util.NewIdent(name),
-					Type: util.NewTypeIdent("int32"),
+					Name:   util.NewIdent(name),
+					Assign: 1,
+					Type:   util.NewTypeIdent("int32"),
 				},
 			},
 		})

@@ -363,6 +363,57 @@ func (n nilWalker) Visit(node goast.Node) (w goast.Visitor) {
 	return n
 }
 
+type simpleDefer struct {
+}
+
+func (s simpleDefer) Visit(node goast.Node) (w goast.Visitor) {
+	// Simplification from :
+	//	var cc int32 = int32(uint8((func() []byte {
+	//		defer func() {
+	//			func() []byte {
+	//				tempVarUnary := ss
+	//				defer func() {
+	//					ss = ss[0+1:]
+	//				}()
+	//				return tempVarUnary
+	//			}()
+	//		}()
+	//		return ss
+	//	}())[0]))
+	//
+	// to:
+	//	var cc int32 = int32(uint8((func() []byte {
+	//		defer func() {
+	//			ss = ss[0+1:]
+	//		}()
+	//		return ss
+	//	}())[0]))
+	if f0, ok := node.(*goast.FuncLit); ok && f0.Body != nil {
+		if len(f0.Body.List) == 2 {
+			if df, ok := f0.Body.List[0].(*goast.DeferStmt); ok {
+				cl := df.Call
+				if fl, ok := cl.Fun.(*goast.FuncLit); ok && len(fl.Body.List) == 1 {
+					if es, ok := fl.Body.List[0].(*goast.ExprStmt); ok {
+						if cl, ok := es.X.(*goast.CallExpr); ok {
+							if fl, ok := cl.Fun.(*goast.FuncLit); ok && len(fl.Body.List) == 3 {
+								if _, ok := fl.Body.List[0].(*goast.AssignStmt); ok {
+									if df, ok := fl.Body.List[1].(*goast.DeferStmt); ok {
+										if _, ok := fl.Body.List[2].(*goast.ReturnStmt); ok {
+											f0.Body.List[0] = df
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return s
+}
+
 // String generates the whole output Go file as a string. This will include the
 // messages at the top of the file and all the rendered Go code.
 func (p *Program) String() string {
@@ -376,6 +427,29 @@ func (p *Program) String() string {
 //
 
 `))
+
+	// Simplification from :
+	//	var cc int32 = int32(uint8((func() []byte {
+	//		defer func() {
+	//			func() []byte {
+	//				tempVarUnary := ss
+	//				defer func() {
+	//					ss = ss[0+1:]
+	//				}()
+	//				return tempVarUnary
+	//			}()
+	//		}()
+	//		return ss
+	//	}())[0]))
+	//
+	// to:
+	//	var cc int32 = int32(uint8((func() []byte {
+	//		defer func() {
+	//			ss = ss[0+1:]
+	//		}()
+	//		return ss
+	//	}())[0]))
+	goast.Walk(new(simpleDefer), p.File)
 
 	// Only for debugging
 	// goast.Walk(new(nilWalker), p.File)

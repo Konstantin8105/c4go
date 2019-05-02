@@ -168,10 +168,14 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseFunctionDecl(line), nil
 	case "FullComment":
 		return parseFullComment(line), nil
+	case "FunctionNoProtoType":
+		return parseFunctionNoProtoType(line), nil
 	case "FunctionProtoType":
 		return parseFunctionProtoType(line), nil
 	case "ForStmt":
 		return parseForStmt(line), nil
+	case "GenericSelectionExpr":
+		return parseGenericSelectionExpr(line), nil
 	case "HTMLStartTagComment":
 		return parseHTMLStartTagComment(line), nil
 	case "HTMLEndTagComment":

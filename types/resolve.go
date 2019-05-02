@@ -412,7 +412,7 @@ func IsTypedefFunction(p *program.Program, s string) bool {
 	if v, ok := p.TypedefType[s]; ok && util.IsFunction(v) {
 		return true
 	}
-	s = string(s[0 : len(s)-len(" *")])
+	s = GetBaseType(s)
 	if v, ok := p.TypedefType[s]; ok && util.IsFunction(v) {
 		return true
 	}
@@ -495,6 +495,10 @@ func IsCArray(s string, p *program.Program) bool {
 		}
 	}
 	return false
+}
+
+func IsCUnsignedType(s string) bool {
+	return strings.Contains(s, "unsigned ")
 }
 
 // IsPointer - check type is pointer

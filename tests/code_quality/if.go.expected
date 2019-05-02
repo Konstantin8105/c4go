@@ -7,6 +7,8 @@
 
 package code_quality
 
+import "github.com/Konstantin8105/c4go/noarch"
+
 // if_1 - transpiled function from  C4GO/tests/code_quality/if.c:1
 func if_1() {
 	var a int32 = 5

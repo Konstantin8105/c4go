@@ -399,52 +399,69 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 		}
 	}
 
-	lhs, lhsType, newPre, newPost, err := transpileToExpr(n.Children()[0], p, false)
+	lhs, lType, newPre, newPost, err := transpileToExpr(n.Children()[0], p, false)
 	if err != nil {
 		return nil, "", nil, nil, err
 	}
 
-	baseType := lhsType
-	lhsType = util.GenerateCorrectType(lhsType)
+	baseType := lType
+	lType = util.GenerateCorrectType(lType)
 
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
-	// lhsType will be something like "struct foo"
-	structType := p.GetStruct(lhsType)
-	// added for support "struct typedef"
-	if structType == nil {
-		structType = p.GetStruct("struct " + lhsType)
+	// typedef
+
+	lhsTypes := [2]string{lType, lType}
+
+	if t, ok := ast.GetTypeIfExist(n.Children()[0]); ok {
+		lhsTypes[1] = *t
 	}
-	// added for support "union typedef"
-	if structType == nil {
-		structType = p.GetStruct("union " + lhsType)
-	}
-	// for anonymous structs
-	if structType == nil {
-		structType = p.GetStruct(baseType)
-	}
-	// for anonymous structs
-	if structType == nil {
-		structType = p.GetStruct(util.CleanCType(baseType))
-	}
-	// typedef types
-	if structType == nil {
-		structType = p.GetStruct(p.TypedefType[baseType])
-	}
-	if structType == nil {
-		t := types.GetBaseType(baseType)
-		structType = p.GetStruct(p.TypedefType[t])
-	}
-	// other case
-	for _, t := range originTypes {
+
+	var structType *program.Struct
+	var lhsType string = lhsTypes[0]
+	for _, lhsTypeLocal := range lhsTypes {
+		// lhsType will be something like "struct foo"
+		structType = p.GetStruct(lhsTypeLocal)
+		// added for support "struct typedef"
 		if structType == nil {
-			structType = p.GetStruct(util.CleanCType(t))
-		} else {
-			break
+			structType = p.GetStruct("struct " + lhsTypeLocal)
+		}
+		// added for support "union typedef"
+		if structType == nil {
+			structType = p.GetStruct("union " + lhsTypeLocal)
+		}
+		// for anonymous structs
+		if structType == nil {
+			structType = p.GetStruct(baseType)
+		}
+		// for anonymous structs
+		if structType == nil {
+			structType = p.GetStruct(util.CleanCType(baseType))
+		}
+		// typedef types
+		if structType == nil {
+			structType = p.GetStruct(p.TypedefType[baseType])
 		}
 		if structType == nil {
-			structType = p.GetStruct(types.GetBaseType(t))
-		} else {
+			t := types.GetBaseType(baseType)
+			structType = p.GetStruct(p.TypedefType[t])
+		}
+		// other case
+		for _, t := range originTypes {
+			if structType == nil {
+				structType = p.GetStruct(util.CleanCType(t))
+			} else {
+				break
+			}
+			if structType == nil {
+				structType = p.GetStruct(types.GetBaseType(t))
+			} else {
+				break
+			}
+		}
+
+		if structType != nil {
+			lhsType = lhsTypeLocal
 			break
 		}
 	}
@@ -465,7 +482,7 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 		//      to be resolved before the real field type can be determined.
 		err = fmt.Errorf("cannot determine type for LHS '%v'"+
 			", will use 'void *' for all fields. Is lvalue = %v. n.Name = %v",
-			lhsType, n.IsLvalue, n.Name)
+			lhsTypes, n.IsLvalue, n.Name)
 		p.AddMessage(p.GenerateWarningMessage(err, n))
 	} else {
 		if s, ok := structType.Fields[rhs].(string); ok {

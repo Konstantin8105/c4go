@@ -42,6 +42,12 @@ func getName(p *program.Program, firstChild ast.Node) (name string, err error) {
 	case *ast.DeclRefExpr:
 		return fc.Name, nil
 
+	case *ast.GenericSelectionExpr:
+		if len(fc.Children()) == 0 {
+			return undefineFunctionName, nil
+		}
+		return getName(p, fc.Children()[0])
+
 	case *ast.MemberExpr:
 		var expr goast.Expr
 		expr, _, _, _, err = transpileToExpr(fc, p, false)
@@ -82,6 +88,13 @@ func getName(p *program.Program, firstChild ast.Node) (name string, err error) {
 	case *ast.CStyleCastExpr:
 		if len(fc.Children()) == 0 {
 			return undefineFunctionName, nil
+		}
+		if fc.Kind == ast.CStyleCastExprNullToPointer {
+			// CallExpr 'void'
+			// `-ParenExpr 'void (*)(void)'
+			//   `-CStyleCastExpr 'void (*)(void)' <NullToPointer>
+			//     `-IntegerLiteral 'int' 0
+			return "nil", fmt.Errorf("no name for NullToPointer")
 		}
 		return getName(p, fc.Children()[0])
 

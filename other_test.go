@@ -88,6 +88,11 @@ func TestBookSources(t *testing.T) {
 		// 	gitSource: "https://github.com/shenfeng/tiny-web-server.git",
 		// },
 		{
+			prefix:         "c-testsuite",
+			gitSource:      "https://github.com/c-testsuite/c-testsuite.git",
+			ignoreFileList: []string{},
+		},
+		{
 			prefix:    "VasielBook",
 			gitSource: "https://github.com/olegbukatchuk/book-c-the-examples-and-tasks.git",
 			ignoreFileList: []string{
@@ -112,14 +117,14 @@ func TestBookSources(t *testing.T) {
 				"4-10.c",
 			},
 		},
-		{
-			prefix:    "KochanBook",
-			gitSource: "https://github.com/eugenetriguba/programming-in-c.git",
-			ignoreFileList: []string{
-				"5.9d.c",
-				"5.9c.c",
-			},
-		},
+		//{
+		//	prefix:    "KochanBook",
+		//	gitSource: "https://github.com/eugenetriguba/programming-in-c.git",
+		//	ignoreFileList: []string{
+		//		"5.9d.c",
+		//		"5.9c.c",
+		//	},
+		//},
 		{
 			prefix:    "DeitelBook",
 			gitSource: "https://github.com/Emmetttt/C-Deitel-Book.git",
