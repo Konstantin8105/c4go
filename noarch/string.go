@@ -151,10 +151,10 @@ func Memmove(ptr, src interface{}, num uint32) interface{} {
 		if s, ok := src.([]byte); ok {
 			for i := int(num); i >= 0; i-- {
 				if i >= len(s) {
-					break
+					continue
 				}
 				if i >= len(p) {
-					break
+					continue
 				}
 				p[i] = s[i]
 				if s[i] == '\x00' {
