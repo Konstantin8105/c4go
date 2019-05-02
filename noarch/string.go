@@ -149,7 +149,7 @@ func Memmove(ptr, src interface{}, num uint32) interface{} {
 	// both types is []byte
 	if p, ok := ptr.([]byte); ok {
 		if s, ok := src.([]byte); ok {
-			for i := 0; i < int(num); i++ {
+			for i := int(num); i >= 0; i-- {
 				if i >= len(s) {
 					break
 				}
