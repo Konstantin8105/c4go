@@ -24,6 +24,10 @@ type DefinitionFunction struct {
 	// If function called, then true.
 	IsCalled bool
 
+	// If function from some C standard library, then true.
+	IsCstdFunction bool
+	pntCstd        *stdFunction
+
 	// If this is not empty then this function name should be used instead
 	// of the Name. Many low level functions have an exact match with a Go
 	// function. For example, "sin()".
@@ -138,9 +142,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		"float fminf(float , float ) -> noarch.Fminf",
 		"long double fminl(long double , long double ) -> noarch.Fmin",
 
-		"double fmax(double , double ) -> noarch.Fmax",
 		"float fmaxf(float , float ) -> noarch.Fmaxf",
-		"long double fmaxl(long double , long double ) -> noarch.Fmax",
 
 		"double expm1(double) -> math.Expm1",
 		"float expm1f(float) -> noarch.Expm1f",
@@ -199,7 +201,6 @@ var builtInFunctionDefinitions = map[string][]string{
 		"long double tanhl(long double) -> math.Tanh",
 
 		"double cbrt(double) -> math.Cbrt",
-		"float cbrtf(float) -> noarch.Cbrtf",
 		"long double cbrtl(long double) -> math.Cbrt",
 
 		"double hypot(double, double) -> math.Hypot",
@@ -525,8 +526,33 @@ func (p *Program) loadFunctionDefinitions() {
 				Substitution:     substitution,
 				ReturnParameters: returnParameters,
 				Parameters:       parameters,
+				IsCstdFunction:   false,
 			})
 		}
+	}
+
+	// initialization CSTD
+	for i := range std {
+		_, a, w, e, err := util.ParseFunction(std[i].cFunc)
+		if err != nil {
+			panic(err)
+		}
+
+		// Defaults for transformations.
+		var returnParameters, parameters []int
+
+		var substitution string
+
+		p.AddFunctionDefinition(DefinitionFunction{
+			Name:             a,
+			ReturnType:       e[0],
+			ArgumentTypes:    w,
+			Substitution:     substitution,
+			ReturnParameters: returnParameters,
+			Parameters:       parameters,
+			IsCstdFunction:   true,
+			pntCstd:          &std[i],
+		})
 	}
 }
 
@@ -538,12 +564,55 @@ func (p *Program) SetCalled(name string) {
 	}
 }
 
+func (p *Program) GetCstdFunction() (src string) {
+	for i := range p.functionDefinitions {
+		if !p.functionDefinitions[i].IsCalled {
+			continue
+		}
+		if !p.functionDefinitions[i].IsCstdFunction {
+			continue
+		}
+		if p.functionDefinitions[i].pntCstd == nil {
+			continue
+		}
+		// add dependencies of packages
+		p.AddImports(p.functionDefinitions[i].pntCstd.dependPackages...)
+
+		// add dependencies of functions
+		for _, funcName := range p.functionDefinitions[i].pntCstd.dependFuncStd {
+			for j := range p.functionDefinitions {
+				if p.functionDefinitions[j].Name != funcName {
+					continue
+				}
+				def := p.functionDefinitions[j]
+				def.IsCalled = true
+				p.functionDefinitions[j] = def
+				break
+			}
+		}
+	}
+
+	for _, v := range p.functionDefinitions {
+		if !v.IsCstdFunction {
+			continue
+		}
+		if !v.IsCalled {
+			continue
+		}
+		src += v.pntCstd.functionBody
+	}
+	return
+}
+
 func (p *Program) GetOutsideCalledFunctions() (ds []DefinitionFunction) {
 	for _, v := range p.functionDefinitions {
 		if v.IncludeFile == "" {
 			continue
 		}
 		if p.PreprocessorFile.IsUserSource(v.IncludeFile) {
+			continue
+		}
+		if v.IsCstdFunction {
 			continue
 		}
 		if !v.IsCalled {

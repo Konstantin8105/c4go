@@ -148,8 +148,14 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 		p.File.Decls = append([]goast.Decl{importDecl}, p.File.Decls...)
 	}
 
+	// add functions from CSTD
+	std := p.GetCstdFunction()
+
 	// generate Go source
 	source = p.String()
+
+	// add functions from CSTD
+	source += std
 
 	// inject binding code
 	if len(bindCode) > 0 {

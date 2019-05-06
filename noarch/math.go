@@ -50,14 +50,6 @@ func Fminf(x, y float32) float32 {
 	return y
 }
 
-// Fmax returns the larger of its arguments: either x or y.
-func Fmax(x, y float64) float64 {
-	if x < y {
-		return y
-	}
-	return x
-}
-
 // Fmaxf returns the larger of its arguments: either x or y.
 func Fmaxf(x, y float32) float32 {
 	if x < y {
@@ -111,11 +103,6 @@ func Coshf(a float32) float32 {
 // Tanhf compute hyperbolic tan
 func Tanhf(a float32) float32 {
 	return float32(math.Tanh(float64(a)))
-}
-
-// Cbrt compute cube root
-func Cbrtf(x float32) float32 {
-	return float32(math.Cbrt(float64(x)))
 }
 
 // Hypotf compute the square root of the sum of the squares of x and y
