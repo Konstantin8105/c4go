@@ -201,6 +201,7 @@ func buildTree(nodes []treeNode, depth int) []ast.Node {
 		// ignore all comments in ast tree
 		case *ast.FullComment, *ast.BlockCommandComment,
 			*ast.HTMLStartTagComment, *ast.HTMLEndTagComment,
+			*ast.AllocAlignAttr,
 			*ast.InlineCommandComment, *ast.ParagraphComment,
 			*ast.ParamCommandComment, *ast.TextComment,
 			*ast.VerbatimLineComment, *ast.VerbatimBlockComment,

@@ -352,6 +352,8 @@ func setPosition(node Node, position Position) {
 		n.Pos = position
 	case *LinkageSpecDecl:
 		n.Pos = position
+	case *AllocAlignAttr:
+		n.Pos = position
 	case *MallocAttr:
 		n.Pos = position
 	case *MaxFieldAlignmentAttr:
