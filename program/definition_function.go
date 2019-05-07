@@ -76,10 +76,6 @@ var builtInFunctionDefinitions = map[string][]string{
 		// errno.h
 		"int * __errno_location(void ) -> noarch.ErrnoLocation",
 	},
-	"ctype.h": {
-		// linux/ctype.h
-		"const unsigned short int** __ctype_b_loc() -> linux.CtypeLoc",
-	},
 	"math.h": {
 		// linux/math.h
 		"int __signbit(double) -> noarch.Signbitd",
@@ -495,8 +491,7 @@ func (p *Program) loadFunctionDefinitions() {
 				}
 			}
 
-			if strings.HasPrefix(substitution, "linux.") ||
-				strings.HasPrefix(substitution, "noarch.") {
+			if strings.HasPrefix(substitution, "noarch.") {
 				substitution = "github.com/Konstantin8105/c4go/" + substitution
 			}
 
