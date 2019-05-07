@@ -86,14 +86,8 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int __signbitl(long double) -> noarch.Signbitl",
 		"int __builtin_signbit(double) -> noarch.Signbitd",
 		"int __builtin_signbitl(long double) -> noarch.Signbitl",
-		"int __isnanf(float) -> linux.IsNanf",
 		"int __isnan(double) -> noarch.IsNaN",
 		"int __isnanl(long double) -> noarch.IsNaN",
-		"int __isinff(float) -> linux.IsInff",
-		"int __isinf(double) -> linux.IsInf",
-		"int __isinfl(long double) -> linux.IsInf",
-		"double __builtin_nanf(const char*) -> linux.NaN",
-		"float __builtin_inff() -> linux.Inff",
 
 		// math.h
 		"int __inline_signbitd(double) -> noarch.Signbitd",

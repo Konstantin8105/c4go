@@ -218,6 +218,69 @@ func toupper(_c int32) int32 {
 
 
 
+//---
+// __isnanf from math.h
+// c function : int __isnanf(float)
+// dep pkg    : math
+// dep func   : BoolToInt
+func __isnanf(x float32) int32 {
+	return BoolToInt(math.IsNaN(float64(x)))
+}
+
+
+
+//---
+// __builtin_inff from math.h
+// c function : float __builtin_inff()
+// dep pkg    : math
+// dep func   : 
+func __builtin_inff() float32 {
+	return float32(math.Inf(0))
+}
+
+
+
+//---
+// __isinff from math.h
+// c function : int __isinff(float)
+// dep pkg    : math
+// dep func   : BoolToInt
+func __isinff(x float32) int32 {
+	return BoolToInt(math.IsInf(float64(x), 0))
+}
+
+
+
+//---
+// __isinf from math.h
+// c function : int __isinf(double)
+// dep pkg    : math
+// dep func   : BoolToInt
+func __isinf(x float64) int32 {
+	return BoolToInt(math.IsInf(x, 0))
+}
+
+
+//---
+// __isinfl from math.h
+// c function : int __isinfl(long double)
+// dep pkg    : math
+// dep func   : BoolToInt
+func __isinfl(x float64) int32 {
+	return BoolToInt(math.IsInf(x, 0))
+}
+
+
+
+
+//---
+// __builtin_nanf from math.h
+// c function : double __builtin_nanf(const char*)
+// dep pkg    : math
+// dep func   : 
+func __builtin_nanf(s []byte) float64 {
+	return math.NaN()
+}
 
 
 
