@@ -88,10 +88,8 @@ var builtInFunctionDefinitions = map[string][]string{
 	},
 	"math.h": {
 		// linux/math.h
-		"int __signbitf(float) -> noarch.Signbitf",
 		"int __signbit(double) -> noarch.Signbitd",
 		"int __signbitl(long double) -> noarch.Signbitl",
-		"int __builtin_signbitf(float) -> noarch.Signbitf",
 		"int __builtin_signbit(double) -> noarch.Signbitd",
 		"int __builtin_signbitl(long double) -> noarch.Signbitl",
 		"int __isnanf(float) -> linux.IsNanf",
@@ -104,7 +102,6 @@ var builtInFunctionDefinitions = map[string][]string{
 		"float __builtin_inff() -> linux.Inff",
 
 		// math.h
-		"int __inline_signbitf(float) -> noarch.Signbitf",
 		"int __inline_signbitd(double) -> noarch.Signbitd",
 		"int __inline_signbitl(long double) -> noarch.Signbitl",
 
@@ -133,10 +130,6 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double copysign(double, double) -> math.Copysign",
 		"float copysignf(float, float) -> noarch.Copysignf",
 		"long double copysignl(long double, long double) -> math.Copysign",
-
-		"double fma(double, double, double) -> noarch.Fma",
-		"float fmaf(float, float, float) -> noarch.Fmaf",
-		"long double fmal(long double, long double, long double) -> noarch.Fma",
 
 		"double fmin(double , double ) -> noarch.Fmin",
 		"float fminf(float , float ) -> noarch.Fminf",
@@ -538,20 +531,12 @@ func (p *Program) loadFunctionDefinitions() {
 			panic(err)
 		}
 
-		// Defaults for transformations.
-		var returnParameters, parameters []int
-
-		var substitution string
-
 		p.AddFunctionDefinition(DefinitionFunction{
-			Name:             a,
-			ReturnType:       e[0],
-			ArgumentTypes:    w,
-			Substitution:     substitution,
-			ReturnParameters: returnParameters,
-			Parameters:       parameters,
-			IsCstdFunction:   true,
-			pntCstd:          &std[i],
+			Name:           a,
+			ReturnType:     e[0],
+			ArgumentTypes:  w,
+			IsCstdFunction: true,
+			pntCstd:        &std[i],
 		})
 	}
 }
