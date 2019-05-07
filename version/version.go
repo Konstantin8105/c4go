@@ -1,4 +1,4 @@
-// go:generate go run make_version.go
+//go:generate go run ./make_version.go
 
 // The version package is used by the release process to add an
 // informative version string to some commands.

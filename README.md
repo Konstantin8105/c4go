@@ -550,3 +550,19 @@ go tool pprof ./testdata/cpu.out
 ```
 
 For more information, see [Profiling Go Programs](https://blog.golang.org/profiling-go-programs).
+
+## Installation
+
+```bash
+# move to project source
+cd $GOPATH/src/github.com/Konstantin8105/c4go
+
+# generate version
+go generate ./...
+
+# install
+go install
+
+# testing
+c4go version
+```
