@@ -172,6 +172,29 @@ func memcpy(dst, src interface{}, size uint32) interface{} {
 	return dst
 }
 
+//---
+// __assert_fail from assert.h
+// c function : bool __assert_fail(const char*, const char*, unsigned int, const char*)
+// dep pkg    : os github.com/Konstantin8105/c4go/noarch
+// dep func   :
+func __assert_fail(
+	expression, filePath []byte,
+	lineNumber uint32,
+	functionName []byte,
+) bool {
+	fmt.Fprintf(
+		os.Stderr,
+		"a.out: %s:%d: %s: Assertion %s%s' failed.\n",
+		noarch.CStringToString(filePath),
+		lineNumber,
+		noarch.CStringToString(functionName),
+		string(byte(96)),
+		noarch.CStringToString(expression),
+	)
+	os.Exit(134)
+
+	return true
+}
 
 
 `
