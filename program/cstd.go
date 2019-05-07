@@ -7,6 +7,7 @@ import (
 
 type stdFunction struct {
 	cFunc          string
+	includeHeader  string
 	functionBody   string
 	dependPackages []string
 	dependFuncStd  []string
@@ -125,6 +126,52 @@ func fmal(x, y, z float64) float64 {
 func fmaf(x, y, z float32) float32 {
 	return x*y + z
 }
+
+
+//---
+// realloc is function from stdlib.h.
+// c function : void * realloc(void* , size_t )
+// dep pkg    : reflect
+// dep func   : memcpy
+func realloc(ptr interface{}, size uint32) interface{} {
+	if ptr == nil {
+		return make([]byte, size)
+	}
+	elemType := reflect.TypeOf(ptr).Elem()
+	ptrNew := reflect.MakeSlice(reflect.SliceOf(elemType), int(size), int(size)).Interface()
+	// copy elements
+	memcpy(ptrNew, ptr, size)
+	return ptrNew
+}
+
+
+//---
+// memcpy is function from string.h.
+// c function : void * memcpy( void * , const void * , size_t )
+// dep pkg    : reflect
+// dep func   :
+func memcpy(dst, src interface{}, size uint32) interface{} {
+	switch reflect.TypeOf(src).Kind() {
+	case reflect.Slice:
+		s := reflect.ValueOf(src)
+		d := reflect.ValueOf(dst)
+		if s.Len() == 0 {
+			return dst
+		}
+		if s.Len() > 0 {
+			size /= uint32(int(s.Index(0).Type().Size()))
+		}
+		var val reflect.Value
+		for i := 0; i < int(size); i++ {
+			if i < s.Len() {
+				val = s.Index(i)
+			}
+			d.Index(i).Set(val)
+		}
+	}
+	return dst
+}
+
 
 
 `

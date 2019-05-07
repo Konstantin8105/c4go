@@ -603,12 +603,6 @@ func (p *Program) GetOutsideCalledFunctions() (ds []DefinitionFunction) {
 		if !v.IsCalled {
 			continue
 		}
-		if v.Name == "memcpy" && p.IsHaveMemcpy {
-			continue
-		}
-		if v.Name == "realloc" && p.IsHaveRealloc {
-			continue
-		}
 		ds = append(ds, v)
 	}
 	return
