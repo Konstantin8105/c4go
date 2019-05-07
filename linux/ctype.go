@@ -84,13 +84,3 @@ func CtypeLoc() [][]uint16 {
 
 	return [][]uint16{characterTable}
 }
-
-// ToLower handles tolower().
-func ToLower(_c int32) int32 {
-	return int32(unicode.ToLower(rune(_c)))
-}
-
-// ToUpper handles toupper().
-func ToUpper(_c int32) int32 {
-	return int32(unicode.ToUpper(rune(_c)))
-}

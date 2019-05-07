@@ -197,6 +197,32 @@ func __assert_fail(
 }
 
 
+//---
+// tolower from ctype.h
+// c function : int tolower(int)
+// dep pkg    : unicode
+// dep func   :
+func tolower (_c int32) int32 {
+	return int32(unicode.ToLower(rune(_c)))
+}
+
+
+//---
+// toupper from ctype.h
+// c function : int toupper(int)
+// dep pkg    : unicode
+// dep func   :
+func toupper(_c int32) int32 {
+	return int32(unicode.ToUpper(rune(_c)))
+}
+
+
+
+
+
+
+
+
 `
 	// split source by parts
 	var (

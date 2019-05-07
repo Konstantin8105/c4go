@@ -76,15 +76,9 @@ var builtInFunctionDefinitions = map[string][]string{
 		// errno.h
 		"int * __errno_location(void ) -> noarch.ErrnoLocation",
 	},
-	"assert.h": {
-		// linux/assert.h
-		"bool __assert_fail(const char*, const char*, unsigned int, const char*) -> linux.AssertFail",
-	},
 	"ctype.h": {
 		// linux/ctype.h
 		"const unsigned short int** __ctype_b_loc() -> linux.CtypeLoc",
-		"int tolower(int) -> linux.ToLower",
-		"int toupper(int) -> linux.ToUpper",
 	},
 	"math.h": {
 		// linux/math.h
