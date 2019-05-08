@@ -15,13 +15,29 @@ Notes:
 * Transpiler works on linux machines
 * Need to have installed `clang`. See [llvm download page](http://releases.llvm.org/download.html)
 
+
+
 # Installation
 
-`c4go` requires Go 1.10 or newer.
+Installation with version generation.
 
 ```bash
+# get code
 go get -u github.com/Konstantin8105/c4go
+
+# move to project source
+cd $GOPATH/src/github.com/Konstantin8105/c4go
+
+# generate version
+go generate ./...
+
+# install
+go install
+
+# testing
+c4go version
 ```
+
 
 # Usage example
 
@@ -550,18 +566,3 @@ go tool pprof ./testdata/cpu.out
 
 For more information, see [Profiling Go Programs](https://blog.golang.org/profiling-go-programs).
 
-## Installation
-
-```bash
-# move to project source
-cd $GOPATH/src/github.com/Konstantin8105/c4go
-
-# generate version
-go generate ./...
-
-# install
-go install
-
-# testing
-c4go version
-```

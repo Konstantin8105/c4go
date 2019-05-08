@@ -18,3 +18,4 @@ tests/debug*.h
 examples/*.go
 debug.txt
 tests/bind/debug.bind.h
+version/git_version.go
