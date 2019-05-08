@@ -391,6 +391,9 @@ func transpileCXXRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		case *ast.CXXRecordDecl:
 			// ignore
 
+		case *ast.AccessSpecDecl:
+			// ignore
+
 		case *ast.FieldDecl:
 			var f *goast.Field
 			f, err = transpileFieldDecl(p, v)
@@ -401,7 +404,7 @@ func transpileCXXRecordDecl(p *program.Program, n *ast.RecordDecl) (
 
 		default:
 			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("Cannot transpilation field in CXXRecordDecl : %T", v), n))
+				fmt.Errorf("Cannot transpilation field: %T", v), n))
 		}
 	}
 
