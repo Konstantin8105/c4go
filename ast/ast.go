@@ -204,6 +204,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseLabelStmt(line), nil
 	case "LinkageSpecDecl":
 		return parseLinkageSpecDecl(line), nil
+	case "AllocAlignAttr":
+		return parseAllocAlignAttr(line), nil
 	case "MallocAttr":
 		return parseMallocAttr(line), nil
 	case "MaxFieldAlignmentAttr":
