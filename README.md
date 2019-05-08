@@ -3,7 +3,6 @@
 [![codecov](https://codecov.io/gh/Konstantin8105/c4go/branch/master/graph/badge.svg)](https://codecov.io/gh/Konstantin8105/c4go)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Konstantin8105/c4go/master/LICENSE)
 [![GoDoc](https://godoc.org/github.com/Konstantin8105/c4go?status.svg)](https://godoc.org/github.com/Konstantin8105/c4go)
-[![Maintainability](https://api.codeclimate.com/v1/badges/b8d0bb5533207cce5ed3/maintainability)](https://codeclimate.com/github/Konstantin8105/c4go/maintainability)
 
 A tool for [transpiling](https://en.wikipedia.org/wiki/Source-to-source_compiler) C code to Go code.
 
