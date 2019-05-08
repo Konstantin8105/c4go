@@ -3,7 +3,6 @@
 [![codecov](https://codecov.io/gh/Konstantin8105/c4go/branch/master/graph/badge.svg)](https://codecov.io/gh/Konstantin8105/c4go)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Konstantin8105/c4go/master/LICENSE)
 [![GoDoc](https://godoc.org/github.com/Konstantin8105/c4go?status.svg)](https://godoc.org/github.com/Konstantin8105/c4go)
-[![Maintainability](https://api.codeclimate.com/v1/badges/b8d0bb5533207cce5ed3/maintainability)](https://codeclimate.com/github/Konstantin8105/c4go/maintainability)
 
 A tool for [transpiling](https://en.wikipedia.org/wiki/Source-to-source_compiler) C code to Go code.
 
@@ -287,6 +286,162 @@ func c4goUnsafeConvert_int32(c4go_name *int32) []int32 {
 }
 ```
 
+# Example of transpilation [neatvi](https://github.com/aligrudi/neatvi).
+
+```bash
+# clone git repository
+git clone https://github.com/aligrudi/neatvi.git
+
+# move in folder
+cd neatvi
+
+# look in Makefile
+cat Makefile
+```
+Makefile:
+```
+CC = cc
+CFLAGS = -Wall -O2
+LDFLAGS =
+
+OBJS = vi.o ex.o lbuf.o mot.o sbuf.o ren.o dir.o syn.o reg.o led.o \
+	uc.o term.o rset.o regex.o cmd.o conf.o
+
+all: vi
+
+conf.o: conf.h
+
+%.o: %.c
+	$(CC) -c $(CFLAGS) $<
+vi: $(OBJS)
+	$(CC) -o $@ $(OBJS) $(LDFLAGS)
+clean:
+rm -f *.o vi
+```
+As we see not need any specific, for example `-clang-flag`.
+
+Let's try transpile:
+```bash
+c4go transpile *.c
+```
+Result:
+```
+panic: clang failed: exit status 1:
+
+/temp/neatvi/reg.c:6:14: error: redefinition of 'bufs' with a different type: 'char *[256]' vs 'struct buf [8]'
+static char *bufs[256];
+             ^
+/temp/neatvi/ex.c:35:3: note: previous definition is here
+} bufs[8];
+  ^
+/temp/neatvi/reg.c:12:9: error: returning 'struct buf' from a function with incompatible result type 'char *'
+ return bufs[c];
+        ^~~~~~~
+/temp/neatvi/reg.c:17:81: error: invalid operands to binary expression ('int' and 'struct buf')
+ char *pre = ((*__ctype_b_loc ())[(int) ((c))] & (unsigned short int) _ISupper) && bufs[tolower(c)] ? bufs[tolower(c)] : "";
+             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ^  ~~~~~~~~~~~~~~~~
+/temp/neatvi/reg.c:21:7: error: passing 'struct buf' to parameter of incompatible type 'void *'
+ free(bufs[tolower(c)]);
+      ^~~~~~~~~~~~~~~~
+/usr/include/stdlib.h:483:25: note: passing argument to parameter '__ptr' here
+extern void free (void *__ptr) __attribute__ ((__nothrow__ ));
+                        ^
+/temp/neatvi/reg.c:22:19: error: assigning to 'struct buf' from incompatible type 'char *'
+ bufs[tolower(c)] = buf;
+                  ^ ~~~
+/temp/neatvi/reg.c:43:8: error: passing 'struct buf' to parameter of incompatible type 'void *'
+  free(bufs[i]);
+       ^~~~~~~
+/usr/include/stdlib.h:483:25: note: passing argument to parameter '__ptr' here
+extern void free (void *__ptr) __attribute__ ((__nothrow__ ));
+                        ^
+/temp/neatvi/regex.c:98:12: error: static declaration of 'uc_len' follows non-static declaration
+static int uc_len(char *s)
+           ^
+/temp/neatvi/vi.h:83:5: note: previous declaration is here
+int uc_len(char *s);
+    ^
+/temp/neatvi/regex.c:200:14: error: static declaration of 'uc_beg' follows non-static declaration
+static char *uc_beg(char *beg, char *s)
+             ^
+/temp/neatvi/vi.h:101:7: note: previous declaration is here
+char *uc_beg(char *beg, char *s);
+      ^
+/temp/neatvi/vi.c:635:12: error: redefinition of 'linecount'
+static int linecount(char *s)
+           ^
+/temp/neatvi/lbuf.c:124:12: note: previous definition is here
+static int linecount(char *s)
+           ^
+9 errors generated.
+
+
+goroutine 1 [running]:
+main.generateAstLines(0x1, 0x0, 0xc000010140, 0x10, 0x10, 0x0, 0x0, 0x0, 0x0, 0x0, ...)
+	/go/src/github.com/Konstantin8105/c4go/main.go:438 +0xd40
+main.Start(0x1, 0x0, 0xc000010140, 0x10, 0x10, 0x0, 0x0, 0x0, 0x0, 0x0, ...)
+	/go/src/github.com/Konstantin8105/c4go/main.go:356 +0xa9
+main.runCommand(0x0)
+	/go/src/github.com/Konstantin8105/c4go/main.go:723 +0xa45
+main.main()
+	/go/src/github.com/Konstantin8105/c4go/main.go:556 +0x22
+```
+That error is good and enought information for next step of transpilation.
+Let's clarify one of them - we see 2 function with same function name and
+if you open files and compare.
+```
+/temp/neatvi/vi.c:635:12: error: redefinition of 'linecount'
+static int linecount(char *s)
+
+/temp/neatvi/lbuf.c:124:12: note: previous definition is here
+static int linecount(char *s)
+```
+This is 2 absolute identical function, so we can remove one of them.
+I choose remove function `linecount` from file `vi.c`, because in
+according to error - it is duplicate.
+
+Also remove next function in according to errors:
+* `vi.c` function `linecount`
+* `regex.c` function `uc_len`
+* `regex.c` function `uc_bed`
+
+Next error is about duplicate of variable names:
+```
+/temp/neatvi/reg.c:6:14: error: redefinition of 'bufs' with a different type: 'char *[256]' vs 'struct buf [8]'
+static char *bufs[256];
+             ^
+/temp/neatvi/ex.c:35:3: note: previous definition is here
+} bufs[8];
+```
+Let's replace variable name in file `reg.c` and run:
+```
+sed -i.bak 's/bufs/bufs_postfix/g' reg.c
+```
+
+Now, let's try again and output in file `vi.go`:
+```bash
+c4go transpile -o vi.go *.c
+```
+Now tranpiled without `clang` error. Look the result:
+```bash
+less vi.go
+```
+We see warning of lose some types:
+```
+// Warning (*ast.BinaryOperator):  /temp/neatvi/cmd.c:20 :Cannot transpile BinaryOperator with type 'int' : result type = {}. Error: operator is `=`. Cannot casting {__pid_t -> int}. err = Cannot resolve type '__pid_t' : I couldn't find an appropriate Go type for the C type '__pid_t'.
+```
+
+For fix that add flag `-s` for adding all type from C standard library:
+```bash
+c4go transpile -o vi.go -s *.c
+```
+
+Now, all is Ok. Look the result:
+```bash
+less vi.go
+```
+
+
 # C standard library implementation
 
 ```
@@ -394,3 +549,19 @@ go tool pprof ./testdata/cpu.out
 ```
 
 For more information, see [Profiling Go Programs](https://blog.golang.org/profiling-go-programs).
+
+## Installation
+
+```bash
+# move to project source
+cd $GOPATH/src/github.com/Konstantin8105/c4go
+
+# generate version
+go generate ./...
+
+# install
+go install
+
+# testing
+c4go version
+```

@@ -264,17 +264,6 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		}
 	}
 
-	if p.IncludeHeaderIsExists("stdlib.h") && functionName == "realloc" {
-		p.IsHaveRealloc = true
-		p.IsHaveMemcpy = true
-		p.SetCalled(functionName)
-	}
-
-	if p.IncludeHeaderIsExists("string.h") && functionName == "memcpy" {
-		p.IsHaveMemcpy = true
-		p.SetCalled(functionName)
-	}
-
 	if p.IncludeHeaderIsExists("stdio.h") &&
 		(functionName == "setbuf" || functionName == "setvbuf") {
 		// ignore function

@@ -827,6 +827,16 @@ func TestWrongAST(t *testing.T) {
 		}
 	}()
 
+	oldstderr := os.Stderr
+	defer func() {
+		os.Stderr = oldstderr
+	}()
+	new, err := ioutil.TempFile("", "stderr")
+	if err != nil {
+		t.Fatal(err)
+	}
+	os.Stderr = new
+
 	lines, filePP, args, err := generateASTtree()
 	if err != nil {
 		t.Error(err)

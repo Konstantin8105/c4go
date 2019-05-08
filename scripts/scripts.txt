@@ -26,8 +26,8 @@ Calculate warnings in file: ./testdata/minmad/minmad.go
 
 Calculate warnings in file: ./testdata/neateqn/neateqn.go
 		After transpiling : 0 warnings.
-		Go build : 6 warnings
-		Unsafe   : 24
+		Go build : 0 warnings
+		Unsafe   : 76
 
 Calculate warnings in file: ./testdata/neatmkfn/neatmkfn.go
 		After transpiling : 0 warnings.
