@@ -236,6 +236,8 @@ func setPosition(node Node, position Position) {
 		n.Pos = position
 	case *AlignedAttr:
 		n.Pos = position
+	case *GNUInlineAttr:
+		n.Pos = position
 	case *AnnotateAttr:
 		n.Pos = position
 	case *AllocSizeAttr:
