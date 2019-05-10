@@ -608,7 +608,7 @@ func runCommand() int {
 
 		makeCommand = flag.NewFlagSet(
 			"make", flag.ContinueOnError)
-		makeCompilerFlag = debugCommand.String(
+		makeCompilerFlag = makeCommand.String(
 			"CC", "clang", "default compiler")
 
 		compilerCommand = flag.NewFlagSet(
@@ -741,7 +741,7 @@ func runCommand() int {
 
 		// write configuration file
 		if err := ioutil.WriteFile(configFilename,
-			[]byte(fmt.Sprintf("%s\n%", *makeCompilerFlag, strings.Join(makeCommand.Args(), " "))),
+			[]byte(fmt.Sprintf("%s\n%s", *makeCompilerFlag, strings.Join(makeCommand.Args(), " "))),
 			0644); err != nil {
 			fmt.Fprintf(stderr, "%s", err)
 			return 87
@@ -761,10 +761,28 @@ func runCommand() int {
 			fmt.Fprintf(stderr, "%s\n%v", stderrE.String(), err)
 			return 89
 		}
-		fmt.Fprintf(os.Stdout, "c4go : End of make ...\n")
 
-		// all is ok
-		return 0
+		// transpile
+		fmt.Fprintf(os.Stdout, "c4go : Make : run transpilation\n")
+
+		dat, err := ioutil.ReadFile(configFilenameCompiler)
+		if err != nil {
+			fmt.Fprintf(stderr, "%v", err)
+			return 84
+		}
+		parts := strings.Split(strings.Replace(string(dat), "\n", " ", -1), " ")
+
+		args = convertArg(parts)
+
+		fmt.Fprintf(os.Stdout, "c4go : Make : Transpilation. inputFiles: %s\n", args.inputFiles)
+		fmt.Fprintf(os.Stdout, "c4go : Make : Transpilation. outputFile: %s\n", args.outputFile)
+		fmt.Fprintf(os.Stdout, "c4go : Make : Transpilation. clangFlags: %s\n", args.clangFlags)
+
+		if len(args.inputFiles) == 0 {
+			return 0
+		}
+
+		fmt.Fprintf(os.Stdout, "c4go : End of make ...\n")
 
 	case "compiler":
 		var compilerName string = "clang"
@@ -807,11 +825,18 @@ func runCommand() int {
 			return 103
 		}
 
-		// TODO: transpile
+		// transpile
 		fmt.Fprintf(os.Stdout, "c4go : Compiler: run transpilation\n")
 
-		// all is ok
-		return 0
+		args = convertArg(os.Args[2:])
+
+		fmt.Fprintf(os.Stdout, "c4go : Transpilation. inputFiles: %s\n", args.inputFiles)
+		fmt.Fprintf(os.Stdout, "c4go : Transpilation. outputFile: %s\n", args.outputFile)
+		fmt.Fprintf(os.Stdout, "c4go : Transpilation. clangFlags: %s\n", args.clangFlags)
+
+		if len(args.inputFiles) == 0 {
+			return 0
+		}
 
 	case "version":
 		fmt.Fprint(stderr, version.Version())
@@ -828,4 +853,34 @@ func runCommand() int {
 	}
 
 	return 0
+}
+
+func convertArg(ps []string) (args ProgramArgs) {
+	args.state = StateTranspile
+	args.outsideStructs = true
+	args.packageName = "main"
+	args.verbose = false
+	args.cppCode = false
+
+	// examples compilerCommand.Args():
+	// -c -Wall -O2 conf.c
+	// -o vi vi.o ex.o lbuf.o mot.o
+	for i := 0; i < len(ps); i++ {
+		if ps[i] == "-o" && i+1 <= len(ps) && !strings.HasSuffix(ps[i+1], ".o") {
+			args.outputFile = ps[i+1] + ".go"
+			i++
+			continue
+		}
+		if strings.HasSuffix(ps[i], ".c") {
+			args.inputFiles = append(args.inputFiles, ps[i])
+			continue
+		}
+		if strings.HasSuffix(ps[i], ".o") {
+			// ignore object file
+			continue
+		}
+		args.clangFlags = append(args.clangFlags, ps[i])
+	}
+
+	return
 }
