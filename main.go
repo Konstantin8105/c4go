@@ -862,10 +862,25 @@ func convertArg(ps []string) (args ProgramArgs) {
 	args.verbose = false
 	args.cppCode = false
 
+	notInclude := []string{
+		// optimization
+		"-O1", "-O2", "-O3", "-O4",
+	}
+
 	// examples compilerCommand.Args():
 	// -c -Wall -O2 conf.c
 	// -o vi vi.o ex.o lbuf.o mot.o
 	for i := 0; i < len(ps); i++ {
+		found := false
+		for _, ni := range notInclude {
+			if ps[i] == ni {
+				found = true
+				break
+			}
+		}
+		if found {
+			continue
+		}
 		if ps[i] == "-o" && i+1 <= len(ps) && !strings.HasSuffix(ps[i+1], ".o") {
 			args.outputFile = ps[i+1] + ".go"
 			i++
