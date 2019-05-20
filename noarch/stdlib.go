@@ -1,7 +1,6 @@
 package noarch
 
 import (
-	"io"
 	"math"
 	"math/rand"
 	"os"
@@ -362,29 +361,11 @@ func System(str []byte) int32 {
 	re := regexp.MustCompile(`[^\s"']+|([^\s"']*"([^"]*)"[^\s"']*)+|'([^']*)`)
 	args := re.FindAllString(input, -1)
 	cmd := exec.Command(args[0], args[1:]...)
-	var stdout, stderr []byte
-	var errStdout, errStderr error
 
-	// These are unused in integration tests, so silence "declared but unused"
-	// errors during integration testing.
-	_ = stdout
-	_ = stderr
-	_ = errStdout
-	_ = errStderr
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
-	stdoutIn, _ := cmd.StdoutPipe()
-	stderrIn, _ := cmd.StderrPipe()
-	cmd.Start()
-
-	go func() {
-		stdout, errStdout = capture(os.Stdout, stdoutIn)
-	}()
-
-	go func() {
-		stderr, errStderr = capture(os.Stderr, stderrIn)
-	}()
-
-	err := cmd.Wait()
+	err := cmd.Run()
 
 	if err != nil {
 		if strings.HasPrefix(err.Error(), "exit status ") {
@@ -472,35 +453,6 @@ func atof(str []byte) (float64, int) {
 	}
 
 	return 0, 0
-}
-
-// The capture function is used by noarch.System to imitate
-// the behavior of C's system(3) instead of golang's exec by
-// grabbing command output as it is generated and displays
-// it rather than displaying it after execution completes.
-func capture(w io.Writer, r io.Reader) ([]byte, error) {
-	var out []byte
-	buf := make([]byte, 1024, 1024)
-	for {
-		n, err := r.Read(buf[:])
-		if n > 0 {
-			d := buf[:n]
-			out = append(out, d...)
-			_, err := w.Write(d)
-			if err != nil {
-				return out, err
-			}
-		}
-		if err != nil {
-			// io.EOF is not actually an error
-			if err == io.EOF {
-				err = nil
-			}
-			return out, err
-		}
-	}
-	panic(true)
-	return nil, nil
 }
 
 // transpiling "atexit"
