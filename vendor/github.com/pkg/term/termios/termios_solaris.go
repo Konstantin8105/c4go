@@ -101,26 +101,27 @@ func Cfsetospeed(attr *syscall.Termios, speed uintptr) error {
 	return err
 }
 
+
 // tiosToUnix copies a syscall.Termios to a x/sys/unix.Termios.
 // This is needed since type conversions between the two fail due to
 // more recent x/sys/unix.Termios renaming the padding field.
 func tiosToUnix(st *syscall.Termios) *unix.Termios {
 	return &unix.Termios{
-		Iflag: st.Iflag,
-		Oflag: st.Oflag,
-		Cflag: st.Cflag,
-		Lflag: st.Lflag,
-		Cc:    st.Cc,
+		Iflag:  st.Iflag,
+		Oflag:  st.Oflag,
+		Cflag:  st.Cflag,
+		Lflag:  st.Lflag,
+		Cc:     st.Cc,
 	}
 }
 
 // tiosToSyscall copies a x/sys/unix.Termios to a syscall.Termios.
 func tiosToSyscall(ut *unix.Termios) *syscall.Termios {
 	return &syscall.Termios{
-		Iflag: ut.Iflag,
-		Oflag: ut.Oflag,
-		Cflag: ut.Cflag,
-		Lflag: ut.Lflag,
-		Cc:    ut.Cc,
+		Iflag:  ut.Iflag,
+		Oflag:  ut.Oflag,
+		Cflag:  ut.Cflag,
+		Lflag:  ut.Lflag,
+		Cc:     ut.Cc,
 	}
 }
