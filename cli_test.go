@@ -27,25 +27,28 @@ var cliTests = map[string][]string{
 	"TranspileNoFilesHelp": {"test", "transpile"},
 
 	// Test that help is printed if help flag is set, even if file is given
-	"TranspileHelpFlag": {"test", "transpile", "-h", "foo.c"},
+	"TranspileHelpFlag": {"test", "transpile", "-h"},
 
 	// Test that help is printed if no files are given
 	"AstNoFilesHelp": {"test", "ast"},
 
 	// Test that help is printed if help flag is set, even if file is given
-	"AstHelpFlag": {"test", "ast", "-h", "foo.c"},
+	"AstHelpFlag": {"test", "ast", "-h"},
 
 	// Test that help is printed if no files are given
 	"DebugNoFilesHelp": {"test", "debug"},
 
 	// Test that help is printed if help flag is set, even if file is given
-	"DebugHelpFlag": {"test", "debug", "-h", "foo.c"},
+	"DebugHelpFlag": {"test", "debug", "-h"},
 
 	// Test that version is printed
 	"Version": {"test", "version"},
 }
 
 func TestCLI(t *testing.T) {
+
+	snapshotter := cupaloy.New(cupaloy.SnapshotSubdirectory("tests"))
+
 	for testName, args := range cliTests {
 		t.Run(testName, func(t *testing.T) {
 			output, teardown := setupTest(args)
@@ -53,7 +56,7 @@ func TestCLI(t *testing.T) {
 
 			runCommand()
 
-			err := cupaloy.SnapshotMulti(testName, output)
+			err := snapshotter.SnapshotMulti(testName, output)
 			if err != nil {
 				t.Fatalf("error: %s", err)
 			}
