@@ -21,6 +21,7 @@ mkdir -p ./testdata/
 
 		sed -i.bak '1,33d'      $TEMP_FOLDER/$NAME.c
 		sed -i.bak '634avoid '  $TEMP_FOLDER/$NAME.c
+		sed -i.bak '140a(void)(i);'  $TEMP_FOLDER/$NAME.c
 	fi
 
 # remove go files from last transpilation
@@ -54,20 +55,58 @@ mkdir -p ./testdata/
 if [ "$1" == "-d" ]; then
 	# try to run
 		echo " move to folder"
-			cd ./testdata/kilo/
+			cd ./testdata/$NAME/
 		echo "step 1: create debug file"
-			$C4GO debug kilo.c
+			$C4GO debug $NAME.c
 		echo "step 2: prepare output data"
 			echo "" > output.txt
 			echo "" > output.g.txt
 			echo "" > output.c.txt
 		echo "step 3: prepare test script"
-			echo -e 'Hello my dear friend\x0D\x13\x11' > script.txt
+			echo '#-----------#
+# Example 1 #
+#-----------#
+
+#=========
+| POINTS |
+=========#
+9 # number of points #
+
+# Nodes which define the boundary #
+0:  0.0  0.0    0.25    1
+1:  5.0  0.0    0.25    2
+2:  5.0  2.0    0.25    2
+3:  4.0  3.0    0.25    3
+4:  0.0  3.0    0.25    3
+
+# Nodes which define the hole #
+5:  1.0  1.0    0.1    4
+6:  1.0  2.0    0.1    4
+7:  2.0  2.0    0.1    4
+8:  2.0  1.0    0.1    4
+
+#===========
+| SEGMENTS |
+===========#
+9 # Number of segments #
+
+# Boundary segments #
+0:  0  1    1
+1:  1  2    2
+2:  2  3    2
+3:  3  4    3
+4:  4  0    3
+
+# Hole segments #
+5:  5  6    4
+6:  6  7    4
+7:  7  8    4
+8:  8  5    4' > script.txt
 		echo "step 4: run Go application"
-			$C4GO transpile -o=debug.kilo.go debug.kilo.c
-			go build -o kilo.go.app	debug.kilo.go
+			$C4GO transpile -o=debug.$NAME.go debug.$NAME.c
+			go build -o $NAME.go.app	debug.$NAME.go
 			echo "" > debug.txt
-			cat script.txt | ./kilo.go.app output.txt 2>&1 && echo "ok" || echo "not ok"
+			cat script.txt | ./$NAME.go.app output.txt 2>&1 && echo "ok" || echo "not ok"
 			cp output.txt output.g.txt
 			echo "" > output.txt
 			cp debug.txt debug.go.txt
@@ -86,9 +125,9 @@ if [ "$1" == "-d" ]; then
 			echo ""
 			echo ""
 		echo "step 5: run C application"
-			clang -o kilo.c.app debug.kilo.c 2>&1
+			clang -o $NAME.c.app debug.$NAME.c 2>&1
 			echo "" > debug.txt
-			cat script.txt | ./kilo.c.app output.txt  2>&1 && echo "ok" || echo "not ok"
+			cat script.txt | ./$NAME.c.app output.txt  2>&1 && echo "ok" || echo "not ok"
 			cp output.txt output.c.txt
 			echo "" > output.txt
 			cp debug.txt debug.c.txt
