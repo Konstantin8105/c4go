@@ -20,8 +20,21 @@ mkdir -p ./testdata/
 		curl "http://www.ae.metu.edu.tr/~ae305/Easymesh/easymesh.c" > $TEMP_FOLDER/easymesh.c
 
 		sed -i.bak '1,33d'      $TEMP_FOLDER/$NAME.c
-		sed -i.bak '634avoid '  $TEMP_FOLDER/$NAME.c
 		sed -i.bak '140a(void)(i);'  $TEMP_FOLDER/$NAME.c
+		sed -i.bak '449a(void)(d);(void)(ea);(void)(eb);'  $TEMP_FOLDER/$NAME.c
+		sed -i.bak '634avoid '  $TEMP_FOLDER/$NAME.c
+		sed -i.bak '647a(void)(e);(void)(xCa);(void)(yCa);(void)(px);(void)(py);'  $TEMP_FOLDER/$NAME.c
+		
+		sed -i.bak '252a(void)(en);(void)(n);(void)(ei);'  $TEMP_FOLDER/$NAME.c
+		sed -i.bak '869a(void)(o);(void)(e2);'  $TEMP_FOLDER/$NAME.c
+		sed -i.bak '740a(void)(iter);(void)(s);'  $TEMP_FOLDER/$NAME.c
+
+		sed -i.bak '1050a(void)(N0);(void)(bound);(void)(xC);(void)(yC);'  $TEMP_FOLDER/$NAME.c
+		sed -i.bak '1529a(void)(numb);(void)(x);(void)(y);(void)(ek);(void)(ej);(void)(ei);(void)(n);(void)(e);'  $TEMP_FOLDER/$NAME.c
+		sed -i.bak '1655a(void)(numb);(void)(x);(void)(y);(void)(ek);(void)(ej);(void)(ei);(void)(n);(void)(e);'  $TEMP_FOLDER/$NAME.c
+		
+		sed -i.bak '1841a(void)(ans);(void)(g);'  $TEMP_FOLDER/$NAME.c
+
 	fi
 
 # remove go files from last transpilation
@@ -73,17 +86,17 @@ if [ "$1" == "-d" ]; then
 9 # number of points #
 
 # Nodes which define the boundary #
-0:  0.0  0.0    0.25    1
-1:  5.0  0.0    0.25    2
-2:  5.0  2.0    0.25    2
-3:  4.0  3.0    0.25    3
-4:  0.0  3.0    0.25    3
+0:  0.0  0.0    0.5    1
+1:  5.0  0.0    0.5    2
+2:  5.0  2.0    0.5    2
+3:  4.0  3.0    0.5    3
+4:  0.0  3.0    0.5    3
 
 # Nodes which define the hole #
-5:  1.0  1.0    0.1    4
-6:  1.0  2.0    0.1    4
-7:  2.0  2.0    0.1    4
-8:  2.0  1.0    0.1    4
+5:  1.0  1.0    0.9    4
+6:  1.0  2.0    0.9    4
+7:  2.0  2.0    0.9    4
+8:  2.0  1.0    0.9    4
 
 #===========
 | SEGMENTS |
@@ -101,33 +114,20 @@ if [ "$1" == "-d" ]; then
 5:  5  6    4
 6:  6  7    4
 7:  7  8    4
-8:  8  5    4' > script.txt
+8:  8  5    4' > input.d
+			cat input.d
 		echo "step 4: run Go application"
 			$C4GO transpile -o=debug.$NAME.go debug.$NAME.c
 			go build -o $NAME.go.app	debug.$NAME.go
 			echo "" > debug.txt
-			cat script.txt | ./$NAME.go.app output.txt 2>&1 && echo "ok" || echo "not ok"
+			./$NAME.go.app input +dxf 2>&1 && echo "ok" || echo "not ok"
 			cp output.txt output.g.txt
 			echo "" > output.txt
 			cp debug.txt debug.go.txt
-			echo ""
-			echo ""
-			echo ""
-			echo ""
-			echo ""
-			echo ""
-			echo ""
-			echo ""
-			echo ""
-			echo ""
-			echo ""
-			echo ""
-			echo ""
-			echo ""
 		echo "step 5: run C application"
-			clang -o $NAME.c.app debug.$NAME.c 2>&1
+			clang -o $NAME.c.app debug.$NAME.c -lm 2>&1
 			echo "" > debug.txt
-			cat script.txt | ./$NAME.c.app output.txt  2>&1 && echo "ok" || echo "not ok"
+			./$NAME.c.app input +dxf  2>&1 && echo "ok" || echo "not ok"
 			cp output.txt output.c.txt
 			echo "" > output.txt
 			cp debug.txt debug.c.txt
