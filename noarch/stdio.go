@@ -1,6 +1,7 @@
 package noarch
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -407,11 +408,9 @@ func Fprintf(f *File, format []byte, args ...interface{}) int32 {
 func Fscanf(f *File, format []byte, args ...interface{}) int32 {
 	realArgs := prepareArgsForScanf(args)
 
-	// format is ignored
-	// See https://github.com/Konstantin8105/c4go/issues/607
-	_ = format
+	format = bytes.ReplaceAll(format, []byte{'\x00'}, []byte{})
 
-	n, err := fmt.Fscan(f.OsFile, realArgs...)
+	n, err := fmt.Fscanf(f.OsFile, CStringToString(format), realArgs...)
 	if err != nil {
 		return -1
 	}
@@ -699,8 +698,9 @@ func Scanf(format []byte, args ...interface{}) int32 {
 }
 
 func Sscanf(str []byte, format []byte, args ...interface{}) int32 {
+	wws := bytes.ReplaceAll(str, []byte("\n"), []byte{' '}) // without newline
 	realArgs := prepareArgsForScanf(args)
-	n, _ := fmt.Sscanf(CStringToString(str), CStringToString(format), realArgs...)
+	n, _ := fmt.Sscanf(CStringToString(wws), CStringToString(format), realArgs...)
 	finalizeArgsForScanf(realArgs, args)
 	return int32(n)
 }
