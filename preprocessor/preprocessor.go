@@ -388,7 +388,7 @@ again:
 			if col-1 < len([]byte(*l)) {
 				return []byte((*l)[col-1:]), nil
 			}
-			err = fmt.Errorf("Empty snippet")
+			err = fmt.Errorf("Empty snippet in line `%s`", *l)
 			return
 		}
 		if col <= 0 {
@@ -437,11 +437,10 @@ func analyzeFiles(inputFiles, clangFlags []string, cppCode bool) (
 				err = fmt.Errorf("Cannot parse line : %s with error: %s", line, err)
 				return
 			}
-			if item.positionInSource == 0 {
-				// cannot by less 1 for avoid problem with
-				// indentification of "0" AST base element
-				item.positionInSource = 1
-			}
+			// cannot by less 1 for avoid problem with
+			// indentification of "0" AST base element
+			item.positionInSource++
+
 			item.lines = make([]*string, 0)
 		}
 		counter++

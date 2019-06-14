@@ -187,6 +187,7 @@ void test_fscanf()
 {
     remove("./testdata/myfile2.txt");
 
+	char hea[80];
     char str[80];
     char end[80];
     float f;
@@ -196,8 +197,10 @@ void test_fscanf()
     pFile = fopen("./testdata/myfile2.txt", "w+");
     is_not_null(pFile);
 
-    fprintf(pFile, "%f \r\n\t\n %s %d %s", 3.1416, "PI", 42, "end");
+    fprintf(pFile, "%s %f \r %s %d %s","#ex#\n\r\t\n", 3.1416, "PI", 42, "end");
     rewind(pFile);
+    printf("result : %d\n", fscanf(pFile, "%s", hea));
+	printf("header : %s\n", hea);
     printf("result : %d\n", fscanf(pFile, "%f", &f ));
     printf("result : %d\n", fscanf(pFile, "%s", str));
     printf("result : %d\n", fscanf(pFile, "%d", &i ));
@@ -215,6 +218,7 @@ void test_fscanf()
     pFile2 = fopen("./testdata/myfile2.txt", "r");
     is_not_null(pFile2);
 
+    fscanf(pFile2, "%s", hea);
     fscanf(pFile2, "%f", &f);
     fscanf(pFile2, "%s", str);
     fscanf(pFile2, "%d", &i);
@@ -229,6 +233,19 @@ void test_fscanf()
 
     // remove temp file
     is_eq(remove("./testdata/myfile2.txt"), 0)
+
+    // test file fscan.txt
+	FILE * in = fopen("./tests/fscan.txt", "r");
+	char dummy[128];
+
+	for(int iter = 0;iter < 10;iter++)
+	{
+	     int e = fscanf(in,"%s", dummy);
+	     if (e<0) {
+	  	 	break;
+	     }
+	     printf("fscan : %d %s\n", e, dummy);
+	}
 }
 
 void test_fgetc()

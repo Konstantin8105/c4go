@@ -409,8 +409,9 @@ func Fscanf(f *File, format []byte, args ...interface{}) int32 {
 	realArgs := prepareArgsForScanf(args)
 
 	format = bytes.ReplaceAll(format, []byte{'\x00'}, []byte{})
+	goFormat := CStringToString(format)
 
-	n, err := fmt.Fscanf(f.OsFile, CStringToString(format), realArgs...)
+	n, err := fmt.Fscanf(f.OsFile, goFormat, realArgs...)
 	if err != nil {
 		return -1
 	}
@@ -425,7 +426,7 @@ func finalizeArgsForScanf(realArgs []interface{}, args []interface{}) {
 	for i, arg := range realArgs {
 		if reflect.TypeOf(arg) == typeOfStringRef {
 			s := *arg.(*string)
-			copy(args[i].([]byte), []byte(s))
+			copy(args[i].([]byte), []byte(s+"\x00"))
 		} else {
 			GoPointerToCPointer(arg, args[i])
 		}

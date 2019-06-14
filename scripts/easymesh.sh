@@ -72,9 +72,6 @@ if [ "$1" == "-d" ]; then
 		echo "step 1: create debug file"
 			$C4GO debug $NAME.c
 		echo "step 2: prepare output data"
-			echo "" > output.txt
-			echo "" > output.g.txt
-			echo "" > output.c.txt
 		echo "step 3: prepare test script"
 			echo '#-----------#
 # Example 1 #
@@ -114,32 +111,24 @@ if [ "$1" == "-d" ]; then
 5:  5  6    4
 6:  6  7    4
 7:  7  8    4
-8:  8  5    4' > input.d
-			cat input.d
+8:  8  5    4' > inputc.d
+			cat inputc.d > inputgo.d
 		echo "step 4: run Go application"
-			$C4GO transpile -o=debug.$NAME.go debug.$NAME.c
+			$C4GO transpile -o=debug.$NAME.go -clang-flag="-Wreturn-type" -clang-flag="-Wimplicit-int" debug.$NAME.c 2>&1 > c4go.output && echo "c4go ok" || echo "c4go not ok"
 			go build -o $NAME.go.app	debug.$NAME.go
 			echo "" > debug.txt
-			./$NAME.go.app input +dxf 2>&1 && echo "ok" || echo "not ok"
-			cp output.txt output.g.txt
-			echo "" > output.txt
+			./$NAME.go.app inputgo +dxf 2>&1 && echo "ok" || echo "not ok"
 			cp debug.txt debug.go.txt
 		echo "step 5: run C application"
-			clang -o $NAME.c.app debug.$NAME.c -lm 2>&1
+			clang -o $NAME.c.app -lm debug.$NAME.c 2>&1 > clang.output && echo "clang ok" || echo "clang not ok"
 			echo "" > debug.txt
-			./$NAME.c.app input +dxf  2>&1 && echo "ok" || echo "not ok"
-			cp output.txt output.c.txt
-			echo "" > output.txt
+			./$NAME.c.app inputc +dxf  2>&1 && echo "ok" || echo "not ok"
 			cp debug.txt debug.c.txt
 		echo "step 5"
 			echo "-----------------------------"
 			echo "debug"
 			diff -y -t debug.c.txt debug.go.txt 2>&1  > debug.diff  && echo "ok" || echo "not ok"
 			# cat debug.diff
-			echo "-----------------------------"
-			echo "output"
-			diff -y -t output.c.txt output.g.txt 2>&1 > output.diff && echo "ok" || echo "not ok"
-			cat output.diff
 			echo "-----------------------------"
 		echo "step 6: move back"
 			cd ../../
