@@ -413,6 +413,7 @@ func Fscanf(f *File, format []byte, args ...interface{}) int32 {
 
 	n, err := fmt.Fscanf(f.OsFile, goFormat, realArgs...)
 	if err != nil {
+		fmt.Println(err)
 		return -1
 	}
 
