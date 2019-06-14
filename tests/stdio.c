@@ -241,10 +241,11 @@ void test_fscanf()
 	for(int iter = 0;iter < 10;iter++)
 	{
 	     int e = fscanf(in,"%s", dummy);
+	     printf("fscan : iter[%d] : err = %d\n", iter, e);
 	     if (e < 0) {
 	  	 	break;
 	     }
-	     printf("fscan : iter[%d] : %d %s\n", iter, e, dummy);
+	     printf("fscan : iter[%d] : str = %s\n", iter, dummy);
 	}
 }
 
