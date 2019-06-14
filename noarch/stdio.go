@@ -411,10 +411,12 @@ func Fscanf(f *File, format []byte, args ...interface{}) int32 {
 
 	goFormat := CStringToString(format)
 
+	iter := 0
 again:
 	n, err := fmt.Fscanf(f.OsFile, goFormat, realArgs...)
 	if err != nil {
-		if strings.Contains(err.Error(), "unexpected newline") {
+		if strings.Contains(err.Error(), "unexpected newline") && iter < 100 {
+			iter++
 			goto again
 		}
 		return -1
