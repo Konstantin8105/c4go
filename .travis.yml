@@ -41,6 +41,8 @@ matrix:
 ####################################################
     - env: SCRIPT=test CLANG=7
       os: linux
+    - env: SCRIPT=test CLANG=8
+      os: linux
 ####### lint checking ########
     - env: SCRIPT=lint CLANG=3.9
       os: linux
