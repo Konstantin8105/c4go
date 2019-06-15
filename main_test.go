@@ -259,8 +259,6 @@ func runCdebug(file, subFolder, stdin string, clangFlags, args []string) (string
 		return out, fmt.Errorf("%v with empty debug file", err)
 	}
 
-	fmt.Println(string(dat))
-
 	return out, err
 }
 
