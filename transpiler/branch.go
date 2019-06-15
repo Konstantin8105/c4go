@@ -49,7 +49,7 @@ func transpileIfStmt(n *ast.IfStmt, p *program.Program) (
 	// know what the first argument is for anyway we will just remove it on
 	// Mac if necessary.
 	if len(children) == 5 && children[0] != nil {
-		panic("non-nil child 0 in IfStmt")
+		panic(fmt.Sprintf("non-nil child 0 in IfStmt: %#v", children))
 	}
 	if len(children) == 5 {
 		children = children[1:]
@@ -57,12 +57,15 @@ func transpileIfStmt(n *ast.IfStmt, p *program.Program) (
 
 	// From here on there must be 4 children.
 	if len(children) != 4 {
-		panic(fmt.Sprintf("Expected 4 children in IfStmt, got %#v", children))
+		children = append([]ast.Node{nil}, children...)
+	}
+	if len(children) != 4 {
+		children = append(children, nil)
 	}
 
 	// Maybe we will discover what the nil value is?
 	if children[0] != nil {
-		panic("non-nil child 0 in IfStmt")
+		panic(fmt.Sprintf("non-nil child 0 in IfStmt: %#v", children))
 	}
 
 	// The last parameter must be false because we are transpiling an
@@ -462,18 +465,29 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 //    |     `-DeclRefExpr 0x2530c78 <col:3> 'int' lvalue Var 0x25306f8 'i' 'int'
 func transpileWhileStmt(n *ast.WhileStmt, p *program.Program) (
 	goast.Stmt, []goast.Stmt, []goast.Stmt, error) {
+
+	for i := 0; i < len(n.Children()); i++ {
+		if n.ChildNodes[0] == nil {
+			n.ChildNodes = n.ChildNodes[1:]
+		}
+		break
+	}
+
 	var forOperator ast.ForStmt
 	forOperator.AddChild(nil)
 	forOperator.AddChild(nil)
-	forOperator.AddChild(n.Children()[1])
+	forOperator.AddChild(n.Children()[0])
 	forOperator.AddChild(nil)
-	if n.Children()[2] == nil {
-		// added for case if WHILE haven't body, for example:
-		// while(0);
-		n.Children()[2] = &ast.CompoundStmt{}
+	if len(n.Children()) > 1 {
+		if n.Children()[1] == nil {
+			// added for case if WHILE haven't body, for example:
+			// while(0);
+			n.Children()[1] = &ast.CompoundStmt{}
+		}
+		forOperator.AddChild(n.Children()[1])
+	} else {
+		forOperator.AddChild(&ast.CompoundStmt{})
 	}
-	forOperator.AddChild(n.Children()[2])
-
 	return transpileForStmt(&forOperator, p)
 }
 
