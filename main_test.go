@@ -77,8 +77,9 @@ func TestIntegrationScripts(t *testing.T) {
 		}
 		t.Run(file, func(t *testing.T) {
 
+			// remove debug file
+			_ = os.Remove("debug.txt")
 			defer func() {
-				// remove debug file
 				_ = os.Remove("debug.txt")
 			}()
 
