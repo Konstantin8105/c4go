@@ -77,6 +77,7 @@ func TestIntegrationScripts(t *testing.T) {
 		}
 		t.Run(file, func(t *testing.T) {
 
+			_ = os.Remove("debug.txt")
 			defer func() {
 				// remove debug file
 				_ = os.Remove("debug.txt")
@@ -247,7 +248,20 @@ func runCdebug(file, subFolder, stdin string, clangFlags, args []string) (string
 		_ = os.Remove(file)
 	}()
 
-	return runC(file, subFolder, stdin, clangFlags, args)
+	out, err := runC(file, subFolder, stdin, clangFlags, args)
+
+	dat, errDat := ioutil.ReadFile("debug.txt")
+	if errDat != nil {
+		return out, fmt.Errorf("%v with %v", err, errDat)
+	}
+
+	if len(dat) == 0 {
+		return out, fmt.Errorf("%v with empty debug file", err)
+	}
+
+	fmt.Println(string(dat))
+
+	return out, err
 }
 
 // compile and run C code
