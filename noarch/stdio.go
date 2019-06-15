@@ -705,7 +705,7 @@ func Scanf(format []byte, args ...interface{}) int32 {
 }
 
 func Sscanf(str []byte, format []byte, args ...interface{}) int32 {
-	wws := bytes.ReplaceAll(str, []byte("\n"), []byte{' '}) // without newline
+	wws := bytes.Replace(str, []byte("\n"), []byte{' '}, -1) // without newline
 	realArgs := prepareArgsForScanf(args)
 	n, _ := fmt.Sscanf(CStringToString(wws), CStringToString(format), realArgs...)
 	finalizeArgsForScanf(realArgs, args)
