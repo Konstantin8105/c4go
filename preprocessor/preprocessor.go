@@ -380,7 +380,12 @@ again:
 		if len(f.entities[i].lines)+f.entities[i].positionInSource < lineEnd {
 			continue
 		}
-		l := f.entities[i].lines[lineEnd+1-f.entities[i].positionInSource]
+		var index = lineEnd + 1 - f.entities[i].positionInSource
+		if index >= len(f.entities[i].lines) {
+			err = fmt.Errorf("index is outside")
+			return
+		}
+		l := f.entities[i].lines[index]
 		if col == 0 && colEnd == 0 {
 			return []byte(*l), nil
 		}

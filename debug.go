@@ -56,8 +56,8 @@ func (f cases) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
 		if err != nil {
 			return err
 		}
-		if !bytes.Equal(lines[f.pos.Line-1][:f.pos.Column], buf) {
-			return fmt.Errorf("lines in source and pp source is not equal")
+		if bufE := lines[f.pos.Line-1][:f.pos.Column]; !bytes.Equal(bufE, buf) {
+			return fmt.Errorf("lines in source and pp source is not equal: `%s` != `%s`", bufE, buf)
 		}
 	}
 
@@ -79,7 +79,12 @@ func (f compount) Position() ast.Position {
 	return f.pos
 }
 
-func (f compount) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
+func (f compount) Inject(lines [][]byte, filePP preprocessor.FilePP) (err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("Compount: %v", err)
+		}
+	}()
 
 	b, err := getByte(lines, f.pos)
 	if err != nil {
@@ -87,7 +92,7 @@ func (f compount) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
 	}
 
 	if b != '{' {
-		return fmt.Errorf("unacceptable char '{' : %c", lines[f.pos.Line-1][f.pos.Column-1])
+		return fmt.Errorf("unacceptable char '{' : `%c`", lines[f.pos.Line-1][f.pos.Column-1])
 	}
 
 	// compare line of code
@@ -96,8 +101,8 @@ func (f compount) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
 		if err != nil {
 			return err
 		}
-		if !bytes.Equal(lines[f.pos.Line-1][:f.pos.Column], buf) {
-			return fmt.Errorf("lines in source and pp source is not equal")
+		if bufE := lines[f.pos.Line-1][:f.pos.Column]; !bytes.Equal(bufE, buf) {
+			return fmt.Errorf("lines in source and pp source is not equal: `%s` != `%s`", bufE, buf)
 		}
 	}
 
@@ -154,8 +159,8 @@ func (v argument) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
 		if err != nil {
 			return err
 		}
-		if !bytes.Equal(lines[v.pos.Line-1][:v.pos.Column], buf) {
-			return fmt.Errorf("lines in source and pp source is not equal")
+		if bufE := lines[v.pos.Line-1][:v.pos.Column]; !bytes.Equal(bufE, buf) {
+			return fmt.Errorf("lines in source and pp source is not equal: `%s` != `%s`", bufE, buf)
 		}
 	}
 
@@ -337,6 +342,7 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 			err2 := positions[k].Inject(lines, filePP)
 			if err2 != nil {
 				// error is ignored
+				fmt.Fprintf(os.Stdout, "Inject problem: %v\n", err2)
 				_ = err2
 			} else {
 				// non error is ignored

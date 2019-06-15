@@ -247,7 +247,17 @@ func runCdebug(file, subFolder, stdin string, clangFlags, args []string) (string
 		_ = os.Remove(file)
 	}()
 
-	return runC(file, subFolder, stdin, clangFlags, args)
+	out, err := runC(file, subFolder, stdin, clangFlags, args)
+
+	dat, errDat := ioutil.ReadFile("debug.txt")
+	if errDat != nil {
+		return out, fmt.Errorf("%v -> %v", err, errDat)
+	}
+	if len(bytes.TrimSpace(dat)) == 0 {
+		return out, fmt.Errorf("%v --> %v", err, "debug information is empty")
+	}
+
+	return out, err
 }
 
 // compile and run C code
