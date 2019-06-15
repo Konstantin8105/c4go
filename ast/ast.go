@@ -102,6 +102,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseCompoundStmt(line), nil
 	case "ConditionalOperator":
 		return parseConditionalOperator(line), nil
+	case "ConstantExpr":
+		return parseConstantExpr(line), nil
 	case "ConstAttr":
 		return parseConstAttr(line), nil
 	case "ConstantArrayType":
