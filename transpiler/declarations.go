@@ -730,9 +730,10 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 
 	theType, err = types.ResolveType(p, n.Type)
 	if err != nil {
-		p.AddMessage(p.GenerateWarningMessage(err, n))
+		p.AddMessage(p.GenerateWarningMessage(
+			fmt.Errorf("Unknown type used C type, because %v", err), n))
 		err = nil // Error is ignored
-		theType = "UnknownType"
+		theType = n.Type
 	}
 	typeResult = util.NewTypeIdent(theType)
 
