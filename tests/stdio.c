@@ -196,7 +196,7 @@ void test_fscanf()
     pFile = fopen("./testdata/myfile2.txt", "w+");
     is_not_null(pFile);
 
-    fprintf(pFile, "%f \r\n %s %d %s", 3.1416, "PI", 42, "end");
+    fprintf(pFile, "%f \r\n\t\n %s %d %s", 3.1416, "PI", 42, "end");
     rewind(pFile);
     fscanf(pFile, "%f", &f);
     fscanf(pFile, "%s", str);
@@ -229,6 +229,20 @@ void test_fscanf()
 
     // remove temp file
     is_eq(remove("./testdata/myfile2.txt"), 0)
+
+    // test file fscan.txt
+	FILE * in = fopen("./tests/stdio_fscan.txt", "r");
+	char dummy[128];
+
+	for(int iter = 0;iter < 10;iter++)
+	{
+	     int e = fscanf(in,"%s", dummy);
+	     printf("fscan : iter[%d] : err = %d\n", iter, e);
+	     if (e < 0) {
+	  	 	break;
+	     }
+	     printf("fscan : iter[%d] : str = %s\n", iter, dummy);
+	}
 }
 
 void test_fgetc()
@@ -589,11 +603,13 @@ void test_getline()
 
 void test_sscanf()
 {
-    char sentence[] = "Rudolph is 12 years old";
+    char sentence[] = "Example\nRudolph is 12 years old";
+    char header[50];
     char temp[50];
     char str[20];
     int i;
-    sscanf(sentence, "%s %s %d", str, temp, &i);
+    sscanf(sentence, "%s %s %s %d", header, str, temp, &i);
+	printf("Header: %s\n", header);
     is_eq(i, 12);
     is_streq(str, "Rudolph");
 }
