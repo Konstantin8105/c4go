@@ -1,14 +1,42 @@
 package ast
 
+import (
+	"strings"
+)
+
 // ArrayFiller is type of array filler
 type ArrayFiller struct {
 	ChildNodes []Node
 }
 
+var arrayFillerMarkers = []string{
+	"array filler",
+	"array_filler",
+}
+
 func parseArrayFiller(line string) *ArrayFiller {
-	return &ArrayFiller{
+	arrfill := &ArrayFiller{
 		ChildNodes: []Node{},
 	}
+
+	for _, af := range arrayFillerMarkers {
+		if strings.HasPrefix(line, af+":") {
+			line = line[len(af+":")+1:]
+		}
+		if strings.HasPrefix(line, af) {
+			line = line[len(af):]
+		}
+	}
+	line = strings.TrimSpace(line)
+	if line != "" {
+		rn, err := Parse(line)
+		if err != nil {
+			panic(err)
+		}
+		arrfill.AddChild(rn)
+	}
+
+	return arrfill
 }
 
 // AddChild adds a new child node. Child nodes can then be accessed with the

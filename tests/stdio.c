@@ -234,8 +234,8 @@ void test_fscanf()
     // remove temp file
     is_eq(remove("./testdata/myfile2.txt"), 0)
 
-    // test file fscan.txt
-	FILE * in = fopen("./tests/fscan.txt", "r");
+    // test file stdio_fscan.txt
+	FILE * in = fopen("./tests/stdio_fscan.txt", "r");
 	char dummy[128];
 
 	for(int iter = 0;iter < 10;iter++)
@@ -607,16 +607,15 @@ void test_getline()
 
 void test_sscanf()
 {
-    char sentence[] = "#Example#\nRudolph is 12 years old";
-    char header[500];
-    char temp[500];
-    char str[200];
+    char sentence[] = "Example\nRudolph is 12 years old";
+    char header[50];
+    char temp[50];
+    char str[20];
     int i;
-    int res = sscanf(sentence, "%s %s %s %d", header, str, temp, &i);
-	printf("Result of scan %d\n", res);
+    sscanf(sentence, "%s %s %s %d", header, str, temp, &i);
 	printf("Header: %s\n", header);
-    is_streq(str, "Rudolph");
     is_eq(i, 12);
+    is_streq(str, "Rudolph");
 }
 
 void test_FILE()

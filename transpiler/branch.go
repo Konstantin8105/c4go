@@ -488,6 +488,7 @@ func transpileWhileStmt(n *ast.WhileStmt, p *program.Program) (
 	} else {
 		forOperator.AddChild(&ast.CompoundStmt{})
 	}
+
 	return transpileForStmt(&forOperator, p)
 }
 

@@ -408,9 +408,7 @@ func Fprintf(f *File, format []byte, args ...interface{}) int32 {
 // string.
 func Fscanf(f *File, format []byte, args ...interface{}) int32 {
 	realArgs := prepareArgsForScanf(args)
-
 	goFormat := CStringToString(format)
-
 	iter := 0
 again:
 	n, err := fmt.Fscanf(f.OsFile, goFormat, realArgs...)

@@ -47,8 +47,10 @@ func Parse(fullline string) (returnNode Node, err error) {
 
 	// This is a special case. I'm not sure if it's a bug in the clang AST
 	// dumper. It should have children.
-	if line == "array filler" {
-		return parseArrayFiller(line), nil
+	for _, af := range arrayFillerMarkers {
+		if strings.HasPrefix(line, af) {
+			return parseArrayFiller(line), nil
+		}
 	}
 
 	parts := strings.SplitN(line, " ", 2)
@@ -106,6 +108,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseConstantExpr(line), nil
 	case "ConstAttr":
 		return parseConstAttr(line), nil
+	case "ConstantExpr":
+		return parseConstantExpr(line), nil
 	case "ConstantArrayType":
 		return parseConstantArrayType(line), nil
 	case "ContinueStmt":

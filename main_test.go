@@ -252,10 +252,11 @@ func runCdebug(file, subFolder, stdin string, clangFlags, args []string) (string
 
 	dat, errDat := ioutil.ReadFile("debug.txt")
 	if errDat != nil {
-		return out, fmt.Errorf("%v -> %v", err, errDat)
+		return out, fmt.Errorf("%v with %v", err, errDat)
 	}
-	if len(bytes.TrimSpace(dat)) == 0 {
-		return out, fmt.Errorf("%v --> %v", err, "debug information is empty")
+
+	if len(dat) == 0 {
+		return out, fmt.Errorf("%v with empty debug file", err)
 	}
 
 	return out, err
