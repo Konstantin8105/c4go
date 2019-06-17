@@ -138,6 +138,13 @@ func transpileEnumDeclWithType(p *program.Program, n *ast.EnumDecl, enumType str
 		//         |     `-IntegerLiteral 'int' 2
 		//         `-IntegerLiteral 'int' 8
 		//
+		// specific for clang 8:
+		// EnumConstantDecl  _ISalpha 'int'
+		// `-ConstantExpr 'int'
+		//   `-ParenExpr 'int'
+		//     `-ConditionalOperator 'int'
+		//       ...
+		//
 		//	_ISalpha = func() int32 {
 		//		if 2 < 8 {
 		//			return 1 << uint64(2) << uint64(8)
@@ -145,6 +152,9 @@ func transpileEnumDeclWithType(p *program.Program, n *ast.EnumDecl, enumType str
 		//		return 1 << uint64(2) >> uint64(8)
 		//	}()
 		if len(child.Children()) == 1 {
+			if ce, ok := child.Children()[0].(*ast.ConstantExpr); ok && len(ce.ChildNodes) > 0 {
+				child.ChildNodes[0] = ce.ChildNodes[0]
+			}
 			if par, ok := child.Children()[0].(*ast.ParenExpr); ok {
 				if cond, ok := par.Children()[0].(*ast.ConditionalOperator); ok {
 					if bin, ok := cond.Children()[0].(*ast.BinaryOperator); ok && bin.Operator == "<" {
@@ -246,7 +256,7 @@ func transpileEnumDeclWithType(p *program.Program, n *ast.EnumDecl, enumType str
 		default:
 			e = val
 			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("Add support of continues counter for type : %#v",
+				fmt.Errorf("Add support of continues counter for Go type : %#v",
 					v), n))
 		}
 
