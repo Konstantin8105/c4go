@@ -16,9 +16,13 @@ env:
 
 matrix:
   include:
-    - env: SCRIPT=test CLANG=3.4
-      os: linux
-      if: branch = master
+####################################################
+# Too old
+#
+#    - env: SCRIPT=test CLANG=3.4
+#      os: linux
+#      if: branch = master
+####################################################
     - env: SCRIPT=test CLANG=3.5
       os: linux
       if: branch = master
