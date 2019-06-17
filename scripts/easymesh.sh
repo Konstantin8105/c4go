@@ -115,22 +115,23 @@ if [ "$1" == "-d" ]; then
 			cat inputc.d > inputgo.d
 		echo "step 4: run Go application"
 			$C4GO transpile -o=debug.$NAME.go -clang-flag="-Wreturn-type" -clang-flag="-Wimplicit-int" debug.$NAME.c 2>&1 > c4go.output && echo "c4go ok" || echo "c4go not ok"
-			go build -o $NAME.go.app	debug.$NAME.go
-			echo "" > debug.txt
-			./$NAME.go.app inputgo +dxf 2>&1 && echo "ok" || echo "not ok"
-			cp debug.txt debug.go.txt
 		echo "step 5: run C application"
 			clang -o $NAME.c.app -lm debug.$NAME.c 2>&1 > clang.output && echo "clang ok" || echo "clang not ok"
 			echo "" > debug.txt
-			./$NAME.c.app inputc +dxf  2>&1 && echo "ok" || echo "not ok"
+			./$NAME.c.app inputc 2>&1 && echo "ok" || echo "not ok"
 			cp debug.txt debug.c.txt
-		echo "step 5"
+		echo "step 5: run Go application"
+			go build -o $NAME.go.app	debug.$NAME.go
+			echo "" > debug.txt
+			./$NAME.go.app inputgo 2>&1 && echo "ok" || echo "not ok"
+			cp debug.txt debug.go.txt
+		echo "step 6"
 			echo "-----------------------------"
 			echo "debug"
 			diff -y -t debug.c.txt debug.go.txt 2>&1  > debug.diff  && echo "ok" || echo "not ok"
 			# cat debug.diff
 			echo "-----------------------------"
-		echo "step 6: move back"
+		echo "step 7: move back"
 			cd ../../
 fi
 

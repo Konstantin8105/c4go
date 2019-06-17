@@ -108,8 +108,6 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseConstantExpr(line), nil
 	case "ConstAttr":
 		return parseConstAttr(line), nil
-	case "ConstantExpr":
-		return parseConstantExpr(line), nil
 	case "ConstantArrayType":
 		return parseConstantArrayType(line), nil
 	case "ContinueStmt":
