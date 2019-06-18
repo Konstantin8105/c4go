@@ -316,7 +316,7 @@ func TestFrame3dd(t *testing.T) {
 func TestCsparse(t *testing.T) {
 	folder := "./testdata/git-source/csparse/"
 
-	// Create build folder
+	//	Create build folder
 	if _, err := os.Stat(folder); os.IsNotExist(err) {
 		err = os.MkdirAll(folder, os.ModePerm)
 		if err != nil {
@@ -325,27 +325,31 @@ func TestCsparse(t *testing.T) {
 
 		// download file
 		t.Logf("Download files")
-		err := downloadFile(
+		err := copyFile(
+			"./tests/vendor/csparce/csparse.h",
 			folder+"csparse.h",
-			"https://people.sc.fsu.edu/~jburkardt/c_src/csparse/csparse.h")
+		)
 		if err != nil {
 			t.Fatalf("Cannot download : %v", err)
 		}
-		err = downloadFile(
+		err = copyFile(
+			"./tests/vendor/csparce/csparse.c",
 			folder+"csparse.c",
-			"https://people.sc.fsu.edu/~jburkardt/c_src/csparse/csparse.c")
+		)
 		if err != nil {
 			t.Fatalf("cannot download : %v", err)
 		}
-		err = downloadFile(
+		err = copyFile(
+			"./tests/vendor/csparce/csparse_demo1.c",
 			folder+"csparse_demo1.c",
-			"https://people.sc.fsu.edu/~jburkardt/c_src/csparse/csparse_demo1.c")
+		)
 		if err != nil {
 			t.Fatalf("Cannot download : %v", err)
 		}
-		err = downloadFile(
+		err = copyFile(
+			"./tests/vendor/csparce/kershaw.st",
 			folder+"kershaw.st",
-			"https://people.sc.fsu.edu/~jburkardt/c_src/csparse/kershaw.st")
+		)
 		if err != nil {
 			t.Fatalf("cannot download : %v", err)
 		}
@@ -365,7 +369,7 @@ func TestCsparse(t *testing.T) {
 		t.Fatalf("Cannot transpile `%v`: %v", args, err)
 	}
 
-	// print logs
+	//	print logs
 	ls, err := getLogs(folder + "main.go")
 	if err != nil {
 		t.Fatalf("Cannot show logs: %v", err)
@@ -506,6 +510,21 @@ func downloadFile(filepath string, url string) error {
 
 	return nil
 }
+
+func copyFile(sourceFile, destinationFile string) (err error) {
+	input, err := ioutil.ReadFile(sourceFile)
+	if err != nil {
+		return
+	}
+
+	err = ioutil.WriteFile(destinationFile, input, 0644)
+	if err != nil {
+		return
+	}
+
+	return nil
+}
+
 func TestMultifiles(t *testing.T) {
 	// test create not for TRAVIS CI
 	if os.Getenv("TRAVIS") == "true" {
