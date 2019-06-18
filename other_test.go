@@ -325,28 +325,28 @@ func TestCsparse(t *testing.T) {
 
 		// download file
 		t.Logf("Download files")
-		err := copy(
+		err := copyFile(
 			"./tests/vendor/csparce/csparse.h",
 			folder+"csparse.h",
 		)
 		if err != nil {
 			t.Fatalf("Cannot download : %v", err)
 		}
-		err = copy(
+		err = copyFile(
 			"./tests/vendor/csparce/csparse.c",
 			folder+"csparse.c",
 		)
 		if err != nil {
 			t.Fatalf("cannot download : %v", err)
 		}
-		err = copy(
+		err = copyFile(
 			"./tests/vendor/csparce/csparse_demo1.c",
 			folder+"csparse_demo1.c",
 		)
 		if err != nil {
 			t.Fatalf("Cannot download : %v", err)
 		}
-		err = copy(
+		err = copyFile(
 			"./tests/vendor/csparce/kershaw.st",
 			folder+"kershaw.st",
 		)
@@ -511,7 +511,7 @@ func downloadFile(filepath string, url string) error {
 	return nil
 }
 
-func copy(sourceFile, destinationFile string) (err error) {
+func copyFile(sourceFile, destinationFile string) (err error) {
 	input, err := ioutil.ReadFile(sourceFile)
 	if err != nil {
 		return
