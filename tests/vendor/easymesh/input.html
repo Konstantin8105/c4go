@@ -1,0 +1,53 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE>EasyMesh</TITLE>
+   <META NAME="Author" CONTENT="">
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.01Gold (Win95; I) [Netscape]">
+</HEAD>
+<BODY TEXT="#000000" BGCOLOR="#C0C0C0" LINK="#0000EE" VLINK="#551A8B" ALINK="#FF0000">
+
+<P><B><FONT COLOR="#000080"><FONT SIZE=+2>Input file</FONT></FONT></B></P>
+
+<P>
+<HR WIDTH="100%"></P>
+
+<P>The input file, also called <B>domain file</B>, has the following format:</P>
+
+<UL>
+<LI>first line:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<TT><FONT COLOR="#000080">&lt;number
+of nodes&gt;</FONT></TT></LI>
+
+<LI>following lines: &nbsp;&nbsp;<TT><FONT COLOR="#000080">&lt;node number:&gt;
+&lt;x&gt; &lt;y&gt; &lt;triangle side&gt; &lt;boundary marker&gt;</FONT></TT></LI>
+
+<LI>next line:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<TT><FONT COLOR="#000080">&lt;number
+of segments&gt;</FONT></TT></LI>
+
+<LI>following lines: &nbsp;&nbsp;<TT><FONT COLOR="#000080">&lt;node number:&gt;
+&lt;start point&gt; &lt;end point&gt; &lt;boundary marker&gt;</FONT></TT></LI>
+</UL>
+
+<P>Where <TT><FONT COLOR="#000080">&lt;triangle side&gt; </FONT></TT>represents
+the desired lenght of the triangle sides which contain that node in the
+final triangulation. The smaller that value is, the finer is the mesh around
+that point. It is highly recommended that this value is non-zero for all
+of the nodes, otherwise <B><FONT COLOR="#000080">EasyMesh</FONT></B> will
+probably get into infinite loop.</P>
+
+<P><TT><FONT COLOR="#000080">&lt;boundary markers&gt;</FONT></TT> are tags
+used to identify which points and segments are associated with which boundary
+condition. </P>
+
+<P>Comments begin and end with a <FONT COLOR="#000080"><FONT SIZE=+1><TT>#</TT>
+</FONT></FONT>character, and can be inserted anywhere inside the input
+file. The input file <B>must</B> have the extension <TT><FONT COLOR="#000080"><FONT SIZE=+1>.d</FONT></FONT></TT>.
+</P>
+
+<P>
+<HR WIDTH="100%">Return to <B><FONT COLOR="#000080">EasyMesh</FONT></B>
+<A HREF="easymesh.html">home</A> page. 
+<HR WIDTH="100%"><A HREF="mailto:niceno@univ.trieste.it">niceno@univ.trieste.it</A></P>
+
+</BODY>
+</HTML>
