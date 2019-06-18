@@ -17,7 +17,7 @@ mkdir -p ./testdata/
 # prepare C code
     if [ ! -d $TEMP_FOLDER ]; then
 		mkdir -p $TEMP_FOLDER
-		curl "http://www.ae.metu.edu.tr/~ae305/Easymesh/easymesh.c" > $TEMP_FOLDER/easymesh.c
+		cp ./tests/vendor/easymesh/easymesh.c $TEMP_FOLDER/easymesh.c
 
 		sed -i.bak '1,33d'      $TEMP_FOLDER/$NAME.c
 		sed -i.bak '140a(void)(i);'  $TEMP_FOLDER/$NAME.c
