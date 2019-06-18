@@ -110,3 +110,8 @@ Calculate warnings in file: testdata/vorbis/vorbis.go
 		Go build : 18 warnings
 		Unsafe   : 128
 
+Calculate warnings in file: ./testdata/easymesh/easymesh.go
+		After transpiling : 0 warnings.
+		Go build : 0 warnings
+		Unsafe   : 10
+

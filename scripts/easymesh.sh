@@ -35,6 +35,25 @@ mkdir -p ./testdata/
 
 		sed -i.bak '1841a(void)(ans);(void)(g);'  $TEMP_FOLDER/$NAME.c
 
+		sed -i.bak '475,477d' $TEMP_FOLDER/$NAME.c
+		sed -i.bak '475i{if(e!=OFF&&elem[e].ei!=OFF&&elem[elem[e].ei].mark==OFF) elem[e].ei=OFF; if(e!=OFF&&elem[e].ej!=OFF&&elem[elem[e].ej].mark==OFF) elem[e].ej=OFF; if(e!=OFF&&elem[e].ek!=OFF&&elem[elem[e].ek].mark==OFF) elem[e].ek=OFF;}'  $TEMP_FOLDER/$NAME.c
+
+		sed -i.bak '519s/(/(ea!=OFF \&\& /g' $TEMP_FOLDER/$NAME.c
+		sed -i.bak '520s/(/(ea!=OFF \&\& /g' $TEMP_FOLDER/$NAME.c
+		sed -i.bak '521s/(/(ea!=OFF \&\& /g' $TEMP_FOLDER/$NAME.c
+		sed -i.bak '522s/(/(eb!=OFF \&\& /g' $TEMP_FOLDER/$NAME.c
+		sed -i.bak '523s/(/(eb!=OFF \&\& /g' $TEMP_FOLDER/$NAME.c
+		sed -i.bak '524s/(/(eb!=OFF \&\& /g' $TEMP_FOLDER/$NAME.c
+
+		sed -i.bak '658s/(/(ugly!=OFF \&\& elem[ugly].ei!=OFF \&\& /g' $TEMP_FOLDER/$NAME.c
+		sed -i.bak '659s/(/(ugly!=OFF \&\& elem[ugly].ej!=OFF \&\& /g' $TEMP_FOLDER/$NAME.c
+		sed -i.bak '660s/(/(ugly!=OFF \&\& elem[ugly].ek!=OFF \&\& /g' $TEMP_FOLDER/$NAME.c
+		sed -i.bak '661s/(/(ugly!=OFF \&\& elem[ugly].si!=OFF \&\& /g' $TEMP_FOLDER/$NAME.c
+		sed -i.bak '662s/(/(ugly!=OFF \&\& elem[ugly].si!=OFF \&\& /g' $TEMP_FOLDER/$NAME.c
+		sed -i.bak '663s/(/(ugly!=OFF \&\& elem[ugly].si!=OFF \&\& /g' $TEMP_FOLDER/$NAME.c
+
+		sed -i.bak '531iif(ea!=OFF)' $TEMP_FOLDER/$NAME.c
+		sed -i.bak '533iif(eb!=OFF)' $TEMP_FOLDER/$NAME.c
 	fi
 
 # remove go files from last transpilation
@@ -106,11 +125,19 @@ if [ "$1" == "-d" ]; then
 			echo "" > debug.txt
 			./$NAME.go.app inputgo 2>&1 && echo "ok" || echo "not ok"
 			cp debug.txt debug.go.txt
-		echo "step 6"
+		echo "step 6a"
 			echo "-----------------------------"
 			echo "debug"
 			diff -y -t debug.c.txt debug.go.txt 2>&1  > debug.diff  && echo "ok" || echo "not ok"
 			# cat debug.diff
+			echo "-----------------------------"
+		echo "step 6b"
+			echo "-----------------------------"
+			echo "Compare inputs"
+			diff -y -t inputc.d inputgo.d 2>&1  > d.diff  && echo "ok" || echo "not ok"
+			diff -y -t inputc.e inputgo.e 2>&1  > e.diff  && echo "ok" || echo "not ok"
+			diff -y -t inputc.n inputgo.n 2>&1  > n.diff  && echo "ok" || echo "not ok"
+			diff -y -t inputc.s inputgo.s 2>&1  > s.diff  && echo "ok" || echo "not ok"
 			echo "-----------------------------"
 		echo "step 7: move back"
 			cd ../../
