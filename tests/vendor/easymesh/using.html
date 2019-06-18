@@ -1,0 +1,346 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE>EasyMesh</TITLE>
+   <META NAME="Author" CONTENT="">
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.01Gold (Win95; I) [Netscape]">
+</HEAD>
+<BODY TEXT="#000000" BGCOLOR="#C0C0C0" LINK="#0000EE" VLINK="#551A8B" ALINK="#FF0000">
+
+<P><B><FONT COLOR="#000080"><FONT SIZE=+2>Using EasyMesh</FONT></FONT></B></P>
+
+<P>
+<HR WIDTH="100%">The usage of <B><FONT COLOR="#000080">EasyMesh</FONT></B>
+is demonstrated through several examples.</P>
+
+<P>
+<HR WIDTH="100%"></P>
+
+<P><B><FONT COLOR="#000080"><FONT SIZE=+1>Example 1:</FONT></FONT></B></P>
+
+<P>Consider the following domain:</P>
+
+<P><IMG SRC="example10.gif" HEIGHT=271 WIDTH=415></P>
+
+<P>Points 0-1-2-3-4 define the boundary of the domain, and they represent
+a <B>boundary chain</B>. The remaining points: 5-6-7-8 define the hole,
+and represent a <B>hole chain</B>.</P>
+
+<P>To generate the mesh for this domain you have to create the following
+<A HREF="input.html">input</A> file:</P>
+
+<P><TT><FONT COLOR="#000080">#-----------# <BR>
+# Example 1 #<BR>
+#-----------#</FONT></TT></P>
+
+<P><TT><FONT COLOR="#000080">#========= <BR>
+| POINTS | <BR>
+=========# <BR>
+9 # number of points #</FONT></TT></P>
+
+<P><TT><FONT COLOR="#000080"># Nodes which define the boundary # <BR>
+0: &nbsp;0.0 &nbsp;0.0 &nbsp;&nbsp;&nbsp;0.25&nbsp;&nbsp; &nbsp;1 <BR>
+1: &nbsp;5.0 &nbsp;0.0 &nbsp;&nbsp;&nbsp;0.25&nbsp; &nbsp;&nbsp;2 <BR>
+2: &nbsp;5.0 &nbsp;2.0 &nbsp;&nbsp;&nbsp;0.25&nbsp; &nbsp;&nbsp;2 <BR>
+3: &nbsp;4.0 &nbsp;3.0 &nbsp;&nbsp;&nbsp;0.25&nbsp; &nbsp;&nbsp;3 <BR>
+4: &nbsp;0.0 &nbsp;3.0 &nbsp;&nbsp;&nbsp;0.25&nbsp; &nbsp;&nbsp;3</FONT></TT></P>
+
+<P><TT><FONT COLOR="#000080"># Nodes which define the hole # <BR>
+5: &nbsp;1.0 &nbsp;1.0 &nbsp;&nbsp; 0.1&nbsp;&nbsp;&nbsp; 4 <BR>
+6:&nbsp; 1.0 &nbsp;2.0 &nbsp;&nbsp; 0.1&nbsp;&nbsp;&nbsp; 4 <BR>
+7:&nbsp; 2.0 &nbsp;2.0 &nbsp;&nbsp;&nbsp;0.1&nbsp;&nbsp;&nbsp; 4 <BR>
+8:&nbsp; 2.0 &nbsp;1.0 &nbsp;&nbsp;&nbsp;0.1&nbsp;&nbsp;&nbsp; 4</FONT></TT></P>
+
+<P><TT><FONT COLOR="#000080">#=========== <BR>
+| SEGMENTS | <BR>
+===========# <BR>
+9 # Number of segments #</FONT></TT></P>
+
+<P><TT><FONT COLOR="#000080"># Boundary segments # <BR>
+0: &nbsp;0 &nbsp;1 &nbsp; &nbsp;1 <BR>
+1: &nbsp;1 &nbsp;2 &nbsp; &nbsp;2 <BR>
+2: &nbsp;2 &nbsp;3 &nbsp;&nbsp;&nbsp;2 <BR>
+3: &nbsp;3 &nbsp;4 &nbsp; &nbsp;3 <BR>
+4: &nbsp;4 &nbsp;0 &nbsp;&nbsp;&nbsp;3</FONT></TT></P>
+
+<P><TT><FONT COLOR="#000080"># Hole segments # <BR>
+5: &nbsp;5 &nbsp;6 &nbsp; &nbsp;4<BR>
+6: &nbsp;6 &nbsp;7 &nbsp; &nbsp;4<BR>
+7: &nbsp;7 &nbsp;8 &nbsp; &nbsp;4<BR>
+8: &nbsp;8 &nbsp;5 &nbsp; &nbsp;4</FONT></TT></P>
+
+<P><FONT COLOR="#000000">and name it: </FONT><TT><FONT COLOR="#000080">example1.d</FONT></TT><FONT COLOR="#000000">.
+It is essential that the nodes which define the boundary chain (0-1-2-3-4)
+are inserted in the <B>anticlockwise</B> direction, and the nodes which
+define the hole chain (5-6-7-8) are inserted in the <B>clockwise</B> direction.
+</FONT></P>
+
+<P><FONT COLOR="#000000">Then run </FONT><B><FONT COLOR="#000080">EasyMesh</FONT></B><FONT COLOR="#000000">
+with the following command: </FONT></P>
+
+<P><TT><FONT COLOR="#000080">EasyMesh example1 +dxf</FONT></TT></P>
+
+<P><FONT COLOR="#000000">As a result you will obtain the following grid:</FONT></P>
+
+<P><IMG SRC="example11.gif" HEIGHT=254 WIDTH=412></P>
+
+<P>where Delaunay triangulation is shown in blue, while the Voronoi polygons
+are shown in red. You are not limited in the number of holes, but you can
+generate only one domain at the time with EasyMesh.</P>
+
+<P>Note:</P>
+
+<UL>
+<LI>In the <A HREF="input.html">input file</A>, boundary markers for nodes
+and segments belonging to <B>boundary </B>or <B>hole chains</B> must be
+greater than zero. </LI>
+</UL>
+
+<P>
+<HR WIDTH="100%"></P>
+
+<P><B><FONT COLOR="#000080"><FONT SIZE=+1>Example 2:</FONT></FONT></B></P>
+
+<P>In the following example, it will be demonstrated how can you generate
+regions inside the domain with smaller/larger elements. It will also be
+explained how to handle more complex shapes, like circular holes for example.</P>
+
+<P>The following picture defines the geometry under consideration. On the
+right of the domain there is a circular hole defined with 12 points (6-
+... -17), and on the left is a 'false' hole (points 18- ... -21) used to
+refine the grid in that region.</P>
+
+<P><IMG SRC="example20.gif" HEIGHT=268 WIDTH=409></P>
+
+<P>Now, use your favourite text editor to create the following <A HREF="input.html">input</A>
+file:</P>
+
+<P><TT><FONT COLOR="#000080">#-----------# <BR>
+# Example 2 # <BR>
+#-----------#</FONT></TT></P>
+
+<P><TT><FONT COLOR="#000080">#========= <BR>
+| POINTS | <BR>
+=========# <BR>
+22 # number of points #</FONT></TT></P>
+
+<P><TT><FONT COLOR="#000080"># Nodes which define the boundary # <BR>
+&nbsp;0: 0 &nbsp;&nbsp;&nbsp;&nbsp;0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.2&nbsp;&nbsp;
+1 <BR>
+&nbsp;1: 5 &nbsp;&nbsp;&nbsp;&nbsp;0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.2
+&nbsp;&nbsp;1 <BR>
+&nbsp;2: 5 &nbsp;&nbsp;&nbsp;&nbsp;3 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.2
+&nbsp;&nbsp;1 <BR>
+&nbsp;3: 3 &nbsp;&nbsp;&nbsp;&nbsp;3 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.2&nbsp;&nbsp;
+1 <BR>
+&nbsp;4: 3 &nbsp;&nbsp;&nbsp;&nbsp;2 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.2&nbsp;&nbsp;
+1 <BR>
+&nbsp;5: 0 &nbsp;&nbsp;&nbsp;&nbsp;2 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.2&nbsp;&nbsp;
+1</FONT></TT></P>
+
+<P><TT><FONT COLOR="#000080"># circular hole # <BR>
+&nbsp;6: 4.00 &nbsp;0.50 &nbsp;&nbsp;10.0 &nbsp;&nbsp;2 <BR>
+&nbsp;7: 3.75 &nbsp;0.567 &nbsp;10.0&nbsp;&nbsp; 2 <BR>
+&nbsp;8: 3.567 0.75 &nbsp;&nbsp;10.0&nbsp;&nbsp; 2 <BR>
+&nbsp;9: 3.50 &nbsp;1.00 &nbsp;&nbsp;10.0&nbsp;&nbsp; 2 <BR>
+10: 3.567 1.25 &nbsp;&nbsp;10.0&nbsp;&nbsp; 2 <BR>
+11: 3.75 &nbsp;1.433 &nbsp;10.0&nbsp;&nbsp; 2 <BR>
+12: 4.00 &nbsp;1.50 &nbsp;&nbsp;10.0&nbsp;&nbsp; 2 <BR>
+13: 4.25 &nbsp;1.433 &nbsp;10.0&nbsp;&nbsp; 2 <BR>
+14: 4.433 1.25 &nbsp;&nbsp;10.0&nbsp;&nbsp; 2 <BR>
+15: 4.50 &nbsp;1.00 &nbsp;&nbsp;10.0&nbsp;&nbsp; 2 <BR>
+16: 4.433 0.75 &nbsp;&nbsp;10.0&nbsp;&nbsp; 2 <BR>
+17: 4.25 &nbsp;0.567 &nbsp;10.0&nbsp;&nbsp; 2</FONT></TT></P>
+
+<P><TT><FONT COLOR="#000080"># Nodes which define the false hole # <BR>
+18: 0.75 &nbsp;0.75 &nbsp;&nbsp;&nbsp;0.1 &nbsp;&nbsp;0 <BR>
+19: 2.25&nbsp; 0.75 &nbsp;&nbsp;&nbsp;0.1 &nbsp;&nbsp;0 <BR>
+20: 2.25&nbsp; 1.25 &nbsp;&nbsp;&nbsp;0.1 &nbsp;&nbsp;0 <BR>
+21: 0.75&nbsp; 1.25 &nbsp;&nbsp;&nbsp;0.1 &nbsp;&nbsp;0</FONT></TT></P>
+
+<P><TT><FONT COLOR="#000080">#=========== <BR>
+| SEGMENTS | <BR>
+===========# <BR>
+22 # Number of segments #</FONT></TT></P>
+
+<P><TT><FONT COLOR="#000080"># Boundary segments # <BR>
+&nbsp;0:&nbsp; 0 &nbsp;1&nbsp;&nbsp; 1 <BR>
+&nbsp;1:&nbsp; 1 &nbsp;2&nbsp;&nbsp; 1 <BR>
+&nbsp;2: &nbsp;2 &nbsp;3&nbsp;&nbsp; 1 <BR>
+&nbsp;3:&nbsp; 3 &nbsp;4&nbsp;&nbsp; 1 <BR>
+&nbsp;4:&nbsp; 4 &nbsp;5&nbsp;&nbsp; 1 <BR>
+&nbsp;5:&nbsp; 5 &nbsp;0&nbsp;&nbsp; 1</FONT></TT></P>
+
+<P><TT><FONT COLOR="#000080"># Hole segments # <BR>
+&nbsp;6: &nbsp;6 &nbsp;7&nbsp;&nbsp; 2 <BR>
+&nbsp;7: &nbsp;7 &nbsp;8&nbsp;&nbsp; 2 <BR>
+&nbsp;8: &nbsp;8 &nbsp;9&nbsp;&nbsp; 2 <BR>
+&nbsp;9: &nbsp;9 10&nbsp;&nbsp; 2 <BR>
+10: 10 11&nbsp;&nbsp; 2 <BR>
+11: 11 12&nbsp;&nbsp; 2 <BR>
+12: 12 13&nbsp;&nbsp; 2 <BR>
+13: 13 14 &nbsp;&nbsp;2 <BR>
+14: 14 15&nbsp;&nbsp; 2 <BR>
+15: 15 16&nbsp;&nbsp; 2 <BR>
+16: 16 17&nbsp;&nbsp; 2 <BR>
+17: 17 &nbsp;6&nbsp;&nbsp; 2</FONT></TT></P>
+
+<P><TT><FONT COLOR="#000080"># False hole segments # <BR>
+18: 18 19&nbsp;&nbsp; 0 <BR>
+19: 19 20 &nbsp;&nbsp;0 <BR>
+20: 20 21 &nbsp;&nbsp;0 <BR>
+21: 21 18 &nbsp;&nbsp;0 </FONT></TT></P>
+
+<P>and save this under the name <TT><FONT COLOR="#000080">example2.d</FONT></TT><FONT COLOR="#000000">.</FONT>
+Then run <B><FONT COLOR="#000080">EasyMesh</FONT></B> with the following
+comand:</P>
+
+<P><TT><FONT COLOR="#000080">EasyMesh example2 +dxf</FONT></TT></P>
+
+<P>to obtain the following result:</P>
+
+<P><IMG SRC="example21.gif" HEIGHT=247 WIDTH=404></P>
+
+<P>Few things have to be noted about this example:</P>
+
+<UL>
+<LI>The points which define the false hole are inserted in the anticlockwise
+direction (see segments 18-21), like the domain boundaries. </LI>
+
+<LI>The gridding of the false hole is finer because its nodes have a smaller
+desired triangle dimension. However, the false hole could also be coarser
+if its nodes where defined with greater triangle dimension. So, you can
+use this technique to generate meshes which are finer in the regions of
+particular interest.</LI>
+
+<LI>The circular hole is defined with 12 points (6-...-17). You can see
+that the desired element dimension for its points is 10.0, which is definitely
+exaggerated, but <B><FONT COLOR="#000080">EasyMesh</FONT></B> cancels such
+meaningless user inputs, and adjusts the triangle dimensions to appropriate
+values. This was not made only to correct meaningless input, but to facilitate
+the input of complex shapes which are defined with the set of boundary
+points, rather than with linear segments. </LI>
+
+<LI>In the case of the <B>false hole</B>, node and segment boundary markers
+in the <A HREF="input.html">input file</A> can be set to zero.</LI>
+</UL>
+
+<P>
+<HR WIDTH="100%"></P>
+
+<P><B><FONT COLOR="#000080"><FONT SIZE=+1>Example 3:</FONT></FONT></B></P>
+
+<P>The final example demonstrates how to handle domains made up from more
+than one material, but also how to use lines in the interior of the domain
+for local refining/coarsening.</P>
+
+<P><IMG SRC="example30.gif" HEIGHT=351 WIDTH=569></P>
+
+<P>Points 0-1-3-9-8-11-10-7-6-2 define the boundary chain of the whole
+region. In order to define a domain with several materials, it is necessary
+to introduce <B>frontiers</B> between them. Points 2-3, 7-4-5-8 define
+these frontiers. Points 12-13 define the interior line which serves for
+coarsening the mesh in the red region. Points 14, 15 and 16 are quite particular,
+because they do not belong to any segment. They are used as <B>material
+markers</B>. In fact, to elements in red, blue and green region, will be
+assigned the boundary markers of points 14, 15 and 16.</P>
+
+<P>Now create the <A HREF="input.html">input</A> file <TT><FONT COLOR="#000080">example3.d</FONT></TT>
+for this example:</P>
+
+<P><TT><FONT COLOR="#000080">#-----------#<BR>
+# Example 3 #<BR>
+#-----------#</FONT></TT></P>
+
+<P><TT><FONT COLOR="#000080">&nbsp;&nbsp;&nbsp;#********#<BR>
+17 # Points #<BR>
+&nbsp;&nbsp;&nbsp;#********#<BR>
+<BR>
+&nbsp;0: 0 &nbsp;&nbsp;0 &nbsp;&nbsp;&nbsp;0.5 &nbsp;&nbsp;1 <BR>
+&nbsp;1: 5 &nbsp;&nbsp;0 &nbsp;&nbsp;&nbsp;0.5 &nbsp;&nbsp;1 <BR>
+&nbsp;2: 0 &nbsp;&nbsp;1 &nbsp;&nbsp;&nbsp;0.1 &nbsp;&nbsp;1 <BR>
+&nbsp;3: 5 &nbsp;&nbsp;1 &nbsp;&nbsp;&nbsp;0.1 &nbsp;&nbsp;1 <BR>
+&nbsp;4: 1.5 1.5 &nbsp;0.1 &nbsp;&nbsp;4 <BR>
+&nbsp;5: 3.5 1.5 &nbsp;0.1 &nbsp;&nbsp;4 <BR>
+&nbsp;6: 0 &nbsp;&nbsp;2.5 &nbsp;0.25 &nbsp;1 <BR>
+&nbsp;7: 1.5 2.5 &nbsp;0.1 &nbsp;&nbsp;2 <BR>
+&nbsp;8: 3.5 2.5 &nbsp;0.1 &nbsp;&nbsp;2 <BR>
+&nbsp;9: 5 &nbsp;&nbsp;2.5 &nbsp;0.25 &nbsp;1 <BR>
+10: 2.5 4 &nbsp;&nbsp;&nbsp;0.1 &nbsp;&nbsp;2 <BR>
+11: 3.5 4 &nbsp;&nbsp;&nbsp;0.1 &nbsp;&nbsp;2<BR>
+<BR>
+# line for coarsening #<BR>
+12: 2.5 2 &nbsp;&nbsp;&nbsp;0.4 &nbsp;&nbsp;0 <BR>
+13: 3 &nbsp;&nbsp;3.5 &nbsp;0.4 &nbsp;&nbsp;0 <BR>
+<BR>
+# material markers #<BR>
+14: 3 &nbsp;&nbsp;3 &nbsp;&nbsp;&nbsp;0 &nbsp;&nbsp;&nbsp;&nbsp;1 # material
+1 (red) #<BR>
+15: 3 &nbsp;&nbsp;1.25 0 &nbsp;&nbsp;&nbsp;&nbsp;2 # material 2 (blue)
+#<BR>
+16: 3 &nbsp;&nbsp;0.5 &nbsp;0 &nbsp;&nbsp;&nbsp;&nbsp;3 # material 3 (green)
+#<BR>
+<BR>
+&nbsp;&nbsp;&nbsp;#**********#<BR>
+15&nbsp;# Segments #<BR>
+&nbsp;&nbsp;&nbsp;#**********#</FONT></TT></P>
+
+<P><TT><FONT COLOR="#000080"># domain contour #<BR>
+&nbsp;0: &nbsp;0&nbsp; 1 1 <BR>
+&nbsp;1: &nbsp;1&nbsp; 3 1 <BR>
+&nbsp;2: &nbsp;3&nbsp; 9 1 <BR>
+&nbsp;3: &nbsp;9&nbsp; 8 1 <BR>
+&nbsp;4: &nbsp;8 11 2 <BR>
+&nbsp;5: 11 10 2 <BR>
+&nbsp;6: 10&nbsp; 7 2 <BR>
+&nbsp;7: &nbsp;7 &nbsp;6 1 <BR>
+&nbsp;8: &nbsp;6&nbsp; 2 1 <BR>
+&nbsp;9: &nbsp;2&nbsp; 0 1<BR>
+<BR>
+# frontier between green and blue #<BR>
+10: &nbsp;3&nbsp; 2 3<BR>
+<BR>
+# frontier between blue and red#<BR>
+11: &nbsp;8&nbsp; 5 4 <BR>
+12: &nbsp;5&nbsp; 4 4 <BR>
+13: &nbsp;4&nbsp; 7 4<BR>
+14: 12 13 0 </FONT></TT></P>
+
+<P>Then run <B><FONT COLOR="#000080">EasyMesh</FONT></B> with the usual
+command:</P>
+
+<P><TT><FONT COLOR="#000080">EasyMesh example3 +dxf</FONT></TT></P>
+
+<P>and as a result you will obtain the following grid:</P>
+
+<P><IMG SRC="example32.gif" HEIGHT=326 WIDTH=539></P>
+
+<P><IMG SRC="example31.gif" HEIGHT=325 WIDTH=403></P>
+
+<P>Three things have to be noted in this example:</P>
+
+<UL>
+<LI>In order to define a domain with more materials, it is necessary to
+introduce <B>frontiers</B> between them and <B>material markers</B>. Frontiers
+are <B>open chains</B> which <B>must</B> begin and end with the points
+which belong to some other previously defined chain. (In the previous example
+the frontier between green and blue material started with 2 and ended with
+3, which are both points of the boundary chain.) </LI>
+
+<LI>Open chains can be inserted inside the domain for local refining/coarsening.
+In this example, the segment between points 12 and 13 coarsened the grid
+inside the red material. These chains <B>must not</B> begin and neither
+end at some of the boundary chain points.</LI>
+
+<LI>From the version 1.4 open chains can consist from one node only, which
+is than the first and the last point simultaneously. The open chain can
+degenerate into a single point. </LI>
+</UL>
+
+<P>
+<HR WIDTH="100%">Return to <B><FONT COLOR="#000080">EasyMesh</FONT></B>
+<A HREF="easymesh.html">home</A> page. 
+<HR WIDTH="100%"><A HREF="mailto:niceno@univ.trieste.it">niceno@univ.trieste.it</A></P>
+
+</BODY>
+</HTML>

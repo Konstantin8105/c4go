@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE>EasyMesh</TITLE>
+   <META NAME="Author" CONTENT="">
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.01Gold (Win95; I) [Netscape]">
+</HEAD>
+<BODY TEXT="#000000" BGCOLOR="#C0C0C0" LINK="#0000EE" VLINK="#551A8B" ALINK="#FF0000">
+
+<P><B><FONT COLOR="#000080"><FONT SIZE=+2>Command line options</FONT></FONT></B></P>
+
+<P>
+<HR WIDTH="100%"></P>
+
+<P>The right sintax for <B><FONT COLOR="#000080">EasyMesh</FONT></B> is:</P>
+
+<P><TT><FONT COLOR="#000080">EasyMesh NAME&nbsp;[options]</FONT></TT></P>
+
+<P>Where <TT><FONT COLOR="#000080">NAME</FONT></TT> is the name of the
+<A HREF="input.html">input</A> file with or without extension.<BR>
+
+<HR WIDTH="100%">The following command line options are available:</P>
+
+<UL>
+<LI><TT><FONT COLOR="#000080">-d<B>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</B></FONT></TT>create
+boundary triangulation only</LI>
+
+<LI><TT><FONT COLOR="#000080">-m</FONT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TT>do
+not display any message</LI>
+
+<LI><TT><FONT COLOR="#000080">-r<B>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</B></FONT></TT>generate
+mesh without relaxation</LI>
+
+<LI><TT><FONT COLOR="#000080">-s<B>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</B></FONT></TT>generate
+mesh without Laplacian smoothing</LI>
+
+<LI><TT><FONT COLOR="#000080">+dxf<B>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</B></FONT></TT><FONT COLOR="#000000">create
+drawing with Delaunay and Voronoi mesh in in Autodesk </FONT><TT><FONT COLOR="#000080">.DXF</FONT></TT><FONT COLOR="#000000">
+format</FONT></LI>
+
+<LI><TT><FONT COLOR="#000080">+fig</FONT><FONT COLOR="#000000"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</FONT></TT><FONT COLOR="#000000">create
+drwaing with Delaunay and Voronoi mesh in .fig format for </FONT><TT><FONT COLOR="#000080">xfig</FONT></TT></LI>
+
+<LI><TT><FONT COLOR="#000080">+example</FONT><FONT COLOR="#000000"> &nbsp;</FONT></TT><FONT COLOR="#000000">create
+an example input file<TT> </TT></FONT><TT><FONT COLOR="#000080">example.d</FONT></TT></LI>
+</UL>
+
+<P>You <B>must</B> separate command line options with spaces. If none of
+the options is specified, the default values are assumed, which means that
+relaxation and smoothing will be applied, the messages will be displayed,
+and that neither the <TT><FONT COLOR="#000080">DXF</FONT></TT> or <TT><FONT COLOR="#000080">fig</FONT>&nbsp;</TT>will
+be created.</P>
+
+<P>As you can see there are only four command line options, from which
+the first three being more or less useless. So I think that in most cases
+<B><FONT COLOR="#000080">EasyMesh </FONT></B>will be used with <TT><FONT COLOR="#000080">+dxf</FONT></TT>
+option only. That is one of the reasons why the program is called <B><FONT COLOR="#000080">EasyMesh</FONT></B>.<BR>
+
+<HR WIDTH="100%">Return to <B><FONT COLOR="#000080">EasyMesh</FONT></B>
+<A HREF="easymesh.html">home</A> page. 
+<HR WIDTH="100%"><A HREF="mailto:niceno@univ.trieste.it">niceno@univ.trieste.it</A></P>
+
+</BODY>
+</HTML>

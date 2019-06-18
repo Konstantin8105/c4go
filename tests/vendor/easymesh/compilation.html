@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE>EasyMesh</TITLE>
+   <META NAME="Author" CONTENT="">
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.01Gold (Win95; I) [Netscape]">
+</HEAD>
+<BODY TEXT="#000000" BGCOLOR="#C0C0C0" LINK="#0000EE" VLINK="#551A8B" ALINK="#FF0000">
+
+<P><B><FONT COLOR="#000080"><FONT SIZE=+2>Compilation of the code</FONT></FONT></B></P>
+
+<P>
+<HR WIDTH="100%"></P>
+
+<P><B><FONT COLOR="#000080">EasyMesh</FONT></B> is written in the C language.
+It was developed and tested on a PC, using Watcom C/C++ 10.0a compiler.
+During the development, many non-standard Watcom's graphical functions
+were included to facilitate the debugging of the code. Later, this functions
+were not cancelled but enclosed inside the compiler directives, which resulted
+in the portability of the code. So, the code should be portable.</P>
+
+<P>I compiled and run <B><FONT COLOR="#000080">EasyMesh </FONT></B>on the
+following platforms:</P>
+
+<UL>
+<LI>PC running DOS 6.22 and Win95 with Watcom C/C++ 10.0a compiler;</LI>
+
+<LI>PC running RedHat Linux 3.03;</LI>
+
+<LI>PC running Linux Caldera;</LI>
+
+<LI>SUN Ultra 1 Model 140 running SunOS 5.5;</LI>
+
+<LI>Iris Indigo xs24 running IRIX 5.2;</LI>
+
+<LI>Cray J916/8 - 1024 running UNICOS 8.0.3.</LI>
+</UL>
+
+<P>If someone successfully compiles and run the code on a different machine,
+or operating sistem, or compiler, please let me know, so that I can add
+it to the list.</P>
+
+<P><B><FONT COLOR="#000080">EasyMesh</FONT></B> was designed in such a
+way to be as easy to use and maintain as possible. In that spirit, memory
+allocation is made static. As a consequence, the program cannot generate
+grids with more than 3000 nodes. However, you can increase the number of
+acceptable nodes by changing the constant in the line:<BR>
+<TT><FONT COLOR="#000080">#define MAX_NODES 3000<BR>
+</FONT></TT>to a value greater than 3000. For example:<BR>
+<TT><FONT COLOR="#000080">#define MAX_NODES 6000</FONT></TT>.</P>
+
+<P>If you want to run <B><FONT COLOR="#000080">EasyMesh</FONT></B> on a
+PC, and want to see the graphics, you must change the line:<BR>
+<TT><FONT COLOR="#000080">#define GRAPHICS OFF<BR>
+</FONT></TT><FONT COLOR="#000000">to:<BR>
+</FONT><TT><FONT COLOR="#000080">#define GRAPHICS ON</FONT></TT>,<BR>
+then you can compile under DOS, but with Watcom compiler only.</P>
+
+<P>For those who are not fammiliar with the C compilers, the command line
+to compile <B><FONT COLOR="#000080">EasyMesh</FONT></B> on UNIX-based machines,
+is the following:<BR>
+<TT><FONT COLOR="#000080">cc -o EasyMesh -O3 easymesh.c -lm</FONT></TT></P>
+
+<P>or on machines running Linux:<BR>
+<TT><FONT COLOR="#000080">gcc -o EasyMesh -O3 easymesh.c -lm</FONT></TT></P>
+
+<P>On the PC running DOS/W95, which have Watcom C compiler installed, the
+command line to compile <B><FONT COLOR="#000080">EasyMesh</FONT></B> is:<BR>
+<TT><FONT COLOR="#000080">wcl386 easymesh.c</FONT></TT></P>
+
+<P>
+<HR WIDTH="100%">Return to <B><FONT COLOR="#000080">EasyMesh</FONT></B>
+<A HREF="easymesh.html">home</A> page. 
+<HR WIDTH="100%"><A HREF="mailto:niceno@univ.trieste.it">niceno@univ.trieste.it</A></P>
+
+</BODY>
+</HTML>
