@@ -49,17 +49,6 @@ func cbrtf(x float32) float32 {
 	return float32(math.Cbrt(float64(x)))
 }
 
-
-
-//---
-// __signbitf ...
-// c function : int __signbitf(float)
-// dep pkg    : math
-// dep func   : BoolToInt
-func __signbitf(x float32) int32 {
-	return BoolToInt(math.Signbit(float64(x)))
-}
-
 //---
 // BoolToInt converts boolean value to an int, which is a common operation in C.
 // 0 and 1 represent false and true respectively.
@@ -247,6 +236,15 @@ func __signbit(x float64) int32 {
 }
 
 //---
+// __signbitd from math.h
+// c function : int __signbitd(double)
+// dep pkg    : math
+// dep func   : BoolToInt
+func __signbitd(x float64) int32 {
+	return BoolToInt(math.Signbit(x))
+}
+
+//---
 // __signbitl from math.h
 // c function : int __signbitl(long double)
 // dep pkg    : math
@@ -254,6 +252,16 @@ func __signbit(x float64) int32 {
 func __signbitl(x float64) int32 {
 	return BoolToInt(math.Signbit(x))
 }
+
+//---
+// __signbitf ...
+// c function : int __signbitf(float)
+// dep pkg    : math
+// dep func   : BoolToInt
+func __signbitf(x float32) int32 {
+	return BoolToInt(math.Signbit(float64(x)))
+}
+
 
 
 //---
