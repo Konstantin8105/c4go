@@ -61,24 +61,6 @@ func __signbitf(x float32) int32 {
 }
 
 //---
-// __builtin_signbitf ...
-// c function : int __builtin_signbitf(float)
-// dep pkg    : math
-// dep func   : BoolToInt
-func __builtin_signbitf(x float32) int32 {
-	return BoolToInt(math.Signbit(float64(x)))
-}
-
-//---
-// __inline_signbitf ...
-// c function : int __inline_signbitf(float)
-// dep pkg    : math
-// dep func   : BoolToInt
-func __inline_signbitf(x float32) int32 {
-	return BoolToInt(math.Signbit(float64(x)))
-}
-
-//---
 // BoolToInt converts boolean value to an int, which is a common operation in C.
 // 0 and 1 represent false and true respectively.
 // c function : int BoolToInt(int)
@@ -225,19 +207,6 @@ func __isnanf(x float32) int32 {
 	return BoolToInt(math.IsNaN(float64(x)))
 }
 
-
-
-//---
-// __builtin_inff from math.h
-// c function : float __builtin_inff()
-// dep pkg    : math
-// dep func   : 
-func __builtin_inff() float32 {
-	return float32(math.Inf(0))
-}
-
-
-
 //---
 // __isinff from math.h
 // c function : int __isinff(float)
@@ -268,21 +237,6 @@ func __isinfl(x float64) int32 {
 	return BoolToInt(math.IsInf(x, 0))
 }
 
-
-
-
-//---
-// __builtin_nanf from math.h
-// c function : double __builtin_nanf(const char*)
-// dep pkg    : math
-// dep func   : 
-func __builtin_nanf(s []byte) float64 {
-	return math.NaN()
-}
-
-
-
-
 //---
 // __signbit from math.h
 // c function : int __signbit(double)
@@ -298,45 +252,6 @@ func __signbit(x float64) int32 {
 // dep pkg    : math
 // dep func   : BoolToInt
 func __signbitl(x float64) int32 {
-	return BoolToInt(math.Signbit(x))
-}
-
-
-//---
-// __builtin_signbit from math.h
-// c function : int __builtin_signbit(double)
-// dep pkg    : math
-// dep func   : BoolToInt
-func __builtin_signbit(x float64) int32 {
-	return BoolToInt(math.Signbit(x))
-}
-
-//---
-// __builtin_signbitl from math.h
-// c function : int __builtin_signbitl(long double)
-// dep pkg    : math
-// dep func   : BoolToInt
-func __builtin_signbitl(x float64) int32 {
-	return BoolToInt(math.Signbit(x))
-}
-
-
-
-//---
-// __inline_signbit from math.h
-// c function : int __inline_signbit(double)
-// dep pkg    : math
-// dep func   : BoolToInt
-func __inline_signbit(x float64) int32 {
-	return BoolToInt(math.Signbit(x))
-}
-
-//---
-// __inline_signbitl from math.h
-// c function : int __inline_signbitl(long double)
-// dep pkg    : math
-// dep func   : BoolToInt
-func __inline_signbitl(x float64) int32 {
 	return BoolToInt(math.Signbit(x))
 }
 
@@ -527,6 +442,22 @@ func __ctype_b_loc() [][]uint16 {
 		depFunc  = "dep func   :"
 	)
 	cs := strings.Split(source, splitter)
+
+	// Examples:
+	// __signbitf ...
+	// __inline_signbitf ...
+	// __builtin_signbitf ...
+	to := []string{"__inline_", "__builtin_"}
+	for i, size := 0, len(cs); i < size; i++ {
+		if !strings.Contains(cs[i], "__") {
+			continue
+		}
+		for j := range to {
+			part := strings.Replace(cs[i], "__", to[j], -1)
+			cs = append(cs, part)
+		}
+	}
+
 	for _, c := range cs {
 		if strings.TrimSpace(c) == "" {
 			continue
