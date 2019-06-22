@@ -60,8 +60,6 @@ func __signbitf(x float32) int32 {
 	return BoolToInt(math.Signbit(float64(x)))
 }
 
-
-
 //---
 // __builtin_signbitf ...
 // c function : int __builtin_signbitf(float)
@@ -303,6 +301,44 @@ func __signbitl(x float64) int32 {
 	return BoolToInt(math.Signbit(x))
 }
 
+
+//---
+// __builtin_signbit from math.h
+// c function : int __builtin_signbit(double)
+// dep pkg    : math
+// dep func   : BoolToInt
+func __builtin_signbit(x float64) int32 {
+	return BoolToInt(math.Signbit(x))
+}
+
+//---
+// __builtin_signbitl from math.h
+// c function : int __builtin_signbitl(long double)
+// dep pkg    : math
+// dep func   : BoolToInt
+func __builtin_signbitl(x float64) int32 {
+	return BoolToInt(math.Signbit(x))
+}
+
+
+
+//---
+// __inline_signbit from math.h
+// c function : int __inline_signbit(double)
+// dep pkg    : math
+// dep func   : BoolToInt
+func __inline_signbit(x float64) int32 {
+	return BoolToInt(math.Signbit(x))
+}
+
+//---
+// __inline_signbitl from math.h
+// c function : int __inline_signbitl(long double)
+// dep pkg    : math
+// dep func   : BoolToInt
+func __inline_signbitl(x float64) int32 {
+	return BoolToInt(math.Signbit(x))
+}
 
 
 //---
