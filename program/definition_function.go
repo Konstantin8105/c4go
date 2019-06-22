@@ -77,18 +77,6 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int * __errno_location(void ) -> noarch.ErrnoLocation",
 	},
 	"math.h": {
-		// linux/math.h
-		// 		"int __signbit(double) -> noarch.Signbitd",
-		// 		"int __signbitl(long double) -> noarch.Signbitl",
-		// 		"int __builtin_signbit(double) -> noarch.Signbitd",
-		// 		"int __builtin_signbitl(long double) -> noarch.Signbitl",
-		// 		"int __isnan(double) -> noarch.IsNaN",
-		// 		"int __isnanl(long double) -> noarch.IsNaN",
-
-		// math.h
-		"int __inline_signbitd(double) -> noarch.Signbitd",
-		"int __inline_signbitl(long double) -> noarch.Signbitl",
-
 		// math.h
 		"double acos(double) -> math.Acos",
 		"double asin(double) -> math.Asin",
