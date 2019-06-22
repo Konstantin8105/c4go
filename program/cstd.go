@@ -283,6 +283,124 @@ func __builtin_nanf(s []byte) float64 {
 }
 
 
+
+
+//---
+// __signbit from math.h
+// c function : int __signbit(double)
+// dep pkg    : math
+// dep func   : BoolToInt
+func __signbit(x float64) int32 {
+	return BoolToInt(math.Signbit(x))
+}
+
+//---
+// __signbitl from math.h
+// c function : int __signbitl(long double)
+// dep pkg    : math
+// dep func   : BoolToInt
+func __signbitl(x float64) int32 {
+	return BoolToInt(math.Signbit(x))
+}
+
+
+
+//---
+// __isnanl from math.h
+// c function : int __isnanl(long double)
+// dep pkg    : math
+// dep func   : BoolToInt
+func __isnanl(x float64) int32 {
+	return BoolToInt(math.IsNaN(x))
+}
+
+
+//---
+// __isnan from math.h
+// c function : int __isnan(double)
+// dep pkg    : math
+// dep func   : BoolToInt
+func __isnan(x float64) int32 {
+	return BoolToInt(math.IsNaN(x))
+}
+
+
+//---
+// fmin from math.h
+// c function : double fmin(double , double )
+// dep pkg    : 
+// dep func   : 
+// fmin returns the smaller of its arguments: either x or y.
+func fmin(x, y float64) float64 {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+//---
+// fminl from math.h
+// c function : double fminl(long double , long double )
+// dep pkg    : 
+// dep func   : 
+// fmin returns the smaller of its arguments: either x or y.
+func fminl(x, y float64) float64 {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+//---
+// fminf from math.h
+// c function : float fminf(float , float ) 
+// dep pkg    : 
+// dep func   : 
+// fminf returns the smaller of its arguments: either x or y.
+func fminf(x, y float32) float32 {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+//---
+// fmaxf from math.h
+// c function : float fmaxf(float , float ) 
+// dep pkg    : 
+// dep func   : 
+// fmaxf returns the larger of its arguments: either x or y.
+func fmaxf(x, y float32) float32 {
+	if x < y {
+		return y
+	}
+	return x
+}
+
+
+//---
+// expm1f from math.h
+// c function : float expm1f(float) 
+// dep pkg    : math
+// dep func   : 
+// expm1f returns e raised to the power x minus one: e^x-1
+func expm1f(x float32) float32 {
+	return float32(math.Expm1(float64(x)))
+}
+
+
+//---
+// exp2f from math.h
+// c function : float exp2f(float) 
+// dep pkg    : math
+// dep func   : 
+// exp2f Returns the base-2 exponential function of x, which is 2 raised
+// to the power x: 2^x
+func exp2f(x float32) float32 {
+	return float32(math.Exp2(float64(x)))
+}
+
+
 //---
 // __ctype_b_loc from ctype.h
 // c function : const unsigned short int** __ctype_b_loc()

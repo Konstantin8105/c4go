@@ -1,58 +1,6 @@
 package noarch
 
-import (
-	"math"
-)
-
-// Signbitd ...
-func Signbitd(x float64) int32 {
-	return BoolToInt(math.Signbit(x))
-}
-
-// Signbitl ...
-func Signbitl(x float64) int32 {
-	return BoolToInt(math.Signbit(x))
-}
-
-// IsNaN ...
-func IsNaN(x float64) int32 {
-	return BoolToInt(math.IsNaN(x))
-}
-
-// Fmin returns the smaller of its arguments: either x or y.
-func Fmin(x, y float64) float64 {
-	if x < y {
-		return x
-	}
-	return y
-}
-
-// Fminf returns the smaller of its arguments: either x or y.
-func Fminf(x, y float32) float32 {
-	if x < y {
-		return x
-	}
-	return y
-}
-
-// Fmaxf returns the larger of its arguments: either x or y.
-func Fmaxf(x, y float32) float32 {
-	if x < y {
-		return y
-	}
-	return x
-}
-
-// Expm1f returns e raised to the power x minus one: e^x-1
-func Expm1f(x float32) float32 {
-	return float32(math.Expm1(float64(x)))
-}
-
-// Exp2f Returns the base-2 exponential function of x, which is 2 raised
-// to the power x: 2^x
-func Exp2f(x float32) float32 {
-	return float32(math.Exp2(float64(x)))
-}
+import "math"
 
 // Fdim returns the positive difference between x and y.
 func Fdim(x, y float64) float64 {

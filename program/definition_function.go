@@ -78,12 +78,12 @@ var builtInFunctionDefinitions = map[string][]string{
 	},
 	"math.h": {
 		// linux/math.h
-		"int __signbit(double) -> noarch.Signbitd",
-		"int __signbitl(long double) -> noarch.Signbitl",
-		"int __builtin_signbit(double) -> noarch.Signbitd",
-		"int __builtin_signbitl(long double) -> noarch.Signbitl",
-		"int __isnan(double) -> noarch.IsNaN",
-		"int __isnanl(long double) -> noarch.IsNaN",
+		// 		"int __signbit(double) -> noarch.Signbitd",
+		// 		"int __signbitl(long double) -> noarch.Signbitl",
+		// 		"int __builtin_signbit(double) -> noarch.Signbitd",
+		// 		"int __builtin_signbitl(long double) -> noarch.Signbitl",
+		// 		"int __isnan(double) -> noarch.IsNaN",
+		// 		"int __isnanl(long double) -> noarch.IsNaN",
 
 		// math.h
 		"int __inline_signbitd(double) -> noarch.Signbitd",
@@ -115,18 +115,18 @@ var builtInFunctionDefinitions = map[string][]string{
 		"float copysignf(float, float) -> noarch.Copysignf",
 		"long double copysignl(long double, long double) -> math.Copysign",
 
-		"double fmin(double , double ) -> noarch.Fmin",
-		"float fminf(float , float ) -> noarch.Fminf",
-		"long double fminl(long double , long double ) -> noarch.Fmin",
+		// 		"double fmin(double , double ) -> noarch.Fmin",
+		// 		"float fminf(float , float ) -> noarch.Fminf",
+		// 		"long double fminl(long double , long double ) -> noarch.Fmin",
 
-		"float fmaxf(float , float ) -> noarch.Fmaxf",
+		// 		"float fmaxf(float , float ) -> noarch.Fmaxf",
 
 		"double expm1(double) -> math.Expm1",
-		"float expm1f(float) -> noarch.Expm1f",
+		// 		"float expm1f(float) -> noarch.Expm1f",
 		"long double expm1l(long double) -> math.Expm1",
 
 		"double exp2(double) -> math.Exp2",
-		"float exp2f(float) -> noarch.Exp2f",
+		// 		"float exp2f(float) -> noarch.Exp2f",
 		"long double exp2l(long double) -> math.Exp2",
 
 		"double exp(double) -> math.Exp",
