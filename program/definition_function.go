@@ -100,7 +100,6 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double tanh(double) -> math.Tanh",
 
 		"double copysign(double, double) -> math.Copysign",
-		"float copysignf(float, float) -> noarch.Copysignf",
 		"long double copysignl(long double, long double) -> math.Copysign",
 
 		"double expm1(double) -> math.Expm1",
@@ -110,15 +109,12 @@ var builtInFunctionDefinitions = map[string][]string{
 		"long double exp2l(long double) -> math.Exp2",
 
 		"double exp(double) -> math.Exp",
-		"float expf(float) -> noarch.Expf",
 		"long double expl(long double) -> math.Exp",
 
 		"double erf(double) -> math.Erf",
-		"float erff(float) -> noarch.Erff",
 		"long double erfl(long double) -> math.Erf",
 
 		"double erfc(double) -> math.Erfc",
-		"float erfcf(float) -> noarch.Erfcf",
 		"long double erfcl(long double) -> math.Erfc",
 
 		"double log2(double) -> math.Log2",
@@ -140,27 +136,19 @@ var builtInFunctionDefinitions = map[string][]string{
 		"long double atanhl(long double) -> math.Atanh",
 
 		"double sinh(double) -> math.Sinh",
-		"float sinhf(float) -> noarch.Sinhf",
 		"long double sinhl(long double) -> math.Sinh",
 
 		"double cosh(double) -> math.Cosh",
-		"float coshf(float) -> noarch.Coshf",
 		"long double coshl(long double) -> math.Cosh",
 
 		"double tanh(double) -> math.Tanh",
-		"float tanhf(float) -> noarch.Tanhf",
 		"long double tanhl(long double) -> math.Tanh",
 
 		"double cbrt(double) -> math.Cbrt",
 		"long double cbrtl(long double) -> math.Cbrt",
 
 		"double hypot(double, double) -> math.Hypot",
-		"float hypotf(float) -> noarch.Hypotf",
 		"long double hypotl(long double, long double) -> math.Hypot",
-
-		"long int lround(double ) -> noarch.LRound",
-		"long int lroundf(float ) -> noarch.LRound",
-		"long int lroundl(long double ) -> noarch.LRoundl",
 	},
 	"stdio.h": {
 

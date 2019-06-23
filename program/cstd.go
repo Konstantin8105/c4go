@@ -302,6 +302,114 @@ func __isnan(x float64) int32 {
 
 
 //---
+// sinhf from math.h
+// c function : float sinhf(float) 
+// dep pkg    : math
+// dep func   : 
+// sinhf compute hyperbolic sine
+func sinhf(a float32) float32 {
+	return float32(math.Sinh(float64(a)))
+}
+
+//---
+// coshf from math.h
+// c function : float coshf(float) 
+// dep pkg    : math
+// dep func   : 
+// coshf compute hyperbolic cose
+func coshf(a float32) float32 {
+	return float32(math.Cosh(float64(a)))
+}
+
+
+//---
+// tanhf from math.h
+// c function : float tanhf(float) 
+// dep pkg    : math
+// dep func   : 
+// tanhf compute hyperbolic tan
+func tanhf(a float32) float32 {
+	return float32(math.Tanh(float64(a)))
+}
+
+//---
+// hypotf from math.h
+// c function : float hypotf(float) 
+// dep pkg    : math
+// dep func   : 
+// hypotf compute the square root of the sum of the squares of x and y
+func hypotf(x, y float32) float32 {
+	return float32(math.Hypot(float64(x), float64(y)))
+}
+
+//---
+// copysignf from math.h
+// c function : float copysignf(float, float)
+// dep pkg    : math
+// dep func   : 
+// copysignf copies sign of y to absolute value of x
+func copysignf(x float32, y float32) float32 {
+	return float32(math.Copysign(float64(x), float64(y)))
+}
+
+//---
+// expf from math.h
+// c function : float expf(float )
+// dep pkg    : math
+// dep func   : 
+// expf : finds e^x
+func expf(x float32) float32 {
+	return float32(math.Exp(float64(x)))
+}
+
+//---
+// erff from math.h
+// c function : float erff(float )
+// dep pkg    : math
+// dep func   : 
+// erff : finds error function value of x
+func erff(x float32) float32 {
+	return float32(math.Erf(float64(x)))
+}
+
+//---
+// erfcf from math.h
+// c function : float erfcf(float )
+// dep pkg    : math
+// dep func   : 
+// erfcf : finds error function value of x
+func erfcf(x float32) float32 {
+	return float32(math.Erfc(float64(x)))
+}
+
+//---
+// lround from math.h
+// c function : long int lround(double )
+// dep pkg    : 
+// dep func   : lroundl
+func lround(x float32) int32 {
+	return lroundl(float64(x))
+}
+
+//---
+// lroundf from math.h
+// c function : long int lroundf(float )
+// dep pkg    : 
+// dep func   : lroundl
+func lroundf(x float32) int32 {
+	return lroundl(float64(x))
+}
+
+//---
+// lroundl from math.h
+// c function : long int lroundl(long double )
+// dep pkg    : math
+// dep func   : 
+func lroundl(x float64) int32 {
+	return int32(math.Round(x))
+}
+
+//---
 // fmin from math.h
 // c function : double fmin(double , double )
 // dep pkg    : 
