@@ -205,6 +205,23 @@ func __isinff(x float32) int32 {
 	return BoolToInt(math.IsInf(float64(x), 0))
 }
 
+//---
+// __nanf from math.h
+// c function : double __nanf(const char *)
+// dep pkg    : math
+// dep func   : 
+func __nanf(_ []byte) float64 {
+	return math.NaN()
+}
+
+//---
+// __inff from math.h
+// c function : float __inff()
+// dep pkg    : math
+// dep func   : 
+func __inff() float32 {
+	return float32(math.Inf(0))
+}
 
 
 //---
