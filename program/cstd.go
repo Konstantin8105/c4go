@@ -49,37 +49,6 @@ func cbrtf(x float32) float32 {
 	return float32(math.Cbrt(float64(x)))
 }
 
-
-
-//---
-// __signbitf ...
-// c function : int __signbitf(float)
-// dep pkg    : math
-// dep func   : BoolToInt
-func __signbitf(x float32) int32 {
-	return BoolToInt(math.Signbit(float64(x)))
-}
-
-
-
-//---
-// __builtin_signbitf ...
-// c function : int __builtin_signbitf(float)
-// dep pkg    : math
-// dep func   : BoolToInt
-func __builtin_signbitf(x float32) int32 {
-	return BoolToInt(math.Signbit(float64(x)))
-}
-
-//---
-// __inline_signbitf ...
-// c function : int __inline_signbitf(float)
-// dep pkg    : math
-// dep func   : BoolToInt
-func __inline_signbitf(x float32) int32 {
-	return BoolToInt(math.Signbit(float64(x)))
-}
-
 //---
 // BoolToInt converts boolean value to an int, which is a common operation in C.
 // 0 and 1 represent false and true respectively.
@@ -227,19 +196,6 @@ func __isnanf(x float32) int32 {
 	return BoolToInt(math.IsNaN(float64(x)))
 }
 
-
-
-//---
-// __builtin_inff from math.h
-// c function : float __builtin_inff()
-// dep pkg    : math
-// dep func   : 
-func __builtin_inff() float32 {
-	return float32(math.Inf(0))
-}
-
-
-
 //---
 // __isinff from math.h
 // c function : int __isinff(float)
@@ -249,6 +205,23 @@ func __isinff(x float32) int32 {
 	return BoolToInt(math.IsInf(float64(x), 0))
 }
 
+//---
+// __nanf from math.h
+// c function : double __nanf(const char *)
+// dep pkg    : math
+// dep func   : 
+func __nanf(_ []byte) float64 {
+	return math.NaN()
+}
+
+//---
+// __inff from math.h
+// c function : float __inff()
+// dep pkg    : math
+// dep func   : 
+func __inff() float32 {
+	return float32(math.Inf(0))
+}
 
 
 //---
@@ -270,16 +243,333 @@ func __isinfl(x float64) int32 {
 	return BoolToInt(math.IsInf(x, 0))
 }
 
+//---
+// __signbit from math.h
+// c function : int __signbit(double)
+// dep pkg    : math
+// dep func   : BoolToInt
+func __signbit(x float64) int32 {
+	return BoolToInt(math.Signbit(x))
+}
+
+//---
+// __signbitd from math.h
+// c function : int __signbitd(double)
+// dep pkg    : math
+// dep func   : BoolToInt
+func __signbitd(x float64) int32 {
+	return BoolToInt(math.Signbit(x))
+}
+
+//---
+// __signbitl from math.h
+// c function : int __signbitl(long double)
+// dep pkg    : math
+// dep func   : BoolToInt
+func __signbitl(x float64) int32 {
+	return BoolToInt(math.Signbit(x))
+}
+
+//---
+// __signbitf ...
+// c function : int __signbitf(float)
+// dep pkg    : math
+// dep func   : BoolToInt
+func __signbitf(x float32) int32 {
+	return BoolToInt(math.Signbit(float64(x)))
+}
 
 
 
 //---
-// __builtin_nanf from math.h
-// c function : double __builtin_nanf(const char*)
+// __isnanl from math.h
+// c function : int __isnanl(long double)
+// dep pkg    : math
+// dep func   : BoolToInt
+func __isnanl(x float64) int32 {
+	return BoolToInt(math.IsNaN(x))
+}
+
+
+//---
+// __isnan from math.h
+// c function : int __isnan(double)
+// dep pkg    : math
+// dep func   : BoolToInt
+func __isnan(x float64) int32 {
+	return BoolToInt(math.IsNaN(x))
+}
+
+
+//---
+// sinhf from math.h
+// c function : float sinhf(float) 
 // dep pkg    : math
 // dep func   : 
-func __builtin_nanf(s []byte) float64 {
-	return math.NaN()
+// sinhf compute hyperbolic sine
+func sinhf(a float32) float32 {
+	return float32(math.Sinh(float64(a)))
+}
+
+//---
+// coshf from math.h
+// c function : float coshf(float) 
+// dep pkg    : math
+// dep func   : 
+// coshf compute hyperbolic cose
+func coshf(a float32) float32 {
+	return float32(math.Cosh(float64(a)))
+}
+
+
+//---
+// tanhf from math.h
+// c function : float tanhf(float) 
+// dep pkg    : math
+// dep func   : 
+// tanhf compute hyperbolic tan
+func tanhf(a float32) float32 {
+	return float32(math.Tanh(float64(a)))
+}
+
+//---
+// hypotf from math.h
+// c function : float hypotf(float) 
+// dep pkg    : math
+// dep func   : 
+// hypotf compute the square root of the sum of the squares of x and y
+func hypotf(x, y float32) float32 {
+	return float32(math.Hypot(float64(x), float64(y)))
+}
+
+//---
+// copysignf from math.h
+// c function : float copysignf(float, float)
+// dep pkg    : math
+// dep func   : 
+// copysignf copies sign of y to absolute value of x
+func copysignf(x float32, y float32) float32 {
+	return float32(math.Copysign(float64(x), float64(y)))
+}
+
+//---
+// expf from math.h
+// c function : float expf(float )
+// dep pkg    : math
+// dep func   : 
+// expf : finds e^x
+func expf(x float32) float32 {
+	return float32(math.Exp(float64(x)))
+}
+
+//---
+// erff from math.h
+// c function : float erff(float )
+// dep pkg    : math
+// dep func   : 
+// erff : finds error function value of x
+func erff(x float32) float32 {
+	return float32(math.Erf(float64(x)))
+}
+
+//---
+// erfcf from math.h
+// c function : float erfcf(float )
+// dep pkg    : math
+// dep func   : 
+// erfcf : finds error function value of x
+func erfcf(x float32) float32 {
+	return float32(math.Erfc(float64(x)))
+}
+
+//---
+// lround from math.h
+// c function : long int lround(double )
+// dep pkg    : 
+// dep func   : lroundl
+func lround(x float32) int32 {
+	return lroundl(float64(x))
+}
+
+//---
+// lroundf from math.h
+// c function : long int lroundf(float )
+// dep pkg    : 
+// dep func   : lroundl
+func lroundf(x float32) int32 {
+	return lroundl(float64(x))
+}
+
+//---
+// lroundl from math.h
+// c function : long int lroundl(long double )
+// dep pkg    : math
+// dep func   : 
+func lroundl(x float64) int32 {
+	return int32(math.Round(x))
+}
+
+//---
+// fmin from math.h
+// c function : double fmin(double , double )
+// dep pkg    : 
+// dep func   : 
+// fmin returns the smaller of its arguments: either x or y.
+func fmin(x, y float64) float64 {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+//---
+// fminl from math.h
+// c function : double fminl(long double , long double )
+// dep pkg    : 
+// dep func   : 
+// fmin returns the smaller of its arguments: either x or y.
+func fminl(x, y float64) float64 {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+//---
+// fminf from math.h
+// c function : float fminf(float , float ) 
+// dep pkg    : 
+// dep func   : 
+// fminf returns the smaller of its arguments: either x or y.
+func fminf(x, y float32) float32 {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+//---
+// fmaxf from math.h
+// c function : float fmaxf(float , float ) 
+// dep pkg    : 
+// dep func   : 
+// fmaxf returns the larger of its arguments: either x or y.
+func fmaxf(x, y float32) float32 {
+	if x < y {
+		return y
+	}
+	return x
+}
+
+//---
+// fdiml from math.h
+// c function : long double fdiml(long double,long double) 
+// dep pkg    : 
+// dep func   : 
+// fdiml returns the positive difference between x and y.
+func fdiml(x, y float64) float64 {
+	if x > y {
+		return x - y
+	}
+	return 0
+}
+
+
+//---
+// fdim from math.h
+// c function : double fdim(double, double) 
+// dep pkg    : 
+// dep func   : 
+// fdim returns the positive difference between x and y.
+func fdim(x, y float64) float64 {
+	if x > y {
+		return x - y
+	}
+	return 0
+}
+
+//---
+// fdimf from math.h
+// c function : float fdimf(float, float) 
+// dep pkg    : 
+// dep func   : 
+// fdimf returns the positive difference between x and y.
+func fdimf(x, y float32) float32 {
+	if x > y {
+		return x - y
+	}
+	return 0
+}
+
+//---
+// log2f from math.h
+// c function : float log2f(float) 
+// dep pkg    : math
+// dep func   : 
+// log2f returns the binary (base-2) logarithm of x.
+func log2f(x float32) float32 {
+	return float32(math.Log2(float64(x)))
+}
+
+
+//---
+// log1pf from math.h
+// c function : float log1pf(float) 
+// dep pkg    : math
+// dep func   : 
+// log1pf compute ln(1+arg)
+func log1pf(arg float32) float32 {
+	return float32(math.Log1p(float64(arg)))
+}
+
+//---
+// llround from math.h
+// c function : long long int llround(double )
+// dep pkg    : 
+// dep func   : llroundl
+func llround(x float32) int64 {
+	return llroundl(float64(x))
+}
+
+//---
+// llroundf from math.h
+// c function : long long int llroundf(float )
+// dep pkg    : 
+// dep func   : llroundl
+func llroundf(x float32) int64 {
+	return llroundl(float64(x))
+}
+
+
+//---
+// llroundl from math.h
+// c function : long long int llroundl(long double )
+// dep pkg    : math
+// dep func   : 
+func llroundl(x float64) int64 {
+	return int64(math.Round(x))
+}
+
+//---
+// expm1f from math.h
+// c function : float expm1f(float) 
+// dep pkg    : math
+// dep func   : 
+// expm1f returns e raised to the power x minus one: e^x-1
+func expm1f(x float32) float32 {
+	return float32(math.Expm1(float64(x)))
+}
+
+
+//---
+// exp2f from math.h
+// c function : float exp2f(float) 
+// dep pkg    : math
+// dep func   : 
+// exp2f Returns the base-2 exponential function of x, which is 2 raised
+// to the power x: 2^x
+func exp2f(x float32) float32 {
+	return float32(math.Exp2(float64(x)))
 }
 
 
@@ -373,6 +663,22 @@ func __ctype_b_loc() [][]uint16 {
 		depFunc  = "dep func   :"
 	)
 	cs := strings.Split(source, splitter)
+
+	// Examples:
+	// __signbitf ...
+	// __inline_signbitf ...
+	// __builtin_signbitf ...
+	to := []string{"__inline_", "__builtin_"}
+	for i, size := 0, len(cs); i < size; i++ {
+		if !strings.Contains(cs[i], "__") {
+			continue
+		}
+		for j := range to {
+			part := strings.Replace(cs[i], "__", to[j], -1)
+			cs = append(cs, part)
+		}
+	}
+
 	for _, c := range cs {
 		if strings.TrimSpace(c) == "" {
 			continue

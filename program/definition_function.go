@@ -77,18 +77,6 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int * __errno_location(void ) -> noarch.ErrnoLocation",
 	},
 	"math.h": {
-		// linux/math.h
-		"int __signbit(double) -> noarch.Signbitd",
-		"int __signbitl(long double) -> noarch.Signbitl",
-		"int __builtin_signbit(double) -> noarch.Signbitd",
-		"int __builtin_signbitl(long double) -> noarch.Signbitl",
-		"int __isnan(double) -> noarch.IsNaN",
-		"int __isnanl(long double) -> noarch.IsNaN",
-
-		// math.h
-		"int __inline_signbitd(double) -> noarch.Signbitd",
-		"int __inline_signbitl(long double) -> noarch.Signbitl",
-
 		// math.h
 		"double acos(double) -> math.Acos",
 		"double asin(double) -> math.Asin",
@@ -112,46 +100,28 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double tanh(double) -> math.Tanh",
 
 		"double copysign(double, double) -> math.Copysign",
-		"float copysignf(float, float) -> noarch.Copysignf",
 		"long double copysignl(long double, long double) -> math.Copysign",
 
-		"double fmin(double , double ) -> noarch.Fmin",
-		"float fminf(float , float ) -> noarch.Fminf",
-		"long double fminl(long double , long double ) -> noarch.Fmin",
-
-		"float fmaxf(float , float ) -> noarch.Fmaxf",
-
 		"double expm1(double) -> math.Expm1",
-		"float expm1f(float) -> noarch.Expm1f",
 		"long double expm1l(long double) -> math.Expm1",
 
 		"double exp2(double) -> math.Exp2",
-		"float exp2f(float) -> noarch.Exp2f",
 		"long double exp2l(long double) -> math.Exp2",
 
 		"double exp(double) -> math.Exp",
-		"float expf(float) -> noarch.Expf",
 		"long double expl(long double) -> math.Exp",
 
 		"double erf(double) -> math.Erf",
-		"float erff(float) -> noarch.Erff",
 		"long double erfl(long double) -> math.Erf",
 
 		"double erfc(double) -> math.Erfc",
-		"float erfcf(float) -> noarch.Erfcf",
 		"long double erfcl(long double) -> math.Erfc",
 
 		"double log2(double) -> math.Log2",
-		"float log2f(float) -> noarch.Log2f",
 		"long double log2l(long double) -> math.Log2",
 
 		"double log1p(double) -> math.Log1p",
-		"float log1pf(float) -> noarch.Log1pf",
 		"long double log1pl(long double) -> math.Log1p",
-
-		"double fdim(double, double) -> noarch.Fdim",
-		"float fdimf(float, float) -> noarch.Fdimf",
-		"long double fdiml(long double, long double) -> noarch.Fdim",
 
 		"double asinh(double) -> math.Asinh",
 		"float asinhf(float) -> noarch.Asinhf",
@@ -166,31 +136,19 @@ var builtInFunctionDefinitions = map[string][]string{
 		"long double atanhl(long double) -> math.Atanh",
 
 		"double sinh(double) -> math.Sinh",
-		"float sinhf(float) -> noarch.Sinhf",
 		"long double sinhl(long double) -> math.Sinh",
 
 		"double cosh(double) -> math.Cosh",
-		"float coshf(float) -> noarch.Coshf",
 		"long double coshl(long double) -> math.Cosh",
 
 		"double tanh(double) -> math.Tanh",
-		"float tanhf(float) -> noarch.Tanhf",
 		"long double tanhl(long double) -> math.Tanh",
 
 		"double cbrt(double) -> math.Cbrt",
 		"long double cbrtl(long double) -> math.Cbrt",
 
 		"double hypot(double, double) -> math.Hypot",
-		"float hypotf(float) -> noarch.Hypotf",
 		"long double hypotl(long double, long double) -> math.Hypot",
-
-		"long int lround(double ) -> noarch.LRound",
-		"long int lroundf(float ) -> noarch.LRound",
-		"long int lroundl(long double ) -> noarch.LRoundl",
-
-		"long long int llround(double ) -> noarch.LLRound",
-		"long long int llroundf(float ) -> noarch.LLRound",
-		"long long int llroundl(long double ) -> noarch.LLRoundl",
 	},
 	"stdio.h": {
 
