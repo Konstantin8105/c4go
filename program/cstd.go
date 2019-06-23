@@ -355,7 +355,7 @@ func fmaxf(x, y float32) float32 {
 
 //---
 // fdiml from math.h
-// c function : long double fdim(long double,long double) 
+// c function : long double fdiml(long double,long double) 
 // dep pkg    : 
 // dep func   : 
 // fdiml returns the positive difference between x and y.
@@ -382,7 +382,7 @@ func fdim(x, y float64) float64 {
 
 //---
 // fdimf from math.h
-// c function : float fdim(float, float) 
+// c function : float fdimf(float, float) 
 // dep pkg    : 
 // dep func   : 
 // fdimf returns the positive difference between x and y.
