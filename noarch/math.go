@@ -2,22 +2,6 @@ package noarch
 
 import "math"
 
-// Fdim returns the positive difference between x and y.
-func Fdim(x, y float64) float64 {
-	if x > y {
-		return x - y
-	}
-	return 0
-}
-
-// Fdimf returns the positive difference between x and y.
-func Fdimf(x, y float32) float32 {
-	if x > y {
-		return x - y
-	}
-	return 0
-}
-
 // Log2f returns the binary (base-2) logarithm of x.
 func Log2f(x float32) float32 {
 	return float32(math.Log2(float64(x)))
