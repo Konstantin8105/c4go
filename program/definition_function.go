@@ -130,11 +130,9 @@ var builtInFunctionDefinitions = map[string][]string{
 		"long double erfcl(long double) -> math.Erfc",
 
 		"double log2(double) -> math.Log2",
-		"float log2f(float) -> noarch.Log2f",
 		"long double log2l(long double) -> math.Log2",
 
 		"double log1p(double) -> math.Log1p",
-		"float log1pf(float) -> noarch.Log1pf",
 		"long double log1pl(long double) -> math.Log1p",
 
 		"double asinh(double) -> math.Asinh",

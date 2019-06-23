@@ -2,11 +2,6 @@ package noarch
 
 import "math"
 
-// Log2f returns the binary (base-2) logarithm of x.
-func Log2f(x float32) float32 {
-	return float32(math.Log2(float64(x)))
-}
-
 // Sinhf compute hyperbolic sine
 func Sinhf(a float32) float32 {
 	return float32(math.Sinh(float64(a)))
@@ -25,11 +20,6 @@ func Tanhf(a float32) float32 {
 // Hypotf compute the square root of the sum of the squares of x and y
 func Hypotf(x, y float32) float32 {
 	return float32(math.Hypot(float64(x), float64(y)))
-}
-
-// Log1pf compute ln(1+arg)
-func Log1pf(arg float32) float32 {
-	return float32(math.Log1p(float64(arg)))
 }
 
 // Copysignf copies sign of y to absolute value of x

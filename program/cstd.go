@@ -393,6 +393,27 @@ func fdimf(x, y float32) float32 {
 	return 0
 }
 
+//---
+// log2f from math.h
+// c function : float log2f(float) 
+// dep pkg    : math
+// dep func   : 
+// log2f returns the binary (base-2) logarithm of x.
+func log2f(x float32) float32 {
+	return float32(math.Log2(float64(x)))
+}
+
+
+//---
+// log1pf from math.h
+// c function : float log1pf(float) 
+// dep pkg    : math
+// dep func   : 
+// log1pf compute ln(1+arg)
+func log1pf(arg float32) float32 {
+	return float32(math.Log1p(float64(arg)))
+}
+
 
 //---
 // expm1f from math.h
