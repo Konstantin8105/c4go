@@ -49,11 +49,3 @@ func LRound(x float32) int32 {
 func LRoundl(x float64) int32 {
 	return int32(math.Round(x))
 }
-
-func LLRound(x float32) int64 {
-	return LLRoundl(float64(x))
-}
-
-func LLRoundl(x float64) int64 {
-	return int64(math.Round(x))
-}

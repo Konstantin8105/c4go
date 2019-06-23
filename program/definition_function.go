@@ -169,10 +169,6 @@ var builtInFunctionDefinitions = map[string][]string{
 		"long int lround(double ) -> noarch.LRound",
 		"long int lroundf(float ) -> noarch.LRound",
 		"long int lroundl(long double ) -> noarch.LRoundl",
-
-		"long long int llround(double ) -> noarch.LLRound",
-		"long long int llroundf(float ) -> noarch.LLRound",
-		"long long int llroundl(long double ) -> noarch.LLRoundl",
 	},
 	"stdio.h": {
 

@@ -414,6 +414,33 @@ func log1pf(arg float32) float32 {
 	return float32(math.Log1p(float64(arg)))
 }
 
+//---
+// llround from math.h
+// c function : long long int llround(double )
+// dep pkg    : 
+// dep func   : llroundl
+func llround(x float32) int64 {
+	return llroundl(float64(x))
+}
+
+//---
+// llroundf from math.h
+// c function : long long int llroundf(float )
+// dep pkg    : 
+// dep func   : llroundl
+func llroundf(x float32) int64 {
+	return llroundl(float64(x))
+}
+
+
+//---
+// llroundl from math.h
+// c function : long long int llroundl(long double )
+// dep pkg    : math
+// dep func   : 
+func llroundl(x float64) int64 {
+	return int64(math.Round(x))
+}
 
 //---
 // expm1f from math.h
