@@ -12,6 +12,7 @@ type DeclRefExpr struct {
 	Name       string
 	Type2      string
 	Type3      string
+	Other      string
 	ChildNodes []Node
 }
 
@@ -25,6 +26,7 @@ func parseDeclRefExpr(line string) *DeclRefExpr {
 		 (?P<address2>[0-9a-fx]+)
 		 '(?P<name>.*?)'
 		 '(?P<type2>.*?)'(:'(?P<type3>.*?)')?
+		(?P<other> .*?)?
 		`,
 		line,
 	)
@@ -40,6 +42,7 @@ func parseDeclRefExpr(line string) *DeclRefExpr {
 		Name:       groups["name"],
 		Type2:      groups["type2"],
 		Type3:      groups["type3"],
+		Other:      groups["other"],
 		ChildNodes: []Node{},
 	}
 }
