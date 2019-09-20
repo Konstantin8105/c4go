@@ -6,16 +6,18 @@ type WarnUnusedResultAttr struct {
 	Addr       Address
 	Pos        Position
 	Inherited  bool
+	Other      string
 	ChildNodes []Node
 }
 
 func parseWarnUnusedResultAttr(line string) *WarnUnusedResultAttr {
-	groups := groupsFromRegex(`<(?P<position>.*)>(?P<inherited> Inherited)?( warn_unused_result)?`, line)
+	groups := groupsFromRegex(`<(?P<position>.*)>(?P<inherited> Inherited)?( warn_unused_result)?(?P<other>.*)?`, line)
 
 	return &WarnUnusedResultAttr{
 		Addr:       ParseAddress(groups["address"]),
 		Pos:        NewPositionFromString(groups["position"]),
 		Inherited:  len(groups["inherited"]) > 0,
+		Other:      groups["other"],
 		ChildNodes: []Node{},
 	}
 }
