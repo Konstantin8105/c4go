@@ -11,6 +11,7 @@ type MemberExpr struct {
 	IsBitfield bool
 	Address2   string
 	IsPointer  bool
+	Other      string
 	ChildNodes []Node
 }
 
@@ -23,7 +24,8 @@ func parseMemberExpr(line string) *MemberExpr {
 		(?P<bitfield> bitfield)?
 		 (?P<pointer>[->.]+)
 		(?P<name>\w+)?
-		 (?P<address2>[0-9a-fx]+)`,
+		 (?P<address2>[0-9a-fx]+)
+		(?P<other> .*)?`,
 		line,
 	)
 
@@ -42,6 +44,7 @@ func parseMemberExpr(line string) *MemberExpr {
 		IsLvalue:   len(groups["lvalue"]) > 0,
 		IsBitfield: len(groups["bitfield"]) > 0,
 		Address2:   groups["address2"],
+		Other:      groups["other"],
 		ChildNodes: []Node{},
 	}
 }

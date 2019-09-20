@@ -83,6 +83,20 @@ func TestDeclRefExpr(t *testing.T) {
 			Other:      " non_odr_use_unevaluated",
 			ChildNodes: []Node{},
 		},
+		`0x1f54868 <col:44> 'struct plotframe_type':'struct plotframe_type' lvalue Var 0x1ec6a60 'plot' 'struct plotframe_type':'struct plotframe_type' non_odr_use_unevaluated`: &DeclRefExpr{
+			Addr:       0x1f54868,
+			Pos:        NewPositionFromString("col:44"),
+			Type:       "struct plotframe_type",
+			Type1:      "struct plotframe_type",
+			IsLvalue:   true,
+			For:        "Var",
+			Address2:   "0x1ec6a60",
+			Name:       "plot",
+			Type2:      "struct plotframe_type",
+			Type3:      "struct plotframe_type",
+			Other:      " non_odr_use_unevaluated",
+			ChildNodes: []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)
