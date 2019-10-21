@@ -68,7 +68,7 @@ func transpileToBlockStmt(node ast.Node, p *program.Program) (
 	}
 
 	if stmts == nil {
-		return nil, nil, nil, fmt.Errorf("Stmts inside Block cannot be nil")
+		return nil, nil, nil, fmt.Errorf("stmts inside Block cannot be nil")
 	}
 
 	return &goast.BlockStmt{

@@ -47,7 +47,7 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 	decls []goast.Decl, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileFunctionDecl. %v", err)
+			err = fmt.Errorf("cannot transpileFunctionDecl. %v", err)
 		}
 	}()
 
@@ -87,7 +87,7 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 		var f, r []string
 		pr, _, f, r, err = util.ParseFunction(n.Type)
 		if err != nil {
-			err = fmt.Errorf("Cannot get function definition : %v", err)
+			err = fmt.Errorf("cannot get function definition : %v", err)
 			return
 		}
 		if len(pr) != 0 {
@@ -116,7 +116,7 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 		body, pre, post, err = transpileToBlockStmt(functionBody, p)
 		if err != nil || len(pre) > 0 || len(post) > 0 {
 			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("Not correct result in function %s body: err = %v",
+				fmt.Errorf("not correct result in function %s body: err = %v",
 					n.Name, err), n))
 			err = nil // Error is ignored
 		}
@@ -253,7 +253,7 @@ func getFieldList(p *program.Program, f *ast.FunctionDecl, fieldTypes []string) 
 	_ *goast.FieldList, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Error in function field list. err = %v", err)
+			err = fmt.Errorf("error in function field list. err = %v", err)
 		}
 	}()
 	r := []*goast.Field{}
@@ -298,7 +298,7 @@ func transpileReturnStmt(n *ast.ReturnStmt, p *program.Program) (
 	_ goast.Stmt, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileReturnStmt. err = %v", err)
+			err = fmt.Errorf("cannot transpileReturnStmt. err = %v", err)
 		}
 	}()
 	// There may not be a return value. Then we don't have to both ourselves
@@ -314,7 +314,7 @@ func transpileReturnStmt(n *ast.ReturnStmt, p *program.Program) (
 		return nil, nil, nil, err
 	}
 	if e == nil {
-		return nil, nil, nil, fmt.Errorf("Expr is nil")
+		return nil, nil, nil, fmt.Errorf("expr is nil")
 	}
 
 	f := p.GetFunctionDefinition(p.Function.Name)

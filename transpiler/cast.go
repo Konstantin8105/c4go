@@ -18,7 +18,7 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 	err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileImplicitCastExpr. err = %v", err)
+			err = fmt.Errorf("cannot transpileImplicitCastExpr. err = %v", err)
 		}
 		if exprType == "" {
 			exprType = "ImplicitCastExprWrongType"
@@ -210,7 +210,7 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 	err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileImplicitCastExpr. err = %v", err)
+			err = fmt.Errorf("cannot transpileImplicitCastExpr. err = %v", err)
 		}
 		if exprType == "" {
 			exprType = "CStyleCastExpr"

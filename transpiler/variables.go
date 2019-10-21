@@ -53,7 +53,7 @@ func getDefaultValueForVar(p *program.Program, a *ast.VarDecl) (
 	expr []goast.Expr, _ string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot getDefaultValueForVar : err = %v", err)
+			err = fmt.Errorf("cannot getDefaultValueForVar : err = %v", err)
 		}
 	}()
 	if len(a.Children()) == 0 {
@@ -146,7 +146,7 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 	expr goast.Expr, exprType string, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileInitListExpr. err = %v", err)
+			err = fmt.Errorf("cannot transpileInitListExpr. err = %v", err)
 		}
 	}()
 	resp := []goast.Expr{}
@@ -315,7 +315,7 @@ func transpileArraySubscriptExpr(n *ast.ArraySubscriptExpr, p *program.Program) 
 	_ *goast.IndexExpr, theType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpile ArraySubscriptExpr. err = %v", err)
+			err = fmt.Errorf("cannot transpile ArraySubscriptExpr. err = %v", err)
 			p.AddMessage(p.GenerateWarningMessage(err, n))
 		}
 	}()
@@ -382,7 +382,7 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 	_ goast.Expr, _ string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpile MemberExpr. err = %v", err)
+			err = fmt.Errorf("cannot transpile MemberExpr. err = %v", err)
 			p.AddMessage(p.GenerateWarningMessage(err, n))
 		}
 	}()
@@ -559,7 +559,7 @@ func transpileImplicitValueInitExpr(n *ast.ImplicitValueInitExpr, p *program.Pro
 
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileImplicitValueInitExpr. err = %v", err)
+			err = fmt.Errorf("cannot transpileImplicitValueInitExpr. err = %v", err)
 		}
 	}()
 	expr, exprType = zeroValue(p, n.Type1)

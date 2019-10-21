@@ -38,7 +38,7 @@ func transpileBinaryConditionalOperator(n *ast.BinaryConditionalOperator, p *pro
 	_ *goast.CallExpr, theType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpile BinaryConditionalOperator : err = %v", err)
+			err = fmt.Errorf("cannot transpile BinaryConditionalOperator : err = %v", err)
 		}
 	}()
 
@@ -87,7 +87,7 @@ func transpileConditionalOperator(n *ast.ConditionalOperator, p *program.Program
 	_ *goast.CallExpr, theType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpile ConditionalOperator : err = %v", err)
+			err = fmt.Errorf("cannot transpile ConditionalOperator : err = %v", err)
 		}
 	}()
 
@@ -224,7 +224,7 @@ func transpileParenExpr(n *ast.ParenExpr, p *program.Program) (
 	r *goast.ParenExpr, exprType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpile ParenExpr. err = %v", err)
+			err = fmt.Errorf("cannot transpile ParenExpr. err = %v", err)
 			p.AddMessage(p.GenerateWarningMessage(err, n))
 		}
 	}()
@@ -237,7 +237,7 @@ func transpileParenExpr(n *ast.ParenExpr, p *program.Program) (
 		return
 	}
 	if expr == nil {
-		err = fmt.Errorf("Expr is nil")
+		err = fmt.Errorf("expr is nil")
 		return
 	}
 
@@ -272,7 +272,7 @@ func transpileCompoundAssignOperator(
 
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileCompoundAssignOperator. err = %v", err)
+			err = fmt.Errorf("cannot transpileCompoundAssignOperator. err = %v", err)
 		}
 	}()
 
@@ -427,7 +427,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot create atomicOperation |%T|. err = %v", n, err)
+			err = fmt.Errorf("cannot create atomicOperation |%T|. err = %v", n, err)
 		}
 		if exprType == "" {
 			p.AddMessage(p.GenerateWarningMessage(fmt.Errorf("exprType is empty"), n))

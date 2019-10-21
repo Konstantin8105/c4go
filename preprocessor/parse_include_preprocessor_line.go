@@ -10,23 +10,23 @@ import (
 // # 11 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 2 3 4
 func parseIncludePreprocessorLine(line string) (item *entity, err error) {
 	if line[0] != '#' {
-		err = fmt.Errorf("Cannot parse: first symbol is not # in line %s", line)
+		err = fmt.Errorf("cannot parse: first symbol is not # in line %s", line)
 		return
 	}
 	i := strings.Index(line, "\"")
 	if i < 0 {
-		err = fmt.Errorf("First index is not correct on line %s", line)
+		err = fmt.Errorf("first index is not correct on line %s", line)
 		return
 	}
 	l := strings.LastIndex(line, "\"")
 	if i >= l {
-		err = fmt.Errorf("Not allowable positions of symbol \" (%d and %d) in line : %s", i, l, line)
+		err = fmt.Errorf("not allowable positions of symbol \" (%d and %d) in line : %s", i, l, line)
 		return
 	}
 
 	pos, err := strconv.ParseInt(strings.TrimSpace(line[1:i]), 10, 64)
 	if err != nil {
-		err = fmt.Errorf("Cannot parse position in source : %v", err)
+		err = fmt.Errorf("cannot parse position in source : %v", err)
 		return
 	}
 

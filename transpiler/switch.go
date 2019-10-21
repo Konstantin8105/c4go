@@ -196,7 +196,7 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 	_ *goast.SwitchStmt, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileSwitchStmt : err = %v", err)
+			err = fmt.Errorf("cannot transpileSwitchStmt : err = %v", err)
 		}
 	}()
 
@@ -538,7 +538,7 @@ func transpileCaseStmt(n *ast.CaseStmt, p *program.Program) (
 	_ *goast.CaseClause, _ []goast.Stmt, _ []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileCaseStmt: %v", err)
+			err = fmt.Errorf("cannot transpileCaseStmt: %v", err)
 		}
 	}()
 	preStmts := []goast.Stmt{}

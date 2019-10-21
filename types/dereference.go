@@ -25,7 +25,7 @@ func IsDereferenceType(cType string) bool {
 func GetDereferenceType(cType string) (_ string, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Error in GetDereferenceType : %v", err)
+			err = fmt.Errorf("error in GetDereferenceType : %v", err)
 		}
 	}()
 

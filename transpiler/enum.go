@@ -42,7 +42,7 @@ func transpileEnumDecl(p *program.Program, n *ast.EnumDecl) (
 	decls []goast.Decl, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileEnumDecl. %v", err)
+			err = fmt.Errorf("cannot transpileEnumDecl. %v", err)
 		}
 	}()
 
@@ -84,7 +84,7 @@ func transpileEnumDeclWithType(p *program.Program, n *ast.EnumDecl, enumType str
 	decls []goast.Decl, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileEnumDeclWithName. %v", err)
+			err = fmt.Errorf("cannot transpileEnumDeclWithName. %v", err)
 		}
 	}()
 	preStmts := []goast.Stmt{}
@@ -180,7 +180,7 @@ func transpileEnumDeclWithType(p *program.Program, n *ast.EnumDecl, enumType str
 
 		if len(newPre) > 0 || len(newPost) > 0 {
 			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("Check - added in code : (%d)(%d)",
+				fmt.Errorf("check - added in code : (%d)(%d)",
 					len(newPre), len(newPost)), n))
 		}
 
@@ -256,7 +256,7 @@ func transpileEnumDeclWithType(p *program.Program, n *ast.EnumDecl, enumType str
 		default:
 			e = val
 			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("Add support of continues counter for Go type : %#v",
+				fmt.Errorf("add support of continues counter for Go type : %#v",
 					v), n))
 		}
 

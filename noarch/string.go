@@ -111,7 +111,7 @@ func Strchr(str []byte, ch32 int32) []byte {
 
 // Strstr finds the first occurrence of the null-terminated byte string
 // pointed to by substr in the null-terminated byte string pointed to by str.
-//The terminating null characters are not compared.
+// The terminating null characters are not compared.
 func Strstr(str, subStr []byte) []byte {
 	if subStr == nil {
 		return str

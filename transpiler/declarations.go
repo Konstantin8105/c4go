@@ -32,11 +32,11 @@ import (
 func newFunctionField(p *program.Program, name, cType string) (
 	_ *goast.Field, err error) {
 	if name == "" {
-		err = fmt.Errorf("Name of function field cannot be empty")
+		err = fmt.Errorf("name of function field cannot be empty")
 		return
 	}
 	if !util.IsFunction(cType) {
-		err = fmt.Errorf("Cannot create function field for type : %s", cType)
+		err = fmt.Errorf("cannot create function field for type : %s", cType)
 		return
 	}
 
@@ -58,7 +58,7 @@ func transpileFieldDecl(p *program.Program, n *ast.FieldDecl) (
 	defer func() {
 		if field != nil {
 			if field.Type == nil {
-				err = fmt.Errorf("Found nil transpileFieldDecl in field Type %v , %v : %v",
+				err = fmt.Errorf("found nil transpileFieldDecl in field Type %v , %v : %v",
 					n, field, err)
 				field.Type = util.NewIdent(n.Type)
 			}
@@ -157,7 +157,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 					rec.Name = types.GetBaseType(util.GenerateCorrectType(v.Type))
 				default:
 					p.AddMessage(p.GenerateWarningMessage(
-						fmt.Errorf("Cannot find name for anon RecordDecl: %T",
+						fmt.Errorf("cannot find name for anon RecordDecl: %T",
 							v), n))
 					rec.Name = "UndefinedNameC2GO"
 				}
@@ -182,7 +182,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 				// ignore fields without name
 				if len(f.Names) != 1 {
 					p.AddMessage(p.GenerateWarningMessage(
-						fmt.Errorf("Ignore FieldDecl with more then 1 names"+
+						fmt.Errorf("ignore FieldDecl with more then 1 names"+
 							" in RecordDecl : `%v`", n.Name), n))
 					continue
 				}
@@ -239,7 +239,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			var declsIn []goast.Decl
 			declsIn, err = transpileToNode(field, p)
 			if err != nil {
-				err = fmt.Errorf("Cannot transpile %T : %v", field, err)
+				err = fmt.Errorf("cannot transpile %T : %v", field, err)
 				// p.AddMessage(p.GenerateWarningMessage(err, field))
 				return
 			}
@@ -292,7 +292,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		}
 
 	default:
-		err = fmt.Errorf("Undefine type of struct : %v", s.Type)
+		err = fmt.Errorf("undefine type of struct : %v", s.Type)
 		return
 	}
 
@@ -339,7 +339,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		})
 
 	default:
-		err = fmt.Errorf("Undefine type of struct : %v", s.Type)
+		err = fmt.Errorf("undefine type of struct : %v", s.Type)
 		return
 	}
 
@@ -404,7 +404,7 @@ func transpileCXXRecordDecl(p *program.Program, n *ast.RecordDecl) (
 
 		default:
 			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("Cannot transpilation field: %T", v), n))
+				fmt.Errorf("cannot transpilation field: %T", v), n))
 		}
 	}
 
@@ -432,7 +432,7 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 	}
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpile Typedef Decl : err = %v", err)
+			err = fmt.Errorf("cannot transpile Typedef Decl : err = %v", err)
 		} else {
 			if !p.IncludeHeaderIsExists(n.Pos.File) {
 				// no need add struct from C STD
@@ -573,7 +573,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 	decls []goast.Decl, theType string, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileVarDecl : err = %v", err)
+			err = fmt.Errorf("cannot transpileVarDecl : err = %v", err)
 		}
 	}()
 
@@ -609,12 +609,12 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 					var fields, returns []string
 					prefix, fields, returns, err = types.SeparateFunction(p, v.Type)
 					if err != nil {
-						err = fmt.Errorf("Cannot resolve function : %v", err)
+						err = fmt.Errorf("cannot resolve function : %v", err)
 						return
 					}
 					if len(prefix) != 0 {
 						p.AddMessage(p.GenerateWarningMessage(
-							fmt.Errorf("Prefix is not used : `%v`", prefix), n))
+							fmt.Errorf("prefix is not used : `%v`", prefix), n))
 					}
 					functionType := GenerateFuncType(fields, returns)
 					nameVar1 := n.Name
@@ -713,7 +713,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 
 	if len(preStmts) != 0 || len(postStmts) != 0 {
 		p.AddMessage(p.GenerateWarningMessage(
-			fmt.Errorf("Not acceptable length of Stmt : pre(%d), post(%d)",
+			fmt.Errorf("not acceptable length of Stmt : pre(%d), post(%d)",
 				len(preStmts), len(postStmts)), n))
 	}
 
@@ -731,7 +731,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 	theType, err = types.ResolveType(p, n.Type)
 	if err != nil {
 		p.AddMessage(p.GenerateWarningMessage(
-			fmt.Errorf("Unknown type used C type, because %v", err), n))
+			fmt.Errorf("unknown type used C type, because %v", err), n))
 		err = nil // Error is ignored
 		theType = n.Type
 	}

@@ -347,7 +347,7 @@ func (p *Program) GetIncludeFileNameByFunctionSignature(
 			rightPart := strings.TrimSpace(baseFunction[pos:])
 			index := strings.LastIndex(leftPart, " ")
 			if index < 0 {
-				err = fmt.Errorf("Cannot found space ` ` in %v", leftPart)
+				err = fmt.Errorf("cannot found space ` ` in %v", leftPart)
 				return
 			}
 			if strings.Replace(functionName, " ", "", -1) !=

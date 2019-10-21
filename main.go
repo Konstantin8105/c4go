@@ -373,7 +373,7 @@ func Start(args ProgramArgs) (err error) {
 		err = generateDebugCCode(args, lines, filePP)
 
 	default:
-		err = fmt.Errorf("Program state `%d` is not implemented", args.state)
+		err = fmt.Errorf("program state `%d` is not implemented", args.state)
 	}
 
 	return err
@@ -388,7 +388,7 @@ func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.Fil
 	for _, in := range args.inputFiles {
 		_, err = os.Stat(in)
 		if err != nil {
-			err = fmt.Errorf("Input file `%s` is not found", in)
+			err = fmt.Errorf("input file `%s` is not found", in)
 			return
 		}
 	}
@@ -411,7 +411,7 @@ func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.Fil
 	}
 	dir, err := ioutil.TempDir("", "c4go")
 	if err != nil {
-		err = fmt.Errorf("Cannot create temp folder: %v", err)
+		err = fmt.Errorf("cannot create temp folder: %v", err)
 		return
 	}
 	defer os.RemoveAll(dir) // clean up
@@ -489,7 +489,7 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 		p.AddMessage(errs[i].Error())
 	}
 	if tree == nil {
-		return fmt.Errorf("Cannot create tree: tree is nil. Please try another version of clang")
+		return fmt.Errorf("cannot create tree: tree is nil. Please try another version of clang")
 	}
 
 	// avoid Go keywords

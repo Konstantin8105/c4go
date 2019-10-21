@@ -32,7 +32,7 @@ func getFileList(prefix, gitSource string) (fileList []string, err error) {
 	if _, err = os.Stat(folder); os.IsNotExist(err) {
 		err = os.MkdirAll(folder, os.ModePerm)
 		if err != nil {
-			err = fmt.Errorf("Cannot create folder %v . %v", folder, err)
+			err = fmt.Errorf("cannot create folder %v . %v", folder, err)
 			return
 		}
 
@@ -40,7 +40,7 @@ func getFileList(prefix, gitSource string) (fileList []string, err error) {
 		args := []string{"clone", gitSource, folder}
 		err = exec.Command("git", args...).Run()
 		if err != nil {
-			err = fmt.Errorf("Cannot clone git repository with args `%v`: %v",
+			err = fmt.Errorf("cannot clone git repository with args `%v`: %v",
 				args, err)
 			return
 		}
@@ -54,7 +54,7 @@ func getFileList(prefix, gitSource string) (fileList []string, err error) {
 		return nil
 	})
 	if err != nil {
-		err = fmt.Errorf("Cannot walk: %v", err)
+		err = fmt.Errorf("cannot walk: %v", err)
 		return
 	}
 
