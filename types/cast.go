@@ -68,7 +68,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	defer func() {
 		if err2 != nil {
 			err2 = fmt.Errorf(
-				"Cannot casting {%s -> %s}. err = %v", cFromType, cToType, err2)
+				"cannot casting {%s -> %s}. err = %v", cFromType, cToType, err2)
 		}
 	}()
 
@@ -84,12 +84,12 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 
 	// Uncomment only for debugging
 	if strings.Contains(cFromType, ":") {
-		err2 = fmt.Errorf("Found mistake `cFromType` `%v` C type : %#v",
+		err2 = fmt.Errorf("found mistake `cFromType` `%v` C type : %#v",
 			cFromType, expr)
 		return
 	}
 	if strings.Contains(cToType, ":") {
-		err2 = fmt.Errorf("Found mistake `cToType` `%v` C type: %#v",
+		err2 = fmt.Errorf("found mistake `cToType` `%v` C type: %#v",
 			cToType, expr)
 		return
 	}
@@ -105,7 +105,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	}
 
 	if expr == nil {
-		return nil, fmt.Errorf("Expr is nil")
+		return nil, fmt.Errorf("expr is nil")
 	}
 
 	if util.IsFunction(cFromType) && toType == "bool" {
@@ -490,7 +490,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return expr, nil
 	}
 
-	p.GenerateWarningMessage(fmt.Errorf("Cannot cast types `%s`->`%s`", cFromType, cToType), nil)
+	p.GenerateWarningMessage(fmt.Errorf("cannot cast types `%s`->`%s`", cFromType, cToType), nil)
 
 	return expr, nil
 }

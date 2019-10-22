@@ -25,7 +25,7 @@ func transpileBinaryOperatorComma(n *ast.BinaryOperator, p *program.Program) (
 	stmt goast.Stmt, preStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpile operator comma : err = %v", err)
+			err = fmt.Errorf("cannot transpile operator comma : err = %v", err)
 			p.AddMessage(p.GenerateWarningMessage(err, n))
 		}
 	}()
@@ -42,7 +42,7 @@ func transpileBinaryOperatorComma(n *ast.BinaryOperator, p *program.Program) (
 
 	if left == nil || right == nil {
 		return nil, nil,
-			fmt.Errorf("Cannot transpile binary operator comma: right = %v , left = %v",
+			fmt.Errorf("cannot transpile binary operator comma: right = %v , left = %v",
 				right, left)
 	}
 
@@ -64,7 +64,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf(
-				"Cannot transpile BinaryOperator with type '%s' :"+
+				"cannot transpile BinaryOperator with type '%s' :"+
 					" result type = {%s}. Error: %v", n.Type, eType, err)
 			p.AddMessage(p.GenerateWarningMessage(err, n))
 		}
@@ -234,7 +234,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 		// from n.Children()[1]
 		if len(newPre) > 0 || len(newPost) > 0 {
 			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("Not support length pre or post stmts: {%d,%d}",
+				fmt.Errorf("not support length pre or post stmts: {%d,%d}",
 					len(newPre), len(newPost)), n))
 		}
 		return stmts, st, preStmts, postStmts, nil
@@ -282,7 +282,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 					return
 				}
 				if expr == nil {
-					return nil, "", nil, nil, fmt.Errorf("Expr is nil")
+					return nil, "", nil, nil, fmt.Errorf("expr is nil")
 				}
 				preStmts, postStmts =
 					combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
@@ -370,7 +370,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			// ignore
 
 		default:
-			err = fmt.Errorf("Not implemented pointer operation: %v", operator)
+			err = fmt.Errorf("not implemented pointer operation: %v", operator)
 			return
 		}
 	}
@@ -464,7 +464,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 				return
 			}
 			if expr == nil {
-				return nil, "", nil, nil, fmt.Errorf("Expr is nil")
+				return nil, "", nil, nil, fmt.Errorf("expr is nil")
 			}
 			preStmts, postStmts =
 				combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)

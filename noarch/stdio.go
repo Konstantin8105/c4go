@@ -611,7 +611,7 @@ func Fwrite(str []byte, size1, size2 int32, stream *File) int32 {
 // fsetpos.
 //
 // The ftell function can be used to retrieve the current position in the stream
-//as an integer value.
+// as an integer value.
 func Fgetpos(f *File, pos []int32) int32 {
 	absolutePos := int32(Fseek(f, 0, 1))
 	if pos != nil {

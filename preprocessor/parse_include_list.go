@@ -33,7 +33,7 @@ func parseIncludeList(line string) (lines []string, err error) {
 			}
 			partLines, err = parseIncludeList(block)
 			if err != nil {
-				return lines, fmt.Errorf("Part of lines : %v. %v", i, err)
+				return lines, fmt.Errorf("part of lines : %v. %v", i, err)
 			}
 			lines = append(lines, partLines...)
 		}
@@ -42,7 +42,7 @@ func parseIncludeList(line string) (lines []string, err error) {
 
 	index := strings.Index(line, ":")
 	if index < 0 {
-		err = fmt.Errorf("Cannot find `:` in line : %v", line)
+		err = fmt.Errorf("cannot find `:` in line : %v", line)
 		return
 	}
 	line = line[index+1:]

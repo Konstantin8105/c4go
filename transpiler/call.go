@@ -206,7 +206,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 	preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Error in transpileCallExpr : %v", err)
+			err = fmt.Errorf("error in transpileCallExpr : %v", err)
 		}
 		if resultType == "" {
 			resultType = n.Type
@@ -374,7 +374,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 				prefix, _, fields, returns, err := util.ParseFunction(t)
 				if err != nil {
 					p.AddMessage(p.GenerateWarningMessage(fmt.Errorf(
-						"Cannot resolve function : %v", err), n))
+						"cannot resolve function : %v", err), n))
 					return nil, "", nil, nil, err
 				}
 				if len(prefix) != 0 {
@@ -495,7 +495,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 
 			if realArg == nil {
 				return nil, "", preStmts, postStmts,
-					fmt.Errorf("Real argument is nil in function : %s", functionName)
+					fmt.Errorf("real argument is nil in function : %s", functionName)
 			}
 
 			realArgs = append(realArgs, realArg)
@@ -540,7 +540,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 
 			if a == nil {
 				return nil, "", preStmts, postStmts,
-					fmt.Errorf("Argument is nil in function : %s", functionName)
+					fmt.Errorf("argument is nil in function : %s", functionName)
 			}
 
 			if len(functionDef.ArgumentTypes) > i {
@@ -586,9 +586,9 @@ func findAndReplaceUnaryExprOrTypeTraitExpr(node *ast.Node) (
 
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot findAndReplaceUnaryExprOrTypeTraitExpr: err = %v", err)
+			err = fmt.Errorf("cannot findAndReplaceUnaryExprOrTypeTraitExpr: err = %v", err)
 			if (*node) != nil {
-				err = fmt.Errorf("Code line: %d. %v", (*node).Position().Line, err)
+				err = fmt.Errorf("code line: %d. %v", (*node).Position().Line, err)
 			}
 		}
 	}()
@@ -654,7 +654,7 @@ func transpileCallExprCalloc(expression ast.Node, unary *ast.UnaryExprOrTypeTrai
 	expr *goast.CallExpr, resultType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Function: calloc. err = %v", err)
+			err = fmt.Errorf("function: calloc. err = %v", err)
 		}
 	}()
 
@@ -683,7 +683,7 @@ func transpileCallExprQsort(n *ast.CallExpr, p *program.Program) (
 	expr *goast.CallExpr, resultType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Function: qsort. err = %v", err)
+			err = fmt.Errorf("function: qsort. err = %v", err)
 		}
 		if resultType == "" {
 			resultType = n.Type

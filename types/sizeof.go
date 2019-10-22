@@ -15,7 +15,7 @@ var sizeofStack []string
 func SizeOf(p *program.Program, cType string) (size int, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot determine sizeof : |%s|. err = %v", cType, err)
+			err = fmt.Errorf("cannot determine sizeof : |%s|. err = %v", cType, err)
 		}
 	}()
 
@@ -111,7 +111,7 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 
 			if err != nil {
 				err = fmt.Errorf(
-					"Cannot calculate `struct` sizeof for `%T`. bytes = '%v'. %v",
+					"cannot calculate `struct` sizeof for `%T`. bytes = '%v'. %v",
 					t, bytes, err)
 				return 0, err
 			}
@@ -164,7 +164,7 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 			}
 
 			if err != nil {
-				err = fmt.Errorf("Cannot canculate `union` sizeof for `%T`. %v",
+				err = fmt.Errorf("cannot canculate `union` sizeof for `%T`. %v",
 					t, err)
 				return 0, err
 			}

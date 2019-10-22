@@ -102,7 +102,7 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 	decls, err := transpileToNode(root, p)
 	if err != nil {
 		p.AddMessage(p.GenerateWarningMessage(
-			fmt.Errorf("Error of transpiling: err = %v", err), root))
+			fmt.Errorf("error of transpiling: err = %v", err), root))
 		err = nil // Error is ignored
 	}
 	p.File.Decls = append(p.File.Decls, decls...)
@@ -185,11 +185,11 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 	err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileToExpr. err = %v", err)
+			err = fmt.Errorf("cannot transpileToExpr. err = %v", err)
 		}
 	}()
 	if node == nil {
-		err = fmt.Errorf("Not acceptable nil node")
+		err = fmt.Errorf("not acceptable nil node")
 		return
 	}
 	defer func() {
@@ -312,7 +312,7 @@ func transpileToStmts(node ast.Node, p *program.Program) (
 		stmts, err = transpileDeclStmt(n, p)
 		if err != nil {
 			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("Error in DeclStmt: %v", err), n))
+				fmt.Errorf("error in DeclStmt: %v", err), n))
 			err = nil // Error is ignored
 		}
 		return
@@ -326,7 +326,7 @@ func transpileToStmts(node ast.Node, p *program.Program) (
 	stmt, preStmts, postStmts, err = transpileToStmt(node, p)
 	if err != nil {
 		p.AddMessage(p.GenerateWarningMessage(
-			fmt.Errorf("Error in DeclStmt: %v", err), node))
+			fmt.Errorf("error in DeclStmt: %v", err), node))
 		err = nil // Error is ignored
 	}
 	return combineStmts(stmt, preStmts, postStmts), err
@@ -340,7 +340,7 @@ func transpileToStmt(node ast.Node, p *program.Program) (
 
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileToStmt : %v", err)
+			err = fmt.Errorf("cannot transpileToStmt : %v", err)
 			p.AddMessage(p.GenerateWarningMessage(err, node))
 			err = nil // Error is ignored
 		}
@@ -482,7 +482,7 @@ func transpileToStmt(node ast.Node, p *program.Program) (
 
 	// For all other cases
 	if expr == nil {
-		err = fmt.Errorf("Expr is nil")
+		err = fmt.Errorf("expr is nil")
 		return
 	}
 	stmt = util.NewExprStmt(expr)
@@ -676,7 +676,7 @@ func transpileStmts(nodes []ast.Node, p *program.Program) (stmts []goast.Stmt, e
 	defer func() {
 		if err != nil {
 			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("Error in transpileToStmts: %v", err), nodes[0]))
+				fmt.Errorf("error in transpileToStmts: %v", err), nodes[0]))
 			err = nil // Error is ignored
 		}
 	}()

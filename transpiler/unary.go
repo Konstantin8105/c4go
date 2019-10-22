@@ -20,7 +20,7 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 	expr goast.Expr, eType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileUnaryOperatorInc. err = %v", err)
+			err = fmt.Errorf("cannot transpileUnaryOperatorInc. err = %v", err)
 		}
 		if eType == "" {
 			eType = "EmptyTypeInUnaryOperatorInc"
@@ -240,7 +240,7 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 	expr goast.Expr, eType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileUnaryOperatorAmpersant : err = %v", err)
+			err = fmt.Errorf("cannot transpileUnaryOperatorAmpersant : err = %v", err)
 		}
 	}()
 
@@ -249,7 +249,7 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 		return
 	}
 	if expr == nil {
-		err = fmt.Errorf("Expr is nil")
+		err = fmt.Errorf("expr is nil")
 		return
 	}
 
@@ -364,9 +364,9 @@ func pointerParts(node *ast.Node, p *program.Program) (
 	pnt ast.Node, value ast.Node, back func(), undefineIndex bool, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot pointerParts: err = %v", err)
+			err = fmt.Errorf("cannot pointerParts: err = %v", err)
 			if (*node) != nil {
-				err = fmt.Errorf("Code line: %d. %v", (*node).Position().Line, err)
+				err = fmt.Errorf("code line: %d. %v", (*node).Position().Line, err)
 			}
 		}
 	}()
@@ -390,7 +390,7 @@ func pointerParts(node *ast.Node, p *program.Program) (
 		// save types of all nodes
 		t, ok := ast.GetTypeIfExist(*node)
 		if !ok {
-			panic(fmt.Errorf("Not support parent type %T in pointer seaching", node))
+			panic(fmt.Errorf("not support parent type %T in pointer seaching", node))
 		}
 		baseTypes = append(baseTypes, t)
 
@@ -487,7 +487,7 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 	expr goast.Expr, eType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpilePointerArith: err = %v", err)
+			err = fmt.Errorf("cannot transpilePointerArith: err = %v", err)
 		}
 	}()
 
@@ -566,14 +566,14 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 		}, eType, preStmts, postStmts, err
 
 	}
-	return nil, "", nil, nil, fmt.Errorf("Cannot found : %#v", pnt)
+	return nil, "", nil, nil, fmt.Errorf("cannot found : %#v", pnt)
 }
 
 func transpileUnaryOperator(n *ast.UnaryOperator, p *program.Program) (
 	_ goast.Expr, theType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpile UnaryOperator: err = %v", err)
+			err = fmt.Errorf("cannot transpile UnaryOperator: err = %v", err)
 			p.AddMessage(p.GenerateWarningMessage(err, n))
 		}
 	}()

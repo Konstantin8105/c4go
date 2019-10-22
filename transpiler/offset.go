@@ -31,12 +31,12 @@ func transpileOffsetOfExpr(n *ast.OffsetOfExpr, p *program.Program) (
 	}
 
 	if len(buffer) == 0 {
-		err = fmt.Errorf("Buffer is empty")
+		err = fmt.Errorf("buffer is empty")
 		return
 	}
 
 	if !bytes.HasPrefix(buffer, []byte("__builtin_offsetof(")) {
-		err = fmt.Errorf("Haven`t prefix `__builtin_offsetof(` in buffer `%v`",
+		err = fmt.Errorf("haven`t prefix `__builtin_offsetof(` in buffer `%v`",
 			string(buffer))
 		return
 	}
@@ -46,7 +46,7 @@ func transpileOffsetOfExpr(n *ast.OffsetOfExpr, p *program.Program) (
 	// separate by `,`
 	arguments := bytes.Split(buffer, []byte(","))
 	if len(arguments) != 2 {
-		err = fmt.Errorf("Not correct amount of arguments in `%v` found %v",
+		err = fmt.Errorf("not correct amount of arguments in `%v` found %v",
 			string(buffer), len(arguments))
 		return
 	}

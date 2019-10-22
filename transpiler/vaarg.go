@@ -20,7 +20,7 @@ func transpileVAArgExpr(n *ast.VAArgExpr, p *program.Program) (
 	err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileVAArgExpr. %v", err)
+			err = fmt.Errorf("cannot transpileVAArgExpr. %v", err)
 		}
 	}()
 	// -VAArgExpr 'int'

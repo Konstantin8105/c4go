@@ -130,7 +130,7 @@ func ResolveType(p *program.Program, s string) (resolveResult string, err error)
 	defer func() {
 		resolveResult = strings.TrimSpace(resolveResult)
 		if err != nil {
-			err = fmt.Errorf("Cannot resolve type '%s' : %v", s, err)
+			err = fmt.Errorf("cannot resolve type '%s' : %v", s, err)
 		}
 	}()
 
@@ -219,13 +219,13 @@ func ResolveType(p *program.Program, s string) (resolveResult string, err error)
 	if s[len(s)-1] == ']' {
 		index := strings.LastIndex(s, "[")
 		if index < 0 {
-			err = fmt.Errorf("Cannot found [ in type : %v", s)
+			err = fmt.Errorf("cannot found [ in type : %v", s)
 			return
 		}
 		r := strings.TrimSpace(s[:index])
 		r, err = ResolveType(p, r)
 		if err != nil {
-			err = fmt.Errorf("Cannot []: %v", err)
+			err = fmt.Errorf("cannot []: %v", err)
 			return
 		}
 		return "[]" + r, nil
@@ -275,7 +275,7 @@ func ResolveType(p *program.Program, s string) (resolveResult string, err error)
 			prefix = "*"
 		}
 		if err != nil {
-			err = fmt.Errorf("Cannot resolve star `*` for %v : %v", s, err)
+			err = fmt.Errorf("cannot resolve star `*` for %v : %v", s, err)
 		}
 		return prefix + r, err
 	}
@@ -375,7 +375,7 @@ func SeparateFunction(p *program.Program, s string) (
 	prefix string, fields []string, returns []string, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot separate function '%s' : %v", s, err)
+			err = fmt.Errorf("cannot separate function '%s' : %v", s, err)
 		}
 	}()
 	pr, _, f, r, err := util.ParseFunction(s)
@@ -389,7 +389,7 @@ func SeparateFunction(p *program.Program, s string) (
 		var t string
 		t, err = ResolveType(p, f[i])
 		if err != nil {
-			err = fmt.Errorf("Error in field %s. err = %v", t, err)
+			err = fmt.Errorf("error in field %s. err = %v", t, err)
 			return
 		}
 		fields = append(fields, t)
@@ -398,7 +398,7 @@ func SeparateFunction(p *program.Program, s string) (
 		var t string
 		t, err = ResolveType(p, r[i])
 		if err != nil {
-			err = fmt.Errorf("Error in return field %s. err = %v", t, err)
+			err = fmt.Errorf("error in return field %s. err = %v", t, err)
 			return
 		}
 		returns = append(returns, t)
@@ -425,7 +425,7 @@ func IsTypedefFunction(p *program.Program, s string) bool {
 // Out : 40
 func GetAmountArraySize(cType string, p *program.Program) (size int, err error) {
 	if !IsCArray(cType, p) {
-		err = fmt.Errorf("Is not array: `%s`", cType)
+		err = fmt.Errorf("is not array: `%s`", cType)
 		return
 	}
 
@@ -433,7 +433,7 @@ func GetAmountArraySize(cType string, p *program.Program) (size int, err error) 
 	match := reg.FindStringSubmatch(cType)
 
 	if reg.NumSubexp() != 1 {
-		err = fmt.Errorf("Cannot found size of array in type : %s", cType)
+		err = fmt.Errorf("cannot found size of array in type : %s", cType)
 		return
 	}
 
@@ -506,7 +506,7 @@ func IsPointer(s string, p *program.Program) bool {
 	return IsCPointer(s, p) || IsCArray(s, p)
 }
 
-//IsCPointer - check C type is pointer
+// IsCPointer - check C type is pointer
 func IsCPointer(s string, p *program.Program) bool {
 	if len(s) == 0 {
 		return false

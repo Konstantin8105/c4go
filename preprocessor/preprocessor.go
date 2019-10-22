@@ -121,7 +121,7 @@ func NewFilePP(inputFiles, clangFlags []string, cppCode bool) (
 	f FilePP, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Preprocess error : %v", err)
+			err = fmt.Errorf("preprocess error : %v", err)
 		}
 	}()
 
@@ -388,7 +388,7 @@ again:
 			if col-1 < len([]byte(*l)) {
 				return []byte((*l)[col-1:]), nil
 			}
-			err = fmt.Errorf("Empty snippet")
+			err = fmt.Errorf("empty snippet")
 			return
 		}
 		if col <= 0 {
@@ -400,7 +400,7 @@ again:
 		return []byte((*l)[col-1 : colEnd]), nil
 	}
 
-	err = fmt.Errorf("Snippet is not found")
+	err = fmt.Errorf("snippet is not found")
 	return
 }
 
@@ -434,7 +434,7 @@ func analyzeFiles(inputFiles, clangFlags []string, cppCode bool) (
 			}
 			item, err = parseIncludePreprocessorLine(line)
 			if err != nil {
-				err = fmt.Errorf("Cannot parse line : %s with error: %s", line, err)
+				err = fmt.Errorf("cannot parse line : %s with error: %s", line, err)
 				return
 			}
 			if item.positionInSource == 0 {
@@ -600,7 +600,7 @@ func getIncludeList(inputFiles, clangFlags []string, flag []string, cppCode bool
 	_ string, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot get Include List : %v", err)
+			err = fmt.Errorf("cannot get Include List : %v", err)
 		}
 	}()
 	var out bytes.Buffer

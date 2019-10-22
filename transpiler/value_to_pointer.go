@@ -180,7 +180,7 @@ func GetPointerAddress(expr goast.Expr, cType string, sizeof int) (
 	rs goast.Expr, postStmts []goast.Stmt, err error) {
 
 	if expr == nil {
-		err = fmt.Errorf("Cannot get pointer address for nil expr")
+		err = fmt.Errorf("cannot get pointer address for nil expr")
 		return
 	}
 
@@ -313,7 +313,7 @@ func GetPointerAddress(expr goast.Expr, cType string, sizeof int) (
 	// prepare postStmts
 
 	if sizeof < 1 {
-		err = fmt.Errorf("Not valid sizeof `%s`: %d", cType, sizeof)
+		err = fmt.Errorf("not valid sizeof `%s`: %d", cType, sizeof)
 		return
 	}
 
@@ -491,7 +491,7 @@ func PntBitCast(expr goast.Expr, cFrom, cTo string, p *program.Program) (
 	rs goast.Expr, toCtype string, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot PntBitCast : %v", err)
+			err = fmt.Errorf("cannot PntBitCast : %v", err)
 			p.AddMessage(p.GenerateWarningMessage(err, nil))
 		}
 	}()
@@ -501,7 +501,7 @@ func PntBitCast(expr goast.Expr, cFrom, cTo string, p *program.Program) (
 	toCtype = cTo
 
 	if !types.IsPointer(cFrom, p) || !types.IsPointer(cTo, p) {
-		err = fmt.Errorf("Some type is not pointer `%s` or `%s`", cFrom, cTo)
+		err = fmt.Errorf("some type is not pointer `%s` or `%s`", cFrom, cTo)
 		return
 	}
 
@@ -626,7 +626,7 @@ func pointerArithmetic(p *program.Program,
 	_ goast.Expr, _ string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpile pointerArithmetic. err = %v", err)
+			err = fmt.Errorf("cannot transpile pointerArithmetic. err = %v", err)
 		}
 	}()
 
@@ -747,7 +747,7 @@ func main(){
 	var source bytes.Buffer
 	err = tmpl.Execute(&source, s)
 	if err != nil {
-		err = fmt.Errorf("Cannot execute template. err = %v", err)
+		err = fmt.Errorf("cannot execute template. err = %v", err)
 		return
 	}
 
@@ -763,7 +763,7 @@ func main(){
 	f, err := parser.ParseFile(fset, "", body, 0)
 	if err != nil {
 		body = strings.Replace(body, "\n", "", -1)
-		err = fmt.Errorf("Cannot parse file. err = %v. body = `%s`", err, body)
+		err = fmt.Errorf("cannot parse file. err = %v. body = `%s`", err, body)
 		return
 	}
 

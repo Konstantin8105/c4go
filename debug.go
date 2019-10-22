@@ -196,7 +196,7 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 			i, errs[i].Error())
 	}
 	if tree == nil {
-		return fmt.Errorf("Cannot create tree: tree is nil. Please try another version of clang")
+		return fmt.Errorf("cannot create tree: tree is nil. Please try another version of clang")
 	}
 
 	// Example of AST:

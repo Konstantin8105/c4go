@@ -66,7 +66,7 @@ func transpileStringLiteral(p *program.Program, n *ast.StringLiteral, arrayToArr
 		if t, ok := p.TypedefType[baseType]; ok {
 			n.Type = t
 		} else {
-			err = fmt.Errorf("Type is not valid : `%v`", n.Type)
+			err = fmt.Errorf("type is not valid : `%v`", n.Type)
 			p.AddMessage(p.GenerateWarningMessage(err, n))
 			return
 		}

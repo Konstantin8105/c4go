@@ -22,7 +22,7 @@ func transpileIfStmt(n *ast.IfStmt, p *program.Program) (
 
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileIfStmt. %v", err)
+			err = fmt.Errorf("cannot transpileIfStmt. %v", err)
 		}
 	}()
 
@@ -72,7 +72,7 @@ func transpileIfStmt(n *ast.IfStmt, p *program.Program) (
 	// expression - assignment operators need to be wrapped in closures.
 	conditional, conditionalType, newPre, newPost, err := atomicOperation(children[1], p)
 	if err != nil {
-		err = fmt.Errorf("Cannot transpile for condition. %v", err)
+		err = fmt.Errorf("cannot transpile for condition. %v", err)
 		return nil, nil, nil, err
 	}
 	// null in C is false
@@ -102,12 +102,12 @@ func transpileIfStmt(n *ast.IfStmt, p *program.Program) (
 
 		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 		if body == nil {
-			return nil, nil, nil, fmt.Errorf("Body of If cannot by nil")
+			return nil, nil, nil, fmt.Errorf("body of If cannot by nil")
 		}
 	}
 
 	if boolCondition == nil {
-		return nil, nil, nil, fmt.Errorf("Bool Condition in If cannot by nil")
+		return nil, nil, nil, fmt.Errorf("bool Condition in If cannot by nil")
 	}
 	r := &goast.IfStmt{
 		Cond: boolCondition,
@@ -130,7 +130,7 @@ func transpileIfStmt(n *ast.IfStmt, p *program.Program) (
 				}
 			}
 		} else {
-			return nil, nil, nil, fmt.Errorf("Body of Else in If cannot be nil")
+			return nil, nil, nil, fmt.Errorf("body of Else in If cannot be nil")
 		}
 	}
 
@@ -144,7 +144,7 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 	// Please remove after solving all problems
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot tranpile ForStmt: err = %v", err)
+			err = fmt.Errorf("cannot tranpile ForStmt: err = %v", err)
 			p.AddMessage(p.GenerateWarningMessage(err, n))
 		}
 	}()
@@ -186,7 +186,7 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 			// for(c = 0 ; a < 5 ; a++)
 			before, newPre, newPost, err := transpileToStmt(children[0], p)
 			if err != nil {
-				err = fmt.Errorf("Cannot transpile comma binaryoperator. %v",
+				err = fmt.Errorf("cannot transpile comma binaryoperator. %v",
 					err)
 				return nil, nil, nil, err
 			}
@@ -283,7 +283,7 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 	if !transpilate {
 		post, newPre, newPost, err = transpileToStmt(children[3], p)
 		if err != nil {
-			err = fmt.Errorf("Cannot tranpile children[3] : %v", err)
+			err = fmt.Errorf("cannot tranpile children[3] : %v", err)
 			return nil, nil, nil, err
 		}
 
@@ -374,11 +374,11 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 	}
 	body, newPre, newPost, err := transpileToBlockStmt(children[4], p)
 	if err != nil {
-		err = fmt.Errorf("Cannot transpile body. %v", err)
+		err = fmt.Errorf("cannot transpile body. %v", err)
 		return nil, nil, nil, err
 	}
 	if body == nil {
-		return nil, nil, nil, fmt.Errorf("Body of For cannot be nil")
+		return nil, nil, nil, fmt.Errorf("body of For cannot be nil")
 	}
 
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
@@ -604,7 +604,7 @@ func createIfWithNotConditionAndBreak(condition ast.Node) (ifStmt ast.IfStmt) {
 		par.Type = *typ
 		unitary.Type = *typ
 	} else {
-		panic(fmt.Errorf("Type %T is not implemented in createIfWithNotConditionAndBreak", condition))
+		panic(fmt.Errorf("type %T is not implemented in createIfWithNotConditionAndBreak", condition))
 	}
 
 	par.AddChild(condition)

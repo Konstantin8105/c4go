@@ -39,7 +39,7 @@ func ParseAddress(address string) Address {
 func Parse(fullline string) (returnNode Node, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("Cannot parse line: `%v`. %v", fullline, r)
+			err = fmt.Errorf("cannot parse line: `%v`. %v", fullline, r)
 			returnNode = C4goErrorNode{}
 		}
 	}()
