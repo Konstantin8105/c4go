@@ -12,7 +12,7 @@ import (
 
 func transpileOffsetOfExpr(n *ast.OffsetOfExpr, p *program.Program) (
 	expr goast.Expr, exprType string, err error) {
-	// clang ast haven`t enought information about OffsetOfExpr
+	// clang ast haven`t enough information about OffsetOfExpr
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("cannot transpile OffsetOfExpr. %v", err)

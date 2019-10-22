@@ -1,6 +1,6 @@
 package program
 
-// DefinitionType - conversion map from C standart library structures to
+// DefinitionType - conversion map from C standard library structures to
 // c4go structures
 var DefinitionType = map[string]string{
 	// time.h
@@ -50,7 +50,7 @@ var DefinitionType = map[string]string{
 	"void*":  "interface{}",
 	"void *": "interface{}",
 
-	// null is a special case (it should probably have a less ambiguos name)
+	// null is a special case (it should probably have a less ambiguous name)
 	// when using the NULL macro.
 	"null": "null",
 

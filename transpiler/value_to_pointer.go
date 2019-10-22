@@ -616,7 +616,7 @@ func CreateSliceFromReference(goType string, expr goast.Expr) goast.Expr {
 //      'ptr' - left
 //      'int' - leftType transpiled in Go type
 // Note:
-// 1) rigthType MUST be 'int'
+// 1) rightType MUST be 'int'
 // 2) pointerArithmetic - implemented ONLY right part of formula
 // 3) right is MUST be positive value, because impossible multiply uintptr to (-1)
 func pointerArithmetic(p *program.Program,

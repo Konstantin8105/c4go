@@ -30,7 +30,7 @@ Rectangle::Rectangle () {
   height = 5;
 }
 
-void defaulf_constructor()
+void default_constructor()
 {
 	Rectangle rec;
 	is_eq(rec.area(),20);
@@ -114,7 +114,7 @@ int main()
     plan(2);
 
 	simple();
-	// defaulf_constructor();
+	// default_constructor();
 	// constructor();
 	// constructor2();
 	// constructor3();

@@ -438,7 +438,7 @@ Now, let's try again and output in file `vi.go`:
 ```bash
 c4go transpile -o vi.go *.c
 ```
-Now tranpiled without `clang` error. Look the result:
+Now transpiled without `clang` error. Look the result:
 ```bash
 less vi.go
 ```

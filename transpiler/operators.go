@@ -65,7 +65,7 @@ func transpileBinaryConditionalOperator(n *ast.BinaryConditionalOperator, p *pro
 // Since Go does not support the ternary operator or inline "if" statements we
 // use a closure to work the same way.
 //
-// It is also important to note that C only evaulates the "b" or "c" condition
+// It is also important to note that C only evaluates the "b" or "c" condition
 // based on the result of "a" (from the above example).
 //
 // Example AST:

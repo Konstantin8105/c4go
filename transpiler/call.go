@@ -115,7 +115,7 @@ func getName(p *program.Program, firstChild ast.Node) (name string, err error) {
 	return "", fmt.Errorf("cannot getName for: %#v", firstChild)
 }
 
-// simplificationCallExprPrintf - minimaze Go code
+// simplificationCallExprPrintf - minimize Go code
 // transpile C code : printf("Hello")
 // to Go code       : fmt_Printf("Hello")
 // AST example :

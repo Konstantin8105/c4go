@@ -365,7 +365,7 @@ func bindFromCtoGo(p *program.Program, cType string, goType string, expr goast.E
 
 // add if`s for nil cases
 //
-// strtok - add c-binding for implemention function
+// strtok - add c-binding for implementation function
 // func strtok(arg0 []byte, arg1 []byte) []byte {
 //	if arg0 == nil {
 //		return []byte{}

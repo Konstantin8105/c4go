@@ -144,7 +144,7 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 	// Please remove after solving all problems
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("cannot tranpile ForStmt: err = %v", err)
+			err = fmt.Errorf("cannot transpile ForStmt: err = %v", err)
 			p.AddMessage(p.GenerateWarningMessage(err, n))
 		}
 	}()
@@ -283,7 +283,7 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 	if !transpilate {
 		post, newPre, newPost, err = transpileToStmt(children[3], p)
 		if err != nil {
-			err = fmt.Errorf("cannot tranpile children[3] : %v", err)
+			err = fmt.Errorf("cannot transpile children[3] : %v", err)
 			return nil, nil, nil, err
 		}
 
@@ -393,7 +393,7 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 		}, preStmts, postStmts, nil
 	}
 
-	// for avoid dublication of init values for
+	// for avoid duplication of init values for
 	// case with 2 for`s
 	var block goast.BlockStmt
 	var forStmt = goast.ForStmt{
@@ -412,7 +412,7 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 // We have only operator FOR in Go, but in C we also have
 // operator WHILE. So, we have to convert to operator FOR.
 // We choose directly conversion  from AST C code to AST C code, for
-// - avoid dublicate of code in realization WHILE and FOR.
+// - avoid duplicate of code in realization WHILE and FOR.
 // - create only one operator FOR powerful.
 // Example of C code with operator WHILE:
 //	while(i > 0){
@@ -496,7 +496,7 @@ func transpileWhileStmt(n *ast.WhileStmt, p *program.Program) (
 // We have only operators FOR and IF in Go, but in C we also have
 // operator DO...WHILE. So, we have to convert to operators FOR and IF.
 // We choose directly conversion  from AST C code to AST C code, for:
-// - avoid dublicate of code in realization DO...WHILE and FOR.
+// - avoid duplicate of code in realization DO...WHILE and FOR.
 // - create only one powerful operator FOR.
 // Example of C code with operator DO...WHILE:
 //	do{
