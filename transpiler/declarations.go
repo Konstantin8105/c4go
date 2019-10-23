@@ -192,14 +192,14 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 							" in RecordDecl : `%v`", n.Name), n))
 					continue
 				}
-				// remove dublicates of fields
-				var isDublicate bool
+				// remove duplicates of fields
+				var isDuplicate bool
 				for i := range fields {
 					if fields[i].Names[0].Name == f.Names[0].Name {
-						isDublicate = true
+						isDuplicate = true
 					}
 				}
-				if isDublicate {
+				if isDuplicate {
 					f.Names[0].Name += strconv.Itoa(pos)
 				}
 				fields = append(fields, f)
@@ -209,7 +209,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			// ignore
 
 		case *ast.TransparentUnionAttr:
-			// Don't do anythink
+			// Don't do anything
 			// Example of AST:
 			// |-RecordDecl 0x3632d78 <...> line:67:9 union definition
 			// | |-TransparentUnionAttr 0x3633050 <...>
@@ -656,7 +656,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 	}
 	// for ignore zero value. example:
 	// int i = 0;
-	// tranpile to:
+	// transpile to:
 	// var i int // but not "var i int = 0"
 	if len(defaultValue) == 1 && defaultValue[0] != nil {
 		if bl, ok := defaultValue[0].(*goast.BasicLit); ok {

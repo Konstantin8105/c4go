@@ -174,7 +174,7 @@ func (p *Program) AddMessage(message string) bool {
 			new  = len(p.messages) - 1
 			last = len(p.messages) - 2
 		)
-		// Warning collapsing for minimaze warnings
+		// Warning collapsing for minimize warnings
 		warning := "// Warning"
 		if strings.HasPrefix(p.messages[last], warning) {
 			l := p.messages[last][len(warning):]

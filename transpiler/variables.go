@@ -130,7 +130,7 @@ func GenerateFuncType(fields, returns []string) *goast.FuncType {
 	return &ft
 }
 
-// tranpileInitListExpr.
+// transpileInitListExpr.
 //
 // Examples:
 //

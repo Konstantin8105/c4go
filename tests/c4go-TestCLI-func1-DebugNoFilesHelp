@@ -6,5 +6,5 @@
     	transpile CPP code
   -h	print help information
   -p string
-    	prefix of output C filename with addition debug informations (default "debug.")
+    	prefix of output C filename with addition debug information (default "debug.")
 )

@@ -225,7 +225,7 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 		eType, preStmts, postStmts, nil
 }
 
-// tranpileUnaryOperatorAmpersant - operator ampersant &
+// transpileUnaryOperatorAmpersant - operator ampersant &
 // Example of AST:
 //
 // UnaryOperator 'int (*)[5]' prefix '&'

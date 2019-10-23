@@ -29,7 +29,7 @@ func (p *Program) AddImport(importPath string) {
 	p.imports = append(p.imports, quotedImportPath)
 }
 
-// AddImports is a convienience method for adding multiple imports.
+// AddImports is a convenience method for adding multiple imports.
 func (p *Program) AddImports(importPaths ...string) {
 	for _, importPath := range importPaths {
 		p.AddImport(importPath)

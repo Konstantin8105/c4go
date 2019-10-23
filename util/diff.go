@@ -20,7 +20,7 @@ func ShowDiff(a, b string) string {
 		bLine := ""
 
 		// Replace NULL characters with a dot. Otherwise the strings will look
-		// exactly the same but have different length (and therfore not be
+		// exactly the same but have different length (and therefore not be
 		// equal).
 		if lineNumber < len(aLines) {
 			aLine = strconv.Quote(aLines[lineNumber])

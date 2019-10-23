@@ -18,8 +18,8 @@ import (
 // for (int i=0,j=0;i+=1,j<5;i++,j++){...}
 // For solving - we have to separate the
 // binary operator "," to 2 parts:
-// part 1(pre ): left part  - typically one or more some expessions
-// part 2(stmt): right part - always only one expression, with or witout
+// part 1(pre ): left part  - typically one or more some expressions
+// part 2(stmt): right part - always only one expression, with or without
 //               logical operators like "==", "!=", ...
 func transpileBinaryOperatorComma(n *ast.BinaryOperator, p *program.Program) (
 	stmt goast.Stmt, preStmts []goast.Stmt, err error) {
@@ -126,7 +126,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	// // Operation equal transpile from right to left
 	// Solving:
 	// b = 1, a = b
-	// // Operation comma tranpile from left to right
+	// // Operation comma transpile from left to right
 	// If we have for example:
 	// a = b = c = 1
 	// then solution is:

@@ -157,7 +157,7 @@ func NewFilePP(inputFiles, clangFlags []string, cppCode bool) (
 	for i := range allItems {
 		// If found same part of preprocess code, then
 		// don't include in result buffer for transpiling
-		// for avoid dublicate of code
+		// for avoid duplicate of code
 		var found bool
 		for j := 0; j < i; j++ {
 			if allItems[i].isSame(&allItems[j]) {
@@ -439,7 +439,7 @@ func analyzeFiles(inputFiles, clangFlags []string, cppCode bool) (
 			}
 			if item.positionInSource == 0 {
 				// cannot by less 1 for avoid problem with
-				// indentification of "0" AST base element
+				// identification of "0" AST base element
 				item.positionInSource = 1
 			}
 			item.lines = make([]*string, 0)

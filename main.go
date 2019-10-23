@@ -504,7 +504,7 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 		// Choose inputFile for creating name of output file
 		input := args.inputFiles[0]
 		// We choose name for output Go code at the base
-		// on filename for choosed input file
+		// on filename for chased input file
 		cleanFileName := filepath.Clean(filepath.Base(input))
 		extension := filepath.Ext(input)
 		outputFilePath = cleanFileName[0:len(cleanFileName)-len(extension)] +
@@ -594,7 +594,7 @@ func runCommand() int {
 		debugVerboseFlag = debugCommand.Bool(
 			"V", false, "print progress as comments")
 		prefixDebugFlag = debugCommand.String(
-			"p", "debug.", "prefix of output C filename with addition debug informations")
+			"p", "debug.", "prefix of output C filename with addition debug information")
 		debugHelpFlag = debugCommand.Bool(
 			"h", false, "print help information")
 	)

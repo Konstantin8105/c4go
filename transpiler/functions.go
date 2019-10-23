@@ -39,7 +39,7 @@ func getFunctionBody(n *ast.FunctionDecl) *ast.CompoundStmt {
 // The function prototype may also have a body. If it does have a body the whole
 // function will be transpiled into Go.
 //
-// If there is no function body we register the function interally (actually
+// If there is no function body we register the function internally (actually
 // either way the function is registered internally) but we do not do anything
 // because Go does not use or have any use for forward declarations of
 // functions.

@@ -29,7 +29,7 @@ func GetArrayTypeAndSize(s string) (string, int) {
 }
 
 // CastExpr returns an expression that casts one type to another. For
-// reliability and flexability the existing type (fromType) must be structly
+// reliability and flexibility the existing type (fromType) must be structly
 // provided.
 //
 // There are lots of rules about how an expression is cast, but here are some
@@ -43,7 +43,7 @@ func GetArrayTypeAndSize(s string) (string, int) {
 //    guarantee that original C used the NULL macro but it is a safe assumption
 //    for now.
 //
-//    The reason why NULL is special (or at least seamingly) is that it is often
+//    The reason why NULL is special (or at least seemingly) is that it is often
 //    used in different value contexts. As a number, testing pointers and
 //    strings. Being able to better understand the original purpose of the code
 //    helps to generate cleaner and more Go-like output.
@@ -195,7 +195,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		}
 	}
 
-	// Checking registated typedef types in program
+	// Checking registered typedef types in program
 	if v, ok := p.TypedefType[toType]; ok {
 		if fromType == v {
 			toType, err := ResolveType(p, toType)
@@ -499,7 +499,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 // macro. In C, NULL is actually a macro that produces an expression like "(0)".
 //
 // There are no guarantees if the original C code used the NULL macro, but it is
-// usually a pretty good guess when we see this specific exression signature.
+// usually a pretty good guess when we see this specific expression signature.
 //
 // Either way the return value from IsNullExpr should not change the
 // functionality of the code but can lead to hints that allow the Go produced to

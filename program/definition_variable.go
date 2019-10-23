@@ -1,6 +1,6 @@
 package program
 
-// DefinitionVariable is map of convertion from C var to C4go variable
+// DefinitionVariable is map of conversion from C var to C4go variable
 var DefinitionVariable = map[string]string{
 	// stdio.h
 	"stdin":  "github.com/Konstantin8105/c4go/noarch.Stdin",
