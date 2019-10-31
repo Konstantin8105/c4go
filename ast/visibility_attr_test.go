@@ -30,6 +30,15 @@ func TestVisibilityAttr(t *testing.T) {
 			IsDefault:   false,
 			IsHidden:    true,
 		},
+		`0x2960578 <line:37:13> Implicit Default`: &VisibilityAttr{
+			Addr:        0x2960578,
+			Pos:         NewPositionFromString("line:37:13"),
+			ChildNodes:  []Node{},
+			IsInherited: false,
+			IsDefault:   true,
+			IsHidden:    false,
+			IsImplicit:  true,
+		},
 	}
 
 	runNodeTests(t, nodes)
