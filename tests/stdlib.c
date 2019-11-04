@@ -287,6 +287,23 @@ void q_sort()
     is_eq(values[5], 100);
 }
 
+void b_search()
+{
+    diag("bsearch");
+
+    int array[] = {0, 5, 10, 15, 20};
+    // With array of int
+    int key_exist = 10;
+    int key_no_exist = 12;
+    int *res;
+
+    res = bsearch(&key_exist, array, 5, sizeof(int), compare);
+    is_true(res == &(array[2]));
+
+    res = bsearch(&key_no_exist, array, 5, sizeof(int), compare);
+    is_null(res);
+}
+
 #define COMPLEX struct MyComplex
 struct MyComplex {
     double re;
@@ -668,6 +685,9 @@ int main()
 
     diag("q_sort");
     q_sort();
+
+    diag("b_search");
+    b_search();
 
 	// test_mblen();
 	// test_wctomb();
