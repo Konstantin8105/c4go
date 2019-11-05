@@ -300,7 +300,7 @@ void b_search()
     res = bsearch(&key_exist, array, 5, sizeof(int), compare);
     is_true(res == &(array[2]));
 
-    /* This test must be activated when the discussion https://github.com/Konstantin8105/c4go/pull/476 is resolved */
+    /* This teshttps://github.com/Konstantin8105/c4go/pull/476t must be activated when the discussion https://github.com/Konstantin8105/c4go/pull/476 is resolved */
     /* res = bsearch(&key_no_exist, array, 5, sizeof(int), compare); */
     /* is_null(res); */
 }
@@ -397,7 +397,7 @@ void test_atoi_post()
 
 int main()
 {
-    plan(768);
+    plan(767);
 
     struct_with_define();
 
