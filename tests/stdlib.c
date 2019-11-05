@@ -396,7 +396,7 @@ void test_atoi_post()
 
 int main()
 {
-    plan(766);
+    plan(768);
 
     struct_with_define();
 

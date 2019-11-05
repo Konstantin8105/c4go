@@ -474,7 +474,7 @@ less vi.go
             stdarg.h	       4/4	         100%
             stddef.h	       3/4	          75%
              stdio.h	     37/41	        90.2%
-            stdlib.h	     30/37	        81.1%
+            stdlib.h	     31/37	        83.8%
             string.h	     21/24	        87.5%
               time.h	     14/15	        93.3%
              wchar.h	      3/60	           5%
