@@ -194,7 +194,7 @@ func atoll(str []byte, radix int) (int64, int) {
 //   A function to recieve the right slice by the index
 
 func BSearch(nmemb int, f func(a int) int, fGetIndex func(a int) interface{}) interface{} {
-    i := sort.Search(nmemb, func (a int) bool { return f(a) >= 0 })
+	i := sort.Search(nmemb, func(a int) bool { return f(a) >= 0 })
 
 	// Is the index out of bound?
 	if i >= nmemb {
