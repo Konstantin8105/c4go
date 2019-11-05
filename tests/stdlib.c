@@ -294,13 +294,13 @@ void b_search()
     int array[] = {0, 5, 10, 15, 20};
     // With array of int
     int key_exist = 10;
-    int key_no_exist = 12;
     int *res;
 
     res = bsearch(&key_exist, array, 5, sizeof(int), compare);
     is_true(res == &(array[2]));
 
     /* This teshttps://github.com/Konstantin8105/c4go/pull/476t must be activated when the discussion https://github.com/Konstantin8105/c4go/pull/476 is resolved */
+    /* int key_no_exist = 12; */
     /* res = bsearch(&key_no_exist, array, 5, sizeof(int), compare); */
     /* is_null(res); */
 }
