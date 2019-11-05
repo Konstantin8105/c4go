@@ -831,7 +831,6 @@ func transpileCallExprQsort(n *ast.CallExpr, p *program.Program) (
 
 }
 
-
 func transpileCallExprBsearch(n *ast.CallExpr, p *program.Program) (
 	expr *goast.CallExpr, resultType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
