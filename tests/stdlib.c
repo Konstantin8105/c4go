@@ -287,6 +287,24 @@ void q_sort()
     is_eq(values[5], 100);
 }
 
+void b_search()
+{
+    diag("bsearch");
+
+    int array[] = {0, 5, 10, 15, 20};
+    // With array of int
+    int key_exist = 10;
+    int *res;
+
+    res = bsearch(&key_exist, array, 5, sizeof(int), compare);
+    is_true(res == &(array[2]));
+
+    /* This teshttps://github.com/Konstantin8105/c4go/pull/476t must be activated when the discussion https://github.com/Konstantin8105/c4go/pull/476 is resolved */
+    /* int key_no_exist = 12; */
+    /* res = bsearch(&key_no_exist, array, 5, sizeof(int), compare); */
+    /* is_null(res); */
+}
+
 #define COMPLEX struct MyComplex
 struct MyComplex {
     double re;
@@ -379,7 +397,7 @@ void test_atoi_post()
 
 int main()
 {
-    plan(766);
+    plan(767);
 
     struct_with_define();
 
@@ -668,6 +686,9 @@ int main()
 
     diag("q_sort");
     q_sort();
+
+    diag("b_search");
+    b_search();
 
 	// test_mblen();
 	// test_wctomb();

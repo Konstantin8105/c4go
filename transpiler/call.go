@@ -306,6 +306,13 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 		}
 	}
 
+	// function "bsearch" from stdlib.h
+	if p.IncludeHeaderIsExists("stdlib.h") {
+		if functionName == "bsearch" && len(n.Children()) == 6 {
+			return transpileCallExprBsearch(n, p)
+		}
+	}
+
 	// function "printf" from stdio.h simplification
 	if p.IncludeHeaderIsExists("stdio.h") {
 		if functionName == "printf" && len(n.Children()) == 2 {
@@ -820,6 +827,160 @@ func transpileCallExprQsort(n *ast.CallExpr, p *program.Program) (
 			High: size,
 		},
 		f,
+	), "", preStmts, postStmts, nil
+
+}
+
+func transpileCallExprBsearch(n *ast.CallExpr, p *program.Program) (
+	expr *goast.CallExpr, resultType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("function: bsearch. err = %v", err)
+		}
+		if resultType == "" {
+			resultType = n.Type
+		}
+	}()
+
+	key, _, newPre, newPost, err := atomicOperation(n.Children()[1], p)
+	if err != nil {
+		err = fmt.Errorf("cannot transpile key node: %v", err)
+		return nil, "", nil, nil, err
+	}
+	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+
+	arr, _, newPre, newPost, err := atomicOperation(n.Children()[2], p)
+	if err != nil {
+		err = fmt.Errorf("cannot transpile array node: %v", err)
+		return nil, "", nil, nil, err
+	}
+	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+
+	t, ok := ast.GetTypeIfExist(n.Children()[2].Children()[0])
+	if !ok {
+		err = fmt.Errorf("cannot take type array node")
+		return nil, "", nil, nil, err
+	}
+
+	*t = strings.Replace(*t, "*", "", 1)
+
+	arrType, err := types.ResolveType(p, *t)
+	if err != nil {
+		err = fmt.Errorf("cannot resolve array type: %v", err)
+		return nil, "", nil, nil, err
+	}
+
+	size, sizeType, newPre, newPost, err := atomicOperation(n.Children()[3], p)
+	if err != nil {
+		err = fmt.Errorf("cannot transpile size node: %v", err)
+		return nil, "", nil, nil, err
+	}
+	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+
+	size, err = types.CastExpr(p, size, sizeType, "int")
+	if err != nil {
+		err = fmt.Errorf("cannot cast size node to int : %v", err)
+		return nil, "", nil, nil, err
+	}
+
+	f, _, newPre, newPost, err := atomicOperation(n.Children()[5], p)
+	if err != nil {
+		err = fmt.Errorf("cannot transpile function node: %v", err)
+		return nil, "", nil, nil, err
+	}
+	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+
+	// cast from `int (void *, void *)` to `bool (int, int)`
+
+	// TODO: Generate missing handle
+	p.AddMessage(p.GenerateWarningMessage(fmt.Errorf("TODO: missing second variable to handle nil cast interface{}"), n))
+
+	val := CreateSliceFromReference(arrType, &goast.IndexExpr{
+		X:      arr,
+		Lbrack: 1,
+		Index:  goast.NewIdent("a"),
+	})
+	res := CreateSliceFromReference(arrType, &goast.IndexExpr{
+		X:      arr,
+		Lbrack: 1,
+		Index:  goast.NewIdent("index"),
+	})
+
+	f = &goast.FuncLit{
+		Type: &goast.FuncType{
+			Params: &goast.FieldList{
+				List: []*goast.Field{
+					{
+						Names: []*goast.Ident{goast.NewIdent("a")},
+						Type:  goast.NewIdent("int"),
+					},
+				},
+			},
+			Results: &goast.FieldList{
+				List: []*goast.Field{
+					{Type: goast.NewIdent("int")},
+				},
+			},
+		},
+		Body: &goast.BlockStmt{
+			List: []goast.Stmt{
+				&goast.ReturnStmt{
+					Results: []goast.Expr{
+						&goast.CallExpr{
+							Fun: goast.NewIdent("int"),
+							Args: []goast.Expr{
+								&goast.CallExpr{
+									Fun: f,
+									Args: []goast.Expr{
+										val,
+										goast.Expr(key),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	fGetIndex := &goast.FuncLit{
+		Type: &goast.FuncType{
+			Params: &goast.FieldList{
+				List: []*goast.Field{
+					{
+						Names: []*goast.Ident{goast.NewIdent("index")},
+						Type:  goast.NewIdent("int"),
+					},
+				},
+			},
+			Results: &goast.FieldList{
+				List: []*goast.Field{
+					{Type: goast.NewIdent("interface{}")},
+				},
+			},
+		},
+		Body: &goast.BlockStmt{
+			List: []goast.Stmt{
+				&goast.ReturnStmt{
+					Results: []goast.Expr{
+						res,
+					},
+				},
+			},
+		},
+	}
+
+	p.AddImport("github.com/Konstantin8105/c4go/noarch")
+
+	return util.NewCallExpr("noarch.BSearch",
+		// sort.Search expecting a "int" type
+		&goast.CallExpr{
+			Fun:  goast.NewIdent("int"),
+			Args: []goast.Expr{size},
+		},
+		f,
+		fGetIndex,
 	), "", preStmts, postStmts, nil
 
 }
