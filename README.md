@@ -566,3 +566,84 @@ go tool pprof ./testdata/cpu.out
 
 For more information, see [Profiling Go Programs](https://blog.golang.org/profiling-go-programs).
 
+
+# Prototype `c4go make`
+
+Run `c4go make` instead of `make`.
+Internally replace replace compiler - `make CC="c4go compiler"`.
+If you run for example `c4go make MALLOC=libc`, then internally run 
+`make MALLOC=libc CC="c4go compiler"`.
+At the end of `make` run specific step for transpilation and assembly Go files.
+
+Run:
+```sh
+make 
+```
+Output:
+```sh
+cc -c -Wall -O2 vi.c
+cc -c -Wall -O2 ex.c
+cc -c -Wall -O2 lbuf.c
+cc -c -Wall -O2 mot.c
+cc -c -Wall -O2 sbuf.c
+cc -c -Wall -O2 ren.c
+cc -c -Wall -O2 dir.c
+cc -c -Wall -O2 syn.c
+cc -c -Wall -O2 reg.c
+cc -c -Wall -O2 led.c
+cc -c -Wall -O2 uc.c
+cc -c -Wall -O2 term.c
+cc -c -Wall -O2 rset.c
+cc -c -Wall -O2 regex.c
+cc -c -Wall -O2 cmd.c
+cc -c -Wall -O2 conf.c
+cc -o vi vi.o ex.o lbuf.o mot.o sbuf.o ren.o dir.o syn.o reg.o led.o uc.o term.o rset.o regex.o cmd.o conf.o 
+```
+
+Transpile:
+```sh
+c4go make -CC=clang
+```
+Output:
+```sh
+c4go compiler -c -Wall -O2 vi.c
+c4go compiler -c -Wall -O2 ex.c
+c4go compiler -c -Wall -O2 lbuf.c
+c4go compiler -c -Wall -O2 mot.c
+c4go compiler -c -Wall -O2 sbuf.c
+c4go compiler -c -Wall -O2 ren.c
+c4go compiler -c -Wall -O2 dir.c
+c4go compiler -c -Wall -O2 syn.c
+c4go compiler -c -Wall -O2 reg.c
+c4go compiler -c -Wall -O2 led.c
+c4go compiler -c -Wall -O2 uc.c
+c4go compiler -c -Wall -O2 term.c
+c4go compiler -c -Wall -O2 rset.c
+c4go compiler -c -Wall -O2 regex.c
+c4go compiler -c -Wall -O2 cmd.c
+c4go compiler -c -Wall -O2 conf.c
+c4go compiler -o vi vi.o ex.o lbuf.o mot.o sbuf.o ren.o dir.o syn.o reg.o led.o uc.o term.o rset.o regex.o cmd.o conf.o 
+```
+
+**Internally**.
+After run `c4go make -CC=clang MALLOC=glibc` created configuration file `c4go_make.conf` ,
+if not exist or remove present configuration, if exist, 
+with all flags, in that case:
+```
+clang
+MALLOC=glibc ...other flags...
+```
+Running internally `make CC="c4go compiler" MALLOC=glibc ...other flags...`.
+`Make` run `c4go compiler MALLOC=glibc ...other flags... regex.c`
+
+Application `c4go compiler`:
+* read configuration file for using right C compiler, if configuration file 
+  is not exist used `clang`
+* write all flags in file `c4go_compiler.conf`
+* run `clang MALLOC=glibc ...other flags... regex.c`
+* transpile in according to flags
+
+After end of `make` script, write on screen all steps of making.
+
+
+
