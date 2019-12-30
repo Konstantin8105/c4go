@@ -29,24 +29,41 @@ void test_return_ternary()
     is_eq(ret_ter(-1), 1);
 }
 
-void test_max_min_float64()
+#define MaxMinTest(type) \
+{ \
+	diag(#type);       \
+	type a = 54;       \
+	type b = -4;       \
+	type c;            \ 
+	c = a > b ? a : b ;\
+	is_true(c == a);   \
+	c = a < b ? a : b; \
+	is_true(c == b);   \
+	c = b < a ? a : b ;\
+	is_true(c == a);   \
+	c = b > a ? a : b; \
+	is_true(c == b);   \
+	                   \
+	c = a > b ? a : b + 1 ;\
+	is_true(c == a);   \
+	c = a < b ? a + 1 : b; \
+	is_true(c == b);   \
+	c = b < a ? a : b + 1 ;\
+	is_true(c == a);   \
+	c = b > a ? a + 1 : b; \
+	is_true(c == b);   \
+} 
+
+void test_min_max()
 {
-	double a = 54;
-	double b = -4;
-	double c;
-	c = a > b ? a : b;
-	is_true(c == a);
-	c = a < b ? a : b;
-	is_true(c == b);
-	c = b < a ? a : b;
-	is_true(c == a);
-	c = b > a ? a : b;
-	is_true(c == b);
+	MaxMinTest(int);
+	MaxMinTest(float);
+	MaxMinTest(double);
 }
 
 int main()
 {
-    plan(21);
+    plan(41);
 
     int a = 'a' == 65 ? 10 : 100;
     float b = 10 == 10 ? 1.0 : 2.0;
@@ -123,7 +140,7 @@ int main()
     }
 
 	diag("max min ternary");
-	test_max_min_float64();
+	test_min_max();
 
     done_testing();
 }
