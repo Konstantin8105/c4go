@@ -29,9 +29,24 @@ void test_return_ternary()
     is_eq(ret_ter(-1), 1);
 }
 
+void test_max_min_float64()
+{
+	double a = 54;
+	double b = -4;
+	double c;
+	c = a > b ? a : b;
+	is_true(c == a);
+	c = a < b ? a : b;
+	is_true(c == b);
+	c = b < a ? a : b;
+	is_true(c == a);
+	c = b > a ? a : b;
+	is_true(c == b);
+}
+
 int main()
 {
-    plan(17);
+    plan(21);
 
     int a = 'a' == 65 ? 10 : 100;
     float b = 10 == 10 ? 1.0 : 2.0;
@@ -106,6 +121,9 @@ int main()
         a = 4 < -1 ?: 25;
         is_eq(a, 25);
     }
+
+	diag("max min ternary");
+	test_max_min_float64();
 
     done_testing();
 }
