@@ -41,6 +41,9 @@ var cliTests = map[string][]string{
 	// Test that help is printed if help flag is set, even if file is given
 	"DebugHelpFlag": {"test", "debug", "-h"},
 
+	"UnusedNoFilesHelp": {"test", "unused"},
+	"UnusedHelpFlag":    {"test", "unused", "-h"},
+
 	// Test that version is printed
 	"Version": {"test", "version"},
 }

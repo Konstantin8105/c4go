@@ -597,6 +597,11 @@ func runCommand() int {
 			"p", "debug.", "prefix of output C filename with addition debug information")
 		debugHelpFlag = debugCommand.Bool(
 			"h", false, "print help information")
+
+		unusedCommand = flag.NewFlagSet(
+			"unused", flag.ContinueOnError)
+		unusedHelpFlag = unusedCommand.Bool(
+			"h", false, "print help information")
 	)
 	var clangFlags inputDataFlags
 	transpileCommand.Var(&clangFlags,
@@ -618,6 +623,7 @@ func runCommand() int {
 		usage += "  ast\t\tprint AST before translated Go code\n"
 		usage += "  debug\t\tadd debug information in C source\n"
 		usage += "  version\tprint version of c4go\n"
+		usage += "  unused\tshow and action for unused functions\n"
 		usage += "\n"
 		fmt.Fprintf(stderr, usage, os.Args[0])
 
@@ -627,6 +633,7 @@ func runCommand() int {
 	transpileCommand.SetOutput(stderr)
 	astCommand.SetOutput(stderr)
 	debugCommand.SetOutput(stderr)
+	unusedCommand.SetOutput(stderr)
 
 	flag.Parse()
 
@@ -711,6 +718,21 @@ func runCommand() int {
 		args.debugPrefix = *prefixDebugFlag
 		args.clangFlags = clangFlags
 		args.cppCode = *debugCppFlag
+
+	case "unused":
+		err := unusedCommand.Parse(os.Args[2:])
+		if err != nil {
+			fmt.Fprintf(os.Stdout, "unused command cannot parse: %v", err)
+			return 12
+		}
+
+		if *unusedHelpFlag || unusedCommand.NArg() == 0 {
+			unusedCommand.PrintDefaults()
+			return 32
+		}
+
+		unused(unusedCommand.Args()...)
+		return 0
 
 	case "version":
 		fmt.Fprint(stderr, version.Version())
