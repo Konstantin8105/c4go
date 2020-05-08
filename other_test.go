@@ -251,6 +251,10 @@ func getLogs(goFile string) (logs []string, err error) {
 }
 
 func TestFrame3dd(t *testing.T) {
+	// test create not for TRAVIS CI
+	if os.Getenv("TRAVIS") == "true" {
+		t.Skip()
+	}
 	folder := "./testdata/git-source/frame3dd/"
 
 	// Create build folder

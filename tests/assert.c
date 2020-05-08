@@ -9,6 +9,7 @@
 
 void print_number(int* myInt)
 {
+    // assert(*myInt == 10);
     assert(myInt != NULL);
     printf("%d\n", *myInt);
 }

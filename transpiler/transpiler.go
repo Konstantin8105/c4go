@@ -509,6 +509,7 @@ func transpileToNode(node ast.Node, p *program.Program) (
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("error - panic : %#v", r)
+			// fmt.Fprintf(os.Stdout,"%s", string(debug.Stack()))
 		}
 	}()
 

@@ -307,7 +307,7 @@ func transpileCompoundAssignOperator(
 
 // getTokenForOperator returns the Go operator token for the provided C
 // operator.
-func getTokenForOperator(operator string) token.Token {
+func getTokenForOperator(operator string, debugValue interface{}) token.Token {
 	switch operator {
 	// Arithmetic
 	case "--":
@@ -390,7 +390,7 @@ func getTokenForOperator(operator string) token.Token {
 		return token.COMMA
 	}
 
-	panic(fmt.Sprintf("unknown operator: %s", operator))
+	panic(fmt.Sprintf("unknown operator: %s. Debug Value: %#v", operator, debugValue))
 }
 
 func convertToWithoutAssign(operator token.Token) token.Token {
@@ -768,7 +768,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			Lhs: []goast.Expr{&goast.StarExpr{
 				X: util.NewIdent(varName),
 			}},
-			Tok: getTokenForOperator(v.Opcode),
+			Tok: getTokenForOperator(v.Opcode, n),
 			Rhs: []goast.Expr{expr},
 		})
 

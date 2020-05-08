@@ -1,5 +1,7 @@
 package ast
 
+import "strings"
+
 // UnaryOperator is type of unary operator
 type UnaryOperator struct {
 	Addr             Address
@@ -14,6 +16,9 @@ type UnaryOperator struct {
 }
 
 func parseUnaryOperator(line string) *UnaryOperator {
+
+	line = strings.Replace(line, "'__extension__'", "'*'", -1)
+
 	groups := groupsFromRegex(
 		`<(?P<position>.*)>
 		 '(?P<type>.*?)'(:'(?P<type2>.*)')?

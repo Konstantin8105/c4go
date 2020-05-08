@@ -578,7 +578,7 @@ func transpileUnaryOperator(n *ast.UnaryOperator, p *program.Program) (
 		}
 	}()
 
-	operator := getTokenForOperator(n.Operator)
+	operator := getTokenForOperator(n.Operator, n)
 
 	switch operator {
 	case token.MUL: // *

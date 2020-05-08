@@ -70,7 +70,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 		}
 	}()
 
-	operator := getTokenForOperator(n.Operator)
+	operator := getTokenForOperator(n.Operator, n)
 	n.Type = util.GenerateCorrectType(n.Type)
 	n.Type2 = util.GenerateCorrectType(n.Type2)
 
@@ -158,14 +158,14 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	//   `-BinaryOperator 'char *' '='
 	//     |-...
 	//     `-...
-	if getTokenForOperator(n.Operator) == token.ASSIGN {
+	if getTokenForOperator(n.Operator, n) == token.ASSIGN {
 		child := n.Children()[1]
 		if impl, ok := child.(*ast.ImplicitCastExpr); ok {
 			child = impl.Children()[0]
 		}
 		switch c := child.(type) {
 		case *ast.BinaryOperator:
-			if getTokenForOperator(c.Operator) == token.ASSIGN {
+			if getTokenForOperator(c.Operator, n) == token.ASSIGN {
 				bSecond := ast.BinaryOperator{
 					Type:     c.Type,
 					Operator: "=",
@@ -214,7 +214,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	// | |-DeclRefExpr 0x21a7848 <col:2> 'int' lvalue Var 0x21a76d8 'x' 'int'
 	// | `-ImplicitCastExpr 0x21a7898 <col:6> 'int' <LValueToRValue>
 	// |   `-DeclRefExpr 0x21a7870 <col:6> 'int' lvalue Var 0x21a7748 'y' 'int'
-	if getTokenForOperator(n.Operator) == token.COMMA {
+	if getTokenForOperator(n.Operator, n) == token.COMMA {
 		stmts, _, newPre, newPost, err := transpileToExpr(n.Children()[0], p, false)
 		if err != nil {
 			err = fmt.Errorf("cannot transpile expr `token.COMMA` child 0. %v", err)
