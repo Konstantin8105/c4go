@@ -91,24 +91,6 @@ func transpileConditionalOperator(n *ast.ConditionalOperator, p *program.Program
 		}
 	}()
 
-	// TODO: typically use case
-	//
-	//		double a = 54;
-	//		double b = -4;
-	//		double c;
-	//		c = a > b ? a : b;
-	//
-	// now :
-	// 	c = func() float64 {
-	// 		if b > a {
-	// 			return a
-	// 		}
-	// 		return b
-	// 	}()
-	//
-	// want:
-	// 	c = math.Max(a,b)
-
 	// a - condition
 	a, aType, newPre, newPost, err := atomicOperation(n.Children()[0], p)
 	if err != nil {
@@ -227,6 +209,26 @@ func transpileConditionalOperator(n *ast.ConditionalOperator, p *program.Program
 			})
 			stmts = append(stmts, els.List...)
 		}
+	}
+
+	if bType == cType && bType == "long double" && returnType == "float64" {
+		// typically use case
+		//
+		//		double a = 54;
+		//		double b = -4;
+		//		double c;
+		//		c = a > b ? a : b;
+		//
+		// now :
+		// 	c = func() float64 {
+		// 		if b > a {
+		// 			return a
+		// 		}
+		// 		return b
+		// 	}()
+		//
+		// want:
+		// 	c = math.Max(a,b)
 	}
 
 	return util.NewFuncClosure(
