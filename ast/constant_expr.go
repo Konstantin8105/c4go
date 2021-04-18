@@ -1,11 +1,14 @@
 package ast
 
+import "strings"
+
 // ConstantExpr is node constructor.
 type ConstantExpr struct {
 	Addr       Address
 	Pos        Position
 	Position2  string
 	Type       string
+	Value      string
 	ChildNodes []Node
 }
 
@@ -13,7 +16,7 @@ func parseConstantExpr(line string) *ConstantExpr {
 	groups := groupsFromRegex(
 		`<(?P<position>.*)> 
 		'(?P<type>.*?)'
-		`,
+		(?P<value>.*?)`,
 		line,
 	)
 
@@ -21,6 +24,7 @@ func parseConstantExpr(line string) *ConstantExpr {
 		Addr:       ParseAddress(groups["address"]),
 		Pos:        NewPositionFromString(groups["position"]),
 		Type:       groups["type"],
+		Value:      strings.TrimSpace(groups["value"]),
 		ChildNodes: []Node{},
 	}
 }

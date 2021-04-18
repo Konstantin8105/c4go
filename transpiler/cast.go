@@ -303,6 +303,11 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 	if len(n.Type) != 0 && len(n.Type2) != 0 && n.Type != n.Type2 {
 		var tt string
 		tt, err = types.ResolveType(p, n.Type)
+		if err != nil {
+			// `-CStyleCastExpr 0x9b32c0 <> '__clock_t':'long' <IntegralCast>
+			//   `-IntegerLiteral 0x9b3290 <> 'int' 1000000
+			tt, err = types.ResolveType(p, n.Type2)
+		}
 		expr = util.NewCallExpr(tt, expr)
 		exprType = n.Type
 		return
