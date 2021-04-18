@@ -578,7 +578,11 @@ func transpileUnaryOperator(n *ast.UnaryOperator, p *program.Program) (
 		}
 	}()
 
-	operator := getTokenForOperator(n.Operator)
+	operator, err := getTokenForOperator(n.Operator)
+	if err != nil {
+		err = nil
+		return transpileToExpr(n.Children()[0], p, true)
+	}
 
 	switch operator {
 	case token.MUL: // *
@@ -661,9 +665,10 @@ func transpileStmtExpr(n *ast.StmtExpr, p *program.Program) (
 
 	// The body of the StmtExpr is always a CompoundStmt. However, the last
 	// statement needs to be transformed into an explicit return statement.
-	lastStmt := body.List[len(body.List)-1]
-	body.List[len(body.List)-1] = &goast.ReturnStmt{
-		Results: []goast.Expr{lastStmt.(*goast.ExprStmt).X},
+	if e, ok := body.List[len(body.List)-1].(*goast.ExprStmt); ok {
+		body.List[len(body.List)-1] = &goast.ReturnStmt{
+			Results: []goast.Expr{e.X},
+		}
 	}
 
 	return util.NewFuncClosure(returnType, body.List...), n.Type, pre, post, nil

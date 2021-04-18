@@ -5,6 +5,7 @@ package transpiler
 import (
 	goast "go/ast"
 	"go/token"
+	"runtime/debug"
 
 	"fmt"
 
@@ -202,7 +203,7 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("error - panic")
+			err = fmt.Errorf("transpileSwitchStmt: error - panic: %s", string(debug.Stack()))
 		}
 	}()
 

@@ -230,19 +230,19 @@ void test_fscanf()
     // remove temp file
     is_eq(remove("./testdata/myfile2.txt"), 0)
 
-    // test file fscan.txt
-	FILE * in = fopen("./tests/stdio_fscan.txt", "r");
-	char dummy[128];
+        // test file fscan.txt
+        FILE* in
+        = fopen("./tests/stdio_fscan.txt", "r");
+    char dummy[128];
 
-	for(int iter = 0;iter < 10;iter++)
-	{
-	     int e = fscanf(in,"%s", dummy);
-	     printf("fscan : iter[%d] : err = %d\n", iter, e);
-	     if (e < 0) {
-	  	 	break;
-	     }
-	     printf("fscan : iter[%d] : str = %s\n", iter, dummy);
-	}
+    for (int iter = 0; iter < 10; iter++) {
+        int e = fscanf(in, "%s", dummy);
+        printf("fscan : iter[%d] : err = %d\n", iter, e);
+        if (e < 0) {
+            break;
+        }
+        printf("fscan : iter[%d] : str = %s\n", iter, dummy);
+    }
 }
 
 void test_fgetc()
@@ -609,7 +609,7 @@ void test_sscanf()
     char str[20];
     int i;
     sscanf(sentence, "%s %s %s %d", header, str, temp, &i);
-	printf("Header: %s\n", header);
+    printf("Header: %s\n", header);
     is_eq(i, 12);
     is_streq(str, "Rudolph");
 }
@@ -622,64 +622,63 @@ void test_FILE()
     (void)p;
 }
 
-void WriteFormatted ( const char * format, ... )
+void WriteFormatted(const char* format, ...)
 {
-  va_list args;
-  va_start (args, format);
-  vprintf (format, args);
-  va_end (args);
+    va_list args;
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
 }
 
 void test_vprintf()
 {
-   WriteFormatted ("Call with %d variable argument.\n",1);
-   WriteFormatted ("Call with %d variable %s.\n",2,"arguments");
+    WriteFormatted("Call with %d variable argument.\n", 1);
+    WriteFormatted("Call with %d variable %s.\n", 2, "arguments");
 }
 
-
-void FWriteFormatted (FILE * stream, const char * format, ...)
+void FWriteFormatted(FILE* stream, const char* format, ...)
 {
-  va_list args;
-  va_start (args, format);
-  vfprintf (stream, format, args);
-  va_end (args);
+    va_list args;
+    va_start(args, format);
+    vfprintf(stream, format, args);
+    va_end(args);
 }
 
 void test_vfprintf()
 {
-   FILE * pFile;
-   pFile = fopen ("./testdata/vfprintf.txt","w");
-   FWriteFormatted (pFile,"Call with %d variable argument.\n",1);
-   FWriteFormatted (pFile,"Call with %d variable %s.\n",2,"arguments");
-   fclose (pFile);
+    FILE* pFile;
+    pFile = fopen("./testdata/vfprintf.txt", "w");
+    FWriteFormatted(pFile, "Call with %d variable argument.\n", 1);
+    FWriteFormatted(pFile, "Call with %d variable %s.\n", 2, "arguments");
+    fclose(pFile);
 }
 
 void test_setbuf()
 {
-  char buffer[BUFSIZ];
-  FILE *pFile1, *pFile2;
+    char buffer[BUFSIZ];
+    FILE *pFile1, *pFile2;
 
-  pFile1=fopen ("./testdata/setbuf.txt","w");
-  pFile2=fopen ("./testdata/setbuf2.txt","a");
+    pFile1 = fopen("./testdata/setbuf.txt", "w");
+    pFile2 = fopen("./testdata/setbuf2.txt", "a");
 
-  setbuf ( pFile1 , buffer );
-  fputs ("This is sent to a buffered stream",pFile1);
-  fflush (pFile1);
+    setbuf(pFile1, buffer);
+    fputs("This is sent to a buffered stream", pFile1);
+    fflush(pFile1);
 
-  setbuf ( pFile2 , NULL );
-  fputs ("This is sent to an unbuffered stream",pFile2);
+    setbuf(pFile2, NULL);
+    fputs("This is sent to an unbuffered stream", pFile2);
 
-  fclose (pFile1);
-  fclose (pFile2);
-  (void)(buffer);
+    fclose(pFile1);
+    fclose(pFile2);
+    (void)(buffer);
 }
 
 void test_setvbuf()
 {
-  FILE *pFile;
-  pFile=fopen ("./testdata/detvbuf.txt","w");
-  setvbuf ( pFile , NULL , _IOFBF , 1024 );
-  fclose (pFile);
+    FILE* pFile;
+    pFile = fopen("./testdata/detvbuf.txt", "w");
+    setvbuf(pFile, NULL, _IOFBF, 1024);
+    fclose(pFile);
 }
 
 int main()

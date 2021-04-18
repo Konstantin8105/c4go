@@ -380,8 +380,8 @@ struct MyStruct {
 };
 void test_struct_init()
 {
-    struct MyStruct objA = {.symbol = 'A', .number = 100 };
-    struct MyStruct objB = {.number = 200 };
+    struct MyStruct objA = { .symbol = 'A', .number = 100 };
+    struct MyStruct objB = { .number = 200 };
     is_eq(objA.symbol, 'A');
     is_eq(objA.number, 100);
     is_eq(objB.number, 200);
@@ -563,83 +563,83 @@ void test_typedef_pointer()
         p = 0 + p + 0 + 1 - 0 + 1 - 1; // p = p + 1
         is_eq(*p, v[1]);
     }
-	{
-		diag("typedef pointer char");
-		typedef char *tcp;
-		char * word = "Hello";
-		tcp w = word;
-		is_streq(w, "Hello");
-		tcp p = w + 2;
-		is_streq(p, "llo");
-		p = &(p[-1]);
-		is_streq(p, "ello");
-		p = w + 2;
-		p = p - 1;
-		is_streq(p, "ello");
-		is_eq((int)(p[-1]),(int)('H'));
+    {
+        diag("typedef pointer char");
+        typedef char* tcp;
+        char* word = "Hello";
+        tcp w = word;
+        is_streq(w, "Hello");
+        tcp p = w + 2;
+        is_streq(p, "llo");
+        p = &(p[-1]);
+        is_streq(p, "ello");
+        p = w + 2;
+        p = p - 1;
+        is_streq(p, "ello");
+        is_eq((int)(p[-1]), (int)('H'));
 
-		unsigned char ch = p[-1];
-		is_eq(ch, 'H');
-	}
-	{
-		diag("typedef pointer const char");
-		typedef char *tcp3;
-		char const * word = "Hello";
-		tcp3 w = word;
-		is_streq(w, "Hello");
-		{
-			tcp3 p = w + 2;
-			is_streq(p, "llo");
-			(void)(p);
-		}
-		{
-			tcp3 const p = w + 2;
-			is_streq(&(p[-1]), "ello");
-			(void)(p);
-		}
-		{
-			tcp3 const p = w + 2 - 1;
-			is_streq(p, "ello");
-			is_eq((int)(p[-1]),(int)('H'));
-			(void)(p);
-		}
-		{
-			tcp3 p = w + 2 - 1;
-			unsigned char ch = p[-1];
-			is_eq(ch, 'H');
-			(void)(p);
-		}
-	}
-	{
-		diag("typedef pointer short");
-		typedef short *tcp2;
-		short word[]= {12,13,24,45,11};
-		tcp2 w = word;
-		tcp2 p = w + 2;
-		is_eq(*p, 24);
-		p = &(p[-1]);
-		is_eq(*p, 13);
-		p = w + 2;
-		p = p - 1;
-		is_eq(*p, 13);
-		is_eq((int)(p[-1]),(int)(12));
+        unsigned char ch = p[-1];
+        is_eq(ch, 'H');
+    }
+    {
+        diag("typedef pointer const char");
+        typedef char* tcp3;
+        char const* word = "Hello";
+        tcp3 w = word;
+        is_streq(w, "Hello");
+        {
+            tcp3 p = w + 2;
+            is_streq(p, "llo");
+            (void)(p);
+        }
+        {
+            tcp3 const p = w + 2;
+            is_streq(&(p[-1]), "ello");
+            (void)(p);
+        }
+        {
+            tcp3 const p = w + 2 - 1;
+            is_streq(p, "ello");
+            is_eq((int)(p[-1]), (int)('H'));
+            (void)(p);
+        }
+        {
+            tcp3 p = w + 2 - 1;
+            unsigned char ch = p[-1];
+            is_eq(ch, 'H');
+            (void)(p);
+        }
+    }
+    {
+        diag("typedef pointer short");
+        typedef short* tcp2;
+        short word[] = { 12, 13, 24, 45, 11 };
+        tcp2 w = word;
+        tcp2 p = w + 2;
+        is_eq(*p, 24);
+        p = &(p[-1]);
+        is_eq(*p, 13);
+        p = w + 2;
+        p = p - 1;
+        is_eq(*p, 13);
+        is_eq((int)(p[-1]), (int)(12));
 
-		unsigned char ch = p[-1];
-		is_eq(ch, 12);
-	}
+        unsigned char ch = p[-1];
+        is_eq(ch, 12);
+    }
 }
 
 // TODO : it is not Ok for Debug case
 void test_double_array()
 {
     // see https://forums.macrumors.com/threads/understanding-double-pointers-in-c.701091/
-    int twod[5][5] = { { 2, 4, 6 , 7, 77}, { 8, 10, 12,13,133 }, { 14, 16, 18, 19,199 }, { 20, 22, 24, 25,255 }, {26,28,30,32,322} };
-	printf("%d\n", twod[0][0]);
-	int * pp;
-	pp = twod[0];
-	int ** p = &pp;
-	(void)(p);
-	printf("%d\n", p[0][0]);
+    int twod[5][5] = { { 2, 4, 6, 7, 77 }, { 8, 10, 12, 13, 133 }, { 14, 16, 18, 19, 199 }, { 20, 22, 24, 25, 255 }, { 26, 28, 30, 32, 322 } };
+    printf("%d\n", twod[0][0]);
+    int* pp;
+    pp = twod[0];
+    int** p = &pp;
+    (void)(p);
+    printf("%d\n", p[0][0]);
 
     printf(" p is: %d\n", **p);
     printf("*p + 1 is: %d\n", *(*p + 1));
@@ -652,7 +652,7 @@ void test_double_array()
     }
     // TODO : view_matrix(p,4,3);
 
-	p = &pp;
+    p = &pp;
     {
         diag("cases 1a:");
         int* pp = *p;
@@ -662,7 +662,7 @@ void test_double_array()
     }
     // TODO : view_matrix(p,4,3);
 
-	p = &pp;
+    p = &pp;
     {
         diag("cases 2:");
         int** pp = p;
@@ -672,7 +672,7 @@ void test_double_array()
     }
     // TODO : view_matrix(p,4,3);
 
-	p = &pp;
+    p = &pp;
     // {
     // diag("cases 3:");
     // int** pp = p;
@@ -682,7 +682,7 @@ void test_double_array()
     // }
     // TODO : view_matrix(p,4,3);
 
-	p = &pp;
+    p = &pp;
     // {
     // diag("cases 4:");
     // int** pp = p;
@@ -692,7 +692,7 @@ void test_double_array()
     // }
     // TODO : view_matrix(p,4,3);
 
-	p = &pp;
+    p = &pp;
     // {
     // diag("cases 5:");
     // int** pp = p;
@@ -702,7 +702,7 @@ void test_double_array()
     // }
     // TODO : view_matrix(p,4,3);
 
-	p = &pp;
+    p = &pp;
     // {
     // diag("cases 6:");
     // int** pp = p;
@@ -941,7 +941,7 @@ int main()
         is_eq(**PPptr1, Var)
             Var
             = 43;
-        is_eq (**PPptr1, Var)(void)(PPptr1);
+        is_eq(**PPptr1, Var)(void)(PPptr1);
         (void)(PPptr2);
     }
     diag("Pointer to Pointer. 2");
@@ -952,7 +952,7 @@ int main()
         is_eq(**PPptr1, Var)
             Var
             = 43.0;
-        is_eq (**PPptr1, Var)(void)(PPptr1);
+        is_eq(**PPptr1, Var)(void)(PPptr1);
         (void)(PPptr2);
     }
     diag("Pointer to Pointer. 3");

@@ -14,13 +14,13 @@ int main()
 {
     plan(496);
 
-	{
-		diag("modf");
-		double param, fractpart, intpart;
-		param = 3.14159265;
-		fractpart = modf (param , &intpart);
-		printf ("%f = %f + %f \n", param, intpart, fractpart);
-	}
+    {
+        diag("modf");
+        double param, fractpart, intpart;
+        param = 3.14159265;
+        fractpart = modf(param, &intpart);
+        printf("%f = %f + %f \n", param, intpart, fractpart);
+    }
 
     double w1 = 100;
     double w2 = 2;
@@ -787,18 +787,18 @@ int main()
         is_eq(n, 4);
     }
 
-	diag("round");
-	{
-	   is_eq(lround(2.3), 2);
-	   is_eq(lround(3.8), 4);
-	   is_eq(lround(-2.3), -2);
-	   is_eq(lround(-3.8), -4);
+    diag("round");
+    {
+        is_eq(lround(2.3), 2);
+        is_eq(lround(3.8), 4);
+        is_eq(lround(-2.3), -2);
+        is_eq(lround(-3.8), -4);
 
-	   is_eq(llround(2.3), 2);
-	   is_eq(llround(3.8), 4);
-	   is_eq(llround(-2.3), -2);
-	   is_eq(llround(-3.8), -4);
-	}
+        is_eq(llround(2.3), 2);
+        is_eq(llround(3.8), 4);
+        is_eq(llround(-2.3), -2);
+        is_eq(llround(-3.8), -4);
+    }
 
     done_testing();
 }

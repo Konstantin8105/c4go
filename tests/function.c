@@ -332,8 +332,8 @@ int main()
 
     // diag("function name like in CSTD");
     // {
-        // is_eq(tolower(34, 52), 86);
-        // is_eq(toupper(34, 52), 86);
+    // is_eq(tolower(34, 52), 86);
+    // is_eq(toupper(34, 52), 86);
     // }
 
     diag("function argument from array to slice");

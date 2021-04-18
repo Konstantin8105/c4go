@@ -48,7 +48,7 @@ void test_matrix_double()
 }
 
 static char* kmap_fa[256] = {
-        [0] = "fa",
+    [0] = "fa",
     ['`'] = "@",
     ['1'] = "abc",
 };

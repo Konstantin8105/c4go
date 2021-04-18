@@ -7,6 +7,7 @@ import (
 	"fmt"
 	goast "go/ast"
 	"go/token"
+	"runtime/debug"
 	"strconv"
 	"strings"
 
@@ -124,7 +125,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("error - panic : %#v", r)
+			err = fmt.Errorf("transpileRecordDecl: error - panic : %#v. %s", r, string(debug.Stack()))
 		}
 	}()
 
@@ -364,7 +365,7 @@ func transpileCXXRecordDecl(p *program.Program, n *ast.RecordDecl) (
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("error - panic : %#v", r)
+			err = fmt.Errorf("transpileCXXRecordDecl: error - panic : %#v %s", r, string(debug.Stack()))
 		}
 	}()
 

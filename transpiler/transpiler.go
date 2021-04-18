@@ -8,6 +8,7 @@ import (
 	goast "go/ast"
 	"go/parser"
 	"go/token"
+	"runtime/debug"
 	"strings"
 	"unicode"
 
@@ -508,7 +509,7 @@ func transpileToNode(node ast.Node, p *program.Program) (
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("error - panic : %#v", r)
+			err = fmt.Errorf("transpileToNode: error - panic : %#v. %s", r, string(debug.Stack()))
 		}
 	}()
 

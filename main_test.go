@@ -15,6 +15,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -151,12 +152,18 @@ func TestIntegrationScripts(t *testing.T) {
 			}
 
 			for i := 0; i < len(results)-1; i++ {
+				if strings.Contains(file, "assert.c") {
+					if strings.Contains(results[i+1], results[i]) {
+						continue
+					}
+				}
 				if results[i] != results[i+1] {
 					// Add addition debug information for lines like:
 					// build/tests/cast/main_test.go:195:1: expected '}', found 'type'
 					buildPrefix := buildFolder + "/tests/"
 					var output string
 					lines := strings.Split(results[i+1], "\n")
+					// only for test "assert.c"
 					amountSnippets := 0
 					for _, line := range lines {
 						line = strings.TrimSpace(line)
@@ -835,7 +842,8 @@ func TestWrongAST(t *testing.T) {
 	var i int
 	defer func() {
 		if r := recover(); r != nil {
-			t.Errorf("Panic is not acceptable for position: %v\n%+v", i, r)
+			t.Errorf("Panic is not acceptable for position: %v\n%+v: %s", i, r,
+				string(debug.Stack()))
 		}
 	}()
 
