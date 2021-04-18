@@ -415,14 +415,14 @@ int main()
     is_eq(case_inside_block(4), 4);
     is_eq(case_inside_block(5), 5);
 
-	diag("without parens");
-	{
-		int x = 0;
-		switch (x) 
-			case 0:
-				pass("ok");
-		(void)(x);
-	}
+    diag("without parens");
+    {
+        int x = 0;
+        switch (x)
+        case 0:
+            pass("ok");
+        (void)(x);
+    }
 
     done_testing();
 }

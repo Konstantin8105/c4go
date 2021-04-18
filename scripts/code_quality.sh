@@ -23,7 +23,8 @@ if [ "$1" == "-r" ]; then
 fi
 
 # Check go fmt first
-if [ -n "$(gofmt -l .)" ]; then
+# for all folders exclude testdata, vendor
+if [ -n "$(gofmt -l `find . -name  "*.go" | grep -v testdata | grep -v vendor`)" ]; then
     echo "Go code is not properly formatted. Use 'gofmt'."
     gofmt -d .
     exit 1
@@ -31,7 +32,7 @@ fi
 
 # Version of clang-format
 echo "Version of clang-format:"
-eval "$CLANG_FORMAT -version"
+eval "$CLANG_FORMAT --version"
 
 # Check clang-format for C test source files
 C_TEST_FILES=`ls ./tests/*.c ./tests/code_quality/*.c ./examples/*.c`

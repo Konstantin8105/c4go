@@ -177,33 +177,33 @@ void test_realloc()
     }
     {
         // from : https://www.geeksforgeeks.org/g-fact-66/
-       int* ptr = (int*)malloc(sizeof(int) * 2);
-       int* ptr_new;
+        int* ptr = (int*)malloc(sizeof(int) * 2);
+        int* ptr_new;
 
-       *ptr = 10;
-       *(ptr + 1) = 20;
+        *ptr = 10;
+        *(ptr + 1) = 20;
 
-       ptr_new = (int*)realloc(ptr, sizeof(int) * 3);
-       *(ptr_new + 2) = 30;
+        ptr_new = (int*)realloc(ptr, sizeof(int) * 3);
+        *(ptr_new + 2) = 30;
 
-       is_eq(*(ptr_new + 0), 10);
-       is_eq(*(ptr_new + 1), 20);
-       is_eq(*(ptr_new + 2), 30);
-   }
-   {
-       // from : https://www.tutorialspoint.com/c_standard_library/c_function_realloc.htm
-       char* str;
+        is_eq(*(ptr_new + 0), 10);
+        is_eq(*(ptr_new + 1), 20);
+        is_eq(*(ptr_new + 2), 30);
+    }
+    {
+        // from : https://www.tutorialspoint.com/c_standard_library/c_function_realloc.htm
+        char* str;
 
-       /* Initial memory allocation */
-       str = (char*)malloc(15);
-       strcpy(str, "tutorialspoint");
-       printf("String = %s\n", str);
+        /* Initial memory allocation */
+        str = (char*)malloc(15);
+        strcpy(str, "tutorialspoint");
+        printf("String = %s\n", str);
 
-       /* Reallocating memory */
-       str = (char*)realloc(str, 25);
-       strcat(str, ".com");
-       printf("String = %s\n", str);
-   }
+        /* Reallocating memory */
+        str = (char*)realloc(str, 25);
+        strcat(str, ".com");
+        printf("String = %s\n", str);
+    }
 }
 
 // calloc() works exactly the same as malloc() however the memory is zeroed out.
@@ -291,10 +291,10 @@ void b_search()
 {
     diag("bsearch");
 
-    int array[] = {0, 5, 10, 15, 20};
+    int array[] = { 0, 5, 10, 15, 20 };
     // With array of int
     int key_exist = 10;
-    int *res;
+    int* res;
 
     res = bsearch(&key_exist, array, 5, sizeof(int), compare);
     is_true(res == &(array[2]));
@@ -357,42 +357,42 @@ void test_atoi_post()
 // TODO:
 // void printbuffer (const char* pt, size_t max)
 // {
-  // int length;
-  // wchar_t dest;
-// 
-  // mblen (NULL, 0);         /* reset mblen */
-  // mbtowc (NULL, NULL, 0);  /* reset mbtowc */
-// 
-  // while (max>0) {
-    // length = mblen (pt, max);
-    // if (length<1) break;
-    // mbtowc(&dest,pt,length);
-    // printf ("[%lc]",dest);
-    // pt+=length; max-=length;
-  // }
+// int length;
+// wchar_t dest;
+//
+// mblen (NULL, 0);         /* reset mblen */
+// mbtowc (NULL, NULL, 0);  /* reset mbtowc */
+//
+// while (max>0) {
+// length = mblen (pt, max);
+// if (length<1) break;
+// mbtowc(&dest,pt,length);
+// printf ("[%lc]",dest);
+// pt+=length; max-=length;
 // }
-// 
+// }
+//
 // void test_mblen()
 // {
-  // const char str [] = "test string";
-  // printbuffer (str,sizeof(str));
+// const char str [] = "test string";
+// printbuffer (str,sizeof(str));
 // }
 
 // TODO:
 // void test_wctomb()
 // {
-  // const wchar_t str[] = L"wctomb example";
-  // const wchar_t* pt;
-  // char buffer [MB_CUR_MAX];
-  // int i,length;
-// 
-  // pt = str;
-  // while (*pt) {
-    // length = wctomb(buffer,*pt);
-    // if (length<1) break;
-    // for (i=0;i<length;++i) printf ("[%c]",buffer[i]);
-    // ++pt;
-  // }
+// const wchar_t str[] = L"wctomb example";
+// const wchar_t* pt;
+// char buffer [MB_CUR_MAX];
+// int i,length;
+//
+// pt = str;
+// while (*pt) {
+// length = wctomb(buffer,*pt);
+// if (length<1) break;
+// for (i=0;i<length;++i) printf ("[%c]",buffer[i]);
+// ++pt;
+// }
 // }
 
 int main()
@@ -690,8 +690,8 @@ int main()
     diag("b_search");
     b_search();
 
-	// test_mblen();
-	// test_wctomb();
+    // test_mblen();
+    // test_wctomb();
 
     // TODO:
     // diag("my_memrchr");

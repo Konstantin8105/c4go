@@ -455,7 +455,7 @@ int main()
         int i = 35;
         int o = ~(i);
         is_eq(o, -36);
-        is_eq(~ - 12, 11);
+        is_eq(~-12, 11);
     }
 
     diag("summ of bools");
@@ -699,26 +699,26 @@ int main()
         (void)pos;
         (void)ptr;
     }
-	{
-		diag("negative unsigned");
-		unsigned ux;
-		ux = 1;
-		is_eq(ux,1);
-		ux = -1;
-		is_eq(ux,4294967295);
-		ux = -1l;
-		is_eq(ux,4294967295);
-		ux = -1u;
-		is_eq(ux,4294967295);
-		ux = -1ll;
-		is_eq(ux,4294967295);
-	}
-	diag("simplificator");
-	{
-		char * s = "words";
-		int c = (unsigned char) *s++;
-		is_eq(c, 119);
-	}
+    {
+        diag("negative unsigned");
+        unsigned ux;
+        ux = 1;
+        is_eq(ux, 1);
+        ux = -1;
+        is_eq(ux, 4294967295);
+        ux = -1l;
+        is_eq(ux, 4294967295);
+        ux = -1u;
+        is_eq(ux, 4294967295);
+        ux = -1ll;
+        is_eq(ux, 4294967295);
+    }
+    diag("simplificator");
+    {
+        char* s = "words";
+        int c = (unsigned char)*s++;
+        is_eq(c, 119);
+    }
 
     done_testing();
 }

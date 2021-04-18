@@ -202,7 +202,7 @@ typedef struct st4a {
 
 typedef struct st4b {
     int st5b;
-} * const* st6b;
+}* const* st6b;
 
 struct st8 {
     int st9;
@@ -604,7 +604,7 @@ typedef struct {
     pointx x;
     int y;
 } Point2;
-const Point2 p2[] = { {.y = 4, .x = 5 } };
+const Point2 p2[] = { { .y = 4, .x = 5 } };
 const Point2* getPoint(int index)
 {
     return &(p2[index]);
@@ -736,19 +736,19 @@ void test_struct_with_func()
     is_eq(as[1].g, 46.);
 }
 
-struct bitstr{
-   unsigned int a : 1;
-   unsigned int b : 2;
+struct bitstr {
+    unsigned int a : 1;
+    unsigned int b : 2;
 };
 
 void test_struct_bit()
 {
-	diag("struct bit");
-	struct bitstr bs;
-	bs.a = 1;
-	bs.b = 2;
-	is_eq((int)(bs.a) , 1);
-	is_eq((int)(bs.b) , 2);
+    diag("struct bit");
+    struct bitstr bs;
+    bs.a = 1;
+    bs.b = 2;
+    is_eq((int)(bs.a), 1);
+    is_eq((int)(bs.b), 2);
 }
 
 int main()
@@ -842,7 +842,7 @@ int main()
         int x;
         int y;
     };
-    struct Point p = {.y = 2, .x = 3 };
+    struct Point p = { .y = 2, .x = 3 };
     is_eq(p.x, 3);
     is_eq(p.y, 2);
 
@@ -859,7 +859,8 @@ int main()
         } extCoord2;
 
         extCoord2 followingSteps[2] = {
-            {.possibleSteps2 = 1 }, {.possibleSteps2 = 1 },
+            { .possibleSteps2 = 1 },
+            { .possibleSteps2 = 1 },
         };
         is_eq(followingSteps[0].possibleSteps2, 1);
     }
@@ -875,7 +876,8 @@ int main()
         };
 
         struct extCoord followingSteps[2] = {
-            {.possibleSteps = 1 }, {.possibleSteps = 1 },
+            { .possibleSteps = 1 },
+            { .possibleSteps = 1 },
         };
         is_eq(followingSteps[0].possibleSteps, 1);
     }
@@ -1158,7 +1160,7 @@ int main()
     typedef_with_union();
     typedef_struct_with_typedef_union();
     test_struct_with_func();
-	test_struct_bit();
+    test_struct_bit();
 
     done_testing();
 }
