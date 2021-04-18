@@ -157,9 +157,9 @@ func atoll(str []byte, radix int) (int64, int) {
 	rx := ""
 	for i := 0; i < radix; i++ {
 		if i < 10 {
-			rx += string(48 + i)
+			rx += string(byte(48 + i))
 		} else {
-			rx += string(87 + i)
+			rx += string(byte(87 + i))
 		}
 	}
 	r := util.GetRegex(`^([+-]?[` + rx + `]+)`)
