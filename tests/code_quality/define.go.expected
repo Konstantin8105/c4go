@@ -1,0 +1,16 @@
+//
+//	Package - transpiled by c4go
+//
+//	If you have found any issues, please raise an issue at:
+//	https://github.com/Konstantin8105/c4go/
+//
+
+package code_quality
+
+// t - transpiled function from  C4GO/tests/code_quality/define.c:5
+func t() {
+	var a int32 = 1
+	printf([]byte("hello world\x00"))
+	var c int32 = a + 1
+	printf([]byte("%d\x00"), c)
+}

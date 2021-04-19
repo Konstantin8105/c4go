@@ -544,6 +544,114 @@ func TestMultifileTranspilation(t *testing.T) {
 	}
 }
 
+func TestBind(t *testing.T) {
+	cProgram := programOut{}
+
+	{
+		// create C object file
+		// gcc -c test.c
+		cmd := exec.Command("clang",
+			"-o", "./testdata/bind/test.o",
+			"-c", "./tests/bind/test.c",
+		)
+		cmd.Stdout = &cProgram.stdout
+		cmd.Stderr = &cProgram.stderr
+		err := cmd.Run()
+		if err != nil {
+			fmt.Fprintf(os.Stdout, "%v. %v\n", cProgram.stderr.String(), err)
+			return
+		}
+	}
+	{
+		// ar rc libtest.a test.o
+		cmd := exec.Command("ar", "rc",
+			"./testdata/bind/libtest.a",
+			"./testdata/bind/test.o",
+		)
+		cmd.Stdout = &cProgram.stdout
+		cmd.Stderr = &cProgram.stderr
+		err := cmd.Run()
+		if err != nil {
+			fmt.Fprintf(os.Stdout, "%v. %v\n", cProgram.stderr.String(), err)
+			return
+		}
+	}
+	{
+		// ranlib libtest.a
+		cmd := exec.Command("ranlib",
+			"./testdata/bind/libtest.a",
+		)
+		cmd.Stdout = &cProgram.stdout
+		cmd.Stderr = &cProgram.stderr
+		err := cmd.Run()
+		if err != nil {
+			fmt.Fprintf(os.Stdout, "%v. %v\n", cProgram.stderr.String(), err)
+			return
+		}
+	}
+	{
+		// gcc bind.c libtest.a
+		cmd := exec.Command("clang",
+			"-o", "./testdata/bind/a.out",
+			"./tests/bind/bind.c",
+			"./testdata/bind/libtest.a",
+		)
+		cmd.Stdout = &cProgram.stdout
+		cmd.Stderr = &cProgram.stderr
+		err := cmd.Run()
+		if err != nil {
+			fmt.Fprintf(os.Stdout, "%v. %v\n", cProgram.stderr.String(), err)
+			return
+		}
+	}
+	{
+		// output
+		cmd := exec.Command("./testdata/bind/a.out")
+		var buf bytes.Buffer
+		cmd.Stdout = &buf
+		cmd.Stderr = &cProgram.stderr
+		err := cmd.Run()
+		if err != nil {
+			fmt.Fprintf(os.Stdout, "%v. %v\n", cProgram.stderr.String(), err)
+			return
+		}
+		fmt.Println("::::::::", buf.String())
+	}
+
+	// create subfolders for test
+	subFolder := buildFolder + separator +
+		"bind" + separator
+
+	// Create build folder
+	err := os.MkdirAll(subFolder, os.ModePerm)
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
+	var args = DefaultProgramArgs()
+	args.inputFiles = []string{"./tests/bind/bind.c"}
+	args.outputFile = path.Join(subFolder, "main.go")
+	args.clangFlags = []string{"-Itests/bind", "./testdata/bind/libtest.a"}
+	args.packageName = "main"
+	args.verbose = true // Added for checking verbose mode
+
+	for _, state := range []ProgramState{StateAst, StateTranspile} {
+		args.state = state
+		err = Start(args)
+		if err != nil {
+			t.Errorf(err.Error())
+		}
+	}
+
+	// Run Go program
+	out, err := args.runGoTest("", []string{""})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fmt.Println(out)
+}
+
 func TestTrigraph(t *testing.T) {
 	// create subfolders for test
 	subFolder := buildFolder + separator +
