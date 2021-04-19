@@ -24,6 +24,9 @@ type DefinitionFunction struct {
 	// If function called, then true.
 	IsCalled bool
 
+	// If function without body, then true
+	HaveBody bool
+
 	// If function from some C standard library, then true.
 	IsCstdFunction bool
 	pntCstd        *stdFunction
@@ -490,6 +493,14 @@ func (p *Program) SetCalled(name string) {
 	}
 }
 
+func (p *Program) SetHaveBody(name string) {
+	f, ok := p.functionDefinitions[name]
+	if ok {
+		f.HaveBody = true
+		p.functionDefinitions[name] = f
+	}
+}
+
 func (p *Program) GetCstdFunction() (src string) {
 	for i := range p.functionDefinitions {
 		if !p.functionDefinitions[i].IsCalled {
@@ -531,6 +542,21 @@ func (p *Program) GetCstdFunction() (src string) {
 }
 
 func (p *Program) GetOutsideCalledFunctions() (ds []DefinitionFunction) {
+	for _, v := range p.functionDefinitions {
+		if v.IncludeFile == "" {
+			continue
+		}
+		if !p.PreprocessorFile.IsUserSource(v.IncludeFile) {
+			continue
+		}
+		if v.HaveBody {
+			continue
+		}
+		if !v.IsCalled {
+			continue
+		}
+		ds = append(ds, v)
+	}
 	for _, v := range p.functionDefinitions {
 		if v.IncludeFile == "" {
 			continue

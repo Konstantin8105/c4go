@@ -394,6 +394,7 @@ func transpileCallExpr(n *ast.CallExpr, p *program.Program) (
 			}
 		}
 	} else {
+
 		// type correction for definition function in
 		// package program
 		var ok bool

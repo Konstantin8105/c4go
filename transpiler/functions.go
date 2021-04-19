@@ -62,6 +62,8 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 		return
 	}
 
+	p.SetHaveBody(n.Name)
+
 	if len(n.Children()) == 0 {
 		return
 	}

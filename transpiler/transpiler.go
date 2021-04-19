@@ -22,7 +22,7 @@ var AddOutsideStruct bool
 
 // TranspileAST iterates through the Clang AST and builds a Go AST
 func TranspileAST(fileName, packageName string, withOutsideStructs bool,
-	p *program.Program, root ast.Node) (
+	p *program.Program, root ast.Node, clangFlags []string) (
 	source string, // result Go source
 	err error) {
 	// Start by parsing an empty file.
@@ -128,7 +128,7 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 	GetUnsafeConvertDecls(p)
 
 	// checking implementation for all called functions
-	bindHeader, bindCode := generateBinding(p)
+	bindHeader, bindCode := generateBinding(p, clangFlags)
 
 	// Add the imports after everything else so we can ensure that they are all
 	// placed at the top.
