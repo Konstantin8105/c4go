@@ -615,7 +615,7 @@ func TestBind(t *testing.T) {
 			fmt.Fprintf(os.Stdout, "%v. %v\n", cProgram.stderr.String(), err)
 			return
 		}
-		fmt.Println("::::::::", buf.String())
+		t.Log(buf.String())
 	}
 
 	// create subfolders for test
@@ -645,11 +645,10 @@ func TestBind(t *testing.T) {
 
 	// Run Go program
 	out, err := args.runGoTest("", []string{""})
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-
-	fmt.Println(out, err)
+	// 	if err != nil {
+	// 		t.Fatal(err)
+	// 	}
+	t.Logf("%s\n%v", out, err)
 }
 
 func TestTrigraph(t *testing.T) {
