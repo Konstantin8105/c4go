@@ -477,8 +477,8 @@ less vi.go
             stdlib.h	     34/37	        91.9%
             string.h	     21/24	        87.5%
               time.h	     14/15	        93.3%
-             wchar.h	      3/60	           5%
-            wctype.h	      0/21	           0%
+             wchar.h	     10/60	        16.7%
+            wctype.h	     20/21	        95.2%
 ```
 
 # Contributing
