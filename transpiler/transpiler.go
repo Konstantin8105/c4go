@@ -518,22 +518,6 @@ func transpileToNode(node ast.Node, p *program.Program) (
 		return transpileTranslationUnitDecl(p, n)
 	}
 
-	if fd, ok := node.(*ast.FunctionDecl); ok {
-		if d := p.GetFunctionDefinition(fd.Name); d == nil ||
-			p.PreprocessorFile.IsUserSource(d.IncludeFile) {
-
-			// create new definition
-			if _, _, f, r, err := util.ParseFunction(fd.Type); err == nil {
-				p.AddFunctionDefinition(program.DefinitionFunction{
-					Name:          fd.Name,
-					ReturnType:    r[0],
-					ArgumentTypes: f,
-					IncludeFile:   fd.Position().File,
-				})
-			}
-		}
-	}
-
 	if !AddOutsideStruct {
 		if node != nil {
 			if (!p.PreprocessorFile.IsUserSource(node.Position().File)) &&

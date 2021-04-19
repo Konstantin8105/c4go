@@ -14,10 +14,8 @@ Calculate warnings : ./testdata/ed
 		Go build : 7 warnings
 		Unsafe   : 165
 
-Calculate warnings in file: ./testdata/kilo/kilo.go
-		After transpiling : 0 warnings.
-		Go build : 0 warnings
-		Unsafe   : 17
+/home/konstantin/go/src/github.com/Konstantin8105/c4go/testdata/kilo/kilo.c:409:25: warning: implicit declaration of function 'editorRowHasOpenComment' is invalid in C99 [-Wimplicit-function-declaration]
+1 warning and 1 error generated.
 
 
 Calculate warnings in file: ./testdata/neateqn/neateqn.go
@@ -27,9 +25,13 @@ Calculate warnings in file: ./testdata/neateqn/neateqn.go
 
 Calculate warnings in file: ./testdata/neatmkfn/neatmkfn.go
 		After transpiling : 0 warnings.
-		Go build : 279 warnings
+		Go build : 19 warnings
 		Unsafe   : 139
 
+/home/konstantin/go/src/github.com/Konstantin8105/c4go/testdata/neatmail/pg.c:114:3: warning: implicit declaration of function 'msg_new' is invalid in C99 [-Wimplicit-function-declaration]
+/home/konstantin/go/src/github.com/Konstantin8105/c4go/testdata/neatmail/pg.c:137:17: warning: implicit declaration of function 'msg_reply' is invalid in C99 [-Wimplicit-function-declaration]
+/home/konstantin/go/src/github.com/Konstantin8105/c4go/testdata/neatmail/pg.c:147:19: warning: implicit declaration of function 'msg_forward' is invalid in C99 [-Wimplicit-function-declaration]
+3 warnings and 18 errors generated.
 
 
 Calculate warnings in file: ./testdata/neatrefer/neatrefer.go
@@ -46,43 +48,37 @@ Calculate warnings : ./testdata/nuklear/x11_opengl2.go
 		Go build : 12 warnings
 		Unsafe   : 1060
 
-Calculate warnings in file: ./testdata/neatroff/neatroff.go
-		After transpiling : 3 warnings.
-		Go build : 8 warnings
-		Unsafe   : 247
+/home/konstantin/go/src/github.com/Konstantin8105/c4go/testdata/neatroff/fmt.c:454:15: warning: absolute value function 'abs' given an argument of type 'long' but has parameter of type 'int' which may cause truncation of value [-Wabsolute-value]
+1 warning and 20 errors generated.
 
 Calculate warnings : ./testdata/redis/dict.go
 		After transpiling : 0 warnings.
-		Go build : 40 warnings
-		Unsafe   : 72
+		Go build : 53 warnings
+		Unsafe   : 76
 Calculate warnings : ./testdata/redis/linenoise.go
 		After transpiling : 0 warnings.
 		Go build : 2 warnings
 		Unsafe   : 21
 Calculate warnings : ./testdata/redis/redis_cli.go
 		After transpiling : 0 warnings.
-		Go build : 79 warnings
-		Unsafe   : 264
+		Go build : 3 warnings
+		Unsafe   : 313
 Calculate warnings : ./testdata/redis/sds.go
 		After transpiling : 0 warnings.
-		Go build : 43 warnings
-		Unsafe   : 117
+		Go build : 8 warnings
+		Unsafe   : 119
 
 
-Calculate warnings in file: ./testdata/triangle/triangle.go
-		After transpiling : 2 warnings.
-		Go build : 585 warnings
-		Unsafe   : 1414
 
 Calculate warnings in file: ./testdata/progress/progress.go
 		After transpiling : 0 warnings.
-		Go build : 39 warnings
-		Unsafe   : 0
+		Go build : 16 warnings
+		Unsafe   : 6
 
 Calculate warnings in file: ./testdata/SQLITE/sqlite.go
 		After transpiling : 1 warnings.
 		Go build : 1 warnings
-		Unsafe   : 2351
+		Unsafe   : 2352
 
 Calculate warnings in file: ./testdata/tiny-web-server/tiny-web-server.go
 		After transpiling : 0 warnings.
@@ -91,7 +87,7 @@ Calculate warnings in file: ./testdata/tiny-web-server/tiny-web-server.go
 
 Calculate warnings in file: testdata/vorbis/vorbis.go
 		After transpiling : 0 warnings.
-		Go build : 21 warnings
+		Go build : 18 warnings
 		Unsafe   : 127
 
 Calculate warnings in file: ./testdata/easymesh/easymesh.go

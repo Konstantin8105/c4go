@@ -546,28 +546,17 @@ func (p *Program) GetOutsideCalledFunctions() (ds []DefinitionFunction) {
 		if v.IncludeFile == "" {
 			continue
 		}
-		if !p.PreprocessorFile.IsUserSource(v.IncludeFile) {
-			continue
-		}
-		if v.HaveBody {
-			continue
-		}
 		if !v.IsCalled {
 			continue
 		}
-		ds = append(ds, v)
-	}
-	for _, v := range p.functionDefinitions {
-		if v.IncludeFile == "" {
-			continue
-		}
-		if p.PreprocessorFile.IsUserSource(v.IncludeFile) {
+		if !v.HaveBody {
+			ds = append(ds, v)
 			continue
 		}
 		if v.IsCstdFunction {
 			continue
 		}
-		if !v.IsCalled {
+		if p.PreprocessorFile.IsUserSource(v.IncludeFile) {
 			continue
 		}
 		ds = append(ds, v)

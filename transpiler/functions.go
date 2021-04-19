@@ -51,25 +51,6 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 		}
 	}()
 
-	var haveCompound bool
-	for _, ch := range n.Children() {
-		if _, ok := ch.(*ast.CompoundStmt); ok {
-			haveCompound = true
-			break
-		}
-	}
-	if !haveCompound {
-		return
-	}
-
-	p.SetHaveBody(n.Name)
-
-	if len(n.Children()) == 0 {
-		return
-	}
-
-	var body *goast.BlockStmt
-
 	// This is set at the start of the function declaration so when the
 	// ReturnStmt comes alone it will know what the current function is, and
 	// therefore be able to lookup what the real return type should be. I'm sure
@@ -102,8 +83,26 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 			ReturnType:    r[0],
 			ArgumentTypes: f,
 			Substitution:  "",
+			IncludeFile:   n.Pos.File,
 		})
 	}
+
+	var haveCompound bool
+	for _, ch := range n.Children() {
+		if _, ok := ch.(*ast.CompoundStmt); ok {
+			haveCompound = true
+			break
+		}
+	}
+	if !haveCompound {
+		return
+	}
+
+	if len(n.Children()) == 0 {
+		return
+	}
+
+	var body *goast.BlockStmt
 
 	// If the function has a direct substitute in Go we do not want to
 	// output the C definition of it.
@@ -114,6 +113,7 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 	// curly brackets).
 	functionBody := getFunctionBody(n)
 	if functionBody != nil {
+		p.SetHaveBody(n.Name)
 		var pre, post []goast.Stmt
 		body, pre, post, err = transpileToBlockStmt(functionBody, p)
 		if err != nil || len(pre) > 0 || len(post) > 0 {

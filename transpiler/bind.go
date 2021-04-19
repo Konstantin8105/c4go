@@ -33,7 +33,7 @@ func generateBinding(p *program.Program, clangFlags []string) (bindHeader, bindC
 			if strings.HasPrefix(clangFlags[i], "-I") {
 				cflags[clangFlags[i]] = true
 			}
-			if strings.HasPrefix(clangFlags[i], "-L") ||  strings.HasPrefix(clangFlags[i], "-l") {
+			if strings.HasPrefix(clangFlags[i], "-L") || strings.HasPrefix(clangFlags[i], "-l") {
 				ldflags[clangFlags[i]] = true
 			}
 		}
