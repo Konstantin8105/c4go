@@ -468,17 +468,17 @@ less vi.go
             iso646.h	          	    undefined
             limits.h	          	    undefined
             locale.h	       3/3	         100%
-              math.h	     22/23	        95.7%
+              math.h	     22/22	         100%
             setjmp.h	       0/3	           0%
             signal.h	       3/3	         100%
             stdarg.h	       4/4	         100%
-            stddef.h	       3/4	          75%
+            stddef.h	       4/4	         100%
              stdio.h	     37/41	        90.2%
-            stdlib.h	     31/37	        83.8%
+            stdlib.h	     34/37	        91.9%
             string.h	     21/24	        87.5%
               time.h	     14/15	        93.3%
-             wchar.h	      3/60	           5%
-            wctype.h	      0/21	           0%
+             wchar.h	     10/60	        16.7%
+            wctype.h	     20/21	        95.2%
 ```
 
 # Contributing

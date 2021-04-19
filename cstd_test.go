@@ -91,7 +91,7 @@ var cstd = map[string][]string{
 		"localeconv",
 	},
 	"math.h": {
-		"abs",
+		// "abs",
 		"acos",
 		// c++ "acosh",
 		"asin",

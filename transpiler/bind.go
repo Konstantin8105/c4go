@@ -92,6 +92,9 @@ func getBindFunction(p *program.Program, d program.DefinitionFunction) (code str
 	var fl goast.FieldList
 	var argResolvedType []string
 	for i := range d.ArgumentTypes {
+		if d.ArgumentTypes[i] == "void"{
+			continue
+		}
 		if i == len(d.ArgumentTypes)-1 && d.ArgumentTypes[i] == "..." {
 			argResolvedType[len(argResolvedType)-1] =
 				"..." + argResolvedType[len(argResolvedType)-1]

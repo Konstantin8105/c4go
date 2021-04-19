@@ -397,7 +397,7 @@ void test_atoi_post()
 
 int main()
 {
-    plan(767);
+    plan(771);
 
     struct_with_define();
 
@@ -696,6 +696,18 @@ int main()
     // TODO:
     // diag("my_memrchr");
     // test_my_memrchr();
+
+    diag("EXIT_FAILURE");
+    is_eq(EXIT_FAILURE, 1);
+
+    diag("EXIT_SUCCESS");
+    is_eq(EXIT_SUCCESS, 0);
+
+    diag("MB_CUR_MAX");
+    is_eq(MB_CUR_MAX, 1);
+
+    diag("RAND_MAX");
+    is_eq(RAND_MAX, 2147483647);
 
     done_testing();
 }

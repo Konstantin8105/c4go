@@ -43,12 +43,24 @@ void test_ptrdiff_t()
     }
 }
 
+void test_sizet()
+{
+    diag("size_t");
+    const size_t N = 100;
+    int numbers[N];
+    for (size_t ndx = 0; ndx < N; ++ndx)
+        numbers[ndx] = ndx;
+    size_t size = sizeof numbers;
+    is_eq(size, 400);
+}
+
 int main()
 {
-    plan(7);
+    plan(8);
 
     test_offset();
     test_ptrdiff_t();
+    test_sizet();
 
     done_testing();
 }
