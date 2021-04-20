@@ -3,6 +3,7 @@ package util
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"unicode"
@@ -404,6 +405,13 @@ func GenerateCorrectType(name string) (result string) {
 	// Output(inside) : '(anonymous union at tests/union.c:46:3)'
 	inside := string(([]byte(name))[index : last+1])
 
+	if gopath := os.Getenv("GOPATH"); gopath != "" {
+		inside = strings.Replace(inside, gopath, "GOPATH", -1)
+	}
+	if ind := strings.LastIndex(inside, ":"); -1 != ind {
+		inside = inside[:ind]
+	}
+
 	// change unacceptable C name letters
 	inside = strings.Replace(inside, "(", "_", -1)
 	inside = strings.Replace(inside, ")", "_", -1)
@@ -413,7 +421,9 @@ func GenerateCorrectType(name string) (result string) {
 	inside = strings.Replace(inside, "-", "_", -1)
 	inside = strings.Replace(inside, "\\", "_", -1)
 	inside = strings.Replace(inside, ".", "_", -1)
+	inside = strings.Replace(inside, "__", "_", -1)
 	out := string(([]byte(name))[0:index]) + inside + string(([]byte(name))[last+1:])
+
 
 	// For case:
 	// struct siginfo_t::(anonymous at /usr/include/x86_64-linux-gnu/bits/siginfo.h:119:2)
