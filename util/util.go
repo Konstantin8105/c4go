@@ -424,7 +424,6 @@ func GenerateCorrectType(name string) (result string) {
 	inside = strings.Replace(inside, "__", "_", -1)
 	out := string(([]byte(name))[0:index]) + inside + string(([]byte(name))[last+1:])
 
-
 	// For case:
 	// struct siginfo_t::(anonymous at /usr/include/x86_64-linux-gnu/bits/siginfo.h:119:2)
 	// we see '::' before 'anonymous' word

@@ -19,7 +19,6 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 		}
 	}()
 
-
 	// stack check
 	for i := range sizeofStack {
 		if sizeofStack[i] == cType {
