@@ -518,7 +518,7 @@ func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP
 
 	var source string
 	source, err = transpiler.TranspileAST(args.outputFile, args.packageName, args.outsideStructs,
-		p, tree[0].(ast.Node))
+		p, tree[0].(ast.Node), args.clangFlags)
 	if err != nil {
 		return fmt.Errorf("cannot transpile AST : %v", err)
 	}

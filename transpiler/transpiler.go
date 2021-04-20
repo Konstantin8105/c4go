@@ -22,7 +22,7 @@ var AddOutsideStruct bool
 
 // TranspileAST iterates through the Clang AST and builds a Go AST
 func TranspileAST(fileName, packageName string, withOutsideStructs bool,
-	p *program.Program, root ast.Node) (
+	p *program.Program, root ast.Node, clangFlags []string) (
 	source string, // result Go source
 	err error) {
 	// Start by parsing an empty file.
@@ -128,7 +128,7 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 	GetUnsafeConvertDecls(p)
 
 	// checking implementation for all called functions
-	bindHeader, bindCode := generateBinding(p)
+	bindHeader, bindCode := generateBinding(p, clangFlags)
 
 	// Add the imports after everything else so we can ensure that they are all
 	// placed at the top.
@@ -503,6 +503,10 @@ func transpileToNode(node ast.Node, p *program.Program) (
 		}
 	}()
 
+	if node == nil {
+		return
+	}
+
 	defer func() {
 		decls = nilFilterDecl(decls)
 	}()
@@ -513,33 +517,19 @@ func transpileToNode(node ast.Node, p *program.Program) (
 		}
 	}()
 
-	switch n := node.(type) {
-	case *ast.TranslationUnitDecl:
+	if n, ok := node.(*ast.TranslationUnitDecl); ok {
 		return transpileTranslationUnitDecl(p, n)
 	}
 
-	if fd, ok := node.(*ast.FunctionDecl); ok {
-		if d := p.GetFunctionDefinition(fd.Name); d == nil ||
-			p.PreprocessorFile.IsUserSource(d.IncludeFile) {
-
-			// create new definition
-			if _, _, f, r, err := util.ParseFunction(fd.Type); err == nil {
-				p.AddFunctionDefinition(program.DefinitionFunction{
-					Name:          fd.Name,
-					ReturnType:    r[0],
-					ArgumentTypes: f,
-					IncludeFile:   fd.Position().File,
-				})
-			}
-		}
-	}
-
-	if !AddOutsideStruct {
-		if node != nil {
-			if (!p.PreprocessorFile.IsUserSource(node.Position().File)) &&
-				(!strings.HasSuffix(node.Position().File, "stdint.h")) {
+	if !AddOutsideStruct &&
+		!p.PreprocessorFile.IsUserSource(node.Position().File) &&
+		!strings.HasSuffix(node.Position().File, "stdint.h") {
+		if fd, ok := node.(*ast.FunctionDecl); ok {
+			if getFunctionBody(fd) != nil {
 				return
 			}
+		} else {
+			return
 		}
 	}
 

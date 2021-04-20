@@ -291,10 +291,13 @@ func (f FilePP) GetIncludeFiles() []IncludeHeader {
 // IsUserSource get is it source from user
 func (f FilePP) IsUserSource(in string) bool {
 	for i := range f.includes {
-		if strings.Contains(in, f.includes[i].HeaderName) &&
-			f.includes[i].IsUserSource {
-			return true
+		if !f.includes[i].IsUserSource {
+			continue
 		}
+		if !strings.Contains(in, f.includes[i].HeaderName) {
+			continue
+		}
+		return true
 	}
 	return false
 }

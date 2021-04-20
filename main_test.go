@@ -545,6 +545,11 @@ func TestMultifileTranspilation(t *testing.T) {
 }
 
 func TestBind(t *testing.T) {
+
+	if err := os.MkdirAll("./testdata/bind", os.ModePerm); err != nil {
+		t.Fatal(err)
+	}
+
 	cProgram := programOut{}
 
 	{
@@ -604,6 +609,7 @@ func TestBind(t *testing.T) {
 			return
 		}
 	}
+	var cOut string
 	{
 		// output
 		cmd := exec.Command("./testdata/bind/a.out")
@@ -616,6 +622,7 @@ func TestBind(t *testing.T) {
 			return
 		}
 		t.Log(buf.String())
+		cOut = buf.String()
 	}
 
 	// create subfolders for test
@@ -631,7 +638,7 @@ func TestBind(t *testing.T) {
 	var args = DefaultProgramArgs()
 	args.inputFiles = []string{"./tests/bind/bind.c"}
 	args.outputFile = path.Join(subFolder, "main.go")
-	args.clangFlags = []string{"-Itests/bind", "./testdata/bind/libtest.a"}
+	args.clangFlags = []string{"-I./test/bind", "-L.", "-ltest"}
 	args.packageName = "main"
 	args.verbose = true // Added for checking verbose mode
 
@@ -643,12 +650,20 @@ func TestBind(t *testing.T) {
 		}
 	}
 
+	if d, err := ioutil.ReadFile("testdata/bind/main.go"); err != nil {
+		t.Fatal(err)
+	} else {
+		t.Log(string(d))
+	}
+
 	// Run Go program
+
 	out, err := args.runGoTest("", []string{""})
-	// 	if err != nil {
-	// 		t.Fatal(err)
-	// 	}
-	t.Logf("%s\n%v", out, err)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("%s\n%s", out, cOut)
+	// TODO : cannot view go results, but in console - all is ok
 }
 
 func TestTrigraph(t *testing.T) {

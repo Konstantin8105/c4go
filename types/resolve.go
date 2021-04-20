@@ -127,12 +127,15 @@ var ToVoid = "ToVoid"
 //    transpiler to step over type errors and put something as a placeholder
 //    until a more suitable solution is found for those cases.
 func ResolveType(p *program.Program, s string) (resolveResult string, err error) {
-	defer func() {
-		resolveResult = strings.TrimSpace(resolveResult)
-		if err != nil {
-			err = fmt.Errorf("cannot resolve type '%s' : %v", s, err)
-		}
-	}()
+	{
+		input := s
+		defer func() {
+			resolveResult = strings.TrimSpace(resolveResult)
+			if err != nil {
+				err = fmt.Errorf("cannot resolve type '%s' : %v", input, err)
+			}
+		}()
+	}
 
 	if strings.Contains(s, ":") {
 		return "interface{}", errors.New("probably an incorrect type translation 0")
