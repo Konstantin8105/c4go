@@ -12,6 +12,20 @@ import (
 func transpileTranslationUnitDecl(p *program.Program, n *ast.TranslationUnitDecl) (
 	decls []goast.Decl, err error) {
 
+	// childs := n.Children()
+	// 	et := errors.New("transpileTranslationUnitDecl")
+	// 	for i := range childs {
+	// 		ds, err := transpileToNode(childs[i], p)
+	// 		if err != nil {
+	// 			et.Add(err)
+	// 			continue
+	// 		}
+	// 		decls = append(decls, ds...)
+	// 	}
+	// 	if et.IsError() {
+	// 		err = et
+	// 	}
+
 	// create name for anonymous ast.RecordDecl
 	for i := 0; i < len(n.Children()); i++ {
 		presentNode := n.Children()[i]

@@ -87,20 +87,25 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 		})
 	}
 
-	var haveCompound bool
-	for _, ch := range n.Children() {
-		if _, ok := ch.(*ast.CompoundStmt); ok {
-			haveCompound = true
-			break
-		}
-	}
-	if !haveCompound {
+
+	if n.IsExtern {
 		return
 	}
 
-	if len(n.Children()) == 0 {
-		return
-	}
+	// 	var haveCompound bool
+	// 	for _, ch := range n.Children() {
+	// 		if _, ok := ch.(*ast.CompoundStmt); ok {
+	// 			haveCompound = true
+	// 			break
+	// 		}
+	// 	}
+	// 	if !haveCompound {
+	// 		return
+	// 	}
+	//
+	// 	if len(n.Children()) == 0 {
+	// 		return
+	// 	}
 
 	var body *goast.BlockStmt
 
@@ -112,16 +117,17 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 	// is a CompoundStmt (since it is not valid to have a function body without
 	// curly brackets).
 	functionBody := getFunctionBody(n)
-	if functionBody != nil {
-		p.SetHaveBody(n.Name)
-		var pre, post []goast.Stmt
-		body, pre, post, err = transpileToBlockStmt(functionBody, p)
-		if err != nil || len(pre) > 0 || len(post) > 0 {
-			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("not correct result in function %s body: err = %v",
-					n.Name, err), n))
-			err = nil // Error is ignored
-		}
+	if functionBody == nil {
+		return
+	}
+	p.SetHaveBody(n.Name)
+	var pre, post []goast.Stmt
+	body, pre, post, err = transpileToBlockStmt(functionBody, p)
+	if err != nil || len(pre) > 0 || len(post) > 0 {
+		p.AddMessage(p.GenerateWarningMessage(
+			fmt.Errorf("not correct result in function %s body: err = %v",
+				n.Name, err), n))
+		err = nil // Error is ignored
 	}
 
 	if p.IncludeHeaderIsExists("stdlib.h") && n.Name == "main" {
@@ -131,120 +137,121 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 		p.AddImport("github.com/Konstantin8105/c4go/noarch")
 	}
 
-	if functionBody != nil {
-		// If verbose mode is on we print the name of the function as a comment
-		// immediately to stdout. This will appear at the top of the program but
-		// make it much easier to diagnose when the transpiler errors.
-		if p.Verbose {
-			fmt.Fprintf(os.Stdout, "// Function: %s(%s)\n", f.Name,
-				strings.Join(f.ArgumentTypes, ", "))
-		}
+	// if functionBody != nil {
 
-		var fieldList = &goast.FieldList{}
-		fieldList, err = getFieldList(p, n,
-			p.GetFunctionDefinition(n.Name).ArgumentTypes)
-		if err != nil {
-			return
-		}
-
-		t, err := types.ResolveType(p, f.ReturnType)
-		p.AddMessage(p.GenerateWarningMessage(err, n))
-
-		if p.Function != nil && p.Function.Name == "main" {
-			// main() function does not have a return type.
-			t = ""
-
-			// This collects statements that will be placed at the top of
-			// (before any other code) in main().
-			prependStmtsInMain := []goast.Stmt{}
-
-			// In Go, the main() function does not take the system arguments.
-			// Instead they are accessed through the os package. We create new
-			// variables in the main() function (if needed), immediately after
-			// the __init() for these variables.
-			if len(fieldList.List) > 0 {
-				p.AddImport("os")
-
-				prependStmtsInMain = append(
-					prependStmtsInMain,
-					&goast.AssignStmt{
-						Lhs: []goast.Expr{fieldList.List[0].Names[0]},
-						Tok: token.DEFINE,
-						Rhs: []goast.Expr{
-							&goast.CallExpr{
-								Fun: goast.NewIdent("int32"),
-								Args: []goast.Expr{
-									util.NewCallExpr("len", goast.NewIdent("os.Args")),
-								},
-							},
-						},
-					},
-				)
-			}
-
-			if len(fieldList.List) > 1 {
-				prependStmtsInMain = append(
-					prependStmtsInMain,
-					&goast.AssignStmt{
-						Lhs: []goast.Expr{fieldList.List[1].Names[0]},
-						Tok: token.DEFINE,
-						Rhs: []goast.Expr{&goast.CompositeLit{Type: util.NewTypeIdent("[][]byte")}},
-					},
-					&goast.RangeStmt{
-						Key:   goast.NewIdent("_"),
-						Value: util.NewIdent("argvSingle"),
-						Tok:   token.DEFINE,
-						X:     goast.NewIdent("os.Args"),
-						Body: &goast.BlockStmt{
-							List: []goast.Stmt{
-								&goast.AssignStmt{
-									Lhs: []goast.Expr{fieldList.List[1].Names[0]},
-									Tok: token.ASSIGN,
-									Rhs: []goast.Expr{util.NewCallExpr(
-										"append",
-										fieldList.List[1].Names[0],
-										util.NewCallExpr("[]byte", util.NewIdent("argvSingle")),
-									)},
-								},
-							},
-						},
-					})
-			}
-
-			// Prepend statements for main().
-			body.List = append(prependStmtsInMain, body.List...)
-
-			// The main() function does not have arguments or a return value.
-			fieldList = &goast.FieldList{}
-		}
-
-		// Each function MUST have "ReturnStmt",
-		// except function without return type
-		var addReturnName bool
-		if len(body.List) > 0 {
-			last := body.List[len(body.List)-1]
-			if _, ok := last.(*goast.ReturnStmt); !ok && t != "" {
-				body.List = append(body.List, &goast.ReturnStmt{})
-				addReturnName = true
-			}
-		}
-
-		// For functions without return type - no need add return at
-		// the end of body
-		if p.GetFunctionDefinition(n.Name).ReturnType == "void" {
-			if len(body.List) > 0 {
-				if _, ok := (body.List[len(body.List)-1]).(*goast.ReturnStmt); ok {
-					body.List = body.List[:len(body.List)-1]
-				}
-			}
-		}
-
-		decls = append(decls, &goast.FuncDecl{
-			Name: util.NewIdent(n.Name),
-			Type: util.NewFuncType(fieldList, t, addReturnName),
-			Body: body,
-		})
+	// If verbose mode is on we print the name of the function as a comment
+	// immediately to stdout. This will appear at the top of the program but
+	// make it much easier to diagnose when the transpiler errors.
+	if p.Verbose {
+		fmt.Fprintf(os.Stdout, "// Function: %s(%s)\n", f.Name,
+			strings.Join(f.ArgumentTypes, ", "))
 	}
+
+	var fieldList = &goast.FieldList{}
+	fieldList, err = getFieldList(p, n,
+		p.GetFunctionDefinition(n.Name).ArgumentTypes)
+	if err != nil {
+		return
+	}
+
+	t, err := types.ResolveType(p, f.ReturnType)
+	p.AddMessage(p.GenerateWarningMessage(err, n))
+
+	if p.Function != nil && p.Function.Name == "main" {
+		// main() function does not have a return type.
+		t = ""
+
+		// This collects statements that will be placed at the top of
+		// (before any other code) in main().
+		prependStmtsInMain := []goast.Stmt{}
+
+		// In Go, the main() function does not take the system arguments.
+		// Instead they are accessed through the os package. We create new
+		// variables in the main() function (if needed), immediately after
+		// the __init() for these variables.
+		if len(fieldList.List) > 0 {
+			p.AddImport("os")
+
+			prependStmtsInMain = append(
+				prependStmtsInMain,
+				&goast.AssignStmt{
+					Lhs: []goast.Expr{fieldList.List[0].Names[0]},
+					Tok: token.DEFINE,
+					Rhs: []goast.Expr{
+						&goast.CallExpr{
+							Fun: goast.NewIdent("int32"),
+							Args: []goast.Expr{
+								util.NewCallExpr("len", goast.NewIdent("os.Args")),
+							},
+						},
+					},
+				},
+			)
+		}
+
+		if len(fieldList.List) > 1 {
+			prependStmtsInMain = append(
+				prependStmtsInMain,
+				&goast.AssignStmt{
+					Lhs: []goast.Expr{fieldList.List[1].Names[0]},
+					Tok: token.DEFINE,
+					Rhs: []goast.Expr{&goast.CompositeLit{Type: util.NewTypeIdent("[][]byte")}},
+				},
+				&goast.RangeStmt{
+					Key:   goast.NewIdent("_"),
+					Value: util.NewIdent("argvSingle"),
+					Tok:   token.DEFINE,
+					X:     goast.NewIdent("os.Args"),
+					Body: &goast.BlockStmt{
+						List: []goast.Stmt{
+							&goast.AssignStmt{
+								Lhs: []goast.Expr{fieldList.List[1].Names[0]},
+								Tok: token.ASSIGN,
+								Rhs: []goast.Expr{util.NewCallExpr(
+									"append",
+									fieldList.List[1].Names[0],
+									util.NewCallExpr("[]byte", util.NewIdent("argvSingle")),
+								)},
+							},
+						},
+					},
+				})
+		}
+
+		// Prepend statements for main().
+		body.List = append(prependStmtsInMain, body.List...)
+
+		// The main() function does not have arguments or a return value.
+		fieldList = &goast.FieldList{}
+	}
+
+	// Each function MUST have "ReturnStmt",
+	// except function without return type
+	var addReturnName bool
+	if len(body.List) > 0 {
+		last := body.List[len(body.List)-1]
+		if _, ok := last.(*goast.ReturnStmt); !ok && t != "" {
+			body.List = append(body.List, &goast.ReturnStmt{})
+			addReturnName = true
+		}
+	}
+
+	// For functions without return type - no need add return at
+	// the end of body
+	if p.GetFunctionDefinition(n.Name).ReturnType == "void" {
+		if len(body.List) > 0 {
+			if _, ok := (body.List[len(body.List)-1]).(*goast.ReturnStmt); ok {
+				body.List = body.List[:len(body.List)-1]
+			}
+		}
+	}
+
+	decls = append(decls, &goast.FuncDecl{
+		Name: util.NewIdent(n.Name),
+		Type: util.NewFuncType(fieldList, t, addReturnName),
+		Body: body,
+	})
+	//}
 
 	err = nil
 	return

@@ -513,15 +513,17 @@ func transpileToNode(node ast.Node, p *program.Program) (
 		}
 	}()
 
-	switch n := node.(type) {
-	case *ast.TranslationUnitDecl:
+	if n, ok := node.(*ast.TranslationUnitDecl); ok {
 		return transpileTranslationUnitDecl(p, n)
 	}
 
-	if !AddOutsideStruct {
-		if node != nil {
-			if (!p.PreprocessorFile.IsUserSource(node.Position().File)) &&
-				(!strings.HasSuffix(node.Position().File, "stdint.h")) {
+	if !AddOutsideStruct && node != nil {
+		if (!p.PreprocessorFile.IsUserSource(node.Position().File)) &&
+			(!strings.HasSuffix(node.Position().File, "stdint.h")) {
+			if _, ok := node.(*ast.TypedefDecl); ok {
+				return
+			}
+			if _, ok := node.(*ast.RecordDecl); ok {
 				return
 			}
 		}
