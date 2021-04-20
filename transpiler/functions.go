@@ -65,7 +65,7 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 
 	// Always register the new function. Only from this point onwards will
 	// we be allowed to refer to the function.
-	if p.GetFunctionDefinition(n.Name) == nil {
+	define := func() (err error) {
 		var pr string
 		var f, r []string
 		pr, _, f, r, err = util.ParseFunction(n.Type)
@@ -85,10 +85,20 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 			Substitution:  "",
 			IncludeFile:   n.Pos.File,
 		})
+		return
 	}
 
+	if p.GetFunctionDefinition(n.Name) == nil {
+		if err = define(); err != nil {
+			return
+		}
+	}
 
 	if n.IsExtern {
+		return
+	}
+
+	if err = define(); err != nil {
 		return
 	}
 
@@ -154,8 +164,14 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 		return
 	}
 
+	// return type
+
 	t, err := types.ResolveType(p, f.ReturnType)
-	p.AddMessage(p.GenerateWarningMessage(err, n))
+	if err != nil {
+		err = fmt.Errorf("ReturnType: %s. %v", f.ReturnType, err)
+		p.AddMessage(p.GenerateWarningMessage(err, n))
+		err = nil
+	}
 
 	if p.Function != nil && p.Function.Name == "main" {
 		// main() function does not have a return type.
@@ -270,7 +286,10 @@ func getFieldList(p *program.Program, f *ast.FunctionDecl, fieldTypes []string) 
 		n := f.Children()[i]
 		if v, ok := n.(*ast.ParmVarDecl); ok {
 			t, err := types.ResolveType(p, fieldTypes[i])
-			p.AddMessage(p.GenerateWarningMessage(err, f))
+			if err != nil {
+				err = fmt.Errorf("FieldList type: %s. %v", fieldTypes[i], err)
+				p.AddMessage(p.GenerateWarningMessage(err, f))
+			}
 
 			if len(t) > 0 {
 				r = append(r, &goast.Field{

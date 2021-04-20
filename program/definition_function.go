@@ -385,6 +385,7 @@ func (p *Program) GetFunctionDefinition(functionName string) *DefinitionFunction
 func (p *Program) AddFunctionDefinition(f DefinitionFunction) {
 	p.loadFunctionDefinitions()
 
+	f.ReturnType = strings.TrimSpace(f.ReturnType)
 	p.functionDefinitions[f.Name] = f
 }
 

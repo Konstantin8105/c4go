@@ -520,10 +520,7 @@ func transpileToNode(node ast.Node, p *program.Program) (
 	if !AddOutsideStruct && node != nil {
 		if (!p.PreprocessorFile.IsUserSource(node.Position().File)) &&
 			(!strings.HasSuffix(node.Position().File, "stdint.h")) {
-			if _, ok := node.(*ast.TypedefDecl); ok {
-				return
-			}
-			if _, ok := node.(*ast.RecordDecl); ok {
+			if _, ok := node.(*ast.FunctionDecl); !ok {
 				return
 			}
 		}
