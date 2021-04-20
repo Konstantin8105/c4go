@@ -98,9 +98,6 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 		return
 	}
 
-	if err = define(); err != nil {
-		return
-	}
 
 	// 	var haveCompound bool
 	// 	for _, ch := range n.Children() {
@@ -117,11 +114,6 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 	// 		return
 	// 	}
 
-	var body *goast.BlockStmt
-
-	// If the function has a direct substitute in Go we do not want to
-	// output the C definition of it.
-	f := p.GetFunctionDefinition(n.Name)
 
 	// Test if the function has a body. This is identified by a child node that
 	// is a CompoundStmt (since it is not valid to have a function body without
@@ -130,9 +122,17 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 	if functionBody == nil {
 		return
 	}
+
+	if err = define(); err != nil {
+		return
+	}
+
+	// If the function has a direct substitute in Go we do not want to
+	// output the C definition of it.
+	f := p.GetFunctionDefinition(n.Name)
+
 	p.SetHaveBody(n.Name)
-	var pre, post []goast.Stmt
-	body, pre, post, err = transpileToBlockStmt(functionBody, p)
+	body, pre, post, err := transpileToBlockStmt(functionBody, p)
 	if err != nil || len(pre) > 0 || len(post) > 0 {
 		p.AddMessage(p.GenerateWarningMessage(
 			fmt.Errorf("not correct result in function %s body: err = %v",

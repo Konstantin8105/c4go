@@ -503,6 +503,10 @@ func transpileToNode(node ast.Node, p *program.Program) (
 		}
 	}()
 
+	if node == nil {
+		return
+	}
+
 	defer func() {
 		decls = nilFilterDecl(decls)
 	}()
@@ -517,13 +521,10 @@ func transpileToNode(node ast.Node, p *program.Program) (
 		return transpileTranslationUnitDecl(p, n)
 	}
 
-	if !AddOutsideStruct && node != nil {
-		if (!p.PreprocessorFile.IsUserSource(node.Position().File)) &&
-			(!strings.HasSuffix(node.Position().File, "stdint.h")) {
-			if _, ok := node.(*ast.FunctionDecl); !ok {
-				return
-			}
-		}
+	if !AddOutsideStruct &&
+		!p.PreprocessorFile.IsUserSource(node.Position().File) &&
+		!strings.HasSuffix(node.Position().File, "stdint.h") {
+		return
 	}
 
 	defer func() {
