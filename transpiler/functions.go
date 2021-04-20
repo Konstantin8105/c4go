@@ -272,14 +272,16 @@ func getFieldList(p *program.Program, f *ast.FunctionDecl, fieldTypes []string) 
 			if err != nil {
 				err = fmt.Errorf("FieldList type: %s. %v", fieldTypes[i], err)
 				p.AddMessage(p.GenerateWarningMessage(err, f))
+				err = nil // ignore error
 			}
 
-			if len(t) > 0 {
-				r = append(r, &goast.Field{
-					Names: []*goast.Ident{util.NewIdent(v.Name)},
-					Type:  goast.NewIdent(t),
-				})
+			if t == "" {
+				t = "C4GO_UNDEFINE_TYPE"
 			}
+			r = append(r, &goast.Field{
+				Names: []*goast.Ident{util.NewIdent(v.Name)},
+				Type:  goast.NewIdent(t),
+			})
 		}
 	}
 

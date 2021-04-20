@@ -5,14 +5,14 @@ Calculate warnings in file: ./testdata/brainfuck/brainfuck.go
 		Unsafe   : 0
 
 Calculate warnings : ./testdata/9wm
-		After transpiling : 6 warnings.
+		After transpiling : 287 warnings.
 		Go build : 4 warnings
-		Unsafe   : 411
+		Unsafe   : 305
 
 Calculate warnings : ./testdata/ed
-		After transpiling : 0 warnings.
-		Go build : 7 warnings
-		Unsafe   : 165
+		After transpiling : 31 warnings.
+		Go build : 51 warnings
+		Unsafe   : 112
 
 /home/konstantin/go/src/github.com/Konstantin8105/c4go/testdata/kilo/kilo.c:409:25: warning: implicit declaration of function 'editorRowHasOpenComment' is invalid in C99 [-Wimplicit-function-declaration]
 1 warning and 1 error generated.
@@ -20,13 +20,13 @@ Calculate warnings : ./testdata/ed
 
 Calculate warnings in file: ./testdata/neateqn/neateqn.go
 		After transpiling : 0 warnings.
-		Go build : 0 warnings
-		Unsafe   : 75
+		Go build : 6 warnings
+		Unsafe   : 36
 
 Calculate warnings in file: ./testdata/neatmkfn/neatmkfn.go
 		After transpiling : 0 warnings.
-		Go build : 19 warnings
-		Unsafe   : 139
+		Go build : 244 warnings
+		Unsafe   : 70
 
 /home/konstantin/go/src/github.com/Konstantin8105/c4go/testdata/neatmail/pg.c:114:3: warning: implicit declaration of function 'msg_new' is invalid in C99 [-Wimplicit-function-declaration]
 /home/konstantin/go/src/github.com/Konstantin8105/c4go/testdata/neatmail/pg.c:137:17: warning: implicit declaration of function 'msg_reply' is invalid in C99 [-Wimplicit-function-declaration]
@@ -35,63 +35,63 @@ Calculate warnings in file: ./testdata/neatmkfn/neatmkfn.go
 
 
 Calculate warnings in file: ./testdata/neatrefer/neatrefer.go
-		After transpiling : 6 warnings.
-		Go build : 4 warnings
+		After transpiling : 0 warnings.
+		Go build : 0 warnings
 		Unsafe   : 17
 
 Calculate warnings : ./testdata/nuklear/x11.go
-		After transpiling : 9 warnings.
-		Go build : 12 warnings
-		Unsafe   : 544
+		After transpiling : 73 warnings.
+		Go build : 7 warnings
+		Unsafe   : 484
 Calculate warnings : ./testdata/nuklear/x11_opengl2.go
-		After transpiling : 17 warnings.
+		After transpiling : 40 warnings.
 		Go build : 12 warnings
-		Unsafe   : 659
+		Unsafe   : 599
 
 /home/konstantin/go/src/github.com/Konstantin8105/c4go/testdata/neatroff/fmt.c:454:15: warning: absolute value function 'abs' given an argument of type 'long' but has parameter of type 'int' which may cause truncation of value [-Wabsolute-value]
 1 warning and 20 errors generated.
 
 Calculate warnings : ./testdata/redis/dict.go
 		After transpiling : 0 warnings.
-		Go build : 42 warnings
-		Unsafe   : 76
+		Go build : 53 warnings
+		Unsafe   : 37
 Calculate warnings : ./testdata/redis/linenoise.go
-		After transpiling : 6 warnings.
+		After transpiling : 0 warnings.
 		Go build : 2 warnings
 		Unsafe   : 21
 Calculate warnings : ./testdata/redis/redis_cli.go
-		After transpiling : 0 warnings.
+		After transpiling : 63 warnings.
 		Go build : 3 warnings
-		Unsafe   : 313
+		Unsafe   : 260
 Calculate warnings : ./testdata/redis/sds.go
 		After transpiling : 0 warnings.
 		Go build : 8 warnings
-		Unsafe   : 119
+		Unsafe   : 80
 
 
 
 Calculate warnings in file: ./testdata/progress/progress.go
-		After transpiling : 6 warnings.
+		After transpiling : 0 warnings.
 		Go build : 16 warnings
 		Unsafe   : 6
 
 Calculate warnings in file: ./testdata/SQLITE/sqlite.go
-		After transpiling : 1 warnings.
+		After transpiling : 680 warnings.
 		Go build : 1 warnings
-		Unsafe   : 2352
+		Unsafe   : 2280
 
 Calculate warnings in file: ./testdata/tiny-web-server/tiny-web-server.go
-		After transpiling : 0 warnings.
+		After transpiling : 42 warnings.
 		Go build : 2 warnings
-		Unsafe   : 151
+		Unsafe   : 68
 
 Calculate warnings in file: testdata/vorbis/vorbis.go
-		After transpiling : 0 warnings.
+		After transpiling : 532 warnings.
 		Go build : 18 warnings
-		Unsafe   : 127
+		Unsafe   : 80
 
 Calculate warnings in file: ./testdata/easymesh/easymesh.go
-		After transpiling : 6 warnings.
-		Go build : 4 warnings
+		After transpiling : 0 warnings.
+		Go build : 0 warnings
 		Unsafe   : 10
 
