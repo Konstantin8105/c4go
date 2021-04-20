@@ -98,23 +98,6 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 		return
 	}
 
-
-	// 	var haveCompound bool
-	// 	for _, ch := range n.Children() {
-	// 		if _, ok := ch.(*ast.CompoundStmt); ok {
-	// 			haveCompound = true
-	// 			break
-	// 		}
-	// 	}
-	// 	if !haveCompound {
-	// 		return
-	// 	}
-	//
-	// 	if len(n.Children()) == 0 {
-	// 		return
-	// 	}
-
-
 	// Test if the function has a body. This is identified by a child node that
 	// is a CompoundStmt (since it is not valid to have a function body without
 	// curly brackets).
