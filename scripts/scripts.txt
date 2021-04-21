@@ -40,11 +40,11 @@ Calculate warnings in file: ./testdata/neatrefer/neatrefer.go
 		Unsafe   : 17
 
 Calculate warnings : ./testdata/nuklear/x11.go
-		After transpiling : 16 warnings.
+		After transpiling : 9 warnings.
 		Go build : 12 warnings
 		Unsafe   : 544
 Calculate warnings : ./testdata/nuklear/x11_opengl2.go
-		After transpiling : 25 warnings.
+		After transpiling : 17 warnings.
 		Go build : 12 warnings
 		Unsafe   : 659
 
@@ -53,7 +53,7 @@ Calculate warnings : ./testdata/nuklear/x11_opengl2.go
 
 Calculate warnings : ./testdata/redis/dict.go
 		After transpiling : 0 warnings.
-		Go build : 42 warnings
+		Go build : 53 warnings
 		Unsafe   : 76
 Calculate warnings : ./testdata/redis/linenoise.go
 		After transpiling : 0 warnings.
@@ -76,7 +76,7 @@ Calculate warnings in file: ./testdata/progress/progress.go
 		Unsafe   : 6
 
 Calculate warnings in file: ./testdata/SQLITE/sqlite.go
-		After transpiling : 604 warnings.
+		After transpiling : 1 warnings.
 		Go build : 1 warnings
 		Unsafe   : 2351
 
@@ -86,7 +86,7 @@ Calculate warnings in file: ./testdata/tiny-web-server/tiny-web-server.go
 		Unsafe   : 151
 
 Calculate warnings in file: testdata/vorbis/vorbis.go
-		After transpiling : 13 warnings.
+		After transpiling : 0 warnings.
 		Go build : 18 warnings
 		Unsafe   : 127
 
