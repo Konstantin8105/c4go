@@ -96,15 +96,13 @@ func Strcmp(str1, str2 []byte) int32 {
 // See: http://www.cplusplus.com/reference/cstring/strchr/
 func Strchr(str []byte, ch32 int32) []byte {
 	ch := int(ch32)
-	i := 0
-	for {
+	for i := 0; i < len(str); i++ {
 		if str[i] == '\x00' {
 			break
 		}
 		if int(str[i]) == ch {
 			return str[i:]
 		}
-		i++
 	}
 	return nil
 }
