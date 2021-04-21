@@ -645,6 +645,8 @@ func TestKiloEditor(t *testing.T) {
 	args.state = StateTranspile
 	args.verbose = false
 
+	t.Logf("Go: %s", goFile)
+
 	if err := Start(args); err != nil {
 		t.Fatalf("Cannot transpile `%v`: %v", args, err)
 	}
@@ -656,7 +658,7 @@ func TestKiloEditor(t *testing.T) {
 	}
 
 	if bytes.Contains(dat, []byte(program.WarningMessage)) {
-		t.Fatalf("find warning message")
+		t.Errorf("find warning message: %s", program.WarningMessage)
 	}
 
 	// calculate amount unsafe operations

@@ -30,6 +30,7 @@ mkdir -p ./testdata/
 	echo "Transpile to $GO_FILE"
 	$C4GO transpile                         \
 		-s                                  \
+		-clang-flag="-lm"                   \
 		-o="$GO_FILE"                       \
 		$TEMP_FOLDER/*.c
 

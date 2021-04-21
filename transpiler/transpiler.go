@@ -522,8 +522,7 @@ func transpileToNode(node ast.Node, p *program.Program) (
 	}
 
 	if !AddOutsideStruct &&
-		!p.PreprocessorFile.IsUserSource(node.Position().File) &&
-		!strings.HasSuffix(node.Position().File, "stdint.h") {
+		!p.PreprocessorFile.IsUserSource(node.Position().File) {
 		if fd, ok := node.(*ast.FunctionDecl); ok {
 			if getFunctionBody(fd) != nil {
 				return
