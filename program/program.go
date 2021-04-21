@@ -257,10 +257,8 @@ func (p *Program) GetStruct(name string) *Struct {
 		return nil
 	}
 
-	last := len(name) - 1
-
 	// That allow to get struct from pointer type
-	if name[last] == '*' {
+	if last := len(name) - 1; name[last] == '*' {
 		name = name[:last]
 	}
 
@@ -270,8 +268,12 @@ func (p *Program) GetStruct(name string) *Struct {
 	if ok {
 		return res
 	}
+	res, ok = p.Unions[name]
+	if ok {
+		return res
+	}
 
-	return p.Unions[name]
+	return nil
 }
 
 // IsTypeAlreadyDefined will return true if the typeName has already been
