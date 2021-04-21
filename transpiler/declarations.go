@@ -117,7 +117,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 	// onstantin8105/c4go/tests/struct.c:168:1)':'struct (anonymous at /home/konstantin/go/src/github.com/Konstantin8105/c4go/tests
 	// /struct.c:168:1)'
 	if n.Name == "" {
-		n.Name = fmt.Sprintf("struct (anonymous struct at %s:%d:%d)", n.Pos.File, n.Pos.Line, n.Pos.Column)
+		n.Name = fmt.Sprintf("%s (anonymous %s at %s:%d:%d)", n.Kind, n.Kind, n.Pos.File, n.Pos.Line, n.Pos.Column)
 	}
 	n.Name = util.GenerateCorrectType(n.Name)
 	name := n.Name
@@ -465,7 +465,7 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 	// |     `-Record 0x1b733f0 ''
 	for _, pre := range []string{"struct ", "union "} {
 		if pre+n.Name == n.Type && n.Name == n.Type2 {
-			n.Type = fmt.Sprintf("%s(anonymous struct at %s:%d:%d)", pre, n.Pos.File, n.Pos.Line, n.Pos.Column)
+			n.Type = fmt.Sprintf("%s(anonymous %sat %s:%d:%d)", pre, pre, n.Pos.File, n.Pos.Line, n.Pos.Column)
 			n.Type = util.GenerateCorrectType(n.Type)
 		}
 	}
