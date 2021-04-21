@@ -2,117 +2,28 @@ package transpiler
 
 import (
 	goast "go/ast"
-	"strings"
 
 	"github.com/Konstantin8105/c4go/ast"
 	"github.com/Konstantin8105/c4go/program"
-	"github.com/Konstantin8105/c4go/types"
+	errorTree "github.com/Konstantin8105/errors"
 )
 
 func transpileTranslationUnitDecl(p *program.Program, n *ast.TranslationUnitDecl) (
 	decls []goast.Decl, err error) {
 
-	// childs := n.Children()
-	// 	et := errors.New("transpileTranslationUnitDecl")
-	// 	for i := range childs {
-	// 		ds, err := transpileToNode(childs[i], p)
-	// 		if err != nil {
-	// 			et.Add(err)
-	// 			continue
-	// 		}
-	// 		decls = append(decls, ds...)
-	// 	}
-	// 	if et.IsError() {
-	// 		err = et
-	// 	}
-
-	// create name for anonymous ast.RecordDecl
-	for i := 0; i < len(n.Children()); i++ {
-		presentNode := n.Children()[i]
-		if rec, ok := presentNode.(*ast.RecordDecl); ok && rec.Name == "" {
-			if i+1 < len(n.Children()) {
-				switch recNode := n.Children()[i+1].(type) {
-				case *ast.VarDecl:
-					rec.Name = types.GetBaseType(recNode.Type)
-				case *ast.TypedefDecl:
-					rec.Name = types.GetBaseType(recNode.Type)
-					if strings.HasPrefix(recNode.Type, "union ") {
-						rec.Name = recNode.Type[len("union "):]
-					}
-				}
-			}
+	childs := n.Children()
+	et := errorTree.New("transpileTranslationUnitDecl")
+	for i := range childs {
+		ds, err := transpileToNode(childs[i], p)
+		if err != nil {
+			et.Add(err)
+			continue
 		}
+		decls = append(decls, ds...)
+	}
+	if et.IsError() {
+		err = et
 	}
 
-	isSpecific := func(node ast.Node) bool {
-		switch node.(type) {
-		case *ast.FunctionDecl:
-			return false
-		}
-		return true
-	}
-
-	var tryLaterRecordDecl []*ast.RecordDecl
-	for _, sp := range []bool{true, false} {
-		if p.Function == nil {
-			p.DoNotAddComments = sp
-		}
-		for i := 0; i < len(n.Children()); i++ {
-			presentNode := n.Children()[i]
-			if rec, ok := presentNode.(*ast.RecordDecl); ok {
-				// ignore RecordDecl if haven`t definition
-				if rec.Name == "" && !rec.IsDefinition {
-					continue
-				}
-			}
-
-			if isSpecific(presentNode) != sp {
-				continue
-			}
-
-			var d []goast.Decl
-			d, err = transpileToNode(presentNode, p)
-			if err != nil {
-				if rec, ok := presentNode.(*ast.RecordDecl); ok {
-					tryLaterRecordDecl = append(tryLaterRecordDecl, rec)
-				} else {
-					p.AddMessage(p.GenerateWarningMessage(err, n))
-					err = nil // ignore error
-				}
-				continue
-			}
-			decls = append(decls, d...)
-		}
-	again:
-		for i := range tryLaterRecordDecl {
-			if tryLaterRecordDecl[i] == nil {
-				continue
-			}
-			// try again later
-			recDecl, err := transpileRecordDecl(p, tryLaterRecordDecl[i])
-			if err == nil {
-				decls = append(decls, recDecl...)
-				if i == len(tryLaterRecordDecl)-1 {
-					if len(tryLaterRecordDecl) == 1 {
-						tryLaterRecordDecl = make([]*ast.RecordDecl, 0)
-					} else {
-						tryLaterRecordDecl = tryLaterRecordDecl[:i]
-					}
-				} else {
-					tryLaterRecordDecl = append(tryLaterRecordDecl[:i],
-						tryLaterRecordDecl[i+1:]...)
-				}
-				goto again
-			}
-		}
-	}
-	for i := range tryLaterRecordDecl {
-		recDecl, err := transpileRecordDecl(p, tryLaterRecordDecl[i])
-		if err == nil {
-			decls = append(decls, recDecl...)
-		} else {
-			p.AddMessage(p.GenerateWarningMessage(err, n))
-		}
-	}
 	return
 }

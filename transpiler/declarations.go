@@ -111,7 +111,17 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 	var addPackageUnsafe bool
 
 	n.Name = util.GenerateCorrectType(n.Name)
+	// |-RecordDecl 0x195a1e0 <line:168:1, line:170:1> line:168:1 struct definition
+	// | `-FieldDecl 0x195a298 <line:169:5, col:9> col:9 referenced aa 'int'
+	// |-VarDecl 0x195a348 <line:168:1, line:170:3> col:3 used mm 'struct (anonymous struct at /home/konstantin/go/src/github.com/K
+	// onstantin8105/c4go/tests/struct.c:168:1)':'struct (anonymous at /home/konstantin/go/src/github.com/Konstantin8105/c4go/tests
+	// /struct.c:168:1)'
+	if n.Name == "" {
+		n.Name = fmt.Sprintf("struct (anonymous struct at %s:%d:%d)", n.Pos.File, n.Pos.Line, n.Pos.Column)
+	}
+	n.Name = util.GenerateCorrectType(n.Name)
 	name := n.Name
+
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("cannot transpileRecordDecl `%v`. %v",
@@ -134,12 +144,6 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		return
 	}
 
-	if name == "" || p.IsTypeAlreadyDefined(name) {
-		err = nil
-		return
-	}
-
-	name = util.GenerateCorrectType(name)
 	p.DefineType(name)
 	defer func() {
 		if err != nil {
@@ -251,6 +255,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 	s, err := program.NewStruct(p, n)
 	if err != nil {
 		p.AddMessage(p.GenerateWarningMessage(err, n))
+		err = nil // ignore error
 		return
 	}
 	switch s.Type {
@@ -451,6 +456,20 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 		return
 	}
 
+	// |-RecordDecl 0x1b733f0 <line:603:9, line:606:1> line:603:9 struct definition
+	// | |-FieldDecl 0x1b734c0 <line:604:5, col:12> col:12 x 'pointx':'int'
+	// | `-FieldDecl 0x1b73528 <line:605:5, col:9> col:9 y 'int'
+	// |-TypedefDecl 0x1b735d8 <line:603:1, line:606:3> col:3 referenced Point2 'struct Point2':'Point2'
+	// | `-ElaboratedType 0x1b73580 'struct Point2' sugar
+	// |   `-RecordType 0x1b73470 'Point2'
+	// |     `-Record 0x1b733f0 ''
+	for _, pre := range []string{"struct ", "union "} {
+		if pre+n.Name == n.Type && n.Name == n.Type2 {
+			n.Type = fmt.Sprintf("%s(anonymous struct at %s:%d:%d)", pre, n.Pos.File, n.Pos.Line, n.Pos.Column)
+			n.Type = util.GenerateCorrectType(n.Type)
+		}
+	}
+
 	if "struct "+n.Name == n.Type || "union "+n.Name == n.Type {
 		p.TypedefType[n.Name] = n.Type
 		return
@@ -512,6 +531,7 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 	resolvedType, err := types.ResolveType(p, n.Type)
 	if err != nil {
 		p.AddMessage(p.GenerateWarningMessage(err, n))
+		err = nil // ignore error
 	}
 
 	// There is a case where the name of the type is also the definition,

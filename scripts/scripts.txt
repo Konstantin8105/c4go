@@ -25,7 +25,7 @@ Calculate warnings in file: ./testdata/neateqn/neateqn.go
 
 Calculate warnings in file: ./testdata/neatmkfn/neatmkfn.go
 		After transpiling : 0 warnings.
-		Go build : 19 warnings
+		Go build : 279 warnings
 		Unsafe   : 139
 
 /home/konstantin/go/src/github.com/Konstantin8105/c4go/testdata/neatmail/pg.c:114:3: warning: implicit declaration of function 'msg_new' is invalid in C99 [-Wimplicit-function-declaration]
@@ -35,16 +35,16 @@ Calculate warnings in file: ./testdata/neatmkfn/neatmkfn.go
 
 
 Calculate warnings in file: ./testdata/neatrefer/neatrefer.go
-		After transpiling : 6 warnings.
-		Go build : 4 warnings
+		After transpiling : 0 warnings.
+		Go build : 0 warnings
 		Unsafe   : 17
 
 Calculate warnings : ./testdata/nuklear/x11.go
-		After transpiling : 9 warnings.
+		After transpiling : 16 warnings.
 		Go build : 12 warnings
 		Unsafe   : 544
 Calculate warnings : ./testdata/nuklear/x11_opengl2.go
-		After transpiling : 17 warnings.
+		After transpiling : 25 warnings.
 		Go build : 12 warnings
 		Unsafe   : 659
 
@@ -56,7 +56,7 @@ Calculate warnings : ./testdata/redis/dict.go
 		Go build : 42 warnings
 		Unsafe   : 76
 Calculate warnings : ./testdata/redis/linenoise.go
-		After transpiling : 6 warnings.
+		After transpiling : 0 warnings.
 		Go build : 2 warnings
 		Unsafe   : 21
 Calculate warnings : ./testdata/redis/redis_cli.go
@@ -71,14 +71,14 @@ Calculate warnings : ./testdata/redis/sds.go
 
 
 Calculate warnings in file: ./testdata/progress/progress.go
-		After transpiling : 6 warnings.
+		After transpiling : 0 warnings.
 		Go build : 16 warnings
 		Unsafe   : 6
 
 Calculate warnings in file: ./testdata/SQLITE/sqlite.go
-		After transpiling : 1 warnings.
+		After transpiling : 604 warnings.
 		Go build : 1 warnings
-		Unsafe   : 2352
+		Unsafe   : 2351
 
 Calculate warnings in file: ./testdata/tiny-web-server/tiny-web-server.go
 		After transpiling : 0 warnings.
@@ -86,12 +86,12 @@ Calculate warnings in file: ./testdata/tiny-web-server/tiny-web-server.go
 		Unsafe   : 151
 
 Calculate warnings in file: testdata/vorbis/vorbis.go
-		After transpiling : 0 warnings.
+		After transpiling : 13 warnings.
 		Go build : 18 warnings
 		Unsafe   : 127
 
 Calculate warnings in file: ./testdata/easymesh/easymesh.go
-		After transpiling : 6 warnings.
-		Go build : 4 warnings
+		After transpiling : 0 warnings.
+		Go build : 0 warnings
 		Unsafe   : 10
 
