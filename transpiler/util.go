@@ -55,7 +55,7 @@ func nilFilterStmts(stmts []goast.Stmt) (out []goast.Stmt) {
 }
 
 // combineStmts - combine elements to slice
-func combineStmts(stmt goast.Stmt, preStmts, postStmts []goast.Stmt) (stmts []goast.Stmt) {
+func combineStmts(preStmts []goast.Stmt, stmt goast.Stmt, postStmts []goast.Stmt) (stmts []goast.Stmt) {
 	stmts = make([]goast.Stmt, 0, 1+len(preStmts)+len(postStmts))
 
 	preStmts = nilFilterStmts(preStmts)
