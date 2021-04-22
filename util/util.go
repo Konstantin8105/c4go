@@ -3,6 +3,7 @@ package util
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"unicode"
@@ -87,7 +88,7 @@ func IsLastArray(s string) bool {
 func ParseFunction(s string) (prefix string, funcname string, f []string, r []string, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot parse function '%s' : %v", s, err)
+			err = fmt.Errorf("cannot parse function '%s' : %v", s, err)
 		} else {
 			prefix = strings.TrimSpace(prefix)
 			funcname = strings.TrimSpace(funcname)
@@ -105,7 +106,7 @@ func ParseFunction(s string) (prefix string, funcname string, f []string, r []st
 
 	s = strings.TrimSpace(s)
 	if !IsFunction(s) {
-		err = fmt.Errorf("Is not function : %s", s)
+		err = fmt.Errorf("is not function : %s", s)
 		return
 	}
 	var returns string
@@ -124,7 +125,7 @@ func ParseFunction(s string) (prefix string, funcname string, f []string, r []st
 		var pos int
 		for i := len(s) - 2; i >= 0; i-- {
 			if i == 0 {
-				err = fmt.Errorf("Don't found '(' in type : %s", s)
+				err = fmt.Errorf("don't found '(' in type : %s", s)
 				return
 			}
 			if s[i] == ')' {
@@ -153,7 +154,7 @@ func ParseFunction(s string) (prefix string, funcname string, f []string, r []st
 		arguments = strings.TrimSpace(s[pos:])
 	}
 	if arguments == "" {
-		err = fmt.Errorf("Cannot parse (right part is nil) : %v", s)
+		err = fmt.Errorf("cannot parse (right part is nil) : %v", s)
 		return
 	}
 	// separate fields of arguments
@@ -240,7 +241,7 @@ func ParseFunction(s string) (prefix string, funcname string, f []string, r []st
 		block = block[1 : len(block)-1]
 		index := strings.Index(block, "(")
 		if index < 0 {
-			err = fmt.Errorf("Cannot found '(' in block")
+			err = fmt.Errorf("cannot found '(' in block")
 			return
 		}
 		returns = returns + block[index:]
@@ -248,7 +249,7 @@ func ParseFunction(s string) (prefix string, funcname string, f []string, r []st
 		if strings.Contains(prefix, "*") {
 			prefix = strings.Replace(prefix, "*", "", 1)
 		} else {
-			err = fmt.Errorf("Undefined situation")
+			err = fmt.Errorf("undefined situation")
 			return
 		}
 		r = append(r, returns)
@@ -263,7 +264,7 @@ func ParseFunction(s string) (prefix string, funcname string, f []string, r []st
 		block = block[1 : len(block)-1]
 		index := strings.Index(block, "(")
 		if index < 0 {
-			err = fmt.Errorf("Cannot found '(' in block")
+			err = fmt.Errorf("cannot found '(' in block")
 			return
 		}
 
@@ -404,6 +405,13 @@ func GenerateCorrectType(name string) (result string) {
 	// Output(inside) : '(anonymous union at tests/union.c:46:3)'
 	inside := string(([]byte(name))[index : last+1])
 
+	if gopath := os.Getenv("GOPATH"); gopath != "" {
+		inside = strings.Replace(inside, gopath, "GOPATH", -1)
+	}
+	if ind := strings.LastIndex(inside, ":"); -1 != ind {
+		inside = inside[:ind]
+	}
+
 	// change unacceptable C name letters
 	inside = strings.Replace(inside, "(", "_", -1)
 	inside = strings.Replace(inside, ")", "_", -1)
@@ -413,6 +421,7 @@ func GenerateCorrectType(name string) (result string) {
 	inside = strings.Replace(inside, "-", "_", -1)
 	inside = strings.Replace(inside, "\\", "_", -1)
 	inside = strings.Replace(inside, ".", "_", -1)
+	inside = strings.Replace(inside, "__", "_", -1)
 	out := string(([]byte(name))[0:index]) + inside + string(([]byte(name))[last+1:])
 
 	// For case:

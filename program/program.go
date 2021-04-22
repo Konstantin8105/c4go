@@ -102,11 +102,16 @@ type Program struct {
 	// preprocessor file
 	PreprocessorFile preprocessor.FilePP
 
-	// unsafeConvertValueToPointer - simplification for convert value to pointer
+	// UnsafeConvertValueToPointer - simplification for convert value to pointer
 	UnsafeConvertValueToPointer map[string]bool
+
+	// UnsafeConvertPointerArith - simplification for pointer arithmetic
+	UnsafeConvertPointerArith map[string]bool
 
 	// IsHaveVaList
 	IsHaveVaList bool
+
+	DoNotAddComments bool
 }
 
 type commentPos struct {
@@ -142,6 +147,7 @@ func NewProgram() (p *Program) {
 		functionDefinitions:                      map[string]DefinitionFunction{},
 		builtInFunctionDefinitionsHaveBeenLoaded: false,
 		UnsafeConvertValueToPointer:              map[string]bool{},
+		UnsafeConvertPointerArith:                map[string]bool{},
 	}
 }
 
@@ -168,7 +174,7 @@ func (p *Program) AddMessage(message string) bool {
 			new  = len(p.messages) - 1
 			last = len(p.messages) - 2
 		)
-		// Warning collapsing for minimaze warnings
+		// Warning collapsing for minimize warnings
 		warning := "// Warning"
 		if strings.HasPrefix(p.messages[last], warning) {
 			l := p.messages[last][len(warning):]
@@ -200,6 +206,9 @@ func (p *Program) GetMessageComments() (_ *goast.CommentGroup) {
 
 // GetComments - return comments
 func (p *Program) GetComments(n ast.Position) (out []*goast.Comment) {
+	if p.DoNotAddComments {
+		return
+	}
 	beginLine := p.commentLine[n.File]
 	if n.Line < beginLine.line {
 		return
@@ -248,10 +257,8 @@ func (p *Program) GetStruct(name string) *Struct {
 		return nil
 	}
 
-	last := len(name) - 1
-
 	// That allow to get struct from pointer type
-	if name[last] == '*' {
+	if last := len(name) - 1; name[last] == '*' {
 		name = name[:last]
 	}
 
@@ -261,8 +268,12 @@ func (p *Program) GetStruct(name string) *Struct {
 	if ok {
 		return res
 	}
+	res, ok = p.Unions[name]
+	if ok {
+		return res
+	}
 
-	return p.Unions[name]
+	return nil
 }
 
 // IsTypeAlreadyDefined will return true if the typeName has already been
@@ -349,6 +360,57 @@ func (n nilWalker) Visit(node goast.Node) (w goast.Visitor) {
 	return n
 }
 
+type simpleDefer struct {
+}
+
+func (s simpleDefer) Visit(node goast.Node) (w goast.Visitor) {
+	// Simplification from :
+	//	var cc int32 = int32(uint8((func() []byte {
+	//		defer func() {
+	//			func() []byte {
+	//				tempVarUnary := ss
+	//				defer func() {
+	//					ss = ss[0+1:]
+	//				}()
+	//				return tempVarUnary
+	//			}()
+	//		}()
+	//		return ss
+	//	}())[0]))
+	//
+	// to:
+	//	var cc int32 = int32(uint8((func() []byte {
+	//		defer func() {
+	//			ss = ss[0+1:]
+	//		}()
+	//		return ss
+	//	}())[0]))
+	if f0, ok := node.(*goast.FuncLit); ok && f0.Body != nil {
+		if len(f0.Body.List) == 2 {
+			if df, ok := f0.Body.List[0].(*goast.DeferStmt); ok {
+				cl := df.Call
+				if fl, ok := cl.Fun.(*goast.FuncLit); ok && len(fl.Body.List) == 1 {
+					if es, ok := fl.Body.List[0].(*goast.ExprStmt); ok {
+						if cl, ok := es.X.(*goast.CallExpr); ok {
+							if fl, ok := cl.Fun.(*goast.FuncLit); ok && len(fl.Body.List) == 3 {
+								if _, ok := fl.Body.List[0].(*goast.AssignStmt); ok {
+									if df, ok := fl.Body.List[1].(*goast.DeferStmt); ok {
+										if _, ok := fl.Body.List[2].(*goast.ReturnStmt); ok {
+											f0.Body.List[0] = df
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return s
+}
+
 // String generates the whole output Go file as a string. This will include the
 // messages at the top of the file and all the rendered Go code.
 func (p *Program) String() string {
@@ -362,6 +424,29 @@ func (p *Program) String() string {
 //
 
 `))
+
+	// Simplification from :
+	//	var cc int32 = int32(uint8((func() []byte {
+	//		defer func() {
+	//			func() []byte {
+	//				tempVarUnary := ss
+	//				defer func() {
+	//					ss = ss[0+1:]
+	//				}()
+	//				return tempVarUnary
+	//			}()
+	//		}()
+	//		return ss
+	//	}())[0]))
+	//
+	// to:
+	//	var cc int32 = int32(uint8((func() []byte {
+	//		defer func() {
+	//			ss = ss[0+1:]
+	//		}()
+	//		return ss
+	//	}())[0]))
+	goast.Walk(new(simpleDefer), p.File)
 
 	// Only for debugging
 	// goast.Walk(new(nilWalker), p.File)

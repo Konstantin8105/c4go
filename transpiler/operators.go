@@ -14,6 +14,46 @@ import (
 	"github.com/Konstantin8105/c4go/util"
 )
 
+// ternary without middle operation
+//
+// Example:
+//
+// BinaryConditionalOperator  'int'
+// |-BinaryOperator 'int' '>'
+// | |-IntegerLiteral 'int' 19
+// | `-UnaryOperator 'int' prefix '-'
+// |   `-IntegerLiteral 'int' 9
+// |-OpaqueValueExpr 'int'
+// | `-BinaryOperator 'int' '>'
+// |   |-IntegerLiteral 'int' 19
+// |   `-UnaryOperator 'int' prefix '-'
+// |     `-IntegerLiteral 'int' 9
+// |-OpaqueValueExpr  'int'
+// | `-BinaryOperator  'int' '>'
+// |   |-IntegerLiteral 'int' 19
+// |   `-UnaryOperator 'int' prefix '-'
+// |     `-IntegerLiteral 'int' 9
+// `-IntegerLiteral 0x3646f70 <col:18> 'int' 23
+func transpileBinaryConditionalOperator(n *ast.BinaryConditionalOperator, p *program.Program) (
+	_ *goast.CallExpr, theType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("cannot transpile BinaryConditionalOperator : err = %v", err)
+		}
+	}()
+
+	var co ast.ConditionalOperator
+	co.Type = n.Type
+	co.AddChild(n.Children()[0])
+	co.AddChild(&ast.IntegerLiteral{
+		Type:  co.Type,
+		Value: "1",
+	})
+	co.AddChild(n.Children()[3])
+
+	return transpileConditionalOperator(&co, p)
+}
+
 // transpileConditionalOperator transpiles a conditional (also known as a
 // ternary) operator:
 //
@@ -25,13 +65,29 @@ import (
 // Since Go does not support the ternary operator or inline "if" statements we
 // use a closure to work the same way.
 //
-// It is also important to note that C only evaulates the "b" or "c" condition
+// It is also important to note that C only evaluates the "b" or "c" condition
 // based on the result of "a" (from the above example).
+//
+// Example AST:
+// ConditionalOperator 'int'
+// |-ImplicitCastExpr 'int (*)(int)' <LValueToRValue>
+// | `-DeclRefExpr 'int (*)(int)' lvalue Var 'v' 'int (*)(int)'
+// |-IntegerLiteral 'int' 1
+// `-CallExpr 'int'
+//   |-...
+//
+// ConditionalOperator 'int'
+// |-BinaryOperator 'int' '!='
+// | |-...
+// |-BinaryOperator 'int' '-'
+// | |-...
+// `-BinaryOperator 'int' '-'
+//   |-...
 func transpileConditionalOperator(n *ast.ConditionalOperator, p *program.Program) (
 	_ *goast.CallExpr, theType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpile ConditionalOperator : err = %v", err)
+			err = fmt.Errorf("cannot transpile ConditionalOperator : err = %v", err)
 		}
 	}()
 
@@ -168,7 +224,7 @@ func transpileParenExpr(n *ast.ParenExpr, p *program.Program) (
 	r *goast.ParenExpr, exprType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpile ParenExpr. err = %v", err)
+			err = fmt.Errorf("cannot transpile ParenExpr. err = %v", err)
 			p.AddMessage(p.GenerateWarningMessage(err, n))
 		}
 	}()
@@ -181,7 +237,7 @@ func transpileParenExpr(n *ast.ParenExpr, p *program.Program) (
 		return
 	}
 	if expr == nil {
-		err = fmt.Errorf("Expr is nil")
+		err = fmt.Errorf("expr is nil")
 		return
 	}
 
@@ -216,7 +272,7 @@ func transpileCompoundAssignOperator(
 
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileCompoundAssignOperator. err = %v", err)
+			err = fmt.Errorf("cannot transpileCompoundAssignOperator. err = %v", err)
 		}
 	}()
 
@@ -249,92 +305,101 @@ func transpileCompoundAssignOperator(
 	}, p, false)
 }
 
+func getTokenForOperatorNoError(operator string) token.Token {
+	t, err := getTokenForOperator(operator)
+	if err != nil {
+		return token.XOR
+	}
+	return t
+}
+
 // getTokenForOperator returns the Go operator token for the provided C
 // operator.
-func getTokenForOperator(operator string) token.Token {
+func getTokenForOperator(operator string) (t token.Token, err error) {
 	switch operator {
 	// Arithmetic
 	case "--":
-		return token.DEC
+		return token.DEC, nil
 	case "++":
-		return token.INC
+		return token.INC, nil
 	case "+":
-		return token.ADD
+		return token.ADD, nil
 	case "-":
-		return token.SUB
+		return token.SUB, nil
 	case "*":
-		return token.MUL
+		return token.MUL, nil
 	case "/":
-		return token.QUO
+		return token.QUO, nil
 	case "%":
-		return token.REM
+		return token.REM, nil
 
 	// Assignment
 	case "=":
-		return token.ASSIGN
+		return token.ASSIGN, nil
 	case "+=":
-		return token.ADD_ASSIGN
+		return token.ADD_ASSIGN, nil
 	case "-=":
-		return token.SUB_ASSIGN
+		return token.SUB_ASSIGN, nil
 	case "*=":
-		return token.MUL_ASSIGN
+		return token.MUL_ASSIGN, nil
 	case "/=":
-		return token.QUO_ASSIGN
+		return token.QUO_ASSIGN, nil
 	case "%=":
-		return token.REM_ASSIGN
+		return token.REM_ASSIGN, nil
 	case "&=":
-		return token.AND_ASSIGN
+		return token.AND_ASSIGN, nil
 	case "|=":
-		return token.OR_ASSIGN
+		return token.OR_ASSIGN, nil
 	case "^=":
-		return token.XOR_ASSIGN
+		return token.XOR_ASSIGN, nil
 	case "<<=":
-		return token.SHL_ASSIGN
+		return token.SHL_ASSIGN, nil
 	case ">>=":
-		return token.SHR_ASSIGN
+		return token.SHR_ASSIGN, nil
 
 	// Bitwise
 	case "&":
-		return token.AND
+		return token.AND, nil
 	case "|":
-		return token.OR
+		return token.OR, nil
 	case "~":
-		return token.XOR
+		return token.XOR, nil
 	case ">>":
-		return token.SHR
+		return token.SHR, nil
 	case "<<":
-		return token.SHL
+		return token.SHL, nil
 	case "^":
-		return token.XOR
+		return token.XOR, nil
 
 	// Comparison
 	case ">=":
-		return token.GEQ
+		return token.GEQ, nil
 	case "<=":
-		return token.LEQ
+		return token.LEQ, nil
 	case "<":
-		return token.LSS
+		return token.LSS, nil
 	case ">":
-		return token.GTR
+		return token.GTR, nil
 	case "!=":
-		return token.NEQ
+		return token.NEQ, nil
 	case "==":
-		return token.EQL
+		return token.EQL, nil
 
 	// Logical
 	case "!":
-		return token.NOT
+		return token.NOT, nil
 	case "&&":
-		return token.LAND
+		return token.LAND, nil
 	case "||":
-		return token.LOR
+		return token.LOR, nil
 
 	// Other
 	case ",":
-		return token.COMMA
+		return token.COMMA, nil
 	}
 
-	panic(fmt.Sprintf("unknown operator: %s", operator))
+	err = fmt.Errorf("unknown operator: %s and replaced to XOR operator\n", operator)
+	return
 }
 
 func convertToWithoutAssign(operator token.Token) token.Token {
@@ -371,7 +436,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot create atomicOperation |%T|. err = %v", n, err)
+			err = fmt.Errorf("cannot create atomicOperation |%T|. err = %v", n, err)
 		}
 		if exprType == "" {
 			p.AddMessage(p.GenerateWarningMessage(fmt.Errorf("exprType is empty"), n))
@@ -445,7 +510,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		//     |-ImplicitCastExpr 'struct struct_I_A *' <ArrayToPointerDecay>
 		//     | `-DeclRefExpr 'struct struct_I_A [2]' lvalue Var 0x358b6e8 'siia' 'struct struct_I_A [2]'
 		//     `-IntegerLiteral 'int' 0
-		varName = "tempVar"
+		varName = "tempVar1"
 
 		nextNode := v.Children()[0]
 		for {
@@ -463,6 +528,17 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		var exprResolveType string
 		exprResolveType, err = types.ResolveType(p, v.Type)
 		if err != nil {
+			return
+		}
+
+		if v.Operator == "__extension__" {
+			// `-ImplicitCastExpr 0x27aea88 <> 'const char *' <ArrayToPointerDecay>
+			//   `-UnaryOperator 0x27ae970 <> 'const char [18]' lvalue prefix '__extension__' cannot overfl
+			//
+			//     `-PredefinedExpr 0x27ae958 <> 'const char [18]' lvalue __PRETTY_FUNCTION__
+			//       `-StringLiteral 0x27ae928 <> 'const char [18]' lvalue "void handler(int)"
+			preStmts = nil
+			postStmts = nil
 			return
 		}
 
@@ -562,10 +638,10 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		body := append(preStmts, &goast.AssignStmt{
 			Lhs: []goast.Expr{util.NewIdent(varName)},
 			Tok: token.DEFINE,
-			Rhs: []goast.Expr{&goast.UnaryExpr{
-				Op: token.AND,
-				X:  expr,
-			}},
+			Rhs: []goast.Expr{util.NewUnaryExpr(
+				expr,
+				token.AND,
+			)},
 		})
 
 		deferBody := postStmts
@@ -660,10 +736,10 @@ func atomicOperation(n ast.Node, p *program.Program) (
 						expr = util.NewAnonymousFunction(
 							append(preStmts, &goast.ExprStmt{X: expr}),
 							postStmts,
-							&goast.UnaryExpr{
-								Op: token.AND,
-								X:  util.NewIdent(varName),
-							},
+							util.NewUnaryExpr(
+								util.NewIdent(varName),
+								token.AND,
+							),
 							exprResolveType)
 						preStmts = nil
 						postStmts = nil
@@ -676,7 +752,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		// CompoundAssignOperator 0x32911c0 <col:18, col:28> 'int' '-=' ComputeLHSTy='int' ComputeResultTy='int'
 		// |-DeclRefExpr 0x3291178 <col:18> 'int' lvalue Var 0x328df60 'iterator' 'int'
 		// `-IntegerLiteral 0x32911a0 <col:28> 'int' 2
-		varName := "tempVar"
+		varName := "tempVar2"
 		expr, exprType, preStmts, postStmts, err = transpileToExpr(v.Children()[0], p, false)
 		if err != nil {
 			return
@@ -684,10 +760,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 		body := append(preStmts, &goast.AssignStmt{
 			Lhs: []goast.Expr{util.NewIdent(varName)},
 			Tok: token.DEFINE,
-			Rhs: []goast.Expr{&goast.UnaryExpr{
-				Op: token.AND,
-				X:  expr,
-			}},
+			Rhs: []goast.Expr{util.NewUnaryExpr(expr, token.AND)},
 		})
 		preStmts = nil
 
@@ -715,7 +788,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			Lhs: []goast.Expr{&goast.StarExpr{
 				X: util.NewIdent(varName),
 			}},
-			Tok: getTokenForOperator(v.Opcode),
+			Tok: getTokenForOperatorNoError(v.Opcode),
 			Rhs: []goast.Expr{expr},
 		})
 
@@ -878,7 +951,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			//   | `-IntegerLiteral 0x3c423b8 <col:30> 'int' 0
 			//   `-ImplicitCastExpr 0x3c42428 <col:32> 'int' <LValueToRValue>
 			//     `-DeclRefExpr 0x3c42400 <col:32> 'int' lvalue Var 0x3c3cf60 'iterator' 'int'
-			varName := "tempVar"
+			varName := "tempVar3"
 
 			expr, exprType, preStmts, postStmts, err = transpileToExpr(v.Children()[0], p, false)
 			if err != nil {
@@ -905,10 +978,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			body = append(body, &goast.AssignStmt{
 				Lhs: []goast.Expr{util.NewIdent(varName)},
 				Tok: token.DEFINE,
-				Rhs: []goast.Expr{&goast.UnaryExpr{
-					Op: token.AND,
-					X:  expr,
-				}},
+				Rhs: []goast.Expr{util.NewUnaryExpr(expr, token.AND)},
 			})
 
 			var exprResolveType string
@@ -919,10 +989,7 @@ func atomicOperation(n ast.Node, p *program.Program) (
 			}
 
 			expr = util.NewAnonymousFunction(body, postStmts,
-				&goast.UnaryExpr{
-					Op: token.MUL,
-					X:  util.NewIdent(varName),
-				},
+				util.NewUnaryExpr(util.NewIdent(varName), token.MUL),
 				exprResolveType)
 			preStmts = nil
 			postStmts = nil

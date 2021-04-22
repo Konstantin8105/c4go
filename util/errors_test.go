@@ -20,5 +20,5 @@ func TestPanicOnError(t *testing.T) {
 			t.Errorf("Cannot check panic")
 		}
 	}()
-	PanicOnError(fmt.Errorf("Some error"), "Check on nil : PanicOnError")
+	PanicOnError(fmt.Errorf("some error"), "Check on nil : PanicOnError")
 }

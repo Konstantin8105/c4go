@@ -8,6 +8,7 @@ import (
 	goast "go/ast"
 	"go/parser"
 	"go/token"
+	"runtime/debug"
 	"strings"
 	"unicode"
 
@@ -21,7 +22,7 @@ var AddOutsideStruct bool
 
 // TranspileAST iterates through the Clang AST and builds a Go AST
 func TranspileAST(fileName, packageName string, withOutsideStructs bool,
-	p *program.Program, root ast.Node) (
+	p *program.Program, root ast.Node, clangFlags []string) (
 	source string, // result Go source
 	err error) {
 	// Start by parsing an empty file.
@@ -102,7 +103,7 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 	decls, err := transpileToNode(root, p)
 	if err != nil {
 		p.AddMessage(p.GenerateWarningMessage(
-			fmt.Errorf("Error of transpiling: err = %v", err), root))
+			fmt.Errorf("error of transpiling: err = %v", err), root))
 		err = nil // Error is ignored
 	}
 	p.File.Decls = append(p.File.Decls, decls...)
@@ -120,11 +121,14 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 		})
 	}
 
+	// add functions from CSTD
+	std := p.GetCstdFunction()
+
 	// add convertion value to slice
 	GetUnsafeConvertDecls(p)
 
 	// checking implementation for all called functions
-	bindHeader, bindCode := generateBinding(p)
+	bindHeader, bindCode := generateBinding(p, clangFlags)
 
 	// Add the imports after everything else so we can ensure that they are all
 	// placed at the top.
@@ -146,6 +150,9 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 	// generate Go source
 	source = p.String()
 
+	// add functions from CSTD
+	source += std
+
 	// inject binding code
 	if len(bindCode) > 0 {
 		index := strings.Index(source, "package")
@@ -165,6 +172,9 @@ func TranspileAST(fileName, packageName string, withOutsideStructs bool,
 		source += getVaListStruct()
 	}
 
+	// generate pointer arithmetic functions
+	source += getPointerArithFunctions(p)
+
 	return
 }
 
@@ -176,11 +186,11 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 	err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileToExpr. err = %v", err)
+			err = fmt.Errorf("cannot transpileToExpr. err = %v", err)
 		}
 	}()
 	if node == nil {
-		err = fmt.Errorf("Not acceptable nil node")
+		err = fmt.Errorf("not acceptable nil node")
 		return
 	}
 	defer func() {
@@ -198,6 +208,9 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 
 	case *ast.PredefinedExpr:
 		expr, exprType, err = transpilePredefinedExpr(n, p)
+
+	case *ast.BinaryConditionalOperator:
+		expr, exprType, preStmts, postStmts, err = transpileBinaryConditionalOperator(n, p)
 
 	case *ast.ConditionalOperator:
 		expr, exprType, preStmts, postStmts, err = transpileConditionalOperator(n, p)
@@ -259,6 +272,16 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 	case *ast.VAArgExpr:
 		expr, exprType, preStmts, postStmts, err = transpileVAArgExpr(n, p)
 
+	case *ast.ConstantExpr:
+		switch len(n.Children()) {
+		case 0:
+			// ignore
+		case 1:
+			expr, exprType, preStmts, postStmts, err = transpileToExpr(n.Children()[0], p, exprIsStmt)
+		default:
+			err = fmt.Errorf("ConstantExpr: %v. has many nodes", err)
+		}
+
 	case *ast.VisibilityAttr:
 		// ignore
 
@@ -290,7 +313,7 @@ func transpileToStmts(node ast.Node, p *program.Program) (
 		stmts, err = transpileDeclStmt(n, p)
 		if err != nil {
 			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("Error in DeclStmt: %v", err), n))
+				fmt.Errorf("error in DeclStmt: %v", err), n))
 			err = nil // Error is ignored
 		}
 		return
@@ -304,7 +327,7 @@ func transpileToStmts(node ast.Node, p *program.Program) (
 	stmt, preStmts, postStmts, err = transpileToStmt(node, p)
 	if err != nil {
 		p.AddMessage(p.GenerateWarningMessage(
-			fmt.Errorf("Error in DeclStmt: %v", err), node))
+			fmt.Errorf("error in DeclStmt: %v", err), node))
 		err = nil // Error is ignored
 	}
 	return combineStmts(stmt, preStmts, postStmts), err
@@ -318,7 +341,7 @@ func transpileToStmt(node ast.Node, p *program.Program) (
 
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileToStmt : %v", err)
+			err = fmt.Errorf("cannot transpileToStmt : %v", err)
 			p.AddMessage(p.GenerateWarningMessage(err, node))
 			err = nil // Error is ignored
 		}
@@ -460,7 +483,7 @@ func transpileToStmt(node ast.Node, p *program.Program) (
 
 	// For all other cases
 	if expr == nil {
-		err = fmt.Errorf("Expr is nil")
+		err = fmt.Errorf("expr is nil")
 		return
 	}
 	stmt = util.NewExprStmt(expr)
@@ -480,42 +503,32 @@ func transpileToNode(node ast.Node, p *program.Program) (
 		}
 	}()
 
+	if node == nil {
+		return
+	}
+
 	defer func() {
 		decls = nilFilterDecl(decls)
 	}()
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("error - panic : %#v", r)
+			err = fmt.Errorf("transpileToNode: error - panic : %#v. %s", r, string(debug.Stack()))
 		}
 	}()
 
-	switch n := node.(type) {
-	case *ast.TranslationUnitDecl:
+	if n, ok := node.(*ast.TranslationUnitDecl); ok {
 		return transpileTranslationUnitDecl(p, n)
 	}
 
-	if fd, ok := node.(*ast.FunctionDecl); ok {
-		if d := p.GetFunctionDefinition(fd.Name); d == nil ||
-			p.PreprocessorFile.IsUserSource(d.IncludeFile) {
-
-			// create new definition
-			if _, _, f, r, err := util.ParseFunction(fd.Type); err == nil {
-				p.AddFunctionDefinition(program.DefinitionFunction{
-					Name:          fd.Name,
-					ReturnType:    r[0],
-					ArgumentTypes: f,
-					IncludeFile:   fd.Position().File,
-				})
-			}
-		}
-	}
-
-	if !AddOutsideStruct {
-		if node != nil {
-			if !p.PreprocessorFile.IsUserSource(node.Position().File) {
+	if !AddOutsideStruct &&
+		!p.PreprocessorFile.IsUserSource(node.Position().File) {
+		if fd, ok := node.(*ast.FunctionDecl); ok {
+			if getFunctionBody(fd) != nil {
 				return
 			}
+		} else {
+			return
 		}
 	}
 
@@ -653,7 +666,7 @@ func transpileStmts(nodes []ast.Node, p *program.Program) (stmts []goast.Stmt, e
 	defer func() {
 		if err != nil {
 			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("Error in transpileToStmts: %v", err), nodes[0]))
+				fmt.Errorf("error in transpileToStmts: %v", err), nodes[0]))
 			err = nil // Error is ignored
 		}
 	}()

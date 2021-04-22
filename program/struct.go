@@ -23,7 +23,7 @@ type Struct struct {
 	// IsGlobal is true for case global struct
 	IsGlobal bool
 
-	// This field is used to avoid to dupplicate code for union case the type is the same.
+	// This field is used to avoid to duplicate code for union case the type is the same.
 	Type TypeOfStruct
 
 	// Each of the fields and their C type. The field may be a string or an
@@ -39,7 +39,7 @@ type Struct struct {
 func NewStruct(p *Program, n *ast.RecordDecl) (st *Struct, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot create new structure : %T. Error : %v",
+			err = fmt.Errorf("cannot create new structure : %T. Error : %v",
 				n, err)
 		} else {
 			p.Structs[n.Name] = st
@@ -89,7 +89,7 @@ func NewStruct(p *Program, n *ast.RecordDecl) (st *Struct, err error) {
 	case "struct":
 		t = StructType
 	default:
-		err = fmt.Errorf("Undefine kind of RecordDecl `%v`", n.Kind)
+		err = fmt.Errorf("undefine kind of RecordDecl `%v`", n.Kind)
 		return
 	}
 
@@ -119,13 +119,13 @@ func (p *Program) IsUnion(cType string) bool {
 	}
 	if t, ok := p.GetBaseTypeOfTypedef(cType); ok {
 		if t == cType {
-			panic(fmt.Errorf("Cannot be same name: %s", t))
+			panic(fmt.Errorf("cannot be same name: %s", t))
 		}
 		if strings.HasPrefix(t, "struct ") {
 			return false
 		}
 		if t == "" {
-			panic(fmt.Errorf("Type cannot be empty"))
+			panic(fmt.Errorf("type cannot be empty"))
 		}
 		return p.IsUnion(t)
 	}
@@ -138,7 +138,7 @@ func (p *Program) GetBaseTypeOfTypedef(cTypedef string) (
 
 	cBase, ok = p.TypedefType[cTypedef]
 	if cBase == "" && ok {
-		panic(fmt.Errorf("Type cannot be empty"))
+		panic(fmt.Errorf("type cannot be empty"))
 	}
 
 	if cBase == cTypedef {

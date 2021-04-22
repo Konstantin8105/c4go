@@ -2,7 +2,6 @@ package noarch
 
 import (
 	"bytes"
-	"reflect"
 	"unsafe"
 )
 
@@ -97,22 +96,20 @@ func Strcmp(str1, str2 []byte) int32 {
 // See: http://www.cplusplus.com/reference/cstring/strchr/
 func Strchr(str []byte, ch32 int32) []byte {
 	ch := int(ch32)
-	i := 0
-	for {
+	for i := 0; i < len(str); i++ {
 		if str[i] == '\x00' {
 			break
 		}
 		if int(str[i]) == ch {
 			return str[i:]
 		}
-		i++
 	}
 	return nil
 }
 
 // Strstr finds the first occurrence of the null-terminated byte string
 // pointed to by substr in the null-terminated byte string pointed to by str.
-//The terminating null characters are not compared.
+// The terminating null characters are not compared.
 func Strstr(str, subStr []byte) []byte {
 	if subStr == nil {
 		return str
@@ -151,7 +148,16 @@ func Memmove(ptr, src interface{}, num uint32) interface{} {
 	if p, ok := ptr.([]byte); ok {
 		if s, ok := src.([]byte); ok {
 			for i := int(num); i >= 0; i-- {
+				if i >= len(s) {
+					continue
+				}
+				if i >= len(p) {
+					continue
+				}
 				p[i] = s[i]
+				if s[i] == '\x00' {
+					break
+				}
 			}
 			return s
 		}
@@ -176,22 +182,6 @@ func Memcmp(lhs []byte, rhs []byte, count uint32) int32 {
 		}
 	}
 	return 0
-}
-
-func Memcpy(dst, src interface{}, size uint) interface{} {
-	switch reflect.TypeOf(src).Kind() {
-	case reflect.Slice:
-		s := reflect.ValueOf(src)
-		d := reflect.ValueOf(dst)
-		size /= uint(int(s.Index(0).Type().Size()))
-		for i := 0; i < int(size); i++ {
-			if i >= s.Len() {
-				break
-			}
-			d.Index(i).Set(s.Index(i))
-		}
-	}
-	return dst
 }
 
 func Strrchr(source []byte, c32 int32) []byte {

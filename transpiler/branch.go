@@ -22,7 +22,7 @@ func transpileIfStmt(n *ast.IfStmt, p *program.Program) (
 
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileIfStmt. %v", err)
+			err = fmt.Errorf("cannot transpileIfStmt. %v", err)
 		}
 	}()
 
@@ -57,7 +57,10 @@ func transpileIfStmt(n *ast.IfStmt, p *program.Program) (
 
 	// From here on there must be 4 children.
 	if len(children) != 4 {
-		panic(fmt.Sprintf("Expected 4 children in IfStmt, got %#v", children))
+		children = append([]ast.Node{nil}, children...)
+	}
+	if len(children) != 4 {
+		children = append(children, nil)
 	}
 
 	// Maybe we will discover what the nil value is?
@@ -69,7 +72,7 @@ func transpileIfStmt(n *ast.IfStmt, p *program.Program) (
 	// expression - assignment operators need to be wrapped in closures.
 	conditional, conditionalType, newPre, newPost, err := atomicOperation(children[1], p)
 	if err != nil {
-		err = fmt.Errorf("Cannot transpile for condition. %v", err)
+		err = fmt.Errorf("cannot transpile for condition. %v", err)
 		return nil, nil, nil, err
 	}
 	// null in C is false
@@ -99,12 +102,12 @@ func transpileIfStmt(n *ast.IfStmt, p *program.Program) (
 
 		preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 		if body == nil {
-			return nil, nil, nil, fmt.Errorf("Body of If cannot by nil")
+			return nil, nil, nil, fmt.Errorf("body of If cannot by nil")
 		}
 	}
 
 	if boolCondition == nil {
-		return nil, nil, nil, fmt.Errorf("Bool Condition in If cannot by nil")
+		return nil, nil, nil, fmt.Errorf("bool Condition in If cannot by nil")
 	}
 	r := &goast.IfStmt{
 		Cond: boolCondition,
@@ -127,7 +130,7 @@ func transpileIfStmt(n *ast.IfStmt, p *program.Program) (
 				}
 			}
 		} else {
-			return nil, nil, nil, fmt.Errorf("Body of Else in If cannot be nil")
+			return nil, nil, nil, fmt.Errorf("body of Else in If cannot be nil")
 		}
 	}
 
@@ -141,7 +144,7 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 	// Please remove after solving all problems
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot tranpile ForStmt: err = %v", err)
+			err = fmt.Errorf("cannot transpile ForStmt: err = %v", err)
 			p.AddMessage(p.GenerateWarningMessage(err, n))
 		}
 	}()
@@ -183,7 +186,7 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 			// for(c = 0 ; a < 5 ; a++)
 			before, newPre, newPost, err := transpileToStmt(children[0], p)
 			if err != nil {
-				err = fmt.Errorf("Cannot transpile comma binaryoperator. %v",
+				err = fmt.Errorf("cannot transpile comma binaryoperator. %v",
 					err)
 				return nil, nil, nil, err
 			}
@@ -280,7 +283,7 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 	if !transpilate {
 		post, newPre, newPost, err = transpileToStmt(children[3], p)
 		if err != nil {
-			err = fmt.Errorf("Cannot tranpile children[3] : %v", err)
+			err = fmt.Errorf("cannot transpile children[3] : %v", err)
 			return nil, nil, nil, err
 		}
 
@@ -371,11 +374,11 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 	}
 	body, newPre, newPost, err := transpileToBlockStmt(children[4], p)
 	if err != nil {
-		err = fmt.Errorf("Cannot transpile body. %v", err)
+		err = fmt.Errorf("cannot transpile body. %v", err)
 		return nil, nil, nil, err
 	}
 	if body == nil {
-		return nil, nil, nil, fmt.Errorf("Body of For cannot be nil")
+		return nil, nil, nil, fmt.Errorf("body of For cannot be nil")
 	}
 
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
@@ -390,7 +393,7 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 		}, preStmts, postStmts, nil
 	}
 
-	// for avoid dublication of init values for
+	// for avoid duplication of init values for
 	// case with 2 for`s
 	var block goast.BlockStmt
 	var forStmt = goast.ForStmt{
@@ -409,7 +412,7 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 // We have only operator FOR in Go, but in C we also have
 // operator WHILE. So, we have to convert to operator FOR.
 // We choose directly conversion  from AST C code to AST C code, for
-// - avoid dublicate of code in realization WHILE and FOR.
+// - avoid duplicate of code in realization WHILE and FOR.
 // - create only one operator FOR powerful.
 // Example of C code with operator WHILE:
 //	while(i > 0){
@@ -462,17 +465,29 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 //    |     `-DeclRefExpr 0x2530c78 <col:3> 'int' lvalue Var 0x25306f8 'i' 'int'
 func transpileWhileStmt(n *ast.WhileStmt, p *program.Program) (
 	goast.Stmt, []goast.Stmt, []goast.Stmt, error) {
+
+	for i := 0; i < len(n.Children()); i++ {
+		if n.ChildNodes[0] == nil {
+			n.ChildNodes = n.ChildNodes[1:]
+		}
+		break
+	}
+
 	var forOperator ast.ForStmt
 	forOperator.AddChild(nil)
 	forOperator.AddChild(nil)
-	forOperator.AddChild(n.Children()[1])
+	forOperator.AddChild(n.Children()[0])
 	forOperator.AddChild(nil)
-	if n.Children()[2] == nil {
-		// added for case if WHILE haven't body, for example:
-		// while(0);
-		n.Children()[2] = &ast.CompoundStmt{}
+	if len(n.Children()) > 1 {
+		if n.Children()[1] == nil {
+			// added for case if WHILE haven't body, for example:
+			// while(0);
+			n.Children()[1] = &ast.CompoundStmt{}
+		}
+		forOperator.AddChild(n.Children()[1])
+	} else {
+		forOperator.AddChild(&ast.CompoundStmt{})
 	}
-	forOperator.AddChild(n.Children()[2])
 
 	return transpileForStmt(&forOperator, p)
 }
@@ -481,7 +496,7 @@ func transpileWhileStmt(n *ast.WhileStmt, p *program.Program) (
 // We have only operators FOR and IF in Go, but in C we also have
 // operator DO...WHILE. So, we have to convert to operators FOR and IF.
 // We choose directly conversion  from AST C code to AST C code, for:
-// - avoid dublicate of code in realization DO...WHILE and FOR.
+// - avoid duplicate of code in realization DO...WHILE and FOR.
 // - create only one powerful operator FOR.
 // Example of C code with operator DO...WHILE:
 //	do{
@@ -589,7 +604,7 @@ func createIfWithNotConditionAndBreak(condition ast.Node) (ifStmt ast.IfStmt) {
 		par.Type = *typ
 		unitary.Type = *typ
 	} else {
-		panic(fmt.Errorf("Type %T is not implemented in createIfWithNotConditionAndBreak", condition))
+		panic(fmt.Errorf("type %T is not implemented in createIfWithNotConditionAndBreak", condition))
 	}
 
 	par.AddChild(condition)

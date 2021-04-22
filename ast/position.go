@@ -248,6 +248,8 @@ func setPosition(node Node, position Position) {
 		n.Pos = position
 	case *AvailabilityAttr:
 		n.Pos = position
+	case *BinaryConditionalOperator:
+		n.Pos = position
 	case *BinaryOperator:
 		n.Pos = position
 	case *BlockCommandComment:
@@ -267,6 +269,8 @@ func setPosition(node Node, position Position) {
 	case *ConditionalOperator:
 		n.Pos = position
 	case *ConstAttr:
+		n.Pos = position
+	case *ConstantExpr:
 		n.Pos = position
 	case *ContinueStmt:
 		n.Pos = position
@@ -322,6 +326,8 @@ func setPosition(node Node, position Position) {
 		n.Pos = position
 	case *ForStmt:
 		n.Pos = position
+	case *GenericSelectionExpr:
+		n.Pos = position
 	case *GCCAsmStmt:
 		n.Pos = position
 	case *HTMLStartTagComment:
@@ -348,6 +354,8 @@ func setPosition(node Node, position Position) {
 		n.Pos = position
 	case *LinkageSpecDecl:
 		n.Pos = position
+	case *AllocAlignAttr:
+		n.Pos = position
 	case *MallocAttr:
 		n.Pos = position
 	case *MaxFieldAlignmentAttr:
@@ -367,6 +375,8 @@ func setPosition(node Node, position Position) {
 	case *NonNullAttr:
 		n.Pos = position
 	case *OffsetOfExpr:
+		n.Pos = position
+	case *OpaqueValueExpr:
 		n.Pos = position
 	case *OverloadableAttr:
 		n.Pos = position
@@ -436,7 +446,7 @@ func setPosition(node Node, position Position) {
 		n.Pos = position
 	case *TypedefType, *Typedef, *TranslationUnitDecl, *RecordType, *Record,
 		*QualType, *PointerType, *ParenType, *IncompleteArrayType,
-		*FunctionProtoType, *EnumType, *Enum, *ElaboratedType,
+		*FunctionProtoType, *FunctionNoProtoType, *EnumType, *Enum, *ElaboratedType,
 		*ConstantArrayType, *BuiltinType, *ArrayFiller, *Field,
 		*DecayedType, *CXXRecord, *AttributedType:
 		// These do not have positions so they can be ignored.

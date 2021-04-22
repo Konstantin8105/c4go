@@ -5,6 +5,7 @@ package transpiler
 import (
 	goast "go/ast"
 	"go/token"
+	"runtime/debug"
 
 	"fmt"
 
@@ -111,6 +112,14 @@ func caseSplitter(nodes ...ast.Node) (cs []ast.Node) {
 			return false
 		}
 
+		if node == (*ast.CompoundStmt)(nil) {
+			return false
+		}
+
+		if len(node.Children()) == 0 {
+			return false
+		}
+
 		switch node.(type) {
 		case *ast.CaseStmt, *ast.DefaultStmt:
 			return true
@@ -154,7 +163,8 @@ func caseSplitter(nodes ...ast.Node) (cs []ast.Node) {
 func caseMerge(nodes []ast.Node) (pre, cs []ast.Node) {
 	for i := range nodes {
 		// ignore empty *ast.CompountStmt
-		if comp, ok := nodes[i].(*ast.CompoundStmt); ok && len(comp.Children()) == 0 {
+		if comp, ok := nodes[i].(*ast.CompoundStmt); ok &&
+			(comp == (*ast.CompoundStmt)(nil) || len(comp.Children()) == 0) {
 			continue
 		}
 
@@ -187,13 +197,13 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 	_ *goast.SwitchStmt, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileSwitchStmt : err = %v", err)
+			err = fmt.Errorf("cannot transpileSwitchStmt : err = %v", err)
 		}
 	}()
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("error - panic")
+			err = fmt.Errorf("transpileSwitchStmt: error - panic: %s", string(debug.Stack()))
 		}
 	}()
 
@@ -207,7 +217,7 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 		panic(fmt.Sprintf("Less than two children for switch: %#v", n))
 	}
 
-	// The condition is the expression to be evaulated against each of the
+	// The condition is the expression to be evaluated against each of the
 	// cases.
 	condition, conditionType, newPre, newPost, err := atomicOperation(
 		n.Children()[len(n.Children())-2], p)
@@ -222,9 +232,12 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
 	// separation body of switch on cases
-	body, ok := n.Children()[len(n.Children())-1].(*ast.CompoundStmt)
+	var body *ast.CompoundStmt
+	var ok bool
+	body, ok = n.Children()[len(n.Children())-1].(*ast.CompoundStmt)
 	if !ok {
-		err = fmt.Errorf("body is not ast.CompoundStmt : %T", n.Children()[len(n.Children())-1])
+		body = &ast.CompoundStmt{}
+		body.AddChild(n.Children()[len(n.Children())-1])
 	}
 
 	// CompoundStmt
@@ -241,6 +254,9 @@ func transpileSwitchStmt(n *ast.SwitchStmt, p *program.Program) (
 	//       |-<<<NULL>>>
 	//       `-DefaultStmt
 	//         `- ...
+	if body == (*ast.CompoundStmt)(nil) {
+		body = &ast.CompoundStmt{}
+	}
 	parts := caseSplitter(body.Children()...)
 	pre, parts := caseMerge(parts)
 	body.ChildNodes = parts
@@ -523,7 +539,7 @@ func transpileCaseStmt(n *ast.CaseStmt, p *program.Program) (
 	_ *goast.CaseClause, _ []goast.Stmt, _ []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileCaseStmt: %v", err)
+			err = fmt.Errorf("cannot transpileCaseStmt: %v", err)
 		}
 	}()
 	preStmts := []goast.Stmt{}

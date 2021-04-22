@@ -20,7 +20,7 @@ func transpileVAArgExpr(n *ast.VAArgExpr, p *program.Program) (
 	err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileVAArgExpr. %v", err)
+			err = fmt.Errorf("cannot transpileVAArgExpr. %v", err)
 		}
 	}()
 	// -VAArgExpr 'int'
@@ -54,13 +54,13 @@ func getVaListStruct() string {
 // va_list is C4GO implementation of va_list from "stdarg.h"
 type va_list struct{
 	position int
-	slice    []interface{}
+	Slice    []interface{}
 }
 
 func create_va_list(list []interface{}) * va_list{
 	return &va_list{
 		position: 0,
-		slice   : list,
+		Slice   : list,
 	}
 }
 
@@ -76,7 +76,7 @@ func va_arg(v * va_list) interface{} {
 	defer func(){
 		 v.position++	
 	}()
-	value := v.slice[v.position]
+	value := v.Slice[v.position]
 	switch value.(type) {
 		case int: 
 			return int32(value.(int))

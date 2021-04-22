@@ -72,10 +72,7 @@ func ConvertValueToPointer(nodes []ast.Node, p *program.Program) (expr goast.Exp
 
 	return util.NewCallExpr(fmt.Sprintf("%s%s", unsafeConvertFunctionName,
 		typeToFuncname(resolvedType)),
-		&goast.UnaryExpr{
-			Op: token.AND,
-			X:  goast.NewIdent(decl.Name),
-		}), true
+		util.NewUnaryExpr(goast.NewIdent(decl.Name), token.AND)), true
 }
 
 func typeToFuncname(typeName string) (functionName string) {
@@ -106,7 +103,7 @@ func GetUnsafeConvertDecls(p *program.Program) {
 		p.File.Decls = append(p.File.Decls, &goast.FuncDecl{
 			Doc: &goast.CommentGroup{
 				List: []*goast.Comment{
-					&goast.Comment{
+					{
 						Text: fmt.Sprintf("// %s : created by c4go\n", functionName),
 					},
 				},
@@ -181,6 +178,11 @@ func GetUnsafeConvertDecls(p *program.Program) {
 //		            Each stmt has `defer` functions.
 func GetPointerAddress(expr goast.Expr, cType string, sizeof int) (
 	rs goast.Expr, postStmts []goast.Stmt, err error) {
+
+	if expr == nil {
+		err = fmt.Errorf("cannot get pointer address for nil expr")
+		return
+	}
 
 	// generate postStmts
 
@@ -296,10 +298,7 @@ func GetPointerAddress(expr goast.Expr, cType string, sizeof int) (
 							Fun:    goast.NewIdent("unsafe.Pointer"),
 							Lparen: 1,
 							Args: []goast.Expr{
-								&goast.UnaryExpr{
-									Op: token.AND,
-									X:  goast.NewIdent(name),
-								},
+								util.NewUnaryExpr(goast.NewIdent(name), token.AND),
 							},
 						}},
 					},
@@ -314,7 +313,7 @@ func GetPointerAddress(expr goast.Expr, cType string, sizeof int) (
 	// prepare postStmts
 
 	if sizeof < 1 {
-		err = fmt.Errorf("Not valid sizeof `%s`: %d", cType, sizeof)
+		err = fmt.Errorf("not valid sizeof `%s`: %d", cType, sizeof)
 		return
 	}
 
@@ -323,7 +322,7 @@ func GetPointerAddress(expr goast.Expr, cType string, sizeof int) (
 		rs = &goast.BinaryExpr{
 			X: util.NewCallExpr("int64", util.NewCallExpr("uintptr",
 				util.NewCallExpr("unsafe.Pointer",
-					&goast.UnaryExpr{Op: token.AND, X: expr},
+					util.NewUnaryExpr(expr, token.AND),
 				),
 			)),
 			Op: token.QUO,
@@ -492,7 +491,7 @@ func PntBitCast(expr goast.Expr, cFrom, cTo string, p *program.Program) (
 	rs goast.Expr, toCtype string, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot PntBitCast : %v", err)
+			err = fmt.Errorf("cannot PntBitCast : %v", err)
 			p.AddMessage(p.GenerateWarningMessage(err, nil))
 		}
 	}()
@@ -502,7 +501,7 @@ func PntBitCast(expr goast.Expr, cFrom, cTo string, p *program.Program) (
 	toCtype = cTo
 
 	if !types.IsPointer(cFrom, p) || !types.IsPointer(cTo, p) {
-		err = fmt.Errorf("Some type is not pointer `%s` or `%s`", cFrom, cTo)
+		err = fmt.Errorf("some type is not pointer `%s` or `%s`", cFrom, cTo)
 		return
 	}
 
@@ -515,6 +514,30 @@ func PntBitCast(expr goast.Expr, cFrom, cTo string, p *program.Program) (
 
 	if util.IsFunction(cFrom) {
 		return
+	}
+
+	// check typedef
+	{
+		typedefFromType := cFrom
+		typedefToType := cTo
+		for {
+			if t, ok := p.TypedefType[typedefFromType]; ok {
+				typedefFromType = t
+				continue
+			}
+			break
+		}
+		for {
+			if t, ok := p.TypedefType[typedefToType]; ok {
+				typedefToType = t
+				continue
+			}
+			break
+		}
+		if typedefFromType == typedefToType {
+			// no need cast
+			return
+		}
 	}
 
 	{
@@ -580,10 +603,7 @@ func CreateSliceFromReference(goType string, expr goast.Expr) goast.Expr {
 	return &goast.SliceExpr{
 		X: util.NewCallExpr(fmt.Sprintf("(*[1000000]%s)", goType),
 			util.NewCallExpr("unsafe.Pointer",
-				&goast.UnaryExpr{
-					X:  expr,
-					Op: token.AND,
-				}),
+				util.NewUnaryExpr(expr, token.AND)),
 		),
 	}
 }
@@ -596,7 +616,7 @@ func CreateSliceFromReference(goType string, expr goast.Expr) goast.Expr {
 //      'ptr' - left
 //      'int' - leftType transpiled in Go type
 // Note:
-// 1) rigthType MUST be 'int'
+// 1) rightType MUST be 'int'
 // 2) pointerArithmetic - implemented ONLY right part of formula
 // 3) right is MUST be positive value, because impossible multiply uintptr to (-1)
 func pointerArithmetic(p *program.Program,
@@ -606,24 +626,11 @@ func pointerArithmetic(p *program.Program,
 	_ goast.Expr, _ string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpile pointerArithmetic. err = %v", err)
+			err = fmt.Errorf("cannot transpile pointerArithmetic. err = %v", err)
 		}
 	}()
 
-	if bl, ok := right.(*goast.BasicLit); ok && operator == token.ADD {
-		if bl.Value == "1" && bl.Kind == token.INT {
-			return &goast.SliceExpr{
-				X:      left,
-				Lbrack: 1,
-				Low: &goast.BasicLit{
-					Kind:  token.INT,
-					Value: "1",
-				},
-				Slice3: false,
-			}, leftType, preStmts, postStmts, nil
-		}
-	}
-
+	// check input data
 	if !(types.IsCInteger(p, rightType) || rightType == "bool") {
 		err = fmt.Errorf("right type is not C integer type : '%s'", rightType)
 		return
@@ -637,6 +644,7 @@ func pointerArithmetic(p *program.Program,
 		return
 	}
 
+	// prepare leftType - return base type
 	for {
 		if t, ok := p.TypedefType[leftType]; ok {
 			leftType = t
@@ -644,20 +652,56 @@ func pointerArithmetic(p *program.Program,
 		}
 		break
 	}
+	resolvedLeftType, err := types.ResolveType(p, leftType)
+	if err != nil {
+		return
+	}
+
+	p.AddImport("unsafe")
+	p.AddImport("runtime")
+	p.AddImport("reflect")
+
+	// try use simplification for pointer arithmetic.
+	// typically used only for Go base types.
+	if strings.Count(resolvedLeftType, "[") > 0 {
+		shortType := types.GetBaseType(leftType)
+
+		var resolvedShortType string
+		resolvedShortType, err = types.ResolveType(p, shortType)
+		if err != nil {
+			return
+		}
+
+		var acceptable bool
+
+		if types.IsGoBaseType(resolvedShortType) {
+			acceptable = true
+		}
+
+		if str, ok := p.Structs[resolvedShortType]; ok && str.IsGlobal {
+			acceptable = true
+		}
+
+		if str, ok := p.Unions[resolvedShortType]; ok && str.IsGlobal {
+			acceptable = true
+		}
+
+		if acceptable {
+			// save for future generate code
+			p.UnsafeConvertPointerArith[resolvedLeftType] = true
+			return util.NewCallExpr(getFunctionPointerArith(resolvedLeftType), left, util.NewCallExpr("int", right)),
+				leftType, nil, nil, nil
+		}
+	}
 
 	type pA struct {
 		Name      string // name of variable: 'ptr'
 		Type      string // type of variable: 'int','double'
 		Condition string // condition : '-1' ,'(-1+2-2)'
-		Operator  string // operator : '+', '-'
 	}
 
 	var s pA
 
-	resolvedLeftType, err := types.ResolveType(p, leftType)
-	if err != nil {
-		return
-	}
 	switch resolvedLeftType {
 	case "interface{}":
 		s.Type = "byte"
@@ -676,22 +720,34 @@ func pointerArithmetic(p *program.Program,
 		s.Condition = buf.String()
 	}
 
-	s.Operator = "+"
-	if operator == token.SUB {
-		s.Operator = "-"
-	}
-
 	src := `package main
 func main(){
-	a := (*(*[1000000]{{ .Type }})(unsafe.Pointer(uintptr(
-			unsafe.Pointer(&{{ .Name }}[0])) {{ .Operator }}
-			(uintptr)({{ .Condition }})*unsafe.Sizeof({{ .Name }}[0]))))[:]
+	a := func()[]{{ .Type }} {
+		var position int32 = int32({{ .Condition }})
+		slice := {{ .Name }}
+		if position < 0 {
+			// invert sign
+			position = -position
+
+			// Example from: go101.org/article/unsafe.html	
+			var hdr reflect.SliceHeader
+			sliceLen := len(slice)
+			hdr.Data = uintptr(unsafe.Pointer(&slice[0])) - (uintptr(position))*unsafe.Sizeof(slice[0])
+			runtime.KeepAlive(&slice[0]) // needed!
+			hdr.Len = sliceLen + int(position)
+			hdr.Cap = hdr.Len
+			slice = *((*[]{{ .Type }})(unsafe.Pointer(&hdr)))
+			return slice
+		}
+		// position >= 0:
+		return slice[position:]
+	}()
 }`
 	tmpl := template.Must(template.New("").Parse(src))
 	var source bytes.Buffer
 	err = tmpl.Execute(&source, s)
 	if err != nil {
-		err = fmt.Errorf("Cannot execute template. err = %v", err)
+		err = fmt.Errorf("cannot execute template. err = %v", err)
 		return
 	}
 
@@ -707,12 +763,54 @@ func main(){
 	f, err := parser.ParseFile(fset, "", body, 0)
 	if err != nil {
 		body = strings.Replace(body, "\n", "", -1)
-		err = fmt.Errorf("Cannot parse file. err = %v. body = `%s`", err, body)
+		err = fmt.Errorf("cannot parse file. err = %v. body = `%s`", err, body)
 		return
 	}
 
-	p.AddImport("unsafe")
-
 	return f.Decls[0].(*goast.FuncDecl).Body.List[0].(*goast.AssignStmt).Rhs[0],
 		leftType, preStmts, postStmts, nil
+}
+
+const unsafePointerArithFunctionName string = "c4goPointerArith"
+
+func getFunctionPointerArith(goType string) string {
+	return fmt.Sprintf("%s%s", unsafePointerArithFunctionName, util.GetExportedName(goType))
+}
+
+func pointerArithFunction(goType string) string {
+	return fmt.Sprintf(`
+
+// %s - function of pointer arithmetic. generated by c4go 
+func %s(slice %s, position int)%s {
+	if position < 0 {
+		// invert sign
+		position = -position
+
+		// Example from: go101.org/article/unsafe.html
+		// repair size of slice
+		var hdr reflect.SliceHeader
+		sliceLen := len(slice)
+		hdr.Data = uintptr(unsafe.Pointer(&slice[0])) - (uintptr(position))*unsafe.Sizeof(slice[0])
+		runtime.KeepAlive(&slice[0]) // needed!
+		hdr.Len = sliceLen + int(position)
+		hdr.Cap = hdr.Len
+		slice = *((*%s)(unsafe.Pointer(&hdr)))
+		return slice
+	}
+	// position >= 0:
+	return slice[position:]
+}
+
+`,
+		getFunctionPointerArith(goType),
+		getFunctionPointerArith(goType),
+		goType, goType, goType)
+
+}
+
+func getPointerArithFunctions(p *program.Program) (out string) {
+	for goType := range p.UnsafeConvertPointerArith {
+		out += pointerArithFunction(goType)
+	}
+	return
 }

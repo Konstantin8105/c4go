@@ -121,7 +121,7 @@ func NewFilePP(inputFiles, clangFlags []string, cppCode bool) (
 	f FilePP, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Preprocess error : %v", err)
+			err = fmt.Errorf("preprocess error : %v", err)
 		}
 	}()
 
@@ -157,7 +157,7 @@ func NewFilePP(inputFiles, clangFlags []string, cppCode bool) (
 	for i := range allItems {
 		// If found same part of preprocess code, then
 		// don't include in result buffer for transpiling
-		// for avoid dublicate of code
+		// for avoid duplicate of code
 		var found bool
 		for j := 0; j < i; j++ {
 			if allItems[i].isSame(&allItems[j]) {
@@ -291,10 +291,13 @@ func (f FilePP) GetIncludeFiles() []IncludeHeader {
 // IsUserSource get is it source from user
 func (f FilePP) IsUserSource(in string) bool {
 	for i := range f.includes {
-		if strings.Contains(in, f.includes[i].HeaderName) &&
-			f.includes[i].IsUserSource {
-			return true
+		if !f.includes[i].IsUserSource {
+			continue
 		}
+		if !strings.Contains(in, f.includes[i].HeaderName) {
+			continue
+		}
+		return true
 	}
 	return false
 }
@@ -388,13 +391,19 @@ again:
 			if col-1 < len([]byte(*l)) {
 				return []byte((*l)[col-1:]), nil
 			}
-			err = fmt.Errorf("Empty snippet")
+			err = fmt.Errorf("empty snippet")
 			return
+		}
+		if col <= 0 {
+			col = 1
+		}
+		if colEnd > len((*l)) {
+			return []byte((*l)[col-1:]), nil
 		}
 		return []byte((*l)[col-1 : colEnd]), nil
 	}
 
-	err = fmt.Errorf("Snippet is not found")
+	err = fmt.Errorf("snippet is not found")
 	return
 }
 
@@ -428,12 +437,12 @@ func analyzeFiles(inputFiles, clangFlags []string, cppCode bool) (
 			}
 			item, err = parseIncludePreprocessorLine(line)
 			if err != nil {
-				err = fmt.Errorf("Cannot parse line : %s with error: %s", line, err)
+				err = fmt.Errorf("cannot parse line : %s with error: %s", line, err)
 				return
 			}
 			if item.positionInSource == 0 {
 				// cannot by less 1 for avoid problem with
-				// indentification of "0" AST base element
+				// identification of "0" AST base element
 				item.positionInSource = 1
 			}
 			item.lines = make([]*string, 0)
@@ -594,7 +603,7 @@ func getIncludeList(inputFiles, clangFlags []string, flag []string, cppCode bool
 	_ string, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot get Include List : %v", err)
+			err = fmt.Errorf("cannot get Include List : %v", err)
 		}
 	}()
 	var out bytes.Buffer
@@ -633,5 +642,22 @@ func getIncludeList(inputFiles, clangFlags []string, flag []string, cppCode bool
 	// add stderr to out, for flags "-MM -H"
 	out.WriteString(stderr.String())
 
-	return out.String(), err
+	// remove warnings
+	// ... /usr/lib/llvm-4.0/bin/../lib/clang/4.0.1/include/stddef.h
+	// .. /usr/include/x86_64-linux-gnu/bits/stdlib-float.h
+	// /home/konstantin/go/src/github.com/Konstantin8105/c4go/testdata/kilo/debug.kilo.c:81:9: warning: '_BSD_SOURCE' macro redefined [-Wmacro-redefined]
+	// #define _BSD_SOURCE
+	//         ^
+	// /usr/include/features.h:188:10: note: previous definition is here
+	// # define _BSD_SOURCE    1
+	//          ^
+	lines := strings.Split(out.String(), "\n")
+	for i := range lines {
+		if strings.Contains(lines[i], "warning:") {
+			lines = lines[:i]
+			break
+		}
+	}
+
+	return strings.Join(lines, "\n"), err
 }

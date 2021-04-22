@@ -114,6 +114,19 @@ func TestMemberExpr(t *testing.T) {
 			IsPointer:  true,
 			ChildNodes: []Node{},
 		},
+		`0x1f54888 <col:44, col:49> 'enum linestyle_type [19]' lvalue .lineStyle 0x1eb6830 non_odr_use_unevaluated`: &MemberExpr{
+			Addr:       0x1f54888,
+			Pos:        NewPositionFromString("col:44, col:49"),
+			Type:       "enum linestyle_type [19]",
+			Type2:      "",
+			IsLvalue:   true,
+			IsBitfield: false,
+			Name:       "lineStyle",
+			Address2:   "0x1eb6830",
+			IsPointer:  false,
+			Other:      " non_odr_use_unevaluated",
+			ChildNodes: []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)

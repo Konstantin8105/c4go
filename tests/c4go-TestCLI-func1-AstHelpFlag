@@ -1,0 +1,7 @@
+(*bytes.Buffer)(Usage: test ast [-cpp] [-clang-flag values] file.c
+  -clang-flag value
+    	Pass arguments to clang. You may provide multiple -clang-flag items.
+  -cpp
+    	transpile CPP code
+  -h	print help information
+)

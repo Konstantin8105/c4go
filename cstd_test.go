@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -49,25 +50,25 @@ var cstd = map[string][]string{
 		"scanf",
 		"setbuf",
 		"setvbuf",
-		"snprintf",
+		// c++ "snprintf",
 		"sprintf",
 		"sscanf",
 		"tmpfile",
 		"tmpnam",
 		"ungetc",
 		"vfprintf",
-		"vfscanf",
+		// c++ "vfscanf",
 		"vprintf",
-		"vscanf",
-		"vsnprintf",
+		// c++ "vscanf",
+		// c++ "vsnprintf",
 		"vsprintf",
-		"vsscanf",
+		// c++ "vsscanf",
 	},
 	"assert.h": {"assert"},
 	"ctype.h": {
 		"isalnum",
 		"isalpha",
-		"isblank",
+		// c++ "isblank",
 		"iscntrl",
 		"isdigit",
 		"isgraph",
@@ -90,64 +91,64 @@ var cstd = map[string][]string{
 		"localeconv",
 	},
 	"math.h": {
-		"abs",
+		// "abs",
 		"acos",
-		"acosh",
+		// c++ "acosh",
 		"asin",
-		"asinh",
+		// c++ "asinh",
 		"atan",
 		"atan2",
-		"atanh",
-		"cbrt",
+		// c++ "atanh",
+		// c++ "cbrt",
 		"ceil",
-		"copysign",
+		// c++ "copysign",
 		"cos",
 		"cosh",
-		"erf",
-		"erfc",
+		// c++ "erf",
+		// c++ "erfc",
 		"exp",
-		"exp2",
-		"expm1",
+		// c++ "exp2",
+		// c++ "expm1",
 		"fabs",
-		"fdim",
+		// c++ "fdim",
 		"floor",
-		"fma",
-		"fmax",
-		"fmin",
+		// c++ "fma",
+		// c++ "fmax",
+		// c++ "fmin",
 		"fmod",
 		"frexp",
-		"hypot",
-		"ilogb",
+		// c++ "hypot",
+		// c++ "ilogb",
 		"ldexp",
-		"lgamma",
-		"llrint",
-		"llround",
+		// c++ "lgamma",
+		// c++ "llrint",
+		// c++ "llround",
 		"log",
 		"log10",
-		"log1p",
-		"log2",
-		"logb",
-		"lrint",
-		"lround",
+		// c++ "log1p",
+		// c++ "log2",
+		// c++ "logb",
+		// c++ "lrint",
+		// c++ "lround",
 		"modf",
-		"nan",
-		"nearbyint",
-		"nextafter",
-		"nexttoward",
+		// c++ "nan",
+		// c++ "nearbyint",
+		// c++ "nextafter",
+		// c++ "nexttoward",
 		"pow",
-		"remainder",
-		"remquo",
-		"rint",
-		"round",
-		"scalbln",
-		"scalbn",
+		// c++ "remainder",
+		// c++ "remquo",
+		// c++ "rint",
+		// c++ "round",
+		// c++ "scalbln",
+		// c++ "scalbn",
 		"sin",
 		"sinh",
 		"sqrt",
 		"tan",
 		"tanh",
-		"tgamma",
-		"trunc",
+		// c++ "tgamma",
+		// c++ "trunc",
 	},
 	"setjmp.h": {
 		"jmp_buf",
@@ -162,13 +163,14 @@ var cstd = map[string][]string{
 	"stdarg.h": {
 		"va_arg",
 		"va_end",
+		// c++ "va_copy",
 		"va_list",
 		"va_start",
 	},
 	"stddef.h": {
 		"NULL",
-		"max_align_t",
-		"nullptr_t",
+		// c++ "max_align_t",
+		// c++ "nullptr_t",
 		"offsetof",
 		"ptrdiff_t",
 		"size_t",
@@ -179,15 +181,15 @@ var cstd = map[string][]string{
 		"MB_CUR_MAX",
 		"NULL",
 		"RAND_MAX",
-		"_Exit",
+		// c++ "_Exit",
 		"abort",
 		"abs",
-		"at_quick_exit",
 		"atexit",
 		"atof",
 		"atoi",
 		"atol",
-		"atoll",
+		// c++ "atoll",
+		// c++ "at_quick_exit",
 		"bsearch",
 		"calloc",
 		"div",
@@ -198,26 +200,26 @@ var cstd = map[string][]string{
 		"labs",
 		"ldiv",
 		"ldiv_t",
-		"llabs",
-		"lldiv",
+		// c++ "llabs",
+		// c++ "lldiv",
 		"lldiv_t",
 		"malloc",
 		"mblen",
 		"mbstowcs",
 		"mbtowc",
 		"qsort",
-		"quick_exit",
+		// c++ "quick_exit",
 		"rand",
 		"realloc",
 		"size_t",
 		"srand",
 		"strtod",
-		"strtof",
+		// c++ "strtof",
 		"strtol",
-		"strtold",
-		"strtoll",
+		// c++ "strtold",
+		// c++ "strtoll",
 		"strtoul",
-		"strtoull",
+		// c++ "strtoull",
 		"system",
 		"wcstombs",
 		"wctomb",
@@ -293,11 +295,11 @@ var cstd = map[string][]string{
 		"tm", // "struct tm",
 		"ungetwc",
 		"vfwprintf",
-		"vfwscanf",
-		"vswprintf",
-		"vswscanf",
+		// c++ "vfwscanf",
+		// c++ "vswprintf",
+		// c++ "vswscanf",
 		"vwprintf",
-		"vwscanf",
+		// c++ "vwscanf",
 		"wchar_t",
 		"wcrtomb",
 		"wcscat",
@@ -317,13 +319,13 @@ var cstd = map[string][]string{
 		"wcsspn",
 		"wcsstr",
 		"wcstod",
-		"wcstof",
+		// c++ "wcstof",
 		"wcstok",
 		"wcstol",
-		"wcstold",
-		"wcstoll",
+		// c++ "wcstold",
+		// c++ "wcstoll",
 		"wcstoul",
-		"wcstoull",
+		// c++ "wcstoull",
 		"wcsxfrm",
 		"wctob",
 		"wint_t",
@@ -339,7 +341,7 @@ var cstd = map[string][]string{
 		"WEOF",
 		"iswalnum",
 		"iswalpha",
-		"iswblank",
+		// c++ "iswblank",
 		"iswcntrl",
 		"iswctype",
 		"iswdigit",
@@ -449,10 +451,6 @@ func TestCSTD(t *testing.T) {
 			strings.TrimSpace(ps[j].inc)) == -1
 	})
 
-	for _, l := range ps {
-		fmt.Fprintf(os.Stdout, "%s\n", l.line)
-	}
-
 	// checking with README.md
 	b, err := ioutil.ReadFile("README.md")
 	if err != nil {
@@ -465,25 +463,31 @@ func TestCSTD(t *testing.T) {
 		}
 	}
 
-	// Detail information
-	fmt.Fprintln(os.Stdout, "\nDetail information:")
-	for _, l := range ps {
-		fmt.Fprintf(os.Stdout, "%s\n", l.line)
-		var ps []pair
-		for function := range amount[l.inc] {
-			ps = append(ps, pair{
-				inc:  function,
-				line: fmt.Sprintf("\t%20s\t%v", function, amount[l.inc][function]),
-			})
-		}
-		sort.Slice(ps, func(i, j int) bool {
-			return strings.Compare(
-				strings.TrimSpace(ps[i].inc),
-				strings.TrimSpace(ps[j].inc)) == -1
-		})
-
+	if flag.CommandLine.Lookup("test.v").Value.String() == "true" {
 		for _, l := range ps {
 			fmt.Fprintf(os.Stdout, "%s\n", l.line)
+		}
+
+		// Detail information
+		fmt.Fprintln(os.Stdout, "\nDetail information:")
+		for _, l := range ps {
+			fmt.Fprintf(os.Stdout, "%s\n", l.line)
+			var ps []pair
+			for function := range amount[l.inc] {
+				ps = append(ps, pair{
+					inc:  function,
+					line: fmt.Sprintf("\t%20s\t%v", function, amount[l.inc][function]),
+				})
+			}
+			sort.Slice(ps, func(i, j int) bool {
+				return strings.Compare(
+					strings.TrimSpace(ps[i].inc),
+					strings.TrimSpace(ps[j].inc)) == -1
+			})
+
+			for _, l := range ps {
+				fmt.Fprintf(os.Stdout, "%s\n", l.line)
+			}
 		}
 	}
 }

@@ -1,6 +1,6 @@
 package program
 
-// DefinitionType - conversion map from C standart library structures to
+// DefinitionType - conversion map from C standard library structures to
 // c4go structures
 var DefinitionType = map[string]string{
 	// time.h
@@ -40,7 +40,7 @@ var DefinitionType = map[string]string{
 	"unsigned short int":     "uint16",
 	"void":                   "",
 	"_Bool":                  "int32",
-	"size_t":                 "uint",
+	"size_t":                 "uint32",
 	"ptrdiff_t":              "github.com/Konstantin8105/c4go/noarch.PtrdiffT",
 	"github.com/Konstantin8105/c4go/noarch.PtrdiffT": "uint64",
 	"wchar_t": "github.com/Konstantin8105/c4go/noarch.WcharT",
@@ -50,7 +50,7 @@ var DefinitionType = map[string]string{
 	"void*":  "interface{}",
 	"void *": "interface{}",
 
-	// null is a special case (it should probably have a less ambiguos name)
+	// null is a special case (it should probably have a less ambiguous name)
 	// when using the NULL macro.
 	"null": "null",
 

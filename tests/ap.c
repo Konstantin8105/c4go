@@ -17,6 +17,11 @@ long get()
     return (long)(0);
 }
 
+long negative()
+{
+    return (long)(-1);
+}
+
 double global;
 
 double* get_value()
@@ -102,6 +107,13 @@ int main()
     *pnt = 123;
     is_eq(*pnt, 123);
     is_eq(num, 123);
+
+    // TODO: test for negative index
+    //   diag("pointer arithmetic 7");
+    //   int* tmp_i2 = i2 + 1;
+    //   int* i13 = tmp_i2 + negative();
+    //   a(i13);
+    //   b(i13, 1);
 
     done_testing();
 }

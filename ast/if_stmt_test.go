@@ -11,6 +11,12 @@ func TestIfStmt(t *testing.T) {
 			Pos:        NewPositionFromString("line:11:7, line:18:7"),
 			ChildNodes: []Node{},
 		},
+		`0x25a5f78 <line:1329:8, line:1337:26> has_else`: &IfStmt{
+			Addr:       0x25a5f78,
+			Pos:        NewPositionFromString("line:1329:8, line:1337:26"),
+			HasElse:    true,
+			ChildNodes: []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)

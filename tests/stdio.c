@@ -196,7 +196,7 @@ void test_fscanf()
     pFile = fopen("./testdata/myfile2.txt", "w+");
     is_not_null(pFile);
 
-    fprintf(pFile, "%f \r\n %s %d %s", 3.1416, "PI", 42, "end");
+    fprintf(pFile, "%f \r\n\t\n %s %d %s", 3.1416, "PI", 42, "end");
     rewind(pFile);
     fscanf(pFile, "%f", &f);
     fscanf(pFile, "%s", str);
@@ -229,6 +229,20 @@ void test_fscanf()
 
     // remove temp file
     is_eq(remove("./testdata/myfile2.txt"), 0)
+
+        // test file fscan.txt
+        FILE* in
+        = fopen("./tests/stdio_fscan.txt", "r");
+    char dummy[128];
+
+    for (int iter = 0; iter < 10; iter++) {
+        int e = fscanf(in, "%s", dummy);
+        printf("fscan : iter[%d] : err = %d\n", iter, e);
+        if (e < 0) {
+            break;
+        }
+        printf("fscan : iter[%d] : str = %s\n", iter, dummy);
+    }
 }
 
 void test_fgetc()
@@ -477,8 +491,17 @@ void test_snprintf()
     char buffer[50];
     int n, a = 5, b = 3;
     n = sprintf(buffer, "%d plus %d is %d", a, b, a + b);
-    is_streq(buffer, "5 plus 3 is 8")
-        is_eq(n, 13)
+    is_streq(buffer, "5 plus 3 is 8");
+    is_eq(n, 13);
+
+    char status[80];
+    char* filename = "out.txt";
+    int numrows = 10;
+    int dirty = 1;
+    int len = snprintf(status, sizeof(status), "%.20s - %d lines %s",
+        filename, numrows, dirty ? "(modified)" : "");
+    printf("%s\n", status);
+    is_eq(len, 29);
 }
 
 int PrintFError(const char* format, ...)
@@ -488,13 +511,14 @@ int PrintFError(const char* format, ...)
     va_start(args, format);
     int s = vsprintf(buffer, format, args);
     va_end(args);
+    printf("vsnprintf buffer: `%s`\n", buffer);
     return s;
 }
 
 void test_vsprintf()
 {
     int s = PrintFError("Success function '%s' %.2f", "vsprintf", 3.1415926);
-    is_true(s >= 19 + 8 + 5);
+    is_true(s == 19 + 8 + 5);
 }
 
 int PrintFError2(const char* format, ...)
@@ -504,13 +528,16 @@ int PrintFError2(const char* format, ...)
     va_start(args, format);
     int s = vsnprintf(buffer, 256, format, args);
     va_end(args);
+    printf("vsnprintf buffer: `%s`\n", buffer);
     return s;
 }
 
 void test_vsnprintf()
 {
     int s = PrintFError2("Success function '%s' %.2f", "vsprintf", 3.1415926);
-    is_true(s >= 19 + 8 + 5);
+    is_true(s == 19 + 8 + 5);
+    s = PrintFError2("HHELP %d", (int)(2));
+    is_true(s == 7);
 }
 
 void test_eof()
@@ -542,26 +569,47 @@ void test_perror()
 
 void test_getline()
 {
-    FILE* pFile;
-    pFile = fopen(test_file, "r");
-    is_not_null(pFile);
+    {
+        diag("getline: not empty file");
+        FILE* pFile;
+        pFile = fopen(test_file, "r");
+        is_not_null(pFile);
 
-    size_t len;
-    char* line = NULL;
-    char** pnt = &line;
-    size_t* l = &len;
-    ssize_t pos = getline(pnt, l, pFile);
-    printf("getline = %d\n", pos);
-    is_true(pos == filesize);
+        size_t len;
+        char* line = NULL;
+        char** pnt = &line;
+        size_t* l = &len;
+        ssize_t pos = getline(pnt, l, pFile);
+        for (int i = 0; i < pos; i++) {
+            printf("[%d] : `%d`\n", i, line[i]);
+        }
+        printf("pos [%d] == filesize [%d]\n", pos, filesize);
+        is_eq(pos, filesize);
+    }
+    {
+        diag("getline: not empty file");
+        FILE* pFile;
+        pFile = fopen("./tests/empty.txt", "r");
+        is_not_null(pFile);
+
+        size_t len;
+        char* line = NULL;
+        char** pnt = &line;
+        size_t* l = &len;
+        ssize_t pos = getline(pnt, l, pFile);
+        is_eq(pos, -1);
+    }
 }
 
 void test_sscanf()
 {
-    char sentence[] = "Rudolph is 12 years old";
+    char sentence[] = "Example\nRudolph is 12 years old";
+    char header[50];
     char temp[50];
     char str[20];
     int i;
-    sscanf(sentence, "%s %s %d", str, temp, &i);
+    sscanf(sentence, "%s %s %s %d", header, str, temp, &i);
+    printf("Header: %s\n", header);
     is_eq(i, 12);
     is_streq(str, "Rudolph");
 }
@@ -596,49 +644,113 @@ void test_FILE()
     (void)p;
 }
 
+void WriteFormatted(const char* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
+}
+
+void test_vprintf()
+{
+    WriteFormatted("Call with %d variable argument.\n", 1);
+    WriteFormatted("Call with %d variable %s.\n", 2, "arguments");
+}
+
+void FWriteFormatted(FILE* stream, const char* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    vfprintf(stream, format, args);
+    va_end(args);
+}
+
+void test_vfprintf()
+{
+    FILE* pFile;
+    pFile = fopen("./testdata/vfprintf.txt", "w");
+    FWriteFormatted(pFile, "Call with %d variable argument.\n", 1);
+    FWriteFormatted(pFile, "Call with %d variable %s.\n", 2, "arguments");
+    fclose(pFile);
+}
+
+void test_setbuf()
+{
+    char buffer[BUFSIZ];
+    FILE *pFile1, *pFile2;
+
+    pFile1 = fopen("./testdata/setbuf.txt", "w");
+    pFile2 = fopen("./testdata/setbuf2.txt", "a");
+
+    setbuf(pFile1, buffer);
+    fputs("This is sent to a buffered stream", pFile1);
+    fflush(pFile1);
+
+    setbuf(pFile2, NULL);
+    fputs("This is sent to an unbuffered stream", pFile2);
+
+    fclose(pFile1);
+    fclose(pFile2);
+    (void)(buffer);
+}
+
+void test_setvbuf()
+{
+    FILE* pFile;
+    pFile = fopen("./testdata/detvbuf.txt", "w");
+    setvbuf(pFile, NULL, _IOFBF, 1024);
+    fclose(pFile);
+}
+
 int main()
 {
-    plan(68);
+    plan(71);
 
-    START_TEST(putchar)
-    START_TEST(puts)
-    START_TEST(printf)
-    START_TEST(remove)
-    START_TEST(rename)
-    START_TEST(fopen)
-    START_TEST(tmpfile)
-    START_TEST(tmpnam)
-    START_TEST(fclose)
-    START_TEST(fflush)
-    START_TEST(printf)
-    START_TEST(fprintf)
-    START_TEST(fscanf)
-    START_TEST(fgetc)
-    START_TEST(fgets)
-    START_TEST(fputc)
-    START_TEST(fputs)
-    START_TEST(getc)
-    START_TEST(putc)
-    START_TEST(fseek)
-    START_TEST(ftell)
-    START_TEST(fread)
-    START_TEST(fwrite)
-    START_TEST(fgetpos)
-    START_TEST(fsetpos)
-    START_TEST(rewind)
-    START_TEST(feof)
-    START_TEST(sprintf)
-    START_TEST(snprintf)
-    START_TEST(vsprintf)
-    START_TEST(vsnprintf)
-    START_TEST(eof)
-    START_TEST(getline)
-    START_TEST(sscanf)
-    START_TEST(ungetc)
-	START_TEST(FILE)
+    START_TEST(putchar);
+    START_TEST(puts);
+    START_TEST(printf);
+    START_TEST(remove);
+    START_TEST(rename);
+    START_TEST(fopen);
+    START_TEST(tmpfile);
+    START_TEST(tmpnam);
+    START_TEST(fclose);
+    START_TEST(fflush);
+    START_TEST(printf);
+    START_TEST(fprintf);
+    START_TEST(fscanf);
+    START_TEST(fgetc);
+    START_TEST(fgets);
+    START_TEST(fputc);
+    START_TEST(fputs);
+    START_TEST(getc);
+    START_TEST(putc);
+    START_TEST(fseek);
+    START_TEST(ftell);
+    START_TEST(fread);
+    START_TEST(fwrite);
+    START_TEST(fgetpos);
+    START_TEST(fsetpos);
+    START_TEST(rewind);
+    START_TEST(feof);
+    START_TEST(sprintf);
+    START_TEST(snprintf);
+    START_TEST(vsprintf);
+    START_TEST(vsnprintf);
+    START_TEST(eof);
+    START_TEST(getline);
+    START_TEST(sscanf);
+  
+    START_TEST(FILE);
+    START_TEST(vprintf);
+    START_TEST(vfprintf);
+    START_TEST(setbuf);
+    START_TEST(setvbuf);
+    START_TEST(ungetc);
 
     // that test must be last test
-    START_TEST(perror)
+    START_TEST(perror);
 
     done_testing();
 }

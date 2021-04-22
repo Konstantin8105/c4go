@@ -202,7 +202,7 @@ typedef struct st4a {
 
 typedef struct st4b {
     int st5b;
-} * const* st6b;
+}* const* st6b;
 
 struct st8 {
     int st9;
@@ -604,7 +604,7 @@ typedef struct {
     pointx x;
     int y;
 } Point2;
-const Point2 p2[] = { {.y = 4, .x = 5 } };
+const Point2 p2[] = { { .y = 4, .x = 5 } };
 const Point2* getPoint(int index)
 {
     return &(p2[index]);
@@ -628,81 +628,83 @@ void pointer_arithm_in_struct()
 }
 
 typedef struct
-  {
-  enum { UADD = 0, UDEL = 1, UMOV = 2, VMOV = 3 } typet;
-  int * head;
-  int * tail;
-  }
-undo;
+{
+    enum { UADD = 0,
+        UDEL = 1,
+        UMOV = 2,
+        VMOV = 3 } typet;
+    int* head;
+    int* tail;
+} undo;
 
 void typedef_with_union()
 {
-	diag("typedef with union");
-	undo   u ;
-	(void)(u);
-	u.typet = UMOV;
-	is_eq(u.typet, UMOV);
-	(void)(u.typet);
-	int y = 53;
-	u.head = &y;
-	is_eq(*u.head, y);
+    diag("typedef with union");
+    undo u;
+    (void)(u);
+    u.typet = UMOV;
+    is_eq(u.typet, UMOV);
+    (void)(u.typet);
+    int y = 53;
+    u.head = &y;
+    is_eq(*u.head, y);
 
-	undo u2;
-	u2.typet = VMOV;
-	int y2 = 42;
-	u2.head = &y2;
-	is_eq(u2.typet, VMOV);
-	is_eq(*u2.head, y2  );
+    undo u2;
+    u2.typet = VMOV;
+    int y2 = 42;
+    u2.head = &y2;
+    is_eq(u2.typet, VMOV);
+    is_eq(*u2.head, y2);
 
-	undo * u3 = &u2;
-	is_eq((*u3).typet, VMOV);
-	is_eq(*(*u3).head, y2  );
+    undo* u3 = &u2;
+    is_eq((*u3).typet, VMOV);
+    is_eq(*(*u3).head, y2);
 
-	(*u3).typet = u.typet;
-	is_eq((*u3).typet, UMOV);
+    (*u3).typet = u.typet;
+    is_eq((*u3).typet, UMOV);
 
-	int bd = UDEL;
-	(*u3).typet = bd;
-	is_eq((*u3).typet, UDEL);
+    int bd = UDEL;
+    (*u3).typet = bd;
+    is_eq((*u3).typet, UDEL);
 }
 
 typedef union {
-  void *p;
-  int b;
+    void* p;
+    int b;
 } Value;
 
-#define TValuefields	Value value; int tt
+#define TValuefields \
+    Value value;     \
+    int tt
 
 typedef struct lua_TValue {
-  TValuefields;
+    TValuefields;
 } TValue;
-
-
 
 void typedef_struct_with_typedef_union()
 {
-	diag("typedef struct with typedef union");
-	Value v;
-	v.b = 42;
-	is_eq(v.b, 42);
-	TValue tv;
-	tv.value = v;
-	tv.tt    = 55;
-	is_eq(tv.value.b, 42);
-	is_eq(tv.tt     , 55);
+    diag("typedef struct with typedef union");
+    Value v;
+    v.b = 42;
+    is_eq(v.b, 42);
+    TValue tv;
+    tv.value = v;
+    tv.tt = 55;
+    is_eq(tv.value.b, 42);
+    is_eq(tv.tt, 55);
 
-	TValue *ptv = &tv;
-	is_eq(ptv->value.b,42);
-	is_eq(ptv->tt     ,55);
+    TValue* ptv = &tv;
+    is_eq(ptv->value.b, 42);
+    is_eq(ptv->tt, 55);
 
-	double d = 45.0;
-	v.p = &d;
-	tv.value = v;
-	is_eq(*((double *)(v.p)), d);
-	is_eq(*((double *)(ptv->value.p)), d);
-	is_eq(ptv->tt, 55);
+    double d = 45.0;
+    v.p = &d;
+    tv.value = v;
+    is_eq(*((double*)(v.p)), d);
+    is_eq(*((double*)(ptv->value.p)), d);
+    is_eq(ptv->tt, 55);
 
-	is_eq(*((double*)((&tv)->value.p)), d);
+    is_eq(*((double*)((&tv)->value.p)), d);
 }
 
 int add(int a, int b)
@@ -711,32 +713,47 @@ int add(int a, int b)
 }
 
 struct simon {
-	int (*f)(int, int);
-	long double g;
+    int (*f)(int, int);
+    long double g;
 };
 
 void test_struct_with_func()
 {
-	struct simon s1;
-	s1.f = add;
-	s1.g = 46.;
-	is_eq(s1.f(12,23), 12+23);
-	is_eq(s1.g       , 46.  );
-	struct simon * ps = &s1;
-	is_eq(ps->f(12,23), 12+23);
-	is_eq(ps->g       , 46.  );
-	struct simon as[2];
-	as[0] = s1;
-	as[1] = *ps;
-	is_eq(as[0].f(12,23), 12+23);
-	is_eq(as[0].g       , 46.  );
-	is_eq(as[1].f(12,23), 12+23);
-	is_eq(as[1].g       , 46.  );
+    struct simon s1;
+    s1.f = add;
+    s1.g = 46.;
+    is_eq(s1.f(12, 23), 12 + 23);
+    is_eq(s1.g, 46.);
+    struct simon* ps = &s1;
+    is_eq(ps->f(12, 23), 12 + 23);
+    is_eq(ps->g, 46.);
+    struct simon as[2];
+    as[0] = s1;
+    as[1] = *ps;
+    is_eq(as[0].f(12, 23), 12 + 23);
+    is_eq(as[0].g, 46.);
+    is_eq(as[1].f(12, 23), 12 + 23);
+    is_eq(as[1].g, 46.);
+}
+
+struct bitstr {
+    unsigned int a : 1;
+    unsigned int b : 2;
+};
+
+void test_struct_bit()
+{
+    diag("struct bit");
+    struct bitstr bs;
+    bs.a = 1;
+    bs.b = 2;
+    is_eq((int)(bs.a), 1);
+    is_eq((int)(bs.b), 2);
 }
 
 int main()
 {
-    plan(125);
+    plan(127);
 
     pointer_arithm_in_struct();
     test_extern_vec();
@@ -825,7 +842,7 @@ int main()
         int x;
         int y;
     };
-    struct Point p = {.y = 2, .x = 3 };
+    struct Point p = { .y = 2, .x = 3 };
     is_eq(p.x, 3);
     is_eq(p.y, 2);
 
@@ -842,7 +859,8 @@ int main()
         } extCoord2;
 
         extCoord2 followingSteps[2] = {
-            {.possibleSteps2 = 1 }, {.possibleSteps2 = 1 },
+            { .possibleSteps2 = 1 },
+            { .possibleSteps2 = 1 },
         };
         is_eq(followingSteps[0].possibleSteps2, 1);
     }
@@ -858,7 +876,8 @@ int main()
         };
 
         struct extCoord followingSteps[2] = {
-            {.possibleSteps = 1 }, {.possibleSteps = 1 },
+            { .possibleSteps = 1 },
+            { .possibleSteps = 1 },
         };
         is_eq(followingSteps[0].possibleSteps, 1);
     }
@@ -1138,9 +1157,10 @@ int main()
 
     struct_inside_union();
 
-	typedef_with_union();
-	typedef_struct_with_typedef_union();
-	test_struct_with_func();
+    typedef_with_union();
+    typedef_struct_with_typedef_union();
+    test_struct_with_func();
+    test_struct_bit();
 
     done_testing();
 }

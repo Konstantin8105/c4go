@@ -34,8 +34,6 @@ mkdir -p ./testdata/
 	echo "Transpile to $GO_FILE"
 	$C4GO transpile                         \
 		-s                                  \
-		-clang-flag="-DTROFFFDIR=\"MMM\""	\
-		-clang-flag="-DTROFFMDIR=\"WWW\""	\
 		-o="$GO_FILE"                       \
 		$TEMP_FOLDER/*.c
 

@@ -15,6 +15,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -72,7 +73,16 @@ func TestIntegrationScripts(t *testing.T) {
 	// t.Parallel()
 
 	for _, file := range files {
+		if strings.Contains(file, "debug.") {
+			continue
+		}
 		t.Run(file, func(t *testing.T) {
+
+			_ = os.Remove("debug.txt")
+			defer func() {
+				// remove debug file
+				_ = os.Remove("debug.txt")
+			}()
 
 			// create subfolders for test
 			subFolder := buildFolder + separator + strings.Split(file, ".")[0] + separator
@@ -84,12 +94,18 @@ func TestIntegrationScripts(t *testing.T) {
 			}
 
 			// slice of program results
-			progs := [2]func(string, string, string, []string, []string) (string, error){
+			progs := []func(string, string, string, []string, []string) (string, error){
+				runCdebug,
 				runC,
 				runGo,
 			}
 
-			var results [2]string
+			// only for test "assert.c"
+			if strings.Contains(file, "assert.c") {
+				progs = progs[1:]
+			}
+
+			results := make([]string, len(progs))
 			var clangFlags []string
 
 			// specific of binding
@@ -135,76 +151,122 @@ func TestIntegrationScripts(t *testing.T) {
 				}
 			}
 
-			var (
-				cCombine  = results[0]
-				goCombine = results[1]
-			)
-
-			if cCombine != goCombine {
-				// Add addition debug information for lines like:
-				// build/tests/cast/main_test.go:195:1: expected '}', found 'type'
-				buildPrefix := buildFolder + "/tests/"
-				var output string
-				lines := strings.Split(goCombine, "\n")
-				amountSnippets := 0
-				for _, line := range lines {
-					line = strings.TrimSpace(line)
-					if !strings.HasPrefix(line, buildPrefix) {
+			for i := 0; i < len(results)-1; i++ {
+				if strings.Contains(file, "assert.c") {
+					if strings.Contains(results[i+1], results[i]) {
 						continue
-					}
-					index := strings.Index(line, ":")
-					if index < 0 {
-						continue
-					}
-					filename := "./" + line[0:index]
-					output += "+========================+\n"
-					output += fmt.Sprintf("File : %s\n\n", filename)
-					if len(line) <= index+1 {
-						continue
-					}
-					line = line[index+1:]
-					index = strings.Index(line, ":")
-					if index < 0 {
-						continue
-					}
-					linePosition, err := strconv.Atoi(line[:index])
-					if err != nil {
-						continue
-					}
-					content, err := ioutil.ReadFile(filename)
-					if err != nil {
-						continue
-					}
-					fileLines := strings.Split(string(content), "\n")
-					start := linePosition - 20
-					if start < 0 {
-						start = 0
-					}
-					var indicator string
-					for i := start; i < linePosition+5 && i < len(fileLines); i++ {
-						if i == linePosition-1 {
-							indicator = "*"
-						} else {
-							indicator = " "
-						}
-						output += fmt.Sprintf("Line : %3d %s: %s\n",
-							i+1, indicator, fileLines[i])
-					}
-					amountSnippets++
-					if amountSnippets >= 4 {
-						output += fmt.Sprintf("and more other snippets...\n")
-						break
 					}
 				}
-				t.Fatalf("\nParts of code:\n%s\n%s",
-					output,
-					util.ShowDiff(cCombine, goCombine))
+				if results[i] != results[i+1] {
+					// Add addition debug information for lines like:
+					// build/tests/cast/main_test.go:195:1: expected '}', found 'type'
+					buildPrefix := buildFolder + "/tests/"
+					var output string
+					lines := strings.Split(results[i+1], "\n")
+					// only for test "assert.c"
+					amountSnippets := 0
+					for _, line := range lines {
+						line = strings.TrimSpace(line)
+						if !strings.HasPrefix(line, buildPrefix) {
+							continue
+						}
+						index := strings.Index(line, ":")
+						if index < 0 {
+							continue
+						}
+						filename := "./" + line[0:index]
+						output += "+========================+\n"
+						output += fmt.Sprintf("File : %s\n\n", filename)
+						if len(line) <= index+1 {
+							continue
+						}
+						line = line[index+1:]
+						index = strings.Index(line, ":")
+						if index < 0 {
+							continue
+						}
+						linePosition, err := strconv.Atoi(line[:index])
+						if err != nil {
+							continue
+						}
+						content, err := ioutil.ReadFile(filename)
+						if err != nil {
+							continue
+						}
+						fileLines := strings.Split(string(content), "\n")
+						start := linePosition - 20
+						if start < 0 {
+							start = 0
+						}
+						var indicator string
+						for i := start; i < linePosition+5 && i < len(fileLines); i++ {
+							if i == linePosition-1 {
+								indicator = "*"
+							} else {
+								indicator = " "
+							}
+							output += fmt.Sprintf("Line : %3d %s: %s\n",
+								i+1, indicator, fileLines[i])
+						}
+						amountSnippets++
+						if amountSnippets >= 4 {
+							output += fmt.Sprintf("and more other snippets...\n")
+							break
+						}
+					}
+					t.Fatalf("\nParts of code:\n compare %d and %d\n%s\n%s",
+						i, i+1,
+						output,
+						util.ShowDiff(results[i], results[i+1]))
+				}
 			}
 			if flag.CommandLine.Lookup("test.v").Value.String() == "true" {
-				t.Log(goCombine)
+				t.Log(results[len(results)-1])
 			}
 		})
 	}
+}
+
+// compile and run C code
+func runCdebug(file, subFolder, stdin string, clangFlags, args []string) (string, error) {
+	pArgs := DefaultProgramArgs()
+	pArgs.inputFiles = []string{file}
+	pArgs.debugPrefix = "debug."
+	pArgs.state = StateDebug
+	pArgs.cppCode = strings.HasSuffix(file, "cpp")
+	pArgs.clangFlags = clangFlags
+	pArgs.verbose = (flag.CommandLine.Lookup("test.v").Value.String() == "true" || strings.Contains(file, "operators.c"))
+
+	// Compile Go
+	err := Start(pArgs)
+	if err != nil {
+		return "", fmt.Errorf("Cannot transpile : %v", err)
+	}
+
+	// create a new filename
+	if index := strings.LastIndex(file, "/"); index >= 0 {
+		file = file[:index+1] + pArgs.debugPrefix + file[index+1:]
+	} else {
+		file = pArgs.debugPrefix + file
+	}
+
+	defer func() {
+		// remove debug file
+		_ = os.Remove(file)
+	}()
+
+	out, err := runC(file, subFolder, stdin, clangFlags, args)
+
+	dat, errDat := ioutil.ReadFile("debug.txt")
+	if errDat != nil {
+		return out, fmt.Errorf("%v with %v", err, errDat)
+	}
+
+	if len(dat) == 0 {
+		return out, fmt.Errorf("%v with empty debug file", err)
+	}
+
+	return out, err
 }
 
 // compile and run C code
@@ -236,7 +298,7 @@ func runC(file, subFolder, stdin string, clangFlags, args []string) (string, err
 	cmd.Stderr = &cProgram.stderr
 	err = cmd.Run()
 	if err != nil {
-		fmt.Fprintf(os.Stdout, "Error: %v\n", err)
+		fmt.Fprintf(os.Stdout, "Error run C program `%s`: %v. %v\n", file, cProgram.stderr.String(), err)
 	}
 	cProgram.isZero = err == nil
 
@@ -261,7 +323,7 @@ func (pr ProgramArgs) runGoTest(stdin string, args []string) (_ string, err erro
 
 	// get report
 	{
-		stdoutStderr, err := exec.Command("go", "build", "-o", subFolder+"app", pr.outputFile).CombinedOutput()
+		stdoutStderr, err := exec.Command("go", "build", "-a", "-o", subFolder+"app", pr.outputFile).CombinedOutput()
 		if err != nil {
 			return "1", fmt.Errorf("Go build error: %v %v", string(stdoutStderr), err)
 		}
@@ -387,6 +449,7 @@ func runGo(file, subFolder, stdin string, clangFlags, args []string) (string, er
 	programArgs.inputFiles = []string{file}
 	programArgs.outputFile = subFolder + "main.go"
 	programArgs.clangFlags = clangFlags
+	programArgs.verbose = (flag.CommandLine.Lookup("test.v").Value.String() == "true" || strings.Contains(file, "operators.c"))
 	if strings.HasSuffix(file, "cpp") {
 		programArgs.cppCode = true
 	}
@@ -479,6 +542,128 @@ func TestMultifileTranspilation(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestBind(t *testing.T) {
+
+	if err := os.MkdirAll("./testdata/bind", os.ModePerm); err != nil {
+		t.Fatal(err)
+	}
+
+	cProgram := programOut{}
+
+	{
+		// create C object file
+		// gcc -c test.c
+		cmd := exec.Command("clang",
+			"-o", "./testdata/bind/test.o",
+			"-c", "./tests/bind/test.c",
+		)
+		cmd.Stdout = &cProgram.stdout
+		cmd.Stderr = &cProgram.stderr
+		err := cmd.Run()
+		if err != nil {
+			fmt.Fprintf(os.Stdout, "%v. %v\n", cProgram.stderr.String(), err)
+			return
+		}
+	}
+	{
+		// ar rc libtest.a test.o
+		cmd := exec.Command("ar", "rc",
+			"./testdata/bind/libtest.a",
+			"./testdata/bind/test.o",
+		)
+		cmd.Stdout = &cProgram.stdout
+		cmd.Stderr = &cProgram.stderr
+		err := cmd.Run()
+		if err != nil {
+			fmt.Fprintf(os.Stdout, "%v. %v\n", cProgram.stderr.String(), err)
+			return
+		}
+	}
+	{
+		// ranlib libtest.a
+		cmd := exec.Command("ranlib",
+			"./testdata/bind/libtest.a",
+		)
+		cmd.Stdout = &cProgram.stdout
+		cmd.Stderr = &cProgram.stderr
+		err := cmd.Run()
+		if err != nil {
+			fmt.Fprintf(os.Stdout, "%v. %v\n", cProgram.stderr.String(), err)
+			return
+		}
+	}
+	{
+		// gcc bind.c libtest.a
+		cmd := exec.Command("clang",
+			"-o", "./testdata/bind/a.out",
+			"./tests/bind/bind.c",
+			"./testdata/bind/libtest.a",
+		)
+		cmd.Stdout = &cProgram.stdout
+		cmd.Stderr = &cProgram.stderr
+		err := cmd.Run()
+		if err != nil {
+			fmt.Fprintf(os.Stdout, "%v. %v\n", cProgram.stderr.String(), err)
+			return
+		}
+	}
+	var cOut string
+	{
+		// output
+		cmd := exec.Command("./testdata/bind/a.out")
+		var buf bytes.Buffer
+		cmd.Stdout = &buf
+		cmd.Stderr = &cProgram.stderr
+		err := cmd.Run()
+		if err != nil {
+			fmt.Fprintf(os.Stdout, "%v. %v\n", cProgram.stderr.String(), err)
+			return
+		}
+		t.Log(buf.String())
+		cOut = buf.String()
+	}
+
+	// create subfolders for test
+	subFolder := buildFolder + separator +
+		"bind" + separator
+
+	// Create build folder
+	err := os.MkdirAll(subFolder, os.ModePerm)
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
+	var args = DefaultProgramArgs()
+	args.inputFiles = []string{"./tests/bind/bind.c"}
+	args.outputFile = path.Join(subFolder, "main.go")
+	args.clangFlags = []string{"-I./test/bind", "-L.", "-ltest"}
+	args.packageName = "main"
+	args.verbose = true // Added for checking verbose mode
+
+	for _, state := range []ProgramState{StateAst, StateTranspile} {
+		args.state = state
+		err = Start(args)
+		if err != nil {
+			t.Errorf(err.Error())
+		}
+	}
+
+	if d, err := ioutil.ReadFile("testdata/bind/main.go"); err != nil {
+		t.Fatal(err)
+	} else {
+		t.Log(string(d))
+	}
+
+	// Run Go program
+
+	out, err := args.runGoTest("", []string{""})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("%s\n%s", out, cOut)
+	// TODO : cannot view go results, but in console - all is ok
 }
 
 func TestTrigraph(t *testing.T) {
@@ -779,9 +964,20 @@ func TestWrongAST(t *testing.T) {
 	var i int
 	defer func() {
 		if r := recover(); r != nil {
-			t.Errorf("Panic is not acceptable for position: %v\n%+v", i, r)
+			t.Errorf("Panic is not acceptable for position: %v\n%+v: %s", i, r,
+				string(debug.Stack()))
 		}
 	}()
+
+	oldstderr := os.Stderr
+	defer func() {
+		os.Stderr = oldstderr
+	}()
+	new, err := ioutil.TempFile("", "stderr")
+	if err != nil {
+		t.Fatal(err)
+	}
+	os.Stderr = new
 
 	lines, filePP, args, err := generateASTtree()
 	if err != nil {
@@ -865,7 +1061,7 @@ func TestExamples(t *testing.T) {
 			}
 
 			t.Run("run", func(t *testing.T) {
-				cmd := exec.Command("go", "run", args.outputFile)
+				cmd := exec.Command("go", "run", "-a", args.outputFile)
 				cmdOutput := &bytes.Buffer{}
 				cmdErr := &bytes.Buffer{}
 				cmd.Stdout = cmdOutput

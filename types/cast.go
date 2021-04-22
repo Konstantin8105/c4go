@@ -29,7 +29,7 @@ func GetArrayTypeAndSize(s string) (string, int) {
 }
 
 // CastExpr returns an expression that casts one type to another. For
-// reliability and flexability the existing type (fromType) must be structly
+// reliability and flexibility the existing type (fromType) must be structly
 // provided.
 //
 // There are lots of rules about how an expression is cast, but here are some
@@ -43,7 +43,7 @@ func GetArrayTypeAndSize(s string) (string, int) {
 //    guarantee that original C used the NULL macro but it is a safe assumption
 //    for now.
 //
-//    The reason why NULL is special (or at least seamingly) is that it is often
+//    The reason why NULL is special (or at least seemingly) is that it is often
 //    used in different value contexts. As a number, testing pointers and
 //    strings. Being able to better understand the original purpose of the code
 //    helps to generate cleaner and more Go-like output.
@@ -68,7 +68,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	defer func() {
 		if err2 != nil {
 			err2 = fmt.Errorf(
-				"Cannot casting {%s -> %s}. err = %v", cFromType, cToType, err2)
+				"cannot casting {%s -> %s}. err = %v", cFromType, cToType, err2)
 		}
 	}()
 
@@ -84,12 +84,12 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 
 	// Uncomment only for debugging
 	if strings.Contains(cFromType, ":") {
-		err2 = fmt.Errorf("Found mistake `cFromType` `%v` C type : %#v",
+		err2 = fmt.Errorf("found mistake `cFromType` `%v` C type : %#v",
 			cFromType, expr)
 		return
 	}
 	if strings.Contains(cToType, ":") {
-		err2 = fmt.Errorf("Found mistake `cToType` `%v` C type: %#v",
+		err2 = fmt.Errorf("found mistake `cToType` `%v` C type: %#v",
 			cToType, expr)
 		return
 	}
@@ -105,7 +105,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	}
 
 	if expr == nil {
-		return nil, fmt.Errorf("Expr is nil")
+		return nil, fmt.Errorf("expr is nil")
 	}
 
 	if util.IsFunction(cFromType) && toType == "bool" {
@@ -140,14 +140,19 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	// casting
 	// void * --> char *
 	// void * --> int **
+	// void * --> void **
 	if fromType == "void *" && IsPointer(toType, p) {
 		countStar := strings.Count(toType, "*")
-		countParen := strings.Count(toType, "[")
+		countStar += strings.Count(toType, "[")
 
 		toType = GetBaseType(toType)
 		t, err := ResolveType(p, toType)
 		if err != nil {
 			return nil, err
+		}
+		if toType == "void" {
+			countStar--
+			t = "interface{}"
 		}
 
 		if strings.Contains(toType, "FILE") {
@@ -157,7 +162,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 				Type:   goast.NewIdent("*noarch.File"),
 			}, nil
 		} else {
-			for i := 0; i < countStar+countParen; i++ {
+			for i := 0; i < countStar; i++ {
 				t = "[]" + t
 			}
 			return &goast.TypeAssertExpr{
@@ -190,7 +195,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		}
 	}
 
-	// Checking registated typedef types in program
+	// Checking registered typedef types in program
 	if v, ok := p.TypedefType[toType]; ok {
 		if fromType == v {
 			toType, err := ResolveType(p, toType)
@@ -357,6 +362,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		}
 		if fromType == "bool" && toType == v {
 			expr = util.NewCallExpr("noarch.BoolToInt", expr)
+			p.AddImport("github.com/Konstantin8105/c4go/noarch")
 			return CastExpr(p, expr, "int", cToType)
 		}
 	}
@@ -442,7 +448,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 
 	if fromType == "[]byte" && toType == "bool" {
 		return util.NewUnaryExpr(
-			token.NOT, util.NewCallExpr("noarch.CStringIsNull", expr),
+			util.NewCallExpr("noarch.CStringIsNull", expr), token.NOT,
 		), nil
 	}
 
@@ -484,7 +490,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 		return expr, nil
 	}
 
-	p.GenerateWarningMessage(fmt.Errorf("Cannot cast types `%s`->`%s`", cFromType, cToType), nil)
+	p.GenerateWarningMessage(fmt.Errorf("cannot cast types `%s`->`%s`", cFromType, cToType), nil)
 
 	return expr, nil
 }
@@ -493,7 +499,7 @@ func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 // macro. In C, NULL is actually a macro that produces an expression like "(0)".
 //
 // There are no guarantees if the original C code used the NULL macro, but it is
-// usually a pretty good guess when we see this specific exression signature.
+// usually a pretty good guess when we see this specific expression signature.
 //
 // Either way the return value from IsNullExpr should not change the
 // functionality of the code but can lead to hints that allow the Go produced to

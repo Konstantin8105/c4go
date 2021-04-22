@@ -18,7 +18,7 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 	err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileImplicitCastExpr. err = %v", err)
+			err = fmt.Errorf("cannot transpileImplicitCastExpr. err = %v", err)
 		}
 		if exprType == "" {
 			exprType = "ImplicitCastExprWrongType"
@@ -32,6 +32,15 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 		expr = goast.NewIdent("nil")
 		exprType = types.NullPointer
 		return
+	}
+
+	// avoid unsigned overflow
+	// ImplicitCastExpr 0x2e649b8 <col:6, col:7> 'unsigned int' <IntegralCast>
+	// `-UnaryOperator 0x2e64998 <col:6, col:7> 'int' prefix '-'
+	if types.IsCUnsignedType(n.Type) {
+		if un, ok := n.Children()[0].(*ast.UnaryOperator); ok && un.Operator == "-" {
+			un.Type = n.Type
+		}
 	}
 
 	expr, exprType, preStmts, postStmts, err = transpileToExpr(
@@ -148,6 +157,9 @@ func transpileImplicitCastExpr(n *ast.ImplicitCastExpr, p *program.Program, expr
 	if len(n.Type) != 0 && len(n.Type2) != 0 && n.Type != n.Type2 && cast {
 		var tt string
 		tt, err = types.ResolveType(p, n.Type)
+		if err != nil && n.Type2 != "" {
+			tt, err = types.ResolveType(p, n.Type2)
+		}
 		expr = util.NewCallExpr(tt, expr)
 		exprType = n.Type
 		return
@@ -198,7 +210,7 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 	err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileImplicitCastExpr. err = %v", err)
+			err = fmt.Errorf("cannot transpileImplicitCastExpr. err = %v", err)
 		}
 		if exprType == "" {
 			exprType = "CStyleCastExpr"
@@ -256,6 +268,21 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 	}
 
 	//
+	// struct sqlite3_pcache_page {
+	//   void *pBuf;        /* The content of the page */
+	//   void *pExtra;      /* Extra information associated with the page */
+	// };
+	//
+	// *(void **)pPage->page.pExtra = 0;
+	//
+	// UnaryOperator 'void *' lvalue prefix '*'
+	// `-CStyleCastExpr 'void **' <BitCast>
+	//   `-ImplicitCastExpr 'void *' <LValueToRValue>
+	//     `-MemberExpr 'void *' lvalue .pExtra 0x2876098
+	//       `-MemberExpr 'sqlite3_pcache_page':'struct sqlite3_pcache_page' lvalue ->page 0x2bdc9d0
+	//         `-ImplicitCastExpr 'PgHdr1 *' <LValueToRValue>
+	//           `-DeclRefExpr 'PgHdr1 *' lvalue Var 0x2bf5cd0 'pPage' 'PgHdr1 *'
+	//
 	// BinaryOperator 'const char **' '='
 	// |-DeclRefExpr 'const char **' lvalue Var 0x39a4380 'non_options' 'const char **'
 	// `-CStyleCastExpr 'const char **' <BitCast>
@@ -276,6 +303,11 @@ func transpileCStyleCastExpr(n *ast.CStyleCastExpr, p *program.Program, exprIsSt
 	if len(n.Type) != 0 && len(n.Type2) != 0 && n.Type != n.Type2 {
 		var tt string
 		tt, err = types.ResolveType(p, n.Type)
+		if err != nil {
+			// `-CStyleCastExpr 0x9b32c0 <> '__clock_t':'long' <IntegralCast>
+			//   `-IntegerLiteral 0x9b3290 <> 'int' 1000000
+			tt, err = types.ResolveType(p, n.Type2)
+		}
 		expr = util.NewCallExpr(tt, expr)
 		exprType = n.Type
 		return

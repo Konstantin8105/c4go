@@ -1,12 +1,12 @@
 package noarch
 
 import (
-	"io"
 	"math"
 	"math/rand"
 	"os"
 	"os/exec"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -157,9 +157,9 @@ func atoll(str []byte, radix int) (int64, int) {
 	rx := ""
 	for i := 0; i < radix; i++ {
 		if i < 10 {
-			rx += string(48 + i)
+			rx += string(byte(48 + i))
 		} else {
-			rx += string(87 + i)
+			rx += string(byte(87 + i))
 		}
 	}
 	r := util.GetRegex(`^([+-]?[` + rx + `]+)`)
@@ -172,6 +172,40 @@ func atoll(str []byte, radix int) (int64, int) {
 	v, _ := strconv.ParseInt(match[1], radix, 64)
 
 	return v, whitespaceOffset + len(match[1])
+}
+
+// BSearch: Binary search of a sorted array
+//
+// The C function doesn’t have the same behaviour than the Go function
+// C version:
+//   Give every parameters to bsearch()
+//   Will use arithmetic pointers
+//   Return a pointer to the found element
+//   Return NULL pointer if the element isn’t found
+//
+// Go version:
+//   Give only the length of the array
+//   Return a index to the found element
+//   Return a index or length + 1 if the element isn’t found
+//
+// This BSearch takes:
+//   The length of that array
+//   A function to compare two elements
+//   A function to recieve the right slice by the index
+
+func BSearch(nmemb int, f func(a int) int, fGetIndex func(a int) interface{}) interface{} {
+	i := sort.Search(nmemb, func(a int) bool { return f(a) >= 0 })
+
+	// Is the index out of bound?
+	if i >= nmemb {
+		return nil
+	}
+
+	// Is the index equals to the searched value
+	if f(i) != 0 {
+		return nil
+	}
+	return fGetIndex(i)
 }
 
 // Div returns the integral quotient and remainder of the division of numer by
@@ -362,29 +396,11 @@ func System(str []byte) int32 {
 	re := regexp.MustCompile(`[^\s"']+|([^\s"']*"([^"]*)"[^\s"']*)+|'([^']*)`)
 	args := re.FindAllString(input, -1)
 	cmd := exec.Command(args[0], args[1:]...)
-	var stdout, stderr []byte
-	var errStdout, errStderr error
 
-	// These are unused in integration tests, so silence "declared but unused"
-	// errors during integration testing.
-	_ = stdout
-	_ = stderr
-	_ = errStdout
-	_ = errStderr
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
-	stdoutIn, _ := cmd.StdoutPipe()
-	stderrIn, _ := cmd.StderrPipe()
-	cmd.Start()
-
-	go func() {
-		stdout, errStdout = capture(os.Stdout, stdoutIn)
-	}()
-
-	go func() {
-		stderr, errStderr = capture(os.Stderr, stderrIn)
-	}()
-
-	err := cmd.Wait()
+	err := cmd.Run()
 
 	if err != nil {
 		if strings.HasPrefix(err.Error(), "exit status ") {
@@ -472,35 +488,6 @@ func atof(str []byte) (float64, int) {
 	}
 
 	return 0, 0
-}
-
-// The capture function is used by noarch.System to imitate
-// the behavior of C's system(3) instead of golang's exec by
-// grabbing command output as it is generated and displays
-// it rather than displaying it after execution completes.
-func capture(w io.Writer, r io.Reader) ([]byte, error) {
-	var out []byte
-	buf := make([]byte, 1024, 1024)
-	for {
-		n, err := r.Read(buf[:])
-		if n > 0 {
-			d := buf[:n]
-			out = append(out, d...)
-			_, err := w.Write(d)
-			if err != nil {
-				return out, err
-			}
-		}
-		if err != nil {
-			// io.EOF is not actually an error
-			if err == io.EOF {
-				err = nil
-			}
-			return out, err
-		}
-	}
-	panic(true)
-	return nil, nil
 }
 
 // transpiling "atexit"

@@ -256,14 +256,14 @@ func NewNil() *goast.Ident {
 // NewUnaryExpr creates a new Go unary expression. You should use this function
 // instead of instantiating the UnaryExpr directly because this function has
 // extra error checking.
-func NewUnaryExpr(operator token.Token, right goast.Expr) *goast.UnaryExpr {
-	if right == nil {
-		panic("right is nil")
+func NewUnaryExpr(expr goast.Expr, operator token.Token) *goast.UnaryExpr {
+	if expr == nil {
+		expr = goast.NewIdent("C4GO_RECOVER_EXPR_NIL")
 	}
 
 	return &goast.UnaryExpr{
+		X:  expr,
 		Op: operator,
-		X:  right,
 	}
 }
 
@@ -382,15 +382,11 @@ func NewAnonymousFunction(body, deferBody []goast.Stmt,
 // s := func() uint {
 //		var x int64
 //		x = -1
-//		if x < 0 {
-//			x += 5
-//		}
 //		return uint(x)
 //	}()
 func ConvertToUnsigned(expr goast.Expr, returnType string) goast.Expr {
 
 	varName := "c4go_temp_name"
-	// maxValue := "123123123"
 
 	if u, ok := expr.(*goast.CallExpr); ok {
 		if i, ok := u.Fun.(*goast.Ident); ok {
@@ -425,22 +421,6 @@ func ConvertToUnsigned(expr goast.Expr, returnType string) goast.Expr {
 					Tok: token.ASSIGN,
 					Rhs: []goast.Expr{expr},
 				},
-				// &goast.IfStmt{
-				// 	Cond: &goast.BinaryExpr{
-				// 		X:  goast.NewIdent(varName),
-				// 		Op: token.LSS, // <
-				// 		Y:  goast.NewIdent("0"),
-				// 	},
-				// 	Body: &goast.BlockStmt{
-				// 		List: []goast.Stmt{
-				// 			&goast.AssignStmt{
-				// 				Lhs: []goast.Expr{goast.NewIdent(varName)},
-				// 				Tok: token.ADD_ASSIGN, // +=
-				// 				Rhs: []goast.Expr{goast.NewIdent(maxValue)},
-				// 			},
-				// 		},
-				// 	},
-				// },
 				&goast.ReturnStmt{
 					Results: []goast.Expr{
 						&goast.CallExpr{

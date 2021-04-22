@@ -53,7 +53,7 @@ func getDefaultValueForVar(p *program.Program, a *ast.VarDecl) (
 	expr []goast.Expr, _ string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot getDefaultValueForVar : err = %v", err)
+			err = fmt.Errorf("cannot getDefaultValueForVar : err = %v", err)
 		}
 	}()
 	if len(a.Children()) == 0 {
@@ -130,7 +130,7 @@ func GenerateFuncType(fields, returns []string) *goast.FuncType {
 	return &ft
 }
 
-// tranpileInitListExpr.
+// transpileInitListExpr.
 //
 // Examples:
 //
@@ -146,7 +146,7 @@ func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 	expr goast.Expr, exprType string, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileInitListExpr. err = %v", err)
+			err = fmt.Errorf("cannot transpileInitListExpr. err = %v", err)
 		}
 	}()
 	resp := []goast.Expr{}
@@ -315,7 +315,7 @@ func transpileArraySubscriptExpr(n *ast.ArraySubscriptExpr, p *program.Program) 
 	_ *goast.IndexExpr, theType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpile ArraySubscriptExpr. err = %v", err)
+			err = fmt.Errorf("cannot transpile ArraySubscriptExpr. err = %v", err)
 			p.AddMessage(p.GenerateWarningMessage(err, n))
 		}
 	}()
@@ -382,7 +382,7 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 	_ goast.Expr, _ string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpile MemberExpr. err = %v", err)
+			err = fmt.Errorf("cannot transpile MemberExpr. err = %v", err)
 			p.AddMessage(p.GenerateWarningMessage(err, n))
 		}
 	}()
@@ -399,52 +399,69 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 		}
 	}
 
-	lhs, lhsType, newPre, newPost, err := transpileToExpr(n.Children()[0], p, false)
+	lhs, lType, newPre, newPost, err := transpileToExpr(n.Children()[0], p, false)
 	if err != nil {
 		return nil, "", nil, nil, err
 	}
 
-	baseType := lhsType
-	lhsType = util.GenerateCorrectType(lhsType)
+	baseType := lType
+	lType = util.GenerateCorrectType(lType)
 
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
-	// lhsType will be something like "struct foo"
-	structType := p.GetStruct(lhsType)
-	// added for support "struct typedef"
-	if structType == nil {
-		structType = p.GetStruct("struct " + lhsType)
+	// typedef
+
+	lhsTypes := [2]string{lType, lType}
+
+	if t, ok := ast.GetTypeIfExist(n.Children()[0]); ok {
+		lhsTypes[1] = *t
 	}
-	// added for support "union typedef"
-	if structType == nil {
-		structType = p.GetStruct("union " + lhsType)
-	}
-	// for anonymous structs
-	if structType == nil {
-		structType = p.GetStruct(baseType)
-	}
-	// for anonymous structs
-	if structType == nil {
-		structType = p.GetStruct(util.CleanCType(baseType))
-	}
-	// typedef types
-	if structType == nil {
-		structType = p.GetStruct(p.TypedefType[baseType])
-	}
-	if structType == nil {
-		t := types.GetBaseType(baseType)
-		structType = p.GetStruct(p.TypedefType[t])
-	}
-	// other case
-	for _, t := range originTypes {
+
+	var structType *program.Struct
+	var lhsType string = lhsTypes[0]
+	for _, lhsTypeLocal := range lhsTypes {
+		// lhsType will be something like "struct foo"
+		structType = p.GetStruct(lhsTypeLocal)
+		// added for support "struct typedef"
 		if structType == nil {
-			structType = p.GetStruct(util.CleanCType(t))
-		} else {
-			break
+			structType = p.GetStruct("struct " + lhsTypeLocal)
+		}
+		// added for support "union typedef"
+		if structType == nil {
+			structType = p.GetStruct("union " + lhsTypeLocal)
+		}
+		// for anonymous structs
+		if structType == nil {
+			structType = p.GetStruct(baseType)
+		}
+		// for anonymous structs
+		if structType == nil {
+			structType = p.GetStruct(util.CleanCType(baseType))
+		}
+		// typedef types
+		if structType == nil {
+			structType = p.GetStruct(p.TypedefType[baseType])
 		}
 		if structType == nil {
-			structType = p.GetStruct(types.GetBaseType(t))
-		} else {
+			t := types.GetBaseType(baseType)
+			structType = p.GetStruct(p.TypedefType[t])
+		}
+		// other case
+		for _, t := range originTypes {
+			if structType == nil {
+				structType = p.GetStruct(util.CleanCType(t))
+			} else {
+				break
+			}
+			if structType == nil {
+				structType = p.GetStruct(types.GetBaseType(t))
+			} else {
+				break
+			}
+		}
+
+		if structType != nil {
+			lhsType = lhsTypeLocal
 			break
 		}
 	}
@@ -464,17 +481,20 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 		//   2. Types may refer to one or more other types in a chain that have
 		//      to be resolved before the real field type can be determined.
 		err = fmt.Errorf("cannot determine type for LHS '%v'"+
-			", will use 'void *' for all fields. Is lvalue = %v. n.Name = %v",
-			lhsType, n.IsLvalue, n.Name)
+			", will use 'void *' for all fields. Is lvalue = %v. n.Name = %v. "+
+			"Position = %v",
+			lhsTypes, n.IsLvalue, n.Name, n.Pos)
 		p.AddMessage(p.GenerateWarningMessage(err, n))
+		err = nil // ignore error
 	} else {
 		if s, ok := structType.Fields[rhs].(string); ok {
 			rhsType = s
 		} else {
-			err = fmt.Errorf("cannot determine type for RHS '%v', will use"+
+			err = fmt.Errorf("cannot determine type for RHS '%v' of '%s', will use"+
 				" 'void *' for all fields. Is lvalue = %v. n.Name = `%v`",
-				rhs, n.IsLvalue, n.Name)
+				rhs, structType.Name, n.IsLvalue, n.Name)
 			p.AddMessage(p.GenerateWarningMessage(err, n))
+			err = nil // ignore error
 		}
 	}
 
@@ -490,6 +510,13 @@ func transpileMemberExpr(n *ast.MemberExpr, p *program.Program) (
 	}
 	if str := p.GetStruct("c4go_" + lhsType); str != nil {
 		if alias, ok := str.Fields[rhs]; ok {
+			// change type
+			if str, ok := p.Structs[lhsType]; ok {
+				if name, ok := str.Fields[rhs].(string); ok {
+					n.Type = name
+				}
+			}
+			// change field
 			rhs = alias.(string)
 			goto Selector
 		}
@@ -535,7 +562,7 @@ func transpileImplicitValueInitExpr(n *ast.ImplicitValueInitExpr, p *program.Pro
 
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileImplicitValueInitExpr. err = %v", err)
+			err = fmt.Errorf("cannot transpileImplicitValueInitExpr. err = %v", err)
 		}
 	}()
 	expr, exprType = zeroValue(p, n.Type1)

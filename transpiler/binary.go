@@ -18,14 +18,14 @@ import (
 // for (int i=0,j=0;i+=1,j<5;i++,j++){...}
 // For solving - we have to separate the
 // binary operator "," to 2 parts:
-// part 1(pre ): left part  - typically one or more some expessions
-// part 2(stmt): right part - always only one expression, with or witout
+// part 1(pre ): left part  - typically one or more some expressions
+// part 2(stmt): right part - always only one expression, with or without
 //               logical operators like "==", "!=", ...
 func transpileBinaryOperatorComma(n *ast.BinaryOperator, p *program.Program) (
 	stmt goast.Stmt, preStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpile operator comma : err = %v", err)
+			err = fmt.Errorf("cannot transpile operator comma : err = %v", err)
 			p.AddMessage(p.GenerateWarningMessage(err, n))
 		}
 	}()
@@ -42,7 +42,7 @@ func transpileBinaryOperatorComma(n *ast.BinaryOperator, p *program.Program) (
 
 	if left == nil || right == nil {
 		return nil, nil,
-			fmt.Errorf("Cannot transpile binary operator comma: right = %v , left = %v",
+			fmt.Errorf("cannot transpile binary operator comma: right = %v , left = %v",
 				right, left)
 	}
 
@@ -64,13 +64,13 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf(
-				"Cannot transpile BinaryOperator with type '%s' :"+
+				"cannot transpile BinaryOperator with type '%s' :"+
 					" result type = {%s}. Error: %v", n.Type, eType, err)
 			p.AddMessage(p.GenerateWarningMessage(err, n))
 		}
 	}()
 
-	operator := getTokenForOperator(n.Operator)
+	operator := getTokenForOperatorNoError(n.Operator)
 	n.Type = util.GenerateCorrectType(n.Type)
 	n.Type2 = util.GenerateCorrectType(n.Type2)
 
@@ -126,7 +126,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	// // Operation equal transpile from right to left
 	// Solving:
 	// b = 1, a = b
-	// // Operation comma tranpile from left to right
+	// // Operation comma transpile from left to right
 	// If we have for example:
 	// a = b = c = 1
 	// then solution is:
@@ -150,10 +150,22 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	// |   |-DeclRefExpr 0x368e848 <col:9> 'int' lvalue Var 0x368e6d8 'x' 'int'
 	// |   `-ImplicitCastExpr 0x368e898 <col:13> 'int' <LValueToRValue>
 	// |     `-DeclRefExpr 0x368e870 <col:13> 'int' lvalue Var 0x368e748 'y' 'int'
-	if getTokenForOperator(n.Operator) == token.ASSIGN {
-		switch c := n.Children()[1].(type) {
+	//
+	// Example
+	// BinaryOperator 'const char *' '='
+	// |-...
+	// `-ImplicitCastExpr 'const char *' <BitCast>
+	//   `-BinaryOperator 'char *' '='
+	//     |-...
+	//     `-...
+	if getTokenForOperatorNoError(n.Operator) == token.ASSIGN {
+		child := n.Children()[1]
+		if impl, ok := child.(*ast.ImplicitCastExpr); ok {
+			child = impl.Children()[0]
+		}
+		switch c := child.(type) {
 		case *ast.BinaryOperator:
-			if getTokenForOperator(c.Operator) == token.ASSIGN {
+			if getTokenForOperatorNoError(c.Operator) == token.ASSIGN {
 				bSecond := ast.BinaryOperator{
 					Type:     c.Type,
 					Operator: "=",
@@ -202,7 +214,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 	// | |-DeclRefExpr 0x21a7848 <col:2> 'int' lvalue Var 0x21a76d8 'x' 'int'
 	// | `-ImplicitCastExpr 0x21a7898 <col:6> 'int' <LValueToRValue>
 	// |   `-DeclRefExpr 0x21a7870 <col:6> 'int' lvalue Var 0x21a7748 'y' 'int'
-	if getTokenForOperator(n.Operator) == token.COMMA {
+	if getTokenForOperatorNoError(n.Operator) == token.COMMA {
 		stmts, _, newPre, newPost, err := transpileToExpr(n.Children()[0], p, false)
 		if err != nil {
 			err = fmt.Errorf("cannot transpile expr `token.COMMA` child 0. %v", err)
@@ -222,7 +234,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 		// from n.Children()[1]
 		if len(newPre) > 0 || len(newPost) > 0 {
 			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("Not support length pre or post stmts: {%d,%d}",
+				fmt.Errorf("not support length pre or post stmts: {%d,%d}",
 					len(newPre), len(newPost)), n))
 		}
 		return stmts, st, preStmts, postStmts, nil
@@ -270,7 +282,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 					return
 				}
 				if expr == nil {
-					return nil, "", nil, nil, fmt.Errorf("Expr is nil")
+					return nil, "", nil, nil, fmt.Errorf("expr is nil")
 				}
 				preStmts, postStmts =
 					combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
@@ -358,7 +370,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			// ignore
 
 		default:
-			err = fmt.Errorf("Not implemented pointer operation: %v", operator)
+			err = fmt.Errorf("not implemented pointer operation: %v", operator)
 			return
 		}
 	}
@@ -415,23 +427,50 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 		if operator == token.ADD || // +
 			operator == token.SUB || // -
 			false {
-			if types.IsPointer(leftType, p) {
-				expr, eType, newPre, newPost, err =
-					pointerArithmetic(p, left, leftType, right, rightType, operator)
-			} else {
-				expr, eType, newPre, newPost, err =
-					pointerArithmetic(p, right, rightType, left, leftType, operator)
+
+			var pnt, value ast.Node
+			var back func()
+			var nodeN ast.Node = n
+			pnt, value, back, _, err = pointerParts(&nodeN, p)
+			if err != nil {
+				err = fmt.Errorf("cannot separate on parts: %v", err)
+				return
 			}
+
+			var e goast.Expr
+			e, eType, newPre, newPost, err = atomicOperation(value, p)
+			if err != nil {
+				return
+			}
+			preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+			eType = n.Type
+
+			// return all types
+			back()
+
+			var arr goast.Expr
+			var arrType string
+			arr, arrType, newPre, newPost, err = atomicOperation(pnt, p)
+			if err != nil {
+				return
+			}
+			_ = arrType
+			preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+
+			expr, eType, newPre, newPost, err =
+				pointerArithmetic(p, arr, arrType, e, eType, token.ADD)
+
 			if err != nil {
 				return
 			}
 			if expr == nil {
-				return nil, "", nil, nil, fmt.Errorf("Expr is nil")
+				return nil, "", nil, nil, fmt.Errorf("expr is nil")
 			}
 			preStmts, postStmts =
 				combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
 			return
+
 		}
 	}
 

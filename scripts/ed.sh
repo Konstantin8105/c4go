@@ -19,6 +19,8 @@ mkdir -p ./testdata/
 		wget --no-check-certificate http://mirror.tochlab.net/pub/gnu/ed/$VERSION.tar.lz -P $TEMP_FOLDER
 		echo "Please don't forget install: sudo apt-get install lzip"
 		tar --lzip  -C $TEMP_FOLDER/$VERSION -xvf $TEMP_FOLDER/$VERSION.tar.lz
+		sed -i.bak -e '92d'                                        $TEMP_FOLDER/$VERSION/$VERSION/signal.c
+		sed -i.bak -e '92i   if( ioctl(0, TIOCGWINSZ, &ws) >= 0 )' $TEMP_FOLDER/$VERSION/$VERSION/signal.c
 	fi
 
 # remove go files from last transpilation

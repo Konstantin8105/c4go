@@ -4,6 +4,7 @@ package transpiler
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/Konstantin8105/c4go/ast"
@@ -19,7 +20,7 @@ func transpileUnaryOperatorInc(n *ast.UnaryOperator, p *program.Program, operato
 	expr goast.Expr, eType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileUnaryOperatorInc. err = %v", err)
+			err = fmt.Errorf("cannot transpileUnaryOperatorInc. err = %v", err)
 		}
 		if eType == "" {
 			eType = "EmptyTypeInUnaryOperatorInc"
@@ -187,10 +188,7 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 	}
 
 	if eType == "bool" {
-		return &goast.UnaryExpr{
-			X:  e,
-			Op: token.NOT,
-		}, "bool", preStmts, postStmts, nil
+		return util.NewUnaryExpr(e, token.NOT), "bool", preStmts, postStmts, nil
 	}
 
 	if strings.HasSuffix(eType, "*") {
@@ -207,7 +205,7 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 
 	if t == "[]byte" {
 		return util.NewUnaryExpr(
-			token.NOT, util.NewCallExpr("noarch.CStringIsNull", e),
+			util.NewCallExpr("noarch.CStringIsNull", e), token.NOT,
 		), "bool", preStmts, postStmts, nil
 	}
 
@@ -227,7 +225,7 @@ func transpileUnaryOperatorNot(n *ast.UnaryOperator, p *program.Program) (
 		eType, preStmts, postStmts, nil
 }
 
-// tranpileUnaryOperatorAmpersant - operator ampersant &
+// transpileUnaryOperatorAmpersant - operator ampersant &
 // Example of AST:
 //
 // UnaryOperator 'int (*)[5]' prefix '&'
@@ -242,7 +240,7 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 	expr goast.Expr, eType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileUnaryOperatorAmpersant : err = %v", err)
+			err = fmt.Errorf("cannot transpileUnaryOperatorAmpersant : err = %v", err)
 		}
 	}()
 
@@ -251,7 +249,7 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 		return
 	}
 	if expr == nil {
-		err = fmt.Errorf("Expr is nil")
+		err = fmt.Errorf("expr is nil")
 		return
 	}
 
@@ -363,12 +361,12 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 //   `-DeclRefExpr <col:26> 'char *' lvalue Var 0x3c05ae8 'pos' 'char *'
 //
 func pointerParts(node *ast.Node, p *program.Program) (
-	pnt ast.Node, value ast.Node, back func(), err error) {
+	pnt ast.Node, value ast.Node, back func(), undefineIndex bool, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot pointerParts: err = %v", err)
+			err = fmt.Errorf("cannot pointerParts: err = %v", err)
 			if (*node) != nil {
-				err = fmt.Errorf("Code line: %d. %v", (*node).Position().Line, err)
+				err = fmt.Errorf("code line: %d. %v", (*node).Position().Line, err)
 			}
 		}
 	}()
@@ -392,16 +390,29 @@ func pointerParts(node *ast.Node, p *program.Program) (
 		// save types of all nodes
 		t, ok := ast.GetTypeIfExist(*node)
 		if !ok {
-			panic(fmt.Errorf("Not support parent type %T in pointer seaching", node))
+			panic(fmt.Errorf("not support parent type %T in pointer seaching", node))
 		}
 		baseTypes = append(baseTypes, t)
 
+		*t = util.CleanCType(*t)
+
+		// typedef type
+		var td string = util.CleanCType(*t)
+		for {
+			if te, ok := p.TypedefType[td]; ok {
+				td = util.CleanCType(te)
+				continue
+			}
+			break
+		}
 		// find
-		if types.IsCPointer(*t, p) || types.IsCArray(*t, p) {
+		if types.IsCPointer(*t, p) || types.IsCArray(*t, p) ||
+			types.IsCPointer(td, p) || types.IsCArray(td, p) {
 			switch (*node).(type) {
 			case *ast.BinaryOperator,
 				*ast.ImplicitCastExpr,
 				*ast.ParenExpr:
+				undefineIndex = true // is index probably negative
 				// go deeper
 			default:
 				return true
@@ -414,6 +425,7 @@ func pointerParts(node *ast.Node, p *program.Program) (
 				*ast.MemberExpr,
 				*ast.UnaryExprOrTypeTraitExpr, // ignore sizeof
 				*ast.CStyleCastExpr:
+				undefineIndex = true // is index probably negative
 				return
 			}
 		}
@@ -475,7 +487,7 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 	expr goast.Expr, eType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpilePointerArith: err = %v", err)
+			err = fmt.Errorf("cannot transpilePointerArith: err = %v", err)
 		}
 	}()
 
@@ -486,10 +498,12 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 
 	var pnt, value ast.Node
 	var back func()
-	pnt, value, back, err = pointerParts(&(n.Children()[0]), p)
+	var undefineIndex bool
+	pnt, value, back, undefineIndex, err = pointerParts(&(n.Children()[0]), p)
 	if err != nil {
 		return
 	}
+	_ = undefineIndex
 
 	e, eType, newPre, newPost, err := atomicOperation(value, p)
 	if err != nil {
@@ -552,19 +566,23 @@ func transpilePointerArith(n *ast.UnaryOperator, p *program.Program) (
 		}, eType, preStmts, postStmts, err
 
 	}
-	return nil, "", nil, nil, fmt.Errorf("Cannot found : %#v", pnt)
+	return nil, "", nil, nil, fmt.Errorf("cannot found : %#v", pnt)
 }
 
 func transpileUnaryOperator(n *ast.UnaryOperator, p *program.Program) (
 	_ goast.Expr, theType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpile UnaryOperator: err = %v", err)
+			err = fmt.Errorf("cannot transpile UnaryOperator: err = %v", err)
 			p.AddMessage(p.GenerateWarningMessage(err, n))
 		}
 	}()
 
-	operator := getTokenForOperator(n.Operator)
+	operator, err := getTokenForOperator(n.Operator)
+	if err != nil {
+		err = nil
+		return transpileToExpr(n.Children()[0], p, true)
+	}
 
 	switch operator {
 	case token.MUL: // *
@@ -582,6 +600,23 @@ func transpileUnaryOperator(n *ast.UnaryOperator, p *program.Program) (
 	}
 
 	// Example:
+	// UnaryOperator 'unsigned int' prefix '-'
+	// `-IntegerLiteral 'unsigned int' 1
+	if il, ok := n.Children()[0].(*ast.IntegerLiteral); ok && types.IsCUnsignedType(n.Type) {
+		var value float64
+		value, err = strconv.ParseFloat(il.Value, 64)
+		if err == nil && value > 0 {
+			var resolveType string
+			resolveType, err = types.ResolveType(p, n.Type)
+			if err == nil && resolveType != "" {
+				return util.ConvertToUnsigned(goast.NewIdent(fmt.Sprintf("-%s", il.Value)), resolveType),
+					n.Type, preStmts, postStmts, nil
+			}
+		}
+		err = nil
+	}
+
+	// Example:
 	// UnaryOperator 'int' prefix '-'
 	// `-ImplicitCastExpr 'int' <LValueToRValue>
 	//   `-DeclRefExpr 'int' lvalue Var 0x3b42898 'c' 'int'
@@ -591,13 +626,9 @@ func transpileUnaryOperator(n *ast.UnaryOperator, p *program.Program) (
 	if err != nil {
 		return nil, "", nil, nil, err
 	}
-
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
-	return &goast.UnaryExpr{
-		Op: operator,
-		X:  e,
-	}, eType, preStmts, postStmts, nil
+	return util.NewUnaryExpr(e, operator), eType, preStmts, postStmts, nil
 }
 
 func transpileUnaryExprOrTypeTraitExpr(n *ast.UnaryExprOrTypeTraitExpr, p *program.Program) (
@@ -615,7 +646,13 @@ func transpileUnaryExprOrTypeTraitExpr(n *ast.UnaryExprOrTypeTraitExpr, p *progr
 	}
 
 	sizeInBytes, err := types.SizeOf(p, t)
-	p.AddMessage(p.GenerateWarningMessage(err, n))
+	if err != nil {
+		p.AddMessage(p.GenerateWarningMessage(err, n))
+		err = nil // ignore error
+	}
+	if sizeInBytes == 0 {
+		p.AddMessage(p.GenerateWarningMessage(fmt.Errorf("zero sizeof for '%s'", t), n))
+	}
 
 	return util.NewIntLit(sizeInBytes), n.Type1, nil, nil, nil
 }
@@ -634,9 +671,10 @@ func transpileStmtExpr(n *ast.StmtExpr, p *program.Program) (
 
 	// The body of the StmtExpr is always a CompoundStmt. However, the last
 	// statement needs to be transformed into an explicit return statement.
-	lastStmt := body.List[len(body.List)-1]
-	body.List[len(body.List)-1] = &goast.ReturnStmt{
-		Results: []goast.Expr{lastStmt.(*goast.ExprStmt).X},
+	if e, ok := body.List[len(body.List)-1].(*goast.ExprStmt); ok {
+		body.List[len(body.List)-1] = &goast.ReturnStmt{
+			Results: []goast.Expr{e.X},
+		}
 	}
 
 	return util.NewFuncClosure(returnType, body.List...), n.Type, pre, post, nil

@@ -39,7 +39,7 @@ func ParseAddress(address string) Address {
 func Parse(fullline string) (returnNode Node, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("Cannot parse line: `%v`. %v", fullline, r)
+			err = fmt.Errorf("cannot parse line: `%v`. %v", fullline, r)
 			returnNode = C4goErrorNode{}
 		}
 	}()
@@ -47,8 +47,10 @@ func Parse(fullline string) (returnNode Node, err error) {
 
 	// This is a special case. I'm not sure if it's a bug in the clang AST
 	// dumper. It should have children.
-	if line == "array filler" {
-		return parseArrayFiller(line), nil
+	for _, af := range arrayFillerMarkers {
+		if strings.HasPrefix(line, af) {
+			return parseArrayFiller(line), nil
+		}
 	}
 
 	parts := strings.SplitN(line, " ", 2)
@@ -78,6 +80,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseAttributedType(line), nil
 	case "AvailabilityAttr":
 		return parseAvailabilityAttr(line), nil
+	case "BinaryConditionalOperator":
+		return parseBinaryConditionalOperator(line), nil
 	case "BinaryOperator":
 		return parseBinaryOperator(line), nil
 	case "BlockCommandComment":
@@ -102,6 +106,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseConditionalOperator(line), nil
 	case "ConstAttr":
 		return parseConstAttr(line), nil
+	case "ConstantExpr":
+		return parseConstantExpr(line), nil
 	case "ConstantArrayType":
 		return parseConstantArrayType(line), nil
 	case "ContinueStmt":
@@ -166,10 +172,14 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseFunctionDecl(line), nil
 	case "FullComment":
 		return parseFullComment(line), nil
+	case "FunctionNoProtoType":
+		return parseFunctionNoProtoType(line), nil
 	case "FunctionProtoType":
 		return parseFunctionProtoType(line), nil
 	case "ForStmt":
 		return parseForStmt(line), nil
+	case "GenericSelectionExpr":
+		return parseGenericSelectionExpr(line), nil
 	case "HTMLStartTagComment":
 		return parseHTMLStartTagComment(line), nil
 	case "HTMLEndTagComment":
@@ -198,6 +208,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseLabelStmt(line), nil
 	case "LinkageSpecDecl":
 		return parseLinkageSpecDecl(line), nil
+	case "AllocAlignAttr":
+		return parseAllocAlignAttr(line), nil
 	case "MallocAttr":
 		return parseMallocAttr(line), nil
 	case "MaxFieldAlignmentAttr":
@@ -218,6 +230,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseNotTailCalledAttr(line), nil
 	case "OffsetOfExpr":
 		return parseOffsetOfExpr(line), nil
+	case "OpaqueValueExpr":
+		return parseOpaqueValueExpr(line), nil
 	case "OverloadableAttr":
 		return parseOverloadableAttr(line), nil
 	case "PackedAttr":

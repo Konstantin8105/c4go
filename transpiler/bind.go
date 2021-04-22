@@ -14,7 +14,7 @@ import (
 	"github.com/Konstantin8105/c4go/util"
 )
 
-func generateBinding(p *program.Program) (bindHeader, bindCode string) {
+func generateBinding(p *program.Program, clangFlags []string) (bindHeader, bindCode string) {
 	// outside called functions
 	ds := p.GetOutsideCalledFunctions()
 	if len(ds) == 0 {
@@ -24,6 +24,34 @@ func generateBinding(p *program.Program) (bindHeader, bindCode string) {
 	sort.Slice(ds, func(i, j int) bool {
 		return ds[i].Name < ds[j].Name
 	})
+
+	// add clang flags
+	{
+		cflags := map[string]bool{}
+		ldflags := map[string]bool{}
+		for i := range clangFlags {
+			if strings.HasPrefix(clangFlags[i], "-I") {
+				cflags[clangFlags[i]] = true
+			}
+			if strings.HasPrefix(clangFlags[i], "-L") || strings.HasPrefix(clangFlags[i], "-l") {
+				ldflags[clangFlags[i]] = true
+			}
+		}
+		if 0 < len(cflags) {
+			bindHeader += "// #cgo CFLAGS : "
+			for k, _ := range cflags {
+				bindHeader += k + " "
+			}
+			bindHeader += "\n"
+		}
+		if 0 < len(ldflags) {
+			bindHeader += "// #cgo LDFLAGS : "
+			for k, _ := range ldflags {
+				bindHeader += k + " "
+			}
+			bindHeader += "\n"
+		}
+	}
 
 	// automatic binding of function
 	{
@@ -39,6 +67,7 @@ func generateBinding(p *program.Program) (bindHeader, bindCode string) {
 			}
 			bindHeader += fmt.Sprintf("// #include <%s>\n", header)
 		}
+
 		bindHeader += "import \"C\"\n\n"
 	}
 
@@ -92,9 +121,15 @@ func getBindFunction(p *program.Program, d program.DefinitionFunction) (code str
 	var fl goast.FieldList
 	var argResolvedType []string
 	for i := range d.ArgumentTypes {
+		if d.ArgumentTypes[i] == "void" {
+			continue
+		}
 		if i == len(d.ArgumentTypes)-1 && d.ArgumentTypes[i] == "..." {
 			argResolvedType[len(argResolvedType)-1] =
 				"..." + argResolvedType[len(argResolvedType)-1]
+			continue
+		}
+		if strings.TrimSpace(d.ArgumentTypes[i]) == "" {
 			continue
 		}
 		resolveType, err := types.ResolveType(p, d.ArgumentTypes[i])
@@ -149,7 +184,7 @@ func getBindFunction(p *program.Program, d program.DefinitionFunction) (code str
 	// add comment for function
 	f.Doc = &goast.CommentGroup{
 		List: []*goast.Comment{
-			&goast.Comment{
+			{
 				Text: fmt.Sprintf("// %s - add c-binding for implemention function", d.Name),
 			},
 		},
@@ -288,14 +323,11 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 		p.AddImport("unsafe")
 
 		return util.NewCallExpr(t, util.NewCallExpr("unsafe.Pointer",
-			&goast.UnaryExpr{
-				Op: token.AND,
-				X: &goast.IndexExpr{
-					X:      expr,
-					Lbrack: 1,
-					Index:  goast.NewIdent("0"),
-				},
-			})), nil
+			util.NewUnaryExpr(&goast.IndexExpr{
+				X:      expr,
+				Lbrack: 1,
+				Index:  goast.NewIdent("0"),
+			}, token.AND))), nil
 
 	} else if strings.HasPrefix(goType, "*") {
 		// *int  -> * _Ctype_int
@@ -312,10 +344,7 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 		p.AddImport("unsafe")
 
 		return util.NewCallExpr(t, util.NewCallExpr("unsafe.Pointer",
-			&goast.UnaryExpr{
-				Op: token.AND,
-				X:  expr,
-			})), nil
+			util.NewUnaryExpr(expr, token.AND))), nil
 	}
 
 	if t == "interface{}" {
@@ -323,10 +352,7 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 		p.AddImport("unsafe")
 
 		return util.NewCallExpr("unsafe.Pointer",
-			&goast.UnaryExpr{
-				Op: token.AND,
-				X:  expr,
-			}), nil
+			util.NewUnaryExpr(expr, token.AND)), nil
 	}
 
 	return util.NewCallExpr("C."+t, expr), nil
@@ -376,7 +402,7 @@ func bindFromCtoGo(p *program.Program, cType string, goType string, expr goast.E
 
 // add if`s for nil cases
 //
-// strtok - add c-binding for implemention function
+// strtok - add c-binding for implementation function
 // func strtok(arg0 []byte, arg1 []byte) []byte {
 //	if arg0 == nil {
 //		return []byte{}

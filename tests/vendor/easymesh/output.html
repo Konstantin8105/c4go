@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE>EasyMesh</TITLE>
+   <META NAME="Author" CONTENT="">
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.01Gold (Win95; I) [Netscape]">
+</HEAD>
+<BODY TEXT="#000000" BGCOLOR="#C0C0C0" LINK="#0000EE" VLINK="#551A8B" ALINK="#FF0000">
+
+<P><B><FONT COLOR="#000080"><FONT SIZE=+2>Output files</FONT></FONT></B></P>
+
+<P>
+<HR WIDTH="100%"></P>
+
+<P><B><FONT COLOR="#000080">EasyMesh</FONT></B> creates three output files
+with the extensions:</P>
+
+<UL>
+<LI><TT><FONT COLOR="#000080">.n&nbsp;&nbsp;</FONT>&nbsp;</TT>node file</LI>
+
+<LI><TT><FONT COLOR="#000080">.e&nbsp;&nbsp;</FONT>&nbsp;</TT>element file</LI>
+
+<LI><TT><FONT COLOR="#000080">.s&nbsp;&nbsp;&nbsp;</FONT></TT>side file</LI>
+</UL>
+
+<P>These extensions are added to the input file name. If you have <TT><FONT COLOR="#000080">NAME.d</FONT></TT>
+as input file, the following files will be created after generation:</P>
+
+<P>
+<HR WIDTH="100%"><B>Node file</B> (<TT><FONT COLOR="#000080">NAME.n</FONT></TT>)
+has the following format:</P>
+
+<UL>
+<LI>first line:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;<TT><FONT COLOR="#000080">&lt;number of nodes&gt;</FONT></TT></LI>
+
+<LI>following lines: &nbsp;<TT><FONT COLOR="#000080">&lt;node number:&gt;&nbsp;&lt;x&gt;&nbsp;&lt;y&gt;
+&lt;marker&gt;</FONT></TT></LI>
+
+<LI>the last two lines are comments inserted by the program to facilitate
+the reading of the node file</LI>
+</UL>
+
+<P>
+<HR WIDTH="100%"><B>Element file</B> (<TT><FONT COLOR="#000080">NAME.e</FONT></TT>)
+has the following format:</P>
+
+<UL>
+<LI>first line &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<TT><FONT COLOR="#000080">&lt;number
+of elements&gt;</FONT></TT></LI>
+
+<LI>following lines: &nbsp;<TT><FONT COLOR="#000080">&lt;element number:&gt;
+&lt;i&gt; &lt;j&gt; &lt;k&gt; &lt;ei&gt; &lt;ej&gt; &lt;ek&gt; &lt;si&gt;
+&lt;sj&gt; &lt;sk&gt; &lt;xV&gt; &lt;yV&gt; &lt;marker&gt;</FONT></TT></LI>
+
+<LI>the last two lines are comments inserted by the program to facilitate
+the reading of the element file</LI>
+</UL>
+
+<P>where <TT><FONT COLOR="#000080">i</FONT></TT>, <TT><FONT COLOR="#000080">j</FONT></TT>,
+<TT><FONT COLOR="#000080">k</FONT></TT> are nodes belonging to the element,
+<TT><FONT COLOR="#000080">ei</FONT></TT>, <TT><FONT COLOR="#000080">ej</FONT></TT>
+and <FONT COLOR="#000080"><TT>ek</TT> </FONT>are the neighbouring elements,
+while <TT><FONT COLOR="#000080">si</FONT></TT>, <TT><FONT COLOR="#000080">sj</FONT></TT>
+and <TT><FONT COLOR="#000080">sk</FONT></TT> are the element sides. <TT><FONT COLOR="#000080">xV</FONT></TT>
+and <TT><FONT COLOR="#000080">yV</FONT></TT> are the coordinates of the
+element circumcenter, which is also the Voronoi polygon node. </P>
+
+<P>The marker is useful only when the domain consists of more than one
+material. If <TT><FONT COLOR="#000080">ei</FONT></TT>, <TT><FONT COLOR="#000080">ej</FONT></TT>
+or <TT><FONT COLOR="#000080">ek</FONT></TT> equals to -1, it means that
+element lies on the boundary.</P>
+
+<P><IMG SRC="output1.gif" HEIGHT=214 WIDTH=214> 
+<HR WIDTH="100%"><BR>
+<B>Side file</B> (<TT><FONT COLOR="#000080">NAME.s</FONT></TT>) has the
+following format:</P>
+
+<UL>
+<LI>first line:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<TT><FONT COLOR="#000080">&lt;number
+of sides&gt;</FONT></TT></LI>
+
+<LI>following lines:&nbsp;&nbsp;<TT><FONT COLOR="#000080">&lt;side number:&gt;&nbsp;&lt;c&gt;
+&lt;d&gt; &lt;ea&gt; &lt;eb&gt;&nbsp;&lt;marker&gt;&nbsp;</FONT></TT></LI>
+
+<LI>the last two lines are comments inserted by the program to facilitate
+the reading of the side file</LI>
+</UL>
+
+<P>where <TT><FONT COLOR="#000080">c</FONT></TT> and <TT><FONT COLOR="#000080">d</FONT></TT>
+are the starting and ending point of the side, <TT><FONT COLOR="#000080">ea</FONT></TT>
+and <TT><FONT COLOR="#000080">eb</FONT></TT> are the elements on the left
+and on the right of the side. If <TT><FONT COLOR="#000080">eb</FONT></TT>
+equals to -1, it means that the right element does not exists, so the side
+is on the boundary. </P>
+
+<P><IMG SRC="output2.gif" HEIGHT=146 WIDTH=168><BR>
+
+<HR WIDTH="100%">Return to <B><FONT COLOR="#000080">EasyMesh</FONT></B>
+<A HREF="easymesh.html">home</A> page. 
+<HR WIDTH="100%"><A HREF="mailto:niceno@univ.trieste.it">niceno@univ.trieste.it</A></P>
+
+</BODY>
+</HTML>

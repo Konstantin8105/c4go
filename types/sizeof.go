@@ -15,7 +15,7 @@ var sizeofStack []string
 func SizeOf(p *program.Program, cType string) (size int, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot determine sizeof : |%s|. err = %v", cType, err)
+			err = fmt.Errorf("cannot determine sizeof : |%s|. err = %v", cType, err)
 		}
 	}()
 
@@ -80,13 +80,30 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 	if isStruct {
 		totalBytes := 0
 
-		for _, t := range s.Fields {
+		// last parameter
+		// -1 - undefine
+		//  0 - value
+		// +1 - pointer
+
+		last := 0
+
+		for k := 0; k < len(s.FieldNames); k++ {
+			fn := s.FieldNames[k]
+			t := s.Fields[fn]
+
 			var bytes int
 			var err error
+
+			var new_par int = -1
 
 			switch f := t.(type) {
 			case string:
 				bytes, err = SizeOf(p, f)
+				if IsPointer(f, p) {
+					new_par = 1
+				} else {
+					new_par = 0
+				}
 
 			case *program.Struct:
 				bytes, err = SizeOf(p, f.Name)
@@ -94,10 +111,16 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 
 			if err != nil {
 				err = fmt.Errorf(
-					"Cannot calculate `struct` sizeof for `%T`. bytes = '%v'. %v",
+					"cannot calculate `struct` sizeof for `%T`. bytes = '%v'. %v",
 					t, bytes, err)
 				return 0, err
 			}
+
+			if last != new_par {
+				var deli float64 = float64(totalBytes)/float64(pointerSize) + 1
+				totalBytes = int(deli) * pointerSize
+			}
+
 			totalBytes += bytes
 		}
 
@@ -126,7 +149,10 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 			return 0, fmt.Errorf("error in union")
 		}
 
-		for _, t := range s.Fields {
+		for k := 0; k < len(s.FieldNames); k++ {
+			fn := s.FieldNames[k]
+			t := s.Fields[fn]
+
 			var bytes int
 
 			switch f := t.(type) {
@@ -138,7 +164,7 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 			}
 
 			if err != nil {
-				err = fmt.Errorf("Cannot canculate `union` sizeof for `%T`. %v",
+				err = fmt.Errorf("cannot canculate `union` sizeof for `%T`. %v",
 					t, err)
 				return 0, err
 			}
@@ -218,15 +244,9 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 	}
 
 	// Get size for array types like: `base_type [count]`
-	totalArraySize := 1
 	arrayType, arraySize := GetArrayTypeAndSize(cType)
 	if arraySize <= 0 {
 		return 0, nil
-	}
-
-	for arraySize != -1 {
-		totalArraySize *= arraySize
-		arrayType, arraySize = GetArrayTypeAndSize(arrayType)
 	}
 
 	baseSize, err := SizeOf(p, arrayType)
@@ -235,5 +255,5 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 			arrayType)
 	}
 
-	return baseSize * totalArraySize, nil
+	return baseSize * arraySize, nil
 }

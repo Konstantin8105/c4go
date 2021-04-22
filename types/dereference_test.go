@@ -1,7 +1,9 @@
 package types
 
-import "testing"
-import "fmt"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestGetDereferenceType(t *testing.T) {
 	type args struct {

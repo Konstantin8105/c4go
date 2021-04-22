@@ -7,6 +7,7 @@ import (
 	"fmt"
 	goast "go/ast"
 	"go/token"
+	"runtime/debug"
 	"strconv"
 	"strings"
 
@@ -32,11 +33,11 @@ import (
 func newFunctionField(p *program.Program, name, cType string) (
 	_ *goast.Field, err error) {
 	if name == "" {
-		err = fmt.Errorf("Name of function field cannot be empty")
+		err = fmt.Errorf("name of function field cannot be empty")
 		return
 	}
 	if !util.IsFunction(cType) {
-		err = fmt.Errorf("Cannot create function field for type : %s", cType)
+		err = fmt.Errorf("cannot create function field for type : %s", cType)
 		return
 	}
 
@@ -58,7 +59,7 @@ func transpileFieldDecl(p *program.Program, n *ast.FieldDecl) (
 	defer func() {
 		if field != nil {
 			if field.Type == nil {
-				err = fmt.Errorf("Found nil transpileFieldDecl in field Type %v , %v : %v",
+				err = fmt.Errorf("found nil transpileFieldDecl in field Type %v , %v : %v",
 					n, field, err)
 				field.Type = util.NewIdent(n.Type)
 			}
@@ -110,7 +111,17 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 	var addPackageUnsafe bool
 
 	n.Name = util.GenerateCorrectType(n.Name)
+	// |-RecordDecl 0x195a1e0 <line:168:1, line:170:1> line:168:1 struct definition
+	// | `-FieldDecl 0x195a298 <line:169:5, col:9> col:9 referenced aa 'int'
+	// |-VarDecl 0x195a348 <line:168:1, line:170:3> col:3 used mm 'struct (anonymous struct at /home/konstantin/go/src/github.com/K
+	// onstantin8105/c4go/tests/struct.c:168:1)':'struct (anonymous at /home/konstantin/go/src/github.com/Konstantin8105/c4go/tests
+	// /struct.c:168:1)'
+	if n.Name == "" {
+		n.Name = fmt.Sprintf("%s (anonymous %s at %s:%d:%d)", n.Kind, n.Kind, n.Pos.File, n.Pos.Line, n.Pos.Column)
+	}
+	n.Name = util.GenerateCorrectType(n.Name)
 	name := n.Name
+
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("cannot transpileRecordDecl `%v`. %v",
@@ -124,7 +135,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("error - panic : %#v", r)
+			err = fmt.Errorf("transpileRecordDecl: error - panic : %#v. %s", r, string(debug.Stack()))
 		}
 	}()
 
@@ -133,12 +144,6 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		return
 	}
 
-	if name == "" || p.IsTypeAlreadyDefined(name) {
-		err = nil
-		return
-	}
-
-	name = util.GenerateCorrectType(name)
 	p.DefineType(name)
 	defer func() {
 		if err != nil {
@@ -157,7 +162,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 					rec.Name = types.GetBaseType(util.GenerateCorrectType(v.Type))
 				default:
 					p.AddMessage(p.GenerateWarningMessage(
-						fmt.Errorf("Cannot find name for anon RecordDecl: %T",
+						fmt.Errorf("cannot find name for anon RecordDecl: %T",
 							v), n))
 					rec.Name = "UndefinedNameC2GO"
 				}
@@ -182,7 +187,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 				// ignore fields without name
 				if len(f.Names) != 1 {
 					p.AddMessage(p.GenerateWarningMessage(
-						fmt.Errorf("Ignore FieldDecl with more then 1 names"+
+						fmt.Errorf("ignore FieldDecl with more then 1 names"+
 							" in RecordDecl : `%v`", n.Name), n))
 					continue
 				}
@@ -192,14 +197,14 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 							" in RecordDecl : `%v`", n.Name), n))
 					continue
 				}
-				// remove dublicates of fields
-				var isDublicate bool
+				// remove duplicates of fields
+				var isDuplicate bool
 				for i := range fields {
 					if fields[i].Names[0].Name == f.Names[0].Name {
-						isDublicate = true
+						isDuplicate = true
 					}
 				}
-				if isDublicate {
+				if isDuplicate {
 					f.Names[0].Name += strconv.Itoa(pos)
 				}
 				fields = append(fields, f)
@@ -209,7 +214,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			// ignore
 
 		case *ast.TransparentUnionAttr:
-			// Don't do anythink
+			// Don't do anything
 			// Example of AST:
 			// |-RecordDecl 0x3632d78 <...> line:67:9 union definition
 			// | |-TransparentUnionAttr 0x3633050 <...>
@@ -239,7 +244,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 			var declsIn []goast.Decl
 			declsIn, err = transpileToNode(field, p)
 			if err != nil {
-				err = fmt.Errorf("Cannot transpile %T : %v", field, err)
+				err = fmt.Errorf("cannot transpile %T : %v", field, err)
 				// p.AddMessage(p.GenerateWarningMessage(err, field))
 				return
 			}
@@ -250,6 +255,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 	s, err := program.NewStruct(p, n)
 	if err != nil {
 		p.AddMessage(p.GenerateWarningMessage(err, n))
+		err = nil // ignore error
 		return
 	}
 	switch s.Type {
@@ -292,7 +298,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		}
 
 	default:
-		err = fmt.Errorf("Undefine type of struct : %v", s.Type)
+		err = fmt.Errorf("undefine type of struct : %v", s.Type)
 		return
 	}
 
@@ -339,7 +345,7 @@ func transpileRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		})
 
 	default:
-		err = fmt.Errorf("Undefine type of struct : %v", s.Type)
+		err = fmt.Errorf("undefine type of struct : %v", s.Type)
 		return
 	}
 
@@ -364,7 +370,7 @@ func transpileCXXRecordDecl(p *program.Program, n *ast.RecordDecl) (
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("error - panic : %#v", r)
+			err = fmt.Errorf("transpileCXXRecordDecl: error - panic : %#v %s", r, string(debug.Stack()))
 		}
 	}()
 
@@ -391,6 +397,9 @@ func transpileCXXRecordDecl(p *program.Program, n *ast.RecordDecl) (
 		case *ast.CXXRecordDecl:
 			// ignore
 
+		case *ast.AccessSpecDecl:
+			// ignore
+
 		case *ast.FieldDecl:
 			var f *goast.Field
 			f, err = transpileFieldDecl(p, v)
@@ -401,7 +410,7 @@ func transpileCXXRecordDecl(p *program.Program, n *ast.RecordDecl) (
 
 		default:
 			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("Cannot transpilation field in CXXRecordDecl : %T", v), n))
+				fmt.Errorf("cannot transpilation field: %T", v), n))
 		}
 	}
 
@@ -429,7 +438,7 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 	}
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpile Typedef Decl : err = %v", err)
+			err = fmt.Errorf("cannot transpile Typedef Decl : err = %v", err)
 		} else {
 			if !p.IncludeHeaderIsExists(n.Pos.File) {
 				// no need add struct from C STD
@@ -445,6 +454,20 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 
 	if ignoreVaListTypedef(n.Name) {
 		return
+	}
+
+	// |-RecordDecl 0x1b733f0 <line:603:9, line:606:1> line:603:9 struct definition
+	// | |-FieldDecl 0x1b734c0 <line:604:5, col:12> col:12 x 'pointx':'int'
+	// | `-FieldDecl 0x1b73528 <line:605:5, col:9> col:9 y 'int'
+	// |-TypedefDecl 0x1b735d8 <line:603:1, line:606:3> col:3 referenced Point2 'struct Point2':'Point2'
+	// | `-ElaboratedType 0x1b73580 'struct Point2' sugar
+	// |   `-RecordType 0x1b73470 'Point2'
+	// |     `-Record 0x1b733f0 ''
+	for _, pre := range []string{"struct ", "union "} {
+		if pre+n.Name == n.Type && n.Name == n.Type2 {
+			n.Type = fmt.Sprintf("%s(anonymous %sat %s:%d:%d)", pre, pre, n.Pos.File, n.Pos.Line, n.Pos.Column)
+			n.Type = util.GenerateCorrectType(n.Type)
+		}
 	}
 
 	if "struct "+n.Name == n.Type || "union "+n.Name == n.Type {
@@ -465,8 +488,9 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 				Tok: token.TYPE,
 				Specs: []goast.Spec{
 					&goast.TypeSpec{
-						Name: util.NewIdent(name),
-						Type: field.Type,
+						Name:   util.NewIdent(name),
+						Assign: 1,
+						Type:   field.Type,
 					},
 				},
 			})
@@ -487,8 +511,9 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 			Tok: token.TYPE,
 			Specs: []goast.Spec{
 				&goast.TypeSpec{
-					Name: util.NewIdent(name),
-					Type: util.NewTypeIdent("int32"),
+					Name:   util.NewIdent(name),
+					Assign: 1,
+					Type:   util.NewTypeIdent("int32"),
 				},
 			},
 		})
@@ -506,6 +531,7 @@ func transpileTypedefDecl(p *program.Program, n *ast.TypedefDecl) (
 	resolvedType, err := types.ResolveType(p, n.Type)
 	if err != nil {
 		p.AddMessage(p.GenerateWarningMessage(err, n))
+		err = nil // ignore error
 	}
 
 	// There is a case where the name of the type is also the definition,
@@ -568,7 +594,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 	decls []goast.Decl, theType string, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Cannot transpileVarDecl : err = %v", err)
+			err = fmt.Errorf("cannot transpileVarDecl : err = %v", err)
 		}
 	}()
 
@@ -604,12 +630,12 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 					var fields, returns []string
 					prefix, fields, returns, err = types.SeparateFunction(p, v.Type)
 					if err != nil {
-						err = fmt.Errorf("Cannot resolve function : %v", err)
+						err = fmt.Errorf("cannot resolve function : %v", err)
 						return
 					}
 					if len(prefix) != 0 {
 						p.AddMessage(p.GenerateWarningMessage(
-							fmt.Errorf("Prefix is not used : `%v`", prefix), n))
+							fmt.Errorf("prefix is not used : `%v`", prefix), n))
 					}
 					functionType := GenerateFuncType(fields, returns)
 					nameVar1 := n.Name
@@ -651,7 +677,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 	}
 	// for ignore zero value. example:
 	// int i = 0;
-	// tranpile to:
+	// transpile to:
 	// var i int // but not "var i int = 0"
 	if len(defaultValue) == 1 && defaultValue[0] != nil {
 		if bl, ok := defaultValue[0].(*goast.BasicLit); ok {
@@ -708,7 +734,7 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 
 	if len(preStmts) != 0 || len(postStmts) != 0 {
 		p.AddMessage(p.GenerateWarningMessage(
-			fmt.Errorf("Not acceptable length of Stmt : pre(%d), post(%d)",
+			fmt.Errorf("not acceptable length of Stmt : pre(%d), post(%d)",
 				len(preStmts), len(postStmts)), n))
 	}
 
@@ -725,9 +751,10 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 
 	theType, err = types.ResolveType(p, n.Type)
 	if err != nil {
-		p.AddMessage(p.GenerateWarningMessage(err, n))
+		p.AddMessage(p.GenerateWarningMessage(
+			fmt.Errorf("unknown type used C type, because %v", err), n))
 		err = nil // Error is ignored
-		theType = "UnknownType"
+		theType = n.Type
 	}
 	typeResult = util.NewTypeIdent(theType)
 

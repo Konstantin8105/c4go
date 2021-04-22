@@ -31,7 +31,7 @@ void test_return_ternary()
 
 int main()
 {
-    plan(15);
+    plan(17);
 
     int a = 'a' == 65 ? 10 : 100;
     float b = 10 == 10 ? 1.0 : 2.0;
@@ -95,6 +95,16 @@ int main()
         is_eq(d, 13);
         d = (1 != 0) ? --a : ++a;
         is_eq(d, 12);
+    }
+
+    diag("ternaty without middle");
+    {
+        int a = 42;
+        a = 19 > -9 ?: 23;
+        is_eq(a, 1);
+        a = 54;
+        a = 4 < -1 ?: 25;
+        is_eq(a, 25);
     }
 
     done_testing();

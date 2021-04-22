@@ -44,17 +44,20 @@ void test_write()
 
 void test_read()
 {
+    int fd = STDIN_FILENO;
     char data[128];
     for (int i = 0; i < 128; i++) {
         data[i] = '\x00';
     }
     printf("data = %s\n", data);
-    ssize_t s = read(STDIN_FILENO, data, 128);
+    is_streq(data, "");
+    ssize_t s = read(fd, data, 128);
     if (s < 0) {
         fail("not good");
         write(2, "An error occurred in the read.\n", 31);
     }
     printf("data = %s\n", data);
+    is_streq(data, "7");
     is_true(strlen(data) > 0);
 
     diag("wrong read");
@@ -99,15 +102,51 @@ typedef struct {
 // printf("left: %d right: %d\n",p.left, p.right);
 // }
 // }
+//
+
+void test_fstat()
+{
+    char* filename = "./tests/stdio.txt";
+
+    int file = 0;
+    if ((file = open(filename, O_RDONLY)) < -1)
+        return;
+
+    struct stat fileStat;
+    if (fstat(file, &fileStat) < 0)
+        return;
+
+    printf("Information for %s\n", filename);
+    printf("---------------------------\n");
+    printf("File Size: \t\t%d bytes\n", fileStat.st_size);
+    printf("Number of Links: \t%d\n", fileStat.st_nlink);
+    printf("File inode: \t\t%d\n", fileStat.st_ino);
+
+    printf("File Permissions: \t");
+    printf((S_ISDIR(fileStat.st_mode)) ? "d" : "-");
+    printf((fileStat.st_mode & S_IRUSR) ? "r" : "-");
+    printf((fileStat.st_mode & S_IWUSR) ? "w" : "-");
+    printf((fileStat.st_mode & S_IXUSR) ? "x" : "-");
+    printf((fileStat.st_mode & S_IRGRP) ? "r" : "-");
+    printf((fileStat.st_mode & S_IWGRP) ? "w" : "-");
+    printf((fileStat.st_mode & S_IXGRP) ? "x" : "-");
+    printf((fileStat.st_mode & S_IROTH) ? "r" : "-");
+    printf((fileStat.st_mode & S_IWOTH) ? "w" : "-");
+    printf((fileStat.st_mode & S_IXOTH) ? "x" : "-");
+    printf("\n\n");
+
+    printf("The file %s a symbolic link\n\n", (S_ISLNK(fileStat.st_mode)) ? "is" : "is not");
+}
 
 int main()
 {
-    plan(8);
+    plan(10);
 
     START_TEST(write);
     START_TEST(read);
     START_TEST(read_file);
     // START_TEST(struct);
+    START_TEST(fstat);
 
     done_testing();
 }

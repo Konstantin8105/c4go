@@ -59,4 +59,8 @@ void operators_equals()
 
     // array
     float arr[500];
+
+    // simplificator
+    char* ss = "words";
+    int cc = (unsigned char)*ss++;
 }

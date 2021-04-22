@@ -166,13 +166,44 @@ void test_malloc5()
 
 void test_realloc()
 {
-    int size = 5;
-    void* v = realloc((char*)(NULL), size * size);
-    char* c = (char*)v;
-    for (int n = 0; n < size * size - 1; n++)
-        c[n] = n % 26 + 'a';
-    c[size * size - 1] = '\0';
-    printf("realloc: %s\n", c);
+    {
+        int size = 5;
+        void* v = realloc((char*)(NULL), size * size);
+        char* c = (char*)v;
+        for (int n = 0; n < size * size - 1; n++)
+            c[n] = n % 26 + 'a';
+        c[size * size - 1] = '\0';
+        printf("realloc: %s\n", c);
+    }
+    {
+        // from : https://www.geeksforgeeks.org/g-fact-66/
+        int* ptr = (int*)malloc(sizeof(int) * 2);
+        int* ptr_new;
+
+        *ptr = 10;
+        *(ptr + 1) = 20;
+
+        ptr_new = (int*)realloc(ptr, sizeof(int) * 3);
+        *(ptr_new + 2) = 30;
+
+        is_eq(*(ptr_new + 0), 10);
+        is_eq(*(ptr_new + 1), 20);
+        is_eq(*(ptr_new + 2), 30);
+    }
+    {
+        // from : https://www.tutorialspoint.com/c_standard_library/c_function_realloc.htm
+        char* str;
+
+        /* Initial memory allocation */
+        str = (char*)malloc(15);
+        strcpy(str, "tutorialspoint");
+        printf("String = %s\n", str);
+
+        /* Reallocating memory */
+        str = (char*)realloc(str, 25);
+        strcat(str, ".com");
+        printf("String = %s\n", str);
+    }
 }
 
 // calloc() works exactly the same as malloc() however the memory is zeroed out.
@@ -256,6 +287,24 @@ void q_sort()
     is_eq(values[5], 100);
 }
 
+void b_search()
+{
+    diag("bsearch");
+
+    int array[] = { 0, 5, 10, 15, 20 };
+    // With array of int
+    int key_exist = 10;
+    int* res;
+
+    res = bsearch(&key_exist, array, 5, sizeof(int), compare);
+    is_true(res == &(array[2]));
+
+    /* This teshttps://github.com/Konstantin8105/c4go/pull/476t must be activated when the discussion https://github.com/Konstantin8105/c4go/pull/476 is resolved */
+    /* int key_no_exist = 12; */
+    /* res = bsearch(&key_no_exist, array, 5, sizeof(int), compare); */
+    /* is_null(res); */
+}
+
 #define COMPLEX struct MyComplex
 struct MyComplex {
     double re;
@@ -286,27 +335,69 @@ void test_atoi_post()
 }
 
 // TODO:
-// static void * my_memrchr(void *m, int c, long n)
+//	static void * my_memrchr(void *m, int c, long n)
+//	{
+//		int i;
+//		for (i = 0; i < n; i++)
+//			if (*(unsigned char *) (m + n - 1 - i) == c)
+//				return m + n - 1 - i;
+//		// pointer checking: m + n - 1 - i
+//		return NULL;
+//	}
+//
+//	void test_my_memrchr()
+//	{
+//		unsigned char * word = "Hello my dear world";
+//		void * p = my_memrchr(word, (int)('d'), 18);
+//		is_not_null(p);
+//		p = my_memrchr(word, (int)('z'), 18);
+//		is_null(p);
+//	}
+
+// TODO:
+// void printbuffer (const char* pt, size_t max)
 // {
-	// int i;
-	// for (i = 0; i < n; i++)
-		// if (*(unsigned char *) (m + n - 1 - i) == c)
-			// return m + n - 1 - i;
-	// return NULL;
+// int length;
+// wchar_t dest;
+//
+// mblen (NULL, 0);         /* reset mblen */
+// mbtowc (NULL, NULL, 0);  /* reset mbtowc */
+//
+// while (max>0) {
+// length = mblen (pt, max);
+// if (length<1) break;
+// mbtowc(&dest,pt,length);
+// printf ("[%lc]",dest);
+// pt+=length; max-=length;
 // }
-// 
-// void test_my_memrchr()
+// }
+//
+// void test_mblen()
 // {
-	// unsigned char * word = "Hello my dear world";
-	// void * p = my_memrchr(word, (int)('d'), 18);
-	// is_not_null(p);
-	// p = my_memrchr(word, (int)('z'), 18);
-	// is_null(p);
+// const char str [] = "test string";
+// printbuffer (str,sizeof(str));
+// }
+
+// TODO:
+// void test_wctomb()
+// {
+// const wchar_t str[] = L"wctomb example";
+// const wchar_t* pt;
+// char buffer [MB_CUR_MAX];
+// int i,length;
+//
+// pt = str;
+// while (*pt) {
+// length = wctomb(buffer,*pt);
+// if (length<1) break;
+// for (i=0;i<length;++i) printf ("[%c]",buffer[i]);
+// ++pt;
+// }
 // }
 
 int main()
 {
-    plan(763);
+    plan(771);
 
     struct_with_define();
 
@@ -596,9 +687,27 @@ int main()
     diag("q_sort");
     q_sort();
 
-	// TODO:
-	// diag("my_memrchr");
-	// test_my_memrchr();
+    diag("b_search");
+    b_search();
+
+    // test_mblen();
+    // test_wctomb();
+
+    // TODO:
+    // diag("my_memrchr");
+    // test_my_memrchr();
+
+    diag("EXIT_FAILURE");
+    is_eq(EXIT_FAILURE, 1);
+
+    diag("EXIT_SUCCESS");
+    is_eq(EXIT_SUCCESS, 0);
+
+    diag("MB_CUR_MAX");
+    is_eq(MB_CUR_MAX, 1);
+
+    diag("RAND_MAX");
+    is_eq(RAND_MAX, 2147483647);
 
     done_testing();
 }

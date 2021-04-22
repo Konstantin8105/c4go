@@ -24,6 +24,13 @@ type DefinitionFunction struct {
 	// If function called, then true.
 	IsCalled bool
 
+	// If function without body, then true
+	HaveBody bool
+
+	// If function from some C standard library, then true.
+	IsCstdFunction bool
+	pntCstd        *stdFunction
+
 	// If this is not empty then this function name should be used instead
 	// of the Name. Many low level functions have an exact match with a Go
 	// function. For example, "sin()".
@@ -72,38 +79,7 @@ var builtInFunctionDefinitions = map[string][]string{
 		// errno.h
 		"int * __errno_location(void ) -> noarch.ErrnoLocation",
 	},
-	"assert.h": {
-		// linux/assert.h
-		"bool __assert_fail(const char*, const char*, unsigned int, const char*) -> linux.AssertFail",
-	},
-	"ctype.h": {
-		// linux/ctype.h
-		"const unsigned short int** __ctype_b_loc() -> linux.CtypeLoc",
-		"int tolower(int) -> linux.ToLower",
-		"int toupper(int) -> linux.ToUpper",
-	},
 	"math.h": {
-		// linux/math.h
-		"int __signbitf(float) -> noarch.Signbitf",
-		"int __signbit(double) -> noarch.Signbitd",
-		"int __signbitl(long double) -> noarch.Signbitl",
-		"int __builtin_signbitf(float) -> noarch.Signbitf",
-		"int __builtin_signbit(double) -> noarch.Signbitd",
-		"int __builtin_signbitl(long double) -> noarch.Signbitl",
-		"int __isnanf(float) -> linux.IsNanf",
-		"int __isnan(double) -> noarch.IsNaN",
-		"int __isnanl(long double) -> noarch.IsNaN",
-		"int __isinff(float) -> linux.IsInff",
-		"int __isinf(double) -> linux.IsInf",
-		"int __isinfl(long double) -> linux.IsInf",
-		"double __builtin_nanf(const char*) -> linux.NaN",
-		"float __builtin_inff() -> linux.Inff",
-
-		// math.h
-		"int __inline_signbitf(float) -> noarch.Signbitf",
-		"int __inline_signbitd(double) -> noarch.Signbitd",
-		"int __inline_signbitl(long double) -> noarch.Signbitl",
-
 		// math.h
 		"double acos(double) -> math.Acos",
 		"double asin(double) -> math.Asin",
@@ -127,52 +103,28 @@ var builtInFunctionDefinitions = map[string][]string{
 		"double tanh(double) -> math.Tanh",
 
 		"double copysign(double, double) -> math.Copysign",
-		"float copysignf(float, float) -> noarch.Copysignf",
 		"long double copysignl(long double, long double) -> math.Copysign",
 
-		"double fma(double, double, double) -> noarch.Fma",
-		"float fmaf(float, float, float) -> noarch.Fmaf",
-		"long double fmal(long double, long double, long double) -> noarch.Fma",
-
-		"double fmin(double , double ) -> noarch.Fmin",
-		"float fminf(float , float ) -> noarch.Fminf",
-		"long double fminl(long double , long double ) -> noarch.Fmin",
-
-		"double fmax(double , double ) -> noarch.Fmax",
-		"float fmaxf(float , float ) -> noarch.Fmaxf",
-		"long double fmaxl(long double , long double ) -> noarch.Fmax",
-
 		"double expm1(double) -> math.Expm1",
-		"float expm1f(float) -> noarch.Expm1f",
 		"long double expm1l(long double) -> math.Expm1",
 
 		"double exp2(double) -> math.Exp2",
-		"float exp2f(float) -> noarch.Exp2f",
 		"long double exp2l(long double) -> math.Exp2",
 
 		"double exp(double) -> math.Exp",
-		"float expf(float) -> noarch.Expf",
 		"long double expl(long double) -> math.Exp",
 
 		"double erf(double) -> math.Erf",
-		"float erff(float) -> noarch.Erff",
 		"long double erfl(long double) -> math.Erf",
 
 		"double erfc(double) -> math.Erfc",
-		"float erfcf(float) -> noarch.Erfcf",
 		"long double erfcl(long double) -> math.Erfc",
 
 		"double log2(double) -> math.Log2",
-		"float log2f(float) -> noarch.Log2f",
 		"long double log2l(long double) -> math.Log2",
 
 		"double log1p(double) -> math.Log1p",
-		"float log1pf(float) -> noarch.Log1pf",
 		"long double log1pl(long double) -> math.Log1p",
-
-		"double fdim(double, double) -> noarch.Fdim",
-		"float fdimf(float, float) -> noarch.Fdimf",
-		"long double fdiml(long double, long double) -> noarch.Fdim",
 
 		"double asinh(double) -> math.Asinh",
 		"float asinhf(float) -> noarch.Asinhf",
@@ -187,23 +139,18 @@ var builtInFunctionDefinitions = map[string][]string{
 		"long double atanhl(long double) -> math.Atanh",
 
 		"double sinh(double) -> math.Sinh",
-		"float sinhf(float) -> noarch.Sinhf",
 		"long double sinhl(long double) -> math.Sinh",
 
 		"double cosh(double) -> math.Cosh",
-		"float coshf(float) -> noarch.Coshf",
 		"long double coshl(long double) -> math.Cosh",
 
 		"double tanh(double) -> math.Tanh",
-		"float tanhf(float) -> noarch.Tanhf",
 		"long double tanhl(long double) -> math.Tanh",
 
 		"double cbrt(double) -> math.Cbrt",
-		"float cbrtf(float) -> noarch.Cbrtf",
 		"long double cbrtl(long double) -> math.Cbrt",
 
 		"double hypot(double, double) -> math.Hypot",
-		"float hypotf(float) -> noarch.Hypotf",
 		"long double hypotl(long double, long double) -> math.Hypot",
 	},
 	"stdio.h": {
@@ -245,6 +192,8 @@ var builtInFunctionDefinitions = map[string][]string{
 		"int sprintf(char*, const char *, ...) -> noarch.Sprintf",
 		"int snprintf(char*, int, const char *, ...) -> noarch.Snprintf",
 		"int vsprintf(char*, const char *, ...) -> noarch.Vsprintf",
+		"int vprintf(const char *, ...) -> noarch.Vprintf",
+		"int vfprintf(FILE *, const char *, ...) -> noarch.Vfprintf",
 		"int vsnprintf(char*, int, const char *, ...) -> noarch.Vsnprintf",
 		"void perror( const char *) -> noarch.Perror",
 		"ssize_t getline(char **, size_t *, FILE *) -> noarch.Getline",
@@ -277,7 +226,6 @@ var builtInFunctionDefinitions = map[string][]string{
 		"char * memset(char *, char, unsigned int) -> noarch.Memset",
 		"char * memmove(char *, char *, unsigned int) -> noarch.Memmove",
 		"int memcmp(const char *, const char *, unsigned int) -> noarch.Memcmp",
-		"void * memcpy(void *, const void *, size_t) -> noarch.Memcpy",
 		"const char * strrchr( const char *, int) -> noarch.Strrchr",
 		"char * strdup(const char *) -> noarch.Strdup",
 		"char * strerror(int ) -> noarch.Strerror",
@@ -402,7 +350,7 @@ func (p *Program) GetIncludeFileNameByFunctionSignature(
 			rightPart := strings.TrimSpace(baseFunction[pos:])
 			index := strings.LastIndex(leftPart, " ")
 			if index < 0 {
-				err = fmt.Errorf("Cannot found space ` ` in %v", leftPart)
+				err = fmt.Errorf("cannot found space ` ` in %v", leftPart)
 				return
 			}
 			if strings.Replace(functionName, " ", "", -1) !=
@@ -437,6 +385,7 @@ func (p *Program) GetFunctionDefinition(functionName string) *DefinitionFunction
 func (p *Program) AddFunctionDefinition(f DefinitionFunction) {
 	p.loadFunctionDefinitions()
 
+	f.ReturnType = strings.TrimSpace(f.ReturnType)
 	p.functionDefinitions[f.Name] = f
 }
 
@@ -504,8 +453,7 @@ func (p *Program) loadFunctionDefinitions() {
 				}
 			}
 
-			if strings.HasPrefix(substitution, "linux.") ||
-				strings.HasPrefix(substitution, "noarch.") {
+			if strings.HasPrefix(substitution, "noarch.") {
 				substitution = "github.com/Konstantin8105/c4go/" + substitution
 			}
 
@@ -516,8 +464,25 @@ func (p *Program) loadFunctionDefinitions() {
 				Substitution:     substitution,
 				ReturnParameters: returnParameters,
 				Parameters:       parameters,
+				IsCstdFunction:   false,
 			})
 		}
+	}
+
+	// initialization CSTD
+	for i := range std {
+		_, a, w, e, err := util.ParseFunction(std[i].cFunc)
+		if err != nil {
+			panic(err)
+		}
+
+		p.AddFunctionDefinition(DefinitionFunction{
+			Name:           a,
+			ReturnType:     e[0],
+			ArgumentTypes:  w,
+			IsCstdFunction: true,
+			pntCstd:        &std[i],
+		})
 	}
 }
 
@@ -529,15 +494,70 @@ func (p *Program) SetCalled(name string) {
 	}
 }
 
+func (p *Program) SetHaveBody(name string) {
+	f, ok := p.functionDefinitions[name]
+	if ok {
+		f.HaveBody = true
+		p.functionDefinitions[name] = f
+	}
+}
+
+func (p *Program) GetCstdFunction() (src string) {
+	for i := range p.functionDefinitions {
+		if !p.functionDefinitions[i].IsCalled {
+			continue
+		}
+		if !p.functionDefinitions[i].IsCstdFunction {
+			continue
+		}
+		if p.functionDefinitions[i].pntCstd == nil {
+			continue
+		}
+		// add dependencies of packages
+		p.AddImports(p.functionDefinitions[i].pntCstd.dependPackages...)
+
+		// add dependencies of functions
+		for _, funcName := range p.functionDefinitions[i].pntCstd.dependFuncStd {
+			for j := range p.functionDefinitions {
+				if p.functionDefinitions[j].Name != funcName {
+					continue
+				}
+				def := p.functionDefinitions[j]
+				def.IsCalled = true
+				p.functionDefinitions[j] = def
+				break
+			}
+		}
+	}
+
+	for _, v := range p.functionDefinitions {
+		if !v.IsCstdFunction {
+			continue
+		}
+		if !v.IsCalled {
+			continue
+		}
+		src += v.pntCstd.functionBody
+	}
+	return
+}
+
 func (p *Program) GetOutsideCalledFunctions() (ds []DefinitionFunction) {
 	for _, v := range p.functionDefinitions {
 		if v.IncludeFile == "" {
 			continue
 		}
-		if p.PreprocessorFile.IsUserSource(v.IncludeFile) {
+		if !v.IsCalled {
 			continue
 		}
-		if !v.IsCalled {
+		if !v.HaveBody {
+			ds = append(ds, v)
+			continue
+		}
+		if v.IsCstdFunction {
+			continue
+		}
+		if p.PreprocessorFile.IsUserSource(v.IncludeFile) {
 			continue
 		}
 		ds = append(ds, v)
