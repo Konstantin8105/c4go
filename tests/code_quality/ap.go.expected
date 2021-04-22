@@ -35,49 +35,49 @@ func get() int32 {
 
 // main - transpiled function from  C4GO/tests/code_quality/ap.c:19
 func main() {
-	var i1 int32 = 42
 	// value
+	var i1 int32 = 42
 	a(c4goUnsafeConvert_int32(&i1))
 	b(c4goUnsafeConvert_int32(&i1), 1)
-	var i2 []int32 = []int32{11, 22}
 	// C-array
+	var i2 []int32 = []int32{11, 22}
 	a(i2)
 	b(i2, 2)
-	var i3 []int32 = c4goUnsafeConvert_int32(&i1)
 	// C-pointer from value
+	var i3 []int32 = c4goUnsafeConvert_int32(&i1)
 	a(i3)
 	b(i3, 1)
-	var i4 []int32 = i2
 	// C-pointer from array
+	var i4 []int32 = i2
 	a(i4)
 	b(i4, 2)
-	var i5 []int32 = i2[1:]
 	// C-pointer from array
+	var i5 []int32 = i2[1:]
 	a(i5)
 	b(i5, 1)
-	var i6 []int32 = i5[0+1:]
 	// pointer arithmetic
+	var i6 []int32 = i5[0+1:]
 	a(i6)
 	b(i6, 1)
+	// pointer arithmetic
 	var val int32 = 2 - 2
 	var i7 []int32 = c4goPointerArithInt32Slice(i5, int(1+(1-1)+val+0*(100-2)+0+0-0*0))
-	// pointer arithmetic
 	a(i7)
 	b(i7, 1)
-	var i8 []int32 = i5[0+1+0:]
 	// pointer arithmetic
+	var i8 []int32 = i5[0+1+0:]
 	a(i8)
 	b(i8, 1)
-	var i9 []int32 = []int32{i3[0], i3[0+1]}
 	// pointer arithmetic
+	var i9 []int32 = []int32{i3[0], i3[0+1]}
 	a(i9)
 	b(i9, 1)
-	var i10 []int32 = i5[1+0+0+5*get()+get()+(12+3)*get():]
 	// pointer arithmetic
+	var i10 []int32 = i5[1+0+0+5*get()+get()+(12+3)*get():]
 	a(i10)
 	b(i10, 1)
-	var i11 []int32 = c4goPointerArithInt32Slice(i5, int(1+0+0+5*get()+get()-(12+3)*get()))
 	// pointer arithmetic
+	var i11 []int32 = c4goPointerArithInt32Slice(i5, int(1+0+0+5*get()+get()-(12+3)*get()))
 	a(i11)
 	b(i11, 1)
 	return

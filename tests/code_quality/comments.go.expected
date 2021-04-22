@@ -23,17 +23,17 @@ func fibs(n int32) []int32 {
 		// Если указан некоректный раззмер массива
 		return nil
 	}
-	var p []int32 = make([]int32, uint32(n)*uint32(1))
 	// Создание динамического массива
+	var p []int32 = make([]int32, uint32(n)*uint32(1))
 	// Первый элемент массива
 	p[0] = 1
 	if n > 1 {
 		// Если в массиве есть второй элемент
 		p[1] = 1
 	}
+	// Индексная переменная
 	var k int32
 	{
-		// Индексная переменная
 		// Заполнение прочих элементов массива
 		for k = 2; k < n; k++ {
 			p[k] = p[k-1] + p[k-2]
@@ -42,22 +42,22 @@ func fibs(n int32) []int32 {
 	return p
 }
 
-// main - transpiled function from  C4GO/tests/code_quality/comments.c:43
+// main - transpiled function from  C4GO/tests/code_quality/comments.c:42
 func main() {
 	defer noarch.AtexitRun()
-	var nums []int32
-	var size int32
 	// main function
 	//
 	// begin of program
 	// Указатель для записи результатов вызова
+	var nums []int32
 	// Переменная для записи размера массива
+	var size int32
 	// Считывание размера массива
 	fmt.Printf("Укажите размер массива: ")
 	noarch.Scanf([]byte("%d\x00"), c4goUnsafeConvert_int32(&size))
+	// Индексная переменная
 	var k int32
 	{
-		// Индексная переменная
 		// Отображение элементов массива
 		for k = 0; k < size; k++ {
 			noarch.Printf([]byte("| %d \x00"), nums[k])

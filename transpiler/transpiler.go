@@ -308,17 +308,6 @@ func transpileToStmts(node ast.Node, p *program.Program) (
 		stmts = nilFilterStmts(stmts)
 	}()
 
-	switch n := node.(type) {
-	case *ast.DeclStmt:
-		stmts, err = transpileDeclStmt(n, p)
-		if err != nil {
-			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("error in DeclStmt: %v", err), n))
-			err = nil // Error is ignored
-		}
-		return
-	}
-
 	var (
 		stmt      goast.Stmt
 		preStmts  []goast.Stmt
@@ -436,11 +425,19 @@ func transpileToStmt(node ast.Node, p *program.Program) (
 		var stmts []goast.Stmt
 		stmts, err = transpileDeclStmt(n, p)
 		if err != nil {
+			p.AddMessage(p.GenerateWarningMessage(
+				fmt.Errorf("error in DeclStmt: %v", err), n))
+			err = nil // Error is ignored
 			return
 		}
-		stmt = stmts[len(stmts)-1]
-		if len(stmts) > 1 {
-			preStmts = stmts[0 : len(stmts)-2]
+		switch len(stmts) {
+		case 0:
+			return
+		case 1:
+			stmt = stmts[0]
+		default:
+			stmt = stmts[0]
+			postStmts = stmts[1:]
 		}
 		return
 	}
