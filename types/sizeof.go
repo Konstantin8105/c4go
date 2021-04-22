@@ -64,10 +64,6 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 		return SizeOf(p, "int")
 	}
 
-	if strings.HasSuffix(cType, "*") {
-		return pointerSize, nil
-	}
-
 	// A structure will be the sum of its parts.
 	var isStruct, ok bool
 	var s *program.Struct
@@ -190,6 +186,10 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 	// Function pointers are one byte?
 	if strings.Contains(cType, "(") {
 		return 1, nil
+	}
+
+	if strings.HasSuffix(cType, "*") {
+		return pointerSize, nil
 	}
 
 	switch cType {

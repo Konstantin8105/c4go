@@ -361,7 +361,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			var sizeof int
 			baseType := types.GetBaseType(leftType)
 			sizeof, err = types.SizeOf(p, baseType)
-			if err != nil || sizeof == 0 {
+			if err != nil {
 				err = fmt.Errorf("{'%s' %v '%s'}. sizeof = %d for baseType = '%s'. %v",
 					leftType, operator, rightType, sizeof, baseType, err)
 				return nil, "PointerOperation_unknown04", nil, nil, err

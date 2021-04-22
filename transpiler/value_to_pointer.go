@@ -189,10 +189,10 @@ func GetPointerAddress(p *program.Program, expr goast.Expr, cType string, sizeof
 		return
 	}
 
-	if sizeof == 0 {
-		err = fmt.Errorf("sizeof is zero")
-		return
-	}
+	// if sizeof == 0 {
+	// 	err = fmt.Errorf("sizeof is zero")
+	// 	return
+	// }
 
 	// generate postStmts
 
@@ -367,10 +367,10 @@ func SubTwoPnts(
 		}
 	}()
 
-	if sizeof == 0 {
-		err = fmt.Errorf("sizeof is zero")
-		return
-	}
+	// if sizeof == 0 {
+	// 	err = fmt.Errorf("sizeof is zero")
+	// 	return
+	// }
 
 	x, newPost, err := GetPointerAddress(p, val1, val1Type, sizeof)
 	if err != nil {
@@ -408,10 +408,10 @@ func PntCmpPnt(
 		}
 	}()
 
-	if sizeof == 0 {
-		err = fmt.Errorf("sizeof is zero")
-		return
-	}
+	// if sizeof == 0 {
+	// 	err = fmt.Errorf("sizeof is zero")
+	// 	return
+	// }
 
 	switch operator {
 	case token.SUB: // -
