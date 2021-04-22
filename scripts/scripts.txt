@@ -47,9 +47,9 @@ Calculate warnings : ./testdata/nuklear/x11_opengl2.go
 		Unsafe   : 659
 
 Calculate warnings in file: ./testdata/neatroff/neatroff.go
-		After transpiling : 5 warnings.
+		After transpiling : 3 warnings.
 		Go build : 5 warnings
-		Unsafe   : 246
+		Unsafe   : 247
 
 Calculate warnings : ./testdata/redis/dict.go
 		After transpiling : 0 warnings.

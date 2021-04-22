@@ -32,6 +32,16 @@ mkdir -p ./testdata/
 	rm -f $TEMP_FOLDER/*.go
 	rm -f $TEMP_FOLDER/*.app
 
+# Arguments menu
+echo "    -a for ast tree"
+if [ "$1" == "-a" ]; then
+	$C4GO ast                               \
+		-clang-flag="-DTROFFFDIR=\"MMM\""	\
+		-clang-flag="-DTROFFMDIR=\"WWW\""	\
+		$TEMP_FOLDER/*.c
+fi
+
+
 # transpilation of all projects
 	echo "Transpile to $GO_FILE"
 	$C4GO transpile                         \

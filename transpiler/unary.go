@@ -365,9 +365,6 @@ func pointerParts(node *ast.Node, p *program.Program) (
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("cannot pointerParts: err = %v", err)
-			if (*node) != nil {
-				err = fmt.Errorf("code line: %d. %v", (*node).Position().Line, err)
-			}
 		}
 	}()
 

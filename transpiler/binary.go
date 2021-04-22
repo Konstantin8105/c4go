@@ -359,10 +359,11 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			//     `-DeclRefExpr 0x2369a20 <col:11> 'int' lvalue Var 0x2369790 'i' 'int'
 
 			var sizeof int
-			baseType := types.GetBaseType(leftType)
+			baseType := leftType // types.GetBaseType(leftType)
 			sizeof, err = types.SizeOf(p, baseType)
-			if err != nil {
-				err = fmt.Errorf("{'%s' %v '%s'}. %v", leftType, operator, rightType, err)
+			if err != nil || sizeof == 0 {
+				err = fmt.Errorf("{'%s' %v '%s'}. sizeof = %d for baseType = '%s'. %v",
+					leftType, operator, rightType, sizeof, baseType, err)
 				return nil, "PointerOperation_unknown04", nil, nil, err
 			}
 			var e goast.Expr
@@ -451,6 +452,15 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			var nodeN ast.Node = n
 			pnt, value, back, _, err = pointerParts(&nodeN, p)
 			if err != nil {
+				// BinaryOperator 0x128d3b8 <col:8, col:28> 'char *' '+'
+				// |-ImplicitCastExpr 0x128d3a0 <col:8> 'char *' <ArrayToPointerDecay>
+				// | `-DeclRefExpr 0x128d2d0 <col:8> 'char [262144]' lvalue Var 0x128b730 'hynums' 'char [262144]'
+				// `-ParenExpr 0x128d380 <col:17, col:28> 'long'
+				//   `-BinaryOperator 0x128d360 <col:18, col:22> 'long' '-'
+				//     |-ImplicitCastExpr 0x128d330 <col:18> 'char *' <LValueToRValue>
+				//     | `-DeclRefExpr 0x128d2f0 <col:18> 'char *' lvalue Var 0x128bc80 'p' 'char *'
+				//     `-ImplicitCastExpr 0x128d348 <col:22> 'char *' <ArrayToPointerDecay>
+				//       `-DeclRefExpr 0x128d310 <col:22> 'char [262144]' lvalue Var 0x128b610 'hypats' 'char [262144]'
 				err = fmt.Errorf("cannot separate on parts: %v", err)
 				return
 			}
