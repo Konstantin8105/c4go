@@ -751,6 +751,53 @@ void test_struct_bit()
     is_eq((int)(bs.b), 2);
 }
 
+union MyNumber {
+    int n;
+    char s[200];
+} obj;
+
+union MyNumber getNumber(char x, int state)
+{
+    union MyNumber tmp;
+    if (state)
+        tmp.n = (int)(x + 10 - 'A');
+    else {
+        switch (x) {
+        case 'A':
+            strcpy(tmp.s, "десять");
+            break;
+        case 'B':
+            strcpy(tmp.s, "одиннадцать");
+            break;
+        case 'C':
+            strcpy(tmp.s, "двенадцать");
+            break;
+        case 'D':
+            strcpy(tmp.s, "тринадцать");
+            break;
+        case 'E':
+            strcpy(tmp.s, "четырнадцать");
+            break;
+        case 'F':
+            strcpy(tmp.s, "пятнадцать");
+        }
+    }
+    return tmp;
+}
+
+void test_union_function()
+{
+    char k;
+    for (k = 'A'; k <= 'F'; k++) {
+        union MyNumber m = getNumber(k, 1);
+        printf("%c - %d\n", k, m.n);
+    }
+    for (k = 'A'; k <= 'F'; k++) {
+        obj = getNumber(k, 0);
+        printf("%c - %s\n", k, obj.s);
+    }
+}
+
 int main()
 {
     plan(127);
@@ -1161,6 +1208,7 @@ int main()
     typedef_struct_with_typedef_union();
     test_struct_with_func();
     test_struct_bit();
+    test_union_function();
 
     done_testing();
 }

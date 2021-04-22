@@ -46,9 +46,9 @@ type db = float64
 
 // test_char - transpiled function from  C4GO/tests/code_quality/unsafe.c:22
 func test_char() {
+	// integers
 	var t byte
 	var pt []byte = c4goUnsafeConvert_byte(&t)
-	// integers
 	_ = t
 	_ = pt
 }
@@ -103,9 +103,9 @@ func test_lli() {
 
 // test_f - transpiled function from  C4GO/tests/code_quality/unsafe.c:31
 func test_f() {
+	// floats
 	var t float32
 	var pt []float32 = c4goUnsafeConvert_float32(&t)
-	// floats
 	_ = t
 	_ = pt
 }
@@ -128,27 +128,27 @@ func test_ld() {
 
 // test_struct - transpiled function from  C4GO/tests/code_quality/unsafe.c:36
 func test_struct() {
+	// struct
 	var t str
 	var pt []str = c4goUnsafeConvert_str(&t)
-	// struct
 	_ = t
 	_ = pt
 }
 
 // test_un - transpiled function from  C4GO/tests/code_quality/unsafe.c:39
 func test_un() {
+	// union
 	var t un
 	var pt []un = c4goUnsafeConvert_un(&t)
-	// union
 	_ = t
 	_ = pt
 }
 
 // test_typedef - transpiled function from  C4GO/tests/code_quality/unsafe.c:42
 func test_typedef() {
+	// typedef
 	var t db
 	var pt []db = c4goUnsafeConvert_float64(&t)
-	// typedef
 	_ = t
 	_ = pt
 }

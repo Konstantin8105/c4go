@@ -32,6 +32,7 @@ func operators_equals() {
 	var w3 int32 = int32(int64(42))
 	var w4 int64 = int64(42)
 	var w5 int16 = int16(int64(42))
+	// zero value
 	var s1 int32
 	var s2 uint32
 	var s3 int32
@@ -56,10 +57,11 @@ func operators_equals() {
 	var r4 [][][][]int32
 	var r5 [][][][][]int32
 	var r6 [][][][][][]int32
-	// zero value
 	// function
 	f(42)
+	// array
 	var arr []float32 = make([]float32, 500)
+	// simplificator
 	var ss []byte = []byte("words\x00")
 	var cc int32 = int32(uint8((func() []byte {
 		defer func() {
@@ -68,6 +70,3 @@ func operators_equals() {
 		return ss
 	}())[0]))
 }
-
-// array
-// simplificator

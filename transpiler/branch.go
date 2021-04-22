@@ -190,7 +190,7 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 					err)
 				return nil, nil, nil, err
 			}
-			preStmts = append(preStmts, combineStmts(before, newPre, newPost)...)
+			preStmts = append(preStmts, combineStmts(newPre, before, newPost)...)
 			children[0] = c.Children()[1]
 		}
 	case *ast.DeclStmt:
@@ -402,7 +402,7 @@ func transpileForStmt(n *ast.ForStmt, p *program.Program) (
 		Post: post,
 		Body: body,
 	}
-	block.List = combineStmts(&forStmt, preStmts, postStmts)
+	block.List = combineStmts(preStmts, &forStmt, postStmts)
 	block.Lbrace = 1
 
 	return &block, nil, nil, nil

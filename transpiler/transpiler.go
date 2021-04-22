@@ -302,35 +302,19 @@ func transpileToStmts(node ast.Node, p *program.Program) (
 	stmts []goast.Stmt, err error) {
 
 	if node == nil {
-		return nil, nil
-	}
-	defer func() {
-		stmts = nilFilterStmts(stmts)
-	}()
-
-	switch n := node.(type) {
-	case *ast.DeclStmt:
-		stmts, err = transpileDeclStmt(n, p)
-		if err != nil {
-			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("error in DeclStmt: %v", err), n))
-			err = nil // Error is ignored
-		}
 		return
 	}
 
-	var (
-		stmt      goast.Stmt
-		preStmts  []goast.Stmt
-		postStmts []goast.Stmt
-	)
-	stmt, preStmts, postStmts, err = transpileToStmt(node, p)
+	stmt, preStmts, postStmts, err := transpileToStmt(node, p)
 	if err != nil {
 		p.AddMessage(p.GenerateWarningMessage(
 			fmt.Errorf("error in DeclStmt: %v", err), node))
 		err = nil // Error is ignored
 	}
-	return combineStmts(stmt, preStmts, postStmts), err
+
+	stmts = combineStmts(preStmts, stmt, postStmts)
+	stmts = nilFilterStmts(stmts)
+	return
 }
 
 func transpileToStmt(node ast.Node, p *program.Program) (
@@ -436,11 +420,19 @@ func transpileToStmt(node ast.Node, p *program.Program) (
 		var stmts []goast.Stmt
 		stmts, err = transpileDeclStmt(n, p)
 		if err != nil {
+			p.AddMessage(p.GenerateWarningMessage(
+				fmt.Errorf("error in DeclStmt: %v", err), n))
+			err = nil // Error is ignored
 			return
 		}
-		stmt = stmts[len(stmts)-1]
-		if len(stmts) > 1 {
-			preStmts = stmts[0 : len(stmts)-2]
+		switch len(stmts) {
+		case 0:
+			return
+		case 1:
+			stmt = stmts[0]
+		default:
+			stmt = stmts[0]
+			postStmts = stmts[1:]
 		}
 		return
 	}
@@ -663,27 +655,18 @@ func transpileToNode(node ast.Node, p *program.Program) (
 }
 
 func transpileStmts(nodes []ast.Node, p *program.Program) (stmts []goast.Stmt, err error) {
-	defer func() {
+	for _, s := range nodes {
+		if s == nil {
+			continue
+		}
+		stmt, preStmts, postStmts, err := transpileToStmt(s, p)
 		if err != nil {
 			p.AddMessage(p.GenerateWarningMessage(
-				fmt.Errorf("error in transpileToStmts: %v", err), nodes[0]))
+				fmt.Errorf("transpileToStmts: %v", err), nodes[0]))
 			err = nil // Error is ignored
+			continue
 		}
-	}()
-
-	for _, s := range nodes {
-		if s != nil {
-			var (
-				stmt      goast.Stmt
-				preStmts  []goast.Stmt
-				postStmts []goast.Stmt
-			)
-			stmt, preStmts, postStmts, err = transpileToStmt(s, p)
-			if err != nil {
-				return
-			}
-			stmts = append(stmts, combineStmts(stmt, preStmts, postStmts)...)
-		}
+		stmts = append(stmts, combineStmts(preStmts, stmt, postStmts)...)
 	}
 
 	return stmts, nil
