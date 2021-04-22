@@ -1,0 +1,82 @@
+//
+//	Package - transpiled by c4go
+//
+//	If you have found any issues, please raise an issue at:
+//	https://github.com/Konstantin8105/c4go/
+//
+
+package code_quality
+
+import "unsafe"
+import "github.com/Konstantin8105/c4go/noarch"
+import "fmt"
+
+// fibs - transpiled function from  C4GO/tests/code_quality/comments.c:12
+func fibs(n int32) []int32 {
+	if n <= 0 {
+		// Taked from TestBookSources/testdata/git-source/VasielBook/Глава_4/4.11/main.c
+		// Динамический массив как результат функции
+		//
+		// * Функция результатом возвращает динамический массив,
+		// * заполненный числами Фибоначчи
+		//
+		// Если указан некоректный раззмер массива
+		return nil
+	}
+	var p []int32 = make([]int32, uint32(n)*uint32(1))
+	// Создание динамического массива
+	// Первый элемент массива
+	p[0] = 1
+	if n > 1 {
+		// Если в массиве есть второй элемент
+		p[1] = 1
+	}
+	var k int32
+	{
+		// Индексная переменная
+		// Заполнение прочих элементов массива
+		for k = 2; k < n; k++ {
+			p[k] = p[k-1] + p[k-2]
+		}
+	}
+	return p
+}
+
+// main - transpiled function from  C4GO/tests/code_quality/comments.c:43
+func main() {
+	defer noarch.AtexitRun()
+	var nums []int32
+	var size int32
+	// main function
+	//
+	// begin of program
+	// Указатель для записи результатов вызова
+	// Переменная для записи размера массива
+	// Считывание размера массива
+	fmt.Printf("Укажите размер массива: ")
+	noarch.Scanf([]byte("%d\x00"), c4goUnsafeConvert_int32(&size))
+	var k int32
+	{
+		// Индексная переменная
+		// Отображение элементов массива
+		for k = 0; k < size; k++ {
+			noarch.Printf([]byte("| %d \x00"), nums[k])
+		}
+	}
+	if size >= 1 {
+		fmt.Printf("|\n")
+	}
+	if nums != nil {
+		_ = nums
+		// Удаление массива из памяти
+		fmt.Printf("Динамический массив удалён\n")
+	} else {
+		fmt.Printf("Массив не был создан\n")
+	}
+	return
+}
+
+// c4goUnsafeConvert_int32 : created by c4go
+func c4goUnsafeConvert_int32(c4go_name *int32) []int32 {
+	return (*[1000000]int32)(unsafe.Pointer(c4go_name))[:]
+}
