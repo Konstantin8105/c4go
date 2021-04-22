@@ -130,6 +130,10 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 			totalBytes += pointerSize - (totalBytes % pointerSize)
 		}
 
+		if totalBytes == 0 {
+			totalBytes = pointerSize
+		}
+
 		return totalBytes, nil
 	}
 
@@ -178,6 +182,10 @@ func SizeOf(p *program.Program, cType string) (size int, err error) {
 		// the OS.
 		if byteCount%pointerSize != 0 {
 			byteCount += pointerSize - (byteCount % pointerSize)
+		}
+
+		if byteCount == 0 {
+			byteCount = pointerSize
 		}
 
 		return byteCount, nil

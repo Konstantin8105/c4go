@@ -359,8 +359,10 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			//     `-DeclRefExpr 0x2369a20 <col:11> 'int' lvalue Var 0x2369790 'i' 'int'
 
 			var sizeof int
-			sizeof, err = types.SizeOf(p, types.GetBaseType(leftType))
+			baseType := types.GetBaseType(leftType)
+			sizeof, err = types.SizeOf(p, baseType)
 			if err != nil {
+				err = fmt.Errorf("{'%s' %v '%s'}. %v", leftType, operator, rightType, err)
 				return nil, "PointerOperation_unknown04", nil, nil, err
 			}
 			var e goast.Expr
@@ -372,6 +374,8 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 				sizeof, operator,
 			)
 			if err != nil {
+				err = fmt.Errorf("{'%s' %v '%s'}. for base type: `%s`. %v",
+					leftType, operator, rightType, baseType, err)
 				return nil, "PointerOperation_unknown05", nil, nil, err
 			}
 			postStmts = append(postStmts, newPost...)
