@@ -360,6 +360,16 @@ func transpileUnaryOperatorAmpersant(n *ast.UnaryOperator, p *program.Program) (
 // `-UnaryOperator <col:26, col:29> 'char *' postfix '++'
 //   `-DeclRefExpr <col:26> 'char *' lvalue Var 0x3c05ae8 'pos' 'char *'
 //
+// BinaryOperator 0x128d3b8 <col:8, col:28> 'char *' '+'
+// |-ImplicitCastExpr 0x128d3a0 <col:8> 'char *' <ArrayToPointerDecay>
+// | `-DeclRefExpr 0x128d2d0 <col:8> 'char [262144]' lvalue Var 0x128b730 'hynums' 'char [262144]'
+// `-ParenExpr 0x128d380 <col:17, col:28> 'long'
+//   `-BinaryOperator 0x128d360 <col:18, col:22> 'long' '-'
+//     |-ImplicitCastExpr 0x128d330 <col:18> 'char *' <LValueToRValue>
+//     | `-DeclRefExpr 0x128d2f0 <col:18> 'char *' lvalue Var 0x128bc80 'p' 'char *'
+//     `-ImplicitCastExpr 0x128d348 <col:22> 'char *' <ArrayToPointerDecay>
+//       `-DeclRefExpr 0x128d310 <col:22> 'char [262144]' lvalue Var 0x128b610 'hypats' 'char [262144]'
+//
 func pointerParts(node *ast.Node, p *program.Program) (
 	pnt ast.Node, value ast.Node, back func(), undefineIndex bool, err error) {
 	defer func() {

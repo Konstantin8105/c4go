@@ -447,58 +447,29 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			operator == token.SUB || // -
 			false {
 
-			var pnt, value ast.Node
-			var back func()
-			var nodeN ast.Node = n
-			pnt, value, back, _, err = pointerParts(&nodeN, p)
-			if err != nil {
-				// BinaryOperator 0x128d3b8 <col:8, col:28> 'char *' '+'
-				// |-ImplicitCastExpr 0x128d3a0 <col:8> 'char *' <ArrayToPointerDecay>
-				// | `-DeclRefExpr 0x128d2d0 <col:8> 'char [262144]' lvalue Var 0x128b730 'hynums' 'char [262144]'
-				// `-ParenExpr 0x128d380 <col:17, col:28> 'long'
-				//   `-BinaryOperator 0x128d360 <col:18, col:22> 'long' '-'
-				//     |-ImplicitCastExpr 0x128d330 <col:18> 'char *' <LValueToRValue>
-				//     | `-DeclRefExpr 0x128d2f0 <col:18> 'char *' lvalue Var 0x128bc80 'p' 'char *'
-				//     `-ImplicitCastExpr 0x128d348 <col:22> 'char *' <ArrayToPointerDecay>
-				//       `-DeclRefExpr 0x128d310 <col:22> 'char [262144]' lvalue Var 0x128b610 'hypats' 'char [262144]'
-				err = fmt.Errorf("cannot separate on parts: %v", err)
+			el, extl, prel, postl, errl := atomicOperation(n.Children()[0], p)
+			er, extr, prer, postr, errr := atomicOperation(n.Children()[1], p)
+			if errl != nil || errr != nil {
+				err = fmt.Errorf("pointer operation is not valid : %v. %v", errl, errr)
+				return
+			}
+			preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, prel, postl)
+			preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, prer, postr)
+
+			if types.IsCPointer(extl, p) {
+				expr, eType, prel, postl, errl = pointerArithmetic(p, el, extl, er, extr, operator)
+			} else {
+				expr, eType, prel, postl, errl = pointerArithmetic(p, er, extr, el, extl, operator)
+			}
+
+			if errl != nil {
+				err = fmt.Errorf("pointer operation is not valid : %v", errl)
 				return
 			}
 
-			var e goast.Expr
-			e, eType, newPre, newPost, err = atomicOperation(value, p)
-			if err != nil {
-				return
-			}
-			preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
-			eType = n.Type
-
-			// return all types
-			back()
-
-			var arr goast.Expr
-			var arrType string
-			arr, arrType, newPre, newPost, err = atomicOperation(pnt, p)
-			if err != nil {
-				return
-			}
-			_ = arrType
-			preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
-
-			expr, eType, newPre, newPost, err =
-				pointerArithmetic(p, arr, arrType, e, eType, token.ADD)
-
-			if err != nil {
-				return
-			}
-			if expr == nil {
-				return nil, "", nil, nil, fmt.Errorf("expr is nil")
-			}
-			preStmts, postStmts =
-				combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+			preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, prel, postl)
 
 			return
-
 		}
 	}
 

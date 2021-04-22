@@ -661,6 +661,15 @@ func pointerArithmetic(p *program.Program,
 		}
 	}()
 
+	if types.IsPointer(rightType, p) &&
+		(types.IsCInteger(p, leftType) || leftType == "bool") &&
+		operator == token.ADD {
+		// swap pointer operation
+		// from : integer + pnt
+		// to   : pnt + integer
+		return pointerArithmetic(p, right, rightType, left, leftType, operator)
+	}
+
 	// check input data
 	if !(types.IsCInteger(p, rightType) || rightType == "bool") {
 		err = fmt.Errorf("right type is not C integer type : '%s'", rightType)
