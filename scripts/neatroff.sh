@@ -14,11 +14,15 @@ mkdir -p ./testdata/
 	export TEMP_FOLDER="./testdata/$NAME"
 	export GO_FILE="$TEMP_FOLDER/$NAME.go"
 	export GO_APP="$TEMP_FOLDER/$NAME.app"
+	export COMMIT=08d6e9ceb2d7d420be1d916d32faeda18c4f27e0
 
 # prepare C code
     if [ ! -d $TEMP_FOLDER ]; then
 		mkdir -p $TEMP_FOLDER
 		git clone $GIT_SOURCE $TEMP_FOLDER
+		cd $TEMP_FOLDER/
+		git checkout $COMMIT
+		cd ../../
 		sed -i.bak '566,572d' $TEMP_FOLDER/font.c
 		sed -i.bak '66,81d'   $TEMP_FOLDER/out.c
 	fi

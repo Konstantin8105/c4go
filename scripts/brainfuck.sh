@@ -14,11 +14,15 @@ mkdir -p ./testdata/
 	export TEMP_FOLDER="./testdata/$NAME"
 	export GO_FILE="$TEMP_FOLDER/$NAME.go"
 	export GO_APP="$TEMP_FOLDER/$NAME.app"
+	export COMMIT=c94b17a1a7dbf2b49bc2c3330ef85035340f6296
 
 # prepare C code
     if [ ! -d $TEMP_FOLDER ]; then
 		mkdir -p $TEMP_FOLDER
 		git clone $GIT_SOURCE $TEMP_FOLDER
+		cd $TEMP_FOLDER/
+		git checkout $COMMIT
+		cd ../../
 	fi
 
 # remove go files from last transpilation

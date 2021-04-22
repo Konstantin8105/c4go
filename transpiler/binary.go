@@ -325,7 +325,7 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			}
 			var e goast.Expr
 			var newPost []goast.Stmt
-			e, newPost, err = SubTwoPnts(left, leftType, right, rightType, sizeof)
+			e, newPost, err = SubTwoPnts(p, left, leftType, right, rightType, sizeof)
 			if err != nil {
 				return nil, "PointerOperation_unknown02", nil, nil, err
 			}
@@ -343,6 +343,20 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			token.LAND,           // &&
 			token.LSS, token.LEQ, // <  <=
 			token.EQL, token.NEQ: // == !=
+
+			// IfStmt 0x2369a68 <line:210:3, line:211:11>
+			// |-BinaryOperator 0x2369a00 <line:210:7, col:21> 'int' '=='
+			// | |-ImplicitCastExpr 0x23699d0 <col:7, col:16> 'struct font *' <LValueToRValue>
+			// | | `-ArraySubscriptExpr 0x2369990 <col:7, col:16> 'struct font *' lvalue
+			// | |   |-ImplicitCastExpr 0x2369960 <col:7> 'struct font **' <ArrayToPointerDecay>
+			// | |   | `-DeclRefExpr 0x2369920 <col:7> 'struct font *[32]' lvalue Var 0x235fbe8 'fn_font' 'struct font *[32]'
+			// | |   `-ImplicitCastExpr 0x2369978 <col:15> 'int' <LValueToRValue>
+			// | |     `-DeclRefExpr 0x2369940 <col:15> 'int' lvalue Var 0x2369790 'i' 'int'
+			// | `-ImplicitCastExpr 0x23699e8 <col:21> 'struct font *' <LValueToRValue>
+			// |   `-DeclRefExpr 0x23699b0 <col:21> 'struct font *' lvalue ParmVar 0x2369638 'fn' 'struct font *'
+			// `-ReturnStmt 0x2369a58 <line:211:4, col:11>
+			//   `-ImplicitCastExpr 0x2369a40 <col:11> 'int' <LValueToRValue>
+			//     `-DeclRefExpr 0x2369a20 <col:11> 'int' lvalue Var 0x2369790 'i' 'int'
 
 			var sizeof int
 			sizeof, err = types.SizeOf(p, types.GetBaseType(leftType))
