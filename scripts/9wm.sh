@@ -10,11 +10,15 @@ mkdir -p ./testdata/
 	export C4GO_DIR=$GOPATH/src/github.com/Konstantin8105/c4go
 	export C4GO=$C4GO_DIR/c4go
 	export TEMP_FOLDER="./testdata/9wm"
+	export COMMIT=b1278751d85ac2a8d41a87fc9d71e61434725e45
 
 # prepare C code
     if [ ! -d $TEMP_FOLDER ]; then
 		mkdir -p $TEMP_FOLDER
 		git clone https://github.com/9wm/9wm.git $TEMP_FOLDER/
+		cd $TEMP_FOLDER/
+		git checkout $COMMIT
+		cd ../../
 	fi
 
 # remove go files from last transpilation

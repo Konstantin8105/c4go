@@ -19,7 +19,7 @@ mkdir -p ./testdata/
 		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/homework1.c			-P $TEMP_FOLDER > /dev/null 2>&1
 		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/add2.c				-P $TEMP_FOLDER > /dev/null 2>&1
 		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/addn.c				-P $TEMP_FOLDER > /dev/null 2>&1
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/add.c					-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/add.c				-P $TEMP_FOLDER > /dev/null 2>&1
 		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/coins.c				-P $TEMP_FOLDER > /dev/null 2>&1
 		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/factorial.c			-P $TEMP_FOLDER > /dev/null 2>&1
 		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/true.c				-P $TEMP_FOLDER > /dev/null 2>&1
@@ -40,7 +40,7 @@ mkdir -p ./testdata/
 		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/linear.c				-P $TEMP_FOLDER > /dev/null 2>&1
 		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/shift.c				-P $TEMP_FOLDER > /dev/null 2>&1
 		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/sieve.c				-P $TEMP_FOLDER > /dev/null 2>&1
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/string1.c				-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/string1.c			-P $TEMP_FOLDER > /dev/null 2>&1
 		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/counts.c				-P $TEMP_FOLDER > /dev/null 2>&1
 		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/cpfile.c				-P $TEMP_FOLDER > /dev/null 2>&1
 		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/enum1.c				-P $TEMP_FOLDER > /dev/null 2>&1
@@ -55,7 +55,7 @@ mkdir -p ./testdata/
 		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/merge.c				-P $TEMP_FOLDER > /dev/null 2>&1
 		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/sortmerge.c			-P $TEMP_FOLDER > /dev/null 2>&1
 		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/clean.c				-P $TEMP_FOLDER > /dev/null 2>&1
-		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/studentlist.c			-P $TEMP_FOLDER > /dev/null 2>&1
+		wget --no-check-certificate https://cis.temple.edu/~giorgio/cis71/code/studentlist.c		-P $TEMP_FOLDER > /dev/null 2>&1
 	fi
 
 # remove go files from last transpilation

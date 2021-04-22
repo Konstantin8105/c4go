@@ -17,7 +17,7 @@ mkdir -p ./testdata/
 # prepare C code
     if [ ! -d $TEMP_FOLDER ]; then
 		mkdir -p $TEMP_FOLDER
-   	 	curl http://www.netlib.org/voronoi/triangle.zip > $TEMP_FOLDER/$NAME.zip
+   	 	curl http://www.mirrorservice.org/sites/ftp.netlib.org/voronoi/triangle.zip > $TEMP_FOLDER/$NAME.zip
     	unzip $TEMP_FOLDER/$NAME.zip -d $TEMP_FOLDER
 	fi
 

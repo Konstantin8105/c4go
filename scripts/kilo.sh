@@ -14,11 +14,15 @@ mkdir -p ./testdata/
 	export TEMP_FOLDER="./testdata/$NAME"
 	export GO_FILE="$TEMP_FOLDER/$NAME.go"
 	export GO_APP="$TEMP_FOLDER/$NAME.app"
+	export COMMIT=d65f4c92e8ed405937a7bac3248d24fa6b40eb6f
 
 # prepare C code
     if [ ! -d $TEMP_FOLDER ]; then
 		mkdir -p $TEMP_FOLDER
 		git clone $GIT_SOURCE $TEMP_FOLDER
+		cd $TEMP_FOLDER/
+		git checkout $COMMIT
+		cd ../../
 		sed -i.bak '370iif(row->rsize > 0)' $TEMP_FOLDER/kilo.c
 	fi
 

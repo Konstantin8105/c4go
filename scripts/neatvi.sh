@@ -14,11 +14,15 @@ mkdir -p ./testdata/
 	export TEMP_FOLDER="./testdata/$NAME"
 	export GO_FILE="$TEMP_FOLDER/$NAME.go"
 	export GO_APP="$TEMP_FOLDER/$NAME.app"
+	export COMMIT=29b4fa028ebed5c2b2a9a7e13bce07ab2ae81587
 
 # prepare C code
     if [ ! -d $TEMP_FOLDER ]; then
 		mkdir -p $TEMP_FOLDER
 		git clone $GIT_SOURCE $TEMP_FOLDER
+		cd $TEMP_FOLDER/
+		git checkout $COMMIT
+		cd ../../
 		sed -i.bak '635,642d'   $TEMP_FOLDER/vi.c
 		sed -i.bak 's/bufs/bufs_postfix/g'   $TEMP_FOLDER/reg.c
 		sed -i.bak 's/static\ //g'   $TEMP_FOLDER/regex.c
