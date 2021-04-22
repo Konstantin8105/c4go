@@ -47,6 +47,7 @@ fi
 		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/jemalloc"  \
 		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/linenoise" \
 		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/lua"       \
+		-clang-flag="-I$TEMP_FOLDER/$VERSION/src/"           \
 		-o="$TEMP_FOLDER/redis_cli.go"                       \
 		$TEMP_FOLDER/$VERSION/src/redis-cli.c
 
@@ -57,6 +58,7 @@ fi
 		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/jemalloc"  \
 		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/linenoise" \
 		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/lua"       \
+		-clang-flag="-I$TEMP_FOLDER/$VERSION/src/"           \
 		-o="$TEMP_FOLDER/dict.go"                            \
 		$TEMP_FOLDER/$VERSION/src/dict.c
 
@@ -66,11 +68,13 @@ fi
 		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/jemalloc"      \
 		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/linenoise"     \
 		-clang-flag="-I$TEMP_FOLDER/$VERSION/deps/lua"           \
+		-clang-flag="-I$TEMP_FOLDER/$VERSION/src/"           \
 		-o="$TEMP_FOLDER/sds.go"                                 \
 		$TEMP_FOLDER/$VERSION/src/sds.c
 
 	$C4GO transpile                                          \
 		-o="$TEMP_FOLDER/linenoise.go"                       \
+		-clang-flag="-I$TEMP_FOLDER/$VERSION/src/"           \
 		$TEMP_FOLDER/$VERSION/deps/linenoise/linenoise.c     \
 		$TEMP_FOLDER/$VERSION/deps/linenoise/example.c
 
