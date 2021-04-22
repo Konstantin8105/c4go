@@ -157,7 +157,12 @@ typedef SP Mem2;
 
 int main()
 {
-    plan(83);
+    plan(84);
+
+    diag("null");
+    void* pntnull = NULL;
+    is_eq(sizeof(pntnull), 8);
+    (void)pntnull;
 
     diag("Integer types");
     check_sizes(char, 1);
