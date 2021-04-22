@@ -61,7 +61,7 @@ func main() {
 	b(i6, 1)
 	// pointer arithmetic
 	var val int32 = 2 - 2
-	var i7 []int32 = c4goPointerArithInt32Slice(i5, int(1+(1-1)+val+0*(100-2)+0+0-0*0))
+	var i7 []int32 = c4goPointerArithInt32Slice(c4goPointerArithInt32Slice(c4goPointerArithInt32Slice(i5, int(1+(1-1)+val+0*(100-2))), int(0)), int(-(0 * 0)))
 	a(i7)
 	b(i7, 1)
 	// pointer arithmetic
@@ -77,7 +77,7 @@ func main() {
 	a(i10)
 	b(i10, 1)
 	// pointer arithmetic
-	var i11 []int32 = c4goPointerArithInt32Slice(i5, int(1+0+0+5*get()+get()-(12+3)*get()))
+	var i11 []int32 = c4goPointerArithInt32Slice(i5[1+0+0+5*get()+get():], int(-((12 + 3) * get())))
 	a(i11)
 	b(i11, 1)
 	return

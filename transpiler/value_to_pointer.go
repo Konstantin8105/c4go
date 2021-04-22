@@ -661,6 +661,14 @@ func pointerArithmetic(p *program.Program,
 		}
 	}()
 
+	if operator == token.SUB {
+		right = &goast.UnaryExpr{
+			Op: token.SUB,
+			X:  right,
+		}
+		return pointerArithmetic(p, left, leftType, right, rightType, token.ADD)
+	}
+
 	if types.IsPointer(rightType, p) &&
 		(types.IsCInteger(p, leftType) || leftType == "bool") &&
 		operator == token.ADD {
