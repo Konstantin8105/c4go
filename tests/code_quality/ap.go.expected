@@ -20,11 +20,9 @@ func a(v1 []int32) {
 
 // b - transpiled function from  C4GO/tests/code_quality/ap.c:7
 func b(v1 []int32, size int32) {
-	{
-		// input argument - C-array
-		for size -= 1; size >= 0; size-- {
-			noarch.Printf([]byte("b: %d %d\n\x00"), size, v1[size])
-		}
+	// input argument - C-array
+	for size -= 1; size >= 0; size-- {
+		noarch.Printf([]byte("b: %d %d\n\x00"), size, v1[size])
 	}
 }
 

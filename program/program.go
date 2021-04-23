@@ -364,6 +364,44 @@ type simpleDefer struct {
 }
 
 func (s simpleDefer) Visit(node goast.Node) (w goast.Visitor) {
+	// 	from:
+	//		func f4() {
+	//			{
+	//				var i int32
+	//				for ; i < 10; i++ {
+	//				}
+	//			}
+	//		}
+	// to   :
+	//		func f4() {
+	//			var i int32
+	//			for ; i < 10; i++ {
+	//			}
+	//		}
+	if fd, ok := node.(*goast.FuncDecl); ok && len(fd.Body.List) == 1 {
+		if ib, ok := fd.Body.List[0].(*goast.BlockStmt); ok {
+			fd.Body = ib // internal body
+		}
+	}
+	// 	from:
+	//		 {
+	//			{
+	//				var i int32
+	//				for ; i < 10; i++ {
+	//				}
+	//			}
+	//		}
+	// to   :
+	//		{
+	//			var i int32
+	//			for ; i < 10; i++ {
+	//			}
+	//		}
+	if eb, ok := node.(*goast.BlockStmt); ok && len(eb.List) == 1 {
+		if ib, ok := eb.List[0].(*goast.BlockStmt); ok {
+			eb = ib // internal body
+		}
+	}
 	// Simplification from :
 	//	var cc int32 = int32(uint8((func() []byte {
 	//		defer func() {
