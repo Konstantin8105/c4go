@@ -466,12 +466,86 @@ func (s simpleDefer) Visit(node goast.Node) (w goast.Visitor) {
 	//		.  .  .  }
 	//		.  .  }
 	//		.  }
+	//		}
 	// to   :
 	//		{
 	//			.....
-	//			sstr_s = c4goPointerArithByteSlice(sstr_s, int(-1))
+	//			sstr_s = f(sstr_s, int(-1))
 	//			.....
 	//		}
+	if eb, ok := node.(*goast.BlockStmt); ok {
+		for i := range eb.List {
+			es, ok := eb.List[i].(*goast.ExprStmt)
+			if !ok {
+				continue
+			}
+			cl, ok := es.X.(*goast.CallExpr)
+			if !ok {
+				continue
+			}
+			fl, ok := cl.Fun.(*goast.FuncLit)
+			if !ok {
+				continue
+			}
+			ft := fl.Type // .(*goast.FuncType)
+			if 1 != len(ft.Results.List) {
+				continue
+			}
+
+			if 3 != len(fl.Body.List) {
+				continue
+			}
+
+			body := fl.Body.List
+
+			as, ok := body[0].(*goast.AssignStmt)
+			if !ok {
+				continue
+			}
+			if 1 != len(as.Lhs) {
+				continue
+			}
+			in, ok := as.Lhs[0].(*goast.Ident)
+			if !ok {
+				continue
+			}
+			if in.Name != "tempVarUnary" {
+				continue
+			}
+
+			rt, ok := body[2].(*goast.ReturnStmt)
+			if !ok {
+				continue
+			}
+			if 1 != len(rt.Results) {
+				continue
+			}
+			id, ok := rt.Results[0].(*goast.Ident)
+			if !ok {
+				continue
+			}
+			if id.Name != "tempVarUnary" {
+				continue
+			}
+
+			def, ok := body[1].(*goast.DeferStmt)
+			if !ok {
+				continue
+			}
+
+			fl, ok = def.Call.Fun.(*goast.FuncLit)
+			if !ok {
+				continue
+			}
+
+			body = fl.Body.List
+			if 1 != len(body) {
+				continue
+			}
+
+			eb.List[i] = body[0]
+		}
+	}
 
 	// 	from:
 	//		func f4() {
