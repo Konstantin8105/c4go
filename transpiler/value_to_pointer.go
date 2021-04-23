@@ -178,11 +178,21 @@ func GetUnsafeConvertDecls(p *program.Program) {
 //		            Each stmt has `defer` functions.
 func GetPointerAddress(p *program.Program, expr goast.Expr, cType string, sizeof int) (
 	rs goast.Expr, postStmts []goast.Stmt, err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("GetPointerAddress:sizeof:%d. %v", sizeof, err)
+		}
+	}()
 
 	if expr == nil {
 		err = fmt.Errorf("cannot get pointer address for nil expr")
 		return
 	}
+
+	// if sizeof == 0 {
+	// 	err = fmt.Errorf("sizeof is zero")
+	// 	return
+	// }
 
 	// generate postStmts
 
@@ -313,7 +323,7 @@ func GetPointerAddress(p *program.Program, expr goast.Expr, cType string, sizeof
 	// prepare postStmts
 
 	if sizeof < 1 {
-		err = fmt.Errorf("GetPointerAddress. not valid sizeof `%s`: %d", cType, sizeof)
+		err = fmt.Errorf("not valid sizeof `%s`: %d", cType, sizeof)
 		p.AddMessage(p.GenerateWarningMessage(err, nil))
 		return
 	}
@@ -351,6 +361,16 @@ func SubTwoPnts(
 	val1 goast.Expr, val1Type string,
 	val2 goast.Expr, val2Type string,
 	sizeof int) (rs goast.Expr, postStmts []goast.Stmt, err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("SubTwoPnts:%v", err)
+		}
+	}()
+
+	// if sizeof == 0 {
+	// 	err = fmt.Errorf("sizeof is zero")
+	// 	return
+	// }
 
 	x, newPost, err := GetPointerAddress(p, val1, val1Type, sizeof)
 	if err != nil {
@@ -382,6 +402,16 @@ func PntCmpPnt(
 	postStmts []goast.Stmt,
 	err error,
 ) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("PntCmpPnt:%v", err)
+		}
+	}()
+
+	// if sizeof == 0 {
+	// 	err = fmt.Errorf("sizeof is zero")
+	// 	return
+	// }
 
 	switch operator {
 	case token.SUB: // -
@@ -439,7 +469,6 @@ func PntCmpPnt(
 			// val1 != nil
 			// val1 == nil
 			// val1  > nil
-
 			ignoreList := func(Type string) bool {
 				return util.IsFunction(Type) ||
 					Type == types.NullPointer ||
@@ -631,6 +660,23 @@ func pointerArithmetic(p *program.Program,
 			err = fmt.Errorf("cannot transpile pointerArithmetic. err = %v", err)
 		}
 	}()
+
+	if operator == token.SUB {
+		right = &goast.UnaryExpr{
+			Op: token.SUB,
+			X:  right,
+		}
+		return pointerArithmetic(p, left, leftType, right, rightType, token.ADD)
+	}
+
+	if types.IsPointer(rightType, p) &&
+		(types.IsCInteger(p, leftType) || leftType == "bool") &&
+		operator == token.ADD {
+		// swap pointer operation
+		// from : integer + pnt
+		// to   : pnt + integer
+		return pointerArithmetic(p, right, rightType, left, leftType, operator)
+	}
 
 	// check input data
 	if !(types.IsCInteger(p, rightType) || rightType == "bool") {

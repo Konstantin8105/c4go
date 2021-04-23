@@ -359,8 +359,11 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			//     `-DeclRefExpr 0x2369a20 <col:11> 'int' lvalue Var 0x2369790 'i' 'int'
 
 			var sizeof int
-			sizeof, err = types.SizeOf(p, types.GetBaseType(leftType))
+			baseType := types.GetBaseType(leftType)
+			sizeof, err = types.SizeOf(p, baseType)
 			if err != nil {
+				err = fmt.Errorf("{'%s' %v '%s'}. sizeof = %d for baseType = '%s'. %v",
+					leftType, operator, rightType, sizeof, baseType, err)
 				return nil, "PointerOperation_unknown04", nil, nil, err
 			}
 			var e goast.Expr
@@ -372,6 +375,8 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 				sizeof, operator,
 			)
 			if err != nil {
+				err = fmt.Errorf("{'%s' %v '%s'}. for base type: `%s`. %v",
+					leftType, operator, rightType, baseType, err)
 				return nil, "PointerOperation_unknown05", nil, nil, err
 			}
 			postStmts = append(postStmts, newPost...)
@@ -442,49 +447,29 @@ func transpileBinaryOperator(n *ast.BinaryOperator, p *program.Program, exprIsSt
 			operator == token.SUB || // -
 			false {
 
-			var pnt, value ast.Node
-			var back func()
-			var nodeN ast.Node = n
-			pnt, value, back, _, err = pointerParts(&nodeN, p)
-			if err != nil {
-				err = fmt.Errorf("cannot separate on parts: %v", err)
+			el, extl, prel, postl, errl := atomicOperation(n.Children()[0], p)
+			er, extr, prer, postr, errr := atomicOperation(n.Children()[1], p)
+			if errl != nil || errr != nil {
+				err = fmt.Errorf("pointer operation is not valid : %v. %v", errl, errr)
+				return
+			}
+			preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, prel, postl)
+			preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, prer, postr)
+
+			if types.IsCPointer(extl, p) {
+				expr, eType, prel, postl, errl = pointerArithmetic(p, el, extl, er, extr, operator)
+			} else {
+				expr, eType, prel, postl, errl = pointerArithmetic(p, er, extr, el, extl, operator)
+			}
+
+			if errl != nil {
+				err = fmt.Errorf("pointer operation is not valid : %v", errl)
 				return
 			}
 
-			var e goast.Expr
-			e, eType, newPre, newPost, err = atomicOperation(value, p)
-			if err != nil {
-				return
-			}
-			preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
-			eType = n.Type
-
-			// return all types
-			back()
-
-			var arr goast.Expr
-			var arrType string
-			arr, arrType, newPre, newPost, err = atomicOperation(pnt, p)
-			if err != nil {
-				return
-			}
-			_ = arrType
-			preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
-
-			expr, eType, newPre, newPost, err =
-				pointerArithmetic(p, arr, arrType, e, eType, token.ADD)
-
-			if err != nil {
-				return
-			}
-			if expr == nil {
-				return nil, "", nil, nil, fmt.Errorf("expr is nil")
-			}
-			preStmts, postStmts =
-				combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
+			preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, prel, postl)
 
 			return
-
 		}
 	}
 

@@ -149,10 +149,41 @@ void test_init()
     is_streq(ch[3], "a");
 }
 
+void test_pntindex()
+{
+    int a[10], i;
+    for (i = 0; i < 10; i++) {
+        a[i] = i * 2 - 3;
+    }
+    int* q;
+    int* w;
+    int* e;
+    w = &a[5];
+    e = &a[2];
+
+    q = &a[2];
+    int* res = q + (w - e);
+    is_eq(*res, 7);
+
+    q = &a[1];
+    res = (w - e) + q;
+    is_eq(*res, 5);
+
+    // TODO
+    // q = &a[2];
+    // int res2 = *(q + (w - e));
+    // is_eq(res2, 7);
+
+    (void)q;
+    (void)w;
+    (void)e;
+}
+
 int main()
 {
-    plan(42);
+    plan(44);
 
+    START_TEST(pntindex);
     START_TEST(unsafe_pnt);
     START_TEST(bool_to_int);
     START_TEST(cast);

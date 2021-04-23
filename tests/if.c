@@ -9,7 +9,7 @@ int d(int v)
 
 int main()
 {
-    plan(25);
+    plan(27);
 
     int x = 1;
 
@@ -94,26 +94,24 @@ int main()
         pass("ok");
     }
 
-    /*
-	 * TODO strange error for different gcc version
-	diag("pointer in if");
-	{
-		typedef struct rowA{
-			unsigned int * p;
-		} rowB;
-		rowB vv;
-		rowB *r = &vv;
-		if (r->p == NULL){
-			pass("pointer test 1");
-		}
-		if (!r->p){
-			pass("pointer test 2");
-		}
-		if (r->p){
-			fail("pointer 3")
-		}
-	}
-	*/
+    diag("pointer in if");
+    {
+        typedef struct rowA {
+            unsigned int* p;
+        } rowB;
+        rowB vv;
+        vv.p = NULL;
+        rowB* r = &vv;
+        if (r->p == NULL) {
+            pass("pointer test 1");
+        }
+        if (!r->p) {
+            pass("pointer test 2");
+        }
+        if (r->p) {
+            fail("pointer 3")
+        }
+    }
 
     diag("equal on if paren");
     {
