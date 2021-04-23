@@ -375,34 +375,6 @@ func (s simpleDefer) Visit(node goast.Node) (w goast.Visitor) {
 	//		return func() int32 {
 	//			...
 	//		}()
-	//		*ast.ReturnStmt {
-	//		.  Results: []ast.Expr (len = 1) {
-	//		.  .  0: *ast.CallExpr {
-	//		.  .  .  Fun: *ast.FuncLit {
-	//		.  .  .  .  Type: *ast.FuncType {
-	//		.  .  .  .  .  Func: 9:9
-	//		.  .  .  .  .  Params: *ast.FieldList {
-	//		.  .  .  .  .  }
-	//		.  .  .  .  .  Results: *ast.FieldList {
-	//		.  .  .  .  .  .  Opening: -
-	//		.  .  .  .  .  .  List: []*ast.Field (len = 1) {
-	//		.  .  .  .  .  .  .  0: *ast.Field {
-	//		.  .  .  .  .  .  .  .  Type: *ast.Ident {
-	//		.  .  .  .  .  .  .  .  .  Name: "int32"
-	//		.  .  .  .  .  .  .  .  }
-	//		.  .  .  .  .  .  .  }
-	//		.  .  .  .  .  .  }
-	//		.  .  .  .  .  }
-	//		.  .  .  .  }
-	//		.  .  .  .  Body: *ast.BlockStmt {
-	//		.  .  .  .  .  List: []ast.Stmt (len = 1) {
-	//		                  ...
-	//		.  .  .  .  .  }
-	//		.  .  .  .  }
-	//		.  .  .  }
-	//		.  .  }
-	//		.  }
-	//		}
 	// to   :
 	//		if int32(sstr_s[0]) == int32(sstr_bufs[sstr_n]) {
 	//			return 1
@@ -436,97 +408,6 @@ func (s simpleDefer) Visit(node goast.Node) (w goast.Visitor) {
 	//				return tempVarUnary
 	//			}()
 	//			.....
-	//		}
-	//		0: *ast.ExprStmt {
-	//		.  X: *ast.CallExpr {
-	//		.  .  Fun: *ast.FuncLit {
-	//		.  .  .  Type: *ast.FuncType {
-	//		.  .  .  .  Func: 4:2
-	//		.  .  .  .  Params: *ast.FieldList {
-	//		.  .  .  .  }
-	//		.  .  .  .  Results: *ast.FieldList {
-	//		.  .  .  .  .  Opening: -
-	//		.  .  .  .  .  List: []*ast.Field (len = 1) {
-	//		.  .  .  .  .  .  0: *ast.Field {
-	//		.  .  .  .  .  .  .  Type: *ast.ArrayType {
-	//		.  .  .  .  .  .  .  .  Elt: *ast.Ident {
-	//		.  .  .  .  .  .  .  .  .  Name: "byte"
-	//		.  .  .  .  .  .  .  .  }
-	//		.  .  .  .  .  .  .  }
-	//		.  .  .  .  .  .  }
-	//		.  .  .  .  .  }
-	//		.  .  .  .  .  Closing: -
-	//		.  .  .  .  }
-	//		.  .  .  }
-	//		.  .  .  Body: *ast.BlockStmt {
-	//		.  .  .  .  Lbrace: 4:16
-	//		.  .  .  .  List: []ast.Stmt (len = 3) {
-	//		.  .  .  .  .  0: *ast.AssignStmt {
-	//		.  .  .  .  .  .  Lhs: []ast.Expr (len = 1) {
-	//		.  .  .  .  .  .  .  0: *ast.Ident {
-	//		.  .  .  .  .  .  .  .  NamePos: 5:3
-	//		.  .  .  .  .  .  .  .  Name: "tempVarUnary"
-	//		.  .  .  .  .  .  .  }
-	//		.  .  .  .  .  .  }
-	//		.  .  .  .  .  .  TokPos: 5:16
-	//		.  .  .  .  .  .  Tok: :=
-	//		.  .  .  .  .  .  Rhs: []ast.Expr (len = 1) {
-	//		.  .  .  .  .  .  .  0: *ast.Ident {
-	//		.  .  .  .  .  .  .  .  Name: "sstr_s"
-	//		.  .  .  .  .  .  .  }
-	//		.  .  .  .  .  .  }
-	//		.  .  .  .  .  }
-	//		.  .  .  .  .  1: *ast.DeferStmt {
-	//		.  .  .  .  .  .  Defer: 6:3
-	//		.  .  .  .  .  .  Call: *ast.CallExpr {
-	//		.  .  .  .  .  .  .  Fun: *ast.FuncLit {
-	//		.  .  .  .  .  .  .  .  Type: *ast.FuncType {
-	//		.  .  .  .  .  .  .  .  .  Func: 6:9
-	//		.  .  .  .  .  .  .  .  .  Params: *ast.FieldList {
-	//		.  .  .  .  .  .  .  .  .  }
-	//		.  .  .  .  .  .  .  .  }
-	//		.  .  .  .  .  .  .  .  Body: *ast.BlockStmt {
-	//		.  .  .  .  .  .  .  .  .  Lbrace: 6:16
-	//		.  .  .  .  .  .  .  .  .  List: []ast.Stmt (len = 1) {
-	//		.  .  .  .  .  .  .  .  .  .  0: *ast.AssignStmt {
-	//		.  .  .  .  .  .  .  .  .  .  .  Lhs: []ast.Expr (len = 1) {
-	//		.  .  .  .  .  .  .  .  .  .  .  .  0: *ast.Ident {
-	//		.  .  .  .  .  .  .  .  .  .  .  .  .  Name: "sstr_s"
-	//		.  .  .  .  .  .  .  .  .  .  .  .  }
-	//		.  .  .  .  .  .  .  .  .  .  .  }
-	//		.  .  .  .  .  .  .  .  .  .  .  TokPos: 7:11
-	//		.  .  .  .  .  .  .  .  .  .  .  Tok: =
-	//		.  .  .  .  .  .  .  .  .  .  .  Rhs: []ast.Expr (len = 1) {
-	//		.  .  .  .  .  .  .  .  .  .  .  .  0: *ast.CallExpr {
-	//		.  .  .  .  .  .  .  .  .  .  .  .  .  Fun: *ast.Ident {
-	//		.  .  .  .  .  .  .  .  .  .  .  .  .  .  Name: "f"
-	//		.  .  .  .  .  .  .  .  .  .  .  .  .  }
-	//		.  .  .  .  .  .  .  .  .  .  .  .  .  Lparen: 7:14
-	//		.  .  .  .  .  .  .  .  .  .  .  .  .  Args: []ast.Expr (len = 1) {
-	//		.  .  .  .  .  .  .  .  .  .  .  .  .  .  0: *ast.Ident {
-	//		.  .  .  .  .  .  .  .  .  .  .  .  .  .  .  Name: "sstr_s"
-	//		.  .  .  .  .  .  .  .  .  .  .  .  .  .  }
-	//		.  .  .  .  .  .  .  .  .  .  .  .  .  }
-	//		.  .  .  .  .  .  .  .  .  .  .  .  }
-	//		.  .  .  .  .  .  .  .  .  .  .  }
-	//		.  .  .  .  .  .  .  .  .  .  }
-	//		.  .  .  .  .  .  .  .  .  }
-	//		.  .  .  .  .  .  .  .  }
-	//		.  .  .  .  .  .  .  }
-	//		.  .  .  .  .  .  }
-	//		.  .  .  .  .  }
-	//		.  .  .  .  .  2: *ast.ReturnStmt {
-	//		.  .  .  .  .  .  Return: 9:3
-	//		.  .  .  .  .  .  Results: []ast.Expr (len = 1) {
-	//		.  .  .  .  .  .  .  0: *ast.Ident {
-	//		.  .  .  .  .  .  .  .  Name: "tempVarUnary"
-	//		.  .  .  .  .  .  .  }
-	//		.  .  .  .  .  .  }
-	//		.  .  .  .  .  }
-	//		.  .  .  .  }
-	//		.  .  .  }
-	//		.  .  }
-	//		.  }
 	//		}
 	// to   :
 	//		{

@@ -49,6 +49,9 @@ mkdir -p ./testdata/
 	# amount Go code lines
 		LINES=`wc $GO_FILE`
 		echo "(lines,words,bytes)	 : $LINES"
+	# defers
+		DEFER=`cat $GO_FILE | grep "defer func" | wc -l`
+		echo "defer func           	 : $DEFER"
 
 
 # Arguments menu
