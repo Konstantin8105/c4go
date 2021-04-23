@@ -365,6 +365,67 @@ type simpleDefer struct {
 
 func (s simpleDefer) Visit(node goast.Node) (w goast.Visitor) {
 	// from :
+	//		return func() int32 {
+	//			if int32(sstr_s[0]) == int32(sstr_bufs[sstr_n]) {
+	//				return 1
+	//			}
+	//			return 0
+	//		}()
+	// or   :
+	//		return func() int32 {
+	//			...
+	//		}()
+	//		*ast.ReturnStmt {
+	//		.  Results: []ast.Expr (len = 1) {
+	//		.  .  0: *ast.CallExpr {
+	//		.  .  .  Fun: *ast.FuncLit {
+	//		.  .  .  .  Type: *ast.FuncType {
+	//		.  .  .  .  .  Func: 9:9
+	//		.  .  .  .  .  Params: *ast.FieldList {
+	//		.  .  .  .  .  }
+	//		.  .  .  .  .  Results: *ast.FieldList {
+	//		.  .  .  .  .  .  Opening: -
+	//		.  .  .  .  .  .  List: []*ast.Field (len = 1) {
+	//		.  .  .  .  .  .  .  0: *ast.Field {
+	//		.  .  .  .  .  .  .  .  Type: *ast.Ident {
+	//		.  .  .  .  .  .  .  .  .  Name: "int32"
+	//		.  .  .  .  .  .  .  .  }
+	//		.  .  .  .  .  .  .  }
+	//		.  .  .  .  .  .  }
+	//		.  .  .  .  .  }
+	//		.  .  .  .  }
+	//		.  .  .  .  Body: *ast.BlockStmt {
+	//		.  .  .  .  .  List: []ast.Stmt (len = 1) {
+	//		                  ...
+	//		.  .  .  .  .  }
+	//		.  .  .  .  }
+	//		.  .  .  }
+	//		.  .  }
+	//		.  }
+	//		}
+	// to   :
+	//		if int32(sstr_s[0]) == int32(sstr_bufs[sstr_n]) {
+	//			return 1
+	//		}
+	//		return 0
+	// or   :
+	//		...
+	if eb, ok := node.(*goast.BlockStmt); ok && 0 < len(eb.List) {
+		if ret, ok := eb.List[len(eb.List)-1].(*goast.ReturnStmt); ok && 1 == len(ret.Results) {
+			if c, ok := ret.Results[0].(*goast.CallExpr); ok {
+				if fl, ok := c.Fun.(*goast.FuncLit); ok {
+					if 1 < len(eb.List) {
+						eb.List = eb.List[:len(eb.List)-1]
+					} else {
+						eb.List = []goast.Stmt{}
+					}
+					eb.List = append(eb.List, fl.Body.List...)
+				}
+			}
+		}
+	}
+
+	// from :
 	//		{
 	//			.....
 	//			func() []byte {
