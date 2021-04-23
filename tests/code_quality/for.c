@@ -16,6 +16,14 @@ void f2()
 
 void f3()
 {
+	int i = 3;
+    for (i = 0; i < 10; i++) {
+        ;
+    }
+}
+
+void f4()
+{
     for (int i = 0; i < 10; i++) {
         ;
     }
