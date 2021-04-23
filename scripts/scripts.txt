@@ -3,39 +3,51 @@ Calculate warnings in file: ./testdata/brainfuck/brainfuck.go
 		After transpiling : 0 warnings.
 		Go build : 0 warnings
 		Unsafe   : 0
+(lines,words,bytes)	 :  186  639 4528 ./testdata/brainfuck/brainfuck.go
 
 Calculate warnings : ./testdata/9wm
 		After transpiling : 3 warnings.
 		Go build : 4 warnings
 		Unsafe   : 415
+(lines,words,bytes)	 :  10078  31716 346498 ./testdata/9wm/9wm.go
 
 Calculate warnings : ./testdata/ed
 		After transpiling : 0 warnings.
 		Go build : 7 warnings
 		Unsafe   : 165
+(lines,words,bytes)	 :   7023  23684 233822 ./testdata/ed/ed-1.15.go
 
 Calculate warnings in file: ./testdata/kilo/kilo.go
 		After transpiling : 0 warnings.
 		Go build : 0 warnings
 		Unsafe   : 17
+(lines,words,bytes)	 :  1772  7132 52429 ./testdata/kilo/kilo.go
 
 
 Calculate warnings in file: ./testdata/neateqn/neateqn.go
 		After transpiling : 0 warnings.
 		Go build : 0 warnings
 		Unsafe   : 75
+(lines,words,bytes)	 :   4772  17456 200976 ./testdata/neateqn/neateqn.go
 
 Calculate warnings in file: ./testdata/neatmkfn/neatmkfn.go
 		After transpiling : 0 warnings.
 		Go build : 271 warnings
 		Unsafe   : 141
+(lines,words,bytes)	 :   4844  29510 444311 ./testdata/neatmkfn/neatmkfn.go
 
 
+Calculate warnings in file: ./testdata/neatpost/neatpost.go
+		After transpiling : 2 warnings.
+		Go build : 5 warnings
+		Unsafe   : 47
+(lines,words,bytes)	 :   4299  15821 390186 ./testdata/neatpost/neatpost.go
 
 Calculate warnings in file: ./testdata/neatrefer/neatrefer.go
 		After transpiling : 0 warnings.
 		Go build : 0 warnings
 		Unsafe   : 17
+(lines,words,bytes)	 :  1047  3640 27194 ./testdata/neatrefer/neatrefer.go
 
 Calculate warnings : ./testdata/nuklear/x11.go
 		After transpiling : 9 warnings.
@@ -50,6 +62,7 @@ Calculate warnings in file: ./testdata/neatroff/neatroff.go
 		After transpiling : 2 warnings.
 		Go build : 5 warnings
 		Unsafe   : 247
+(lines,words,bytes)	 :  12720  49874 410282 ./testdata/neatroff/neatroff.go
 
 Calculate warnings : ./testdata/redis/dict.go
 		After transpiling : 0 warnings.
@@ -73,11 +86,13 @@ Calculate warnings in file: ./testdata/triangle/triangle.go
 		After transpiling : 2 warnings.
 		Go build : 585 warnings
 		Unsafe   : 1414
+(lines,words,bytes)	 :  16553  83432 743181 ./testdata/triangle/triangle.go
 
 Calculate warnings in file: ./testdata/progress/progress.go
 		After transpiling : 0 warnings.
 		Go build : 16 warnings
 		Unsafe   : 6
+(lines,words,bytes)	 :  242  675 7463 ./testdata/progress/progress.go
 
 Calculate warnings in file: ./testdata/SQLITE/sqlite.go
 		After transpiling : 1 warnings.
@@ -88,14 +103,17 @@ Calculate warnings in file: ./testdata/tiny-web-server/tiny-web-server.go
 		After transpiling : 0 warnings.
 		Go build : 2 warnings
 		Unsafe   : 151
+(lines,words,bytes)	 :   3619  11276 133612 ./testdata/tiny-web-server/tiny-web-server.go
 
 Calculate warnings in file: testdata/vorbis/vorbis.go
 		After transpiling : 0 warnings.
 		Go build : 19 warnings
 		Unsafe   : 127
+(lines,words,bytes)	 :   7126  30221 270224 testdata/vorbis/vorbis.go
 
 Calculate warnings in file: ./testdata/easymesh/easymesh.go
 		After transpiling : 0 warnings.
 		Go build : 0 warnings
 		Unsafe   : 10
+(lines,words,bytes)	 :  2599  9101 73376 ./testdata/easymesh/easymesh.go
 

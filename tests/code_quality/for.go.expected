@@ -23,9 +23,14 @@ func f2() {
 
 // f3 - transpiled function from  C4GO/tests/code_quality/for.c:17
 func f3() {
-	{
-		var i int32
-		for ; i < 10; i++ {
-		}
+	var i int32 = 3
+	for i = 0; i < 10; i++ {
+	}
+}
+
+// f4 - transpiled function from  C4GO/tests/code_quality/for.c:25
+func f4() {
+	var i int32
+	for ; i < 10; i++ {
 	}
 }

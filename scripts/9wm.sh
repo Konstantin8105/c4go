@@ -43,7 +43,9 @@ echo "Calculate warnings : $TEMP_FOLDER"
 # amount unsafe
 	UNSAFE=`cat $FILE | grep "unsafe\." | wc -l`
 	echo "		Unsafe   : $UNSAFE"
-
+# amount Go code lines
+	LINES=`wc $FILE`
+	echo "(lines,words,bytes)	 : $LINES"
 
 # Arguments menu
 echo "    -s for show detail of Go build errors"

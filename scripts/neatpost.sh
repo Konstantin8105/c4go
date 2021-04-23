@@ -14,7 +14,7 @@ mkdir -p ./testdata/
 	export TEMP_FOLDER="./testdata/$NAME"
 	export GO_FILE="$TEMP_FOLDER/$NAME.go"
 	export GO_APP="$TEMP_FOLDER/$NAME.app"
-	export COMMIT=14fafdadb05a2ea128a8aa3ce43ac2010f77c5e0
+	export COMMIT=393011f64e853e3e2dec6950aab8c90ef12832b9
 
 # prepare C code
     if [ ! -d $TEMP_FOLDER ]; then
@@ -23,11 +23,32 @@ mkdir -p ./testdata/
 		cd $TEMP_FOLDER/
 		git checkout $COMMIT
 		cd ../../
-		sed -i.bak '92,98d' $TEMP_FOLDER/font.c
-		sed -i.bak '163,173d;158,161d;152,156d;145,150d;139,143d;133,137d;128,131d;123,127d;109,121d;90,107d;80,88d;58,78d;47,56d;42,45d;33,40d;8d' $TEMP_FOLDER/ps.c
-		sed -i.bak '219,232d;212,217d;204,210d;196,202d;179,194d;175,177d;131,173d' $TEMP_FOLDER/ps.c
-		sed -i.bak '238,262d;123,129d;116,121d;109,114d;102,107d;95,100d;82,93d;73,80d;65,71d;57,63d' $TEMP_FOLDER/ps.c
-		sed -i.bak '47d;46d;11d;10d;9d' $TEMP_FOLDER/ps.c
+		# run 
+		# ./scripts/neatpost.sh -s 2>&1| grep "ps.c" | grep redef
+ 		sed -i.bak '92,98d  s/^/\/\/ /' $TEMP_FOLDER/font.c
+		sed -i.bak '110,122 s/^/\/\/ /' $TEMP_FOLDER/ps.c
+		sed -i.bak '124,127 s/^/\/\/ /' $TEMP_FOLDER/ps.c
+		sed -i.bak '129,132 s/^/\/\/ /' $TEMP_FOLDER/ps.c
+		sed -i.bak '134,138 s/^/\/\/ /' $TEMP_FOLDER/ps.c
+		sed -i.bak '140,144 s/^/\/\/ /' $TEMP_FOLDER/ps.c
+		sed -i.bak '147,152 s/^/\/\/ /' $TEMP_FOLDER/ps.c
+		sed -i.bak '153,157 s/^/\/\/ /' $TEMP_FOLDER/ps.c
+		sed -i.bak '159,162 s/^/\/\/ /' $TEMP_FOLDER/ps.c
+		sed -i.bak '164,174 s/^/\/\/ /' $TEMP_FOLDER/ps.c
+		sed -i.bak '187,193 s/^/\/\/ /' $TEMP_FOLDER/ps.c
+		sed -i.bak '196,367 s/^/\/\/ /' $TEMP_FOLDER/ps.c
+		sed -i.bak '34,41   s/^/\/\/ /' $TEMP_FOLDER/ps.c
+		sed -i.bak '369,375 s/^/\/\/ /' $TEMP_FOLDER/ps.c
+		sed -i.bak '377,397 s/^/\/\/ /' $TEMP_FOLDER/ps.c
+		sed -i.bak '43,46   s/^/\/\/ /' $TEMP_FOLDER/ps.c
+		sed -i.bak '48,57   s/^/\/\/ /' $TEMP_FOLDER/ps.c
+		sed -i.bak '500,524 s/^/\/\/ /' $TEMP_FOLDER/ps.c
+		sed -i.bak '59,79   s/^/\/\/ /' $TEMP_FOLDER/ps.c
+		sed -i.bak '8       s/^/\/\/ /' $TEMP_FOLDER/ps.c
+		sed -i.bak '11,13   s/^/\/\/ /' $TEMP_FOLDER/ps.c
+		sed -i.bak '176,177 s/^/\/\/ /' $TEMP_FOLDER/ps.c
+		sed -i.bak '82,89   s/^/\/\/ /' $TEMP_FOLDER/ps.c
+		sed -i.bak '91,108  s/^/\/\/ /' $TEMP_FOLDER/ps.c
 	fi
 
 # remove go files from last transpilation
@@ -56,6 +77,9 @@ mkdir -p ./testdata/
 	# amount unsafe
 		UNSAFE=`cat $GO_FILE | grep "unsafe\." | wc -l`
 		echo "		Unsafe   : $UNSAFE"
+	# amount Go code lines
+		LINES=`wc $GO_FILE`
+		echo "(lines,words,bytes)	 : $LINES"
 
 
 # Arguments menu
