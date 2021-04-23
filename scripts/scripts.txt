@@ -31,6 +31,10 @@ Calculate warnings in file: ./testdata/neatmkfn/neatmkfn.go
 		Unsafe   : 141
 
 
+Calculate warnings in file: ./testdata/neatpost/neatpost.go
+		After transpiling : 2 warnings.
+		Go build : 5 warnings
+		Unsafe   : 47
 
 Calculate warnings in file: ./testdata/neatrefer/neatrefer.go
 		After transpiling : 0 warnings.
