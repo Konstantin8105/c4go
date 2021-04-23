@@ -52,6 +52,13 @@ echo "		Go build : $SQLITE_WARNINGS_GO warnings"
 SQLITE_UNSAFE=`cat $SQLITE_TEMP_FOLDER/sqlite.go | grep "unsafe\." | wc -l`
 echo "		Unsafe   : $SQLITE_UNSAFE"
 
+# amount Go code lines
+	LINES=`wc $SQLITE_TEMP_FOLDER/sqlite.go`
+	echo "(lines,words,bytes)	 : $LINES"
+# defers
+	DEFER=`cat $SQLITE_TEMP_FOLDER/sqlite.go| grep "defer func" | wc -l`
+	echo "defer func           	 : $DEFER"
+
 # Arguments menu
 echo "    -s for show detail of Go build errors"
 if [ "$1" == "-s" ]; then

@@ -17,7 +17,7 @@ Calculate warnings : ./testdata/ed
 		After transpiling : 0 warnings.
 		Go build : 7 warnings
 		Unsafe   : 165
-(lines,words,bytes)	 :   6835  23272 230516 ./testdata/ed/ed-1.15.go
+(lines,words,bytes)	 :   6836  23274 230541 ./testdata/ed/ed-1.15.go
 defer func           	 : 50
 
 Calculate warnings in file: ./testdata/kilo/kilo.go
@@ -109,6 +109,8 @@ Calculate warnings in file: ./testdata/SQLITE/sqlite.go
 		After transpiling : 1 warnings.
 		Go build : 1 warnings
 		Unsafe   : 2351
+(lines,words,bytes)	 :  144640  731822 5544421 ./testdata/SQLITE/sqlite.go
+defer func           	 : 339
 
 Calculate warnings in file: ./testdata/tiny-web-server/tiny-web-server.go
 		After transpiling : 0 warnings.
