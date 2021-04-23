@@ -365,6 +365,37 @@ type simpleDefer struct {
 
 func (s simpleDefer) Visit(node goast.Node) (w goast.Visitor) {
 	// from :
+	//		if ... {
+	//			{
+	//				...
+	//			}
+	//		} else {
+	//			{
+	//				...
+	//			}
+	//		}
+	// to   :
+	//		if ... {
+	//				...
+	//		} else {
+	//				...
+	//		}
+	if fb, ok := node.(*goast.IfStmt); ok {
+		if len(fb.Body.List) == 1 {
+			if ib, ok := fb.Body.List[0].(*goast.BlockStmt); ok {
+				fb.Body = ib
+			}
+		}
+		if fb.Else != nil {
+			if b1, ok := fb.Else.(*goast.BlockStmt); ok && 1 == len(b1.List) {
+				if b2, ok := b1.List[0].(*goast.BlockStmt); ok {
+					fb.Else = b2
+				}
+			}
+		}
+	}
+
+	// from :
 	//		return func() int32 {
 	//			if int32(sstr_s[0]) == int32(sstr_bufs[sstr_n]) {
 	//				return 1

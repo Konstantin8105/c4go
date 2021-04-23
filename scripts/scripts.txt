@@ -10,7 +10,7 @@ Calculate warnings : ./testdata/9wm
 		After transpiling : 3 warnings.
 		Go build : 4 warnings
 		Unsafe   : 415
-(lines,words,bytes)	 :  10078  31716 346498 ./testdata/9wm/9wm.go
+(lines,words,bytes)	 :  10077  31714 346491 ./testdata/9wm/9wm.go
 defer func           	 : 1
 
 Calculate warnings : ./testdata/ed
@@ -39,7 +39,7 @@ Calculate warnings in file: ./testdata/neatmkfn/neatmkfn.go
 		After transpiling : 0 warnings.
 		Go build : 271 warnings
 		Unsafe   : 141
-(lines,words,bytes)	 :   4820  29456 443890 ./testdata/neatmkfn/neatmkfn.go
+(lines,words,bytes)	 :   4818  29454 443878 ./testdata/neatmkfn/neatmkfn.go
 defer func           	 : 24
 
 
@@ -47,7 +47,7 @@ Calculate warnings in file: ./testdata/neatpost/neatpost.go
 		After transpiling : 2 warnings.
 		Go build : 5 warnings
 		Unsafe   : 47
-(lines,words,bytes)	 :   4223  15647 388876 ./testdata/neatpost/neatpost.go
+(lines,words,bytes)	 :   4222  15645 388847 ./testdata/neatpost/neatpost.go
 defer func           	 : 25
 
 Calculate warnings in file: ./testdata/neatrefer/neatrefer.go
@@ -70,7 +70,7 @@ Calculate warnings in file: ./testdata/neatroff/neatroff.go
 		After transpiling : 2 warnings.
 		Go build : 5 warnings
 		Unsafe   : 247
-(lines,words,bytes)	 :  12523  49416 406995 ./testdata/neatroff/neatroff.go
+(lines,words,bytes)	 :  12524  49418 407024 ./testdata/neatroff/neatroff.go
 defer func           	 : 88
 
 Calculate warnings : ./testdata/redis/dict.go
@@ -95,7 +95,7 @@ Calculate warnings in file: ./testdata/triangle/triangle.go
 		After transpiling : 2 warnings.
 		Go build : 585 warnings
 		Unsafe   : 1414
-(lines,words,bytes)	 :  16535  83393 742875 ./testdata/triangle/triangle.go
+(lines,words,bytes)	 :  16531  83389 742794 ./testdata/triangle/triangle.go
 defer func           	 : 12
 
 Calculate warnings in file: ./testdata/progress/progress.go
@@ -109,14 +109,14 @@ Calculate warnings in file: ./testdata/SQLITE/sqlite.go
 		After transpiling : 1 warnings.
 		Go build : 1 warnings
 		Unsafe   : 2351
-(lines,words,bytes)	 :  144640  731822 5544421 ./testdata/SQLITE/sqlite.go
+(lines,words,bytes)	 :  144601  731782 5543919 ./testdata/SQLITE/sqlite.go
 defer func           	 : 339
 
 Calculate warnings in file: ./testdata/tiny-web-server/tiny-web-server.go
 		After transpiling : 0 warnings.
 		Go build : 2 warnings
 		Unsafe   : 151
-(lines,words,bytes)	 :   3612  11261 133479 ./testdata/tiny-web-server/tiny-web-server.go
+(lines,words,bytes)	 :   3611  11261 133487 ./testdata/tiny-web-server/tiny-web-server.go
 defer func           	 : 5
 
 Calculate warnings in file: testdata/vorbis/vorbis.go
