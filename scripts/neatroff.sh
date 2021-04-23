@@ -64,6 +64,9 @@ fi
 	# amount unsafe
 		UNSAFE=`cat $GO_FILE | grep "unsafe\." | wc -l`
 		echo "		Unsafe   : $UNSAFE"
+	# amount Go code lines
+		LINES=`wc $GO_FILE`
+		echo "(lines,words,bytes)	 : $LINES"
 
 
 # Arguments menu
