@@ -1,13 +1,10 @@
 language: go
-dist: xenial
 
 go:
   - "1.16"
 
 os:
   - linux
-    dist: xenial
-    # Mac osx is too different clang
   - osx
 
 env:
@@ -27,9 +24,11 @@ matrix:
 ####################################################
     - env: SCRIPT=test CLANG=3.5
       os: linux
+      dist: xenial
       if: branch = master
     - env: SCRIPT=scripts CLANG=7
       os: linux
+      dist: xenial
       if: branch = master
 ####################################################
 #       commented for minimaze build
@@ -47,8 +46,10 @@ matrix:
 ####################################################
     - env: SCRIPT=test CLANG=7
       os: linux
+      dist: xenial
     - env: SCRIPT=test CLANG=12
       os: linux
+      dist: xenial
     - env: SCRIPT=test
       os: osx
       osx_image: xcode12.2
