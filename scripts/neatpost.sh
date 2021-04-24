@@ -22,33 +22,34 @@ mkdir -p ./testdata/
 		git clone $GIT_SOURCE $TEMP_FOLDER
 		cd $TEMP_FOLDER/
 		git checkout $COMMIT
-		cd ../../
+		echo "sed steps"
 		# run 
 		# ./scripts/neatpost.sh -s 2>&1| grep "ps.c" | grep redef
- 		sed -i.bak '92,98d  s/^/\/\/ /' $TEMP_FOLDER/font.c
-		sed -i.bak '110,122 s/^/\/\/ /' $TEMP_FOLDER/ps.c
-		sed -i.bak '124,127 s/^/\/\/ /' $TEMP_FOLDER/ps.c
-		sed -i.bak '129,132 s/^/\/\/ /' $TEMP_FOLDER/ps.c
-		sed -i.bak '134,138 s/^/\/\/ /' $TEMP_FOLDER/ps.c
-		sed -i.bak '140,144 s/^/\/\/ /' $TEMP_FOLDER/ps.c
-		sed -i.bak '147,152 s/^/\/\/ /' $TEMP_FOLDER/ps.c
-		sed -i.bak '153,157 s/^/\/\/ /' $TEMP_FOLDER/ps.c
-		sed -i.bak '159,162 s/^/\/\/ /' $TEMP_FOLDER/ps.c
-		sed -i.bak '164,174 s/^/\/\/ /' $TEMP_FOLDER/ps.c
-		sed -i.bak '187,193 s/^/\/\/ /' $TEMP_FOLDER/ps.c
-		sed -i.bak '196,367 s/^/\/\/ /' $TEMP_FOLDER/ps.c
-		sed -i.bak '34,41   s/^/\/\/ /' $TEMP_FOLDER/ps.c
-		sed -i.bak '369,375 s/^/\/\/ /' $TEMP_FOLDER/ps.c
-		sed -i.bak '377,397 s/^/\/\/ /' $TEMP_FOLDER/ps.c
-		sed -i.bak '43,46   s/^/\/\/ /' $TEMP_FOLDER/ps.c
-		sed -i.bak '48,57   s/^/\/\/ /' $TEMP_FOLDER/ps.c
-		sed -i.bak '500,524 s/^/\/\/ /' $TEMP_FOLDER/ps.c
-		sed -i.bak '59,79   s/^/\/\/ /' $TEMP_FOLDER/ps.c
-		sed -i.bak '8       s/^/\/\/ /' $TEMP_FOLDER/ps.c
-		sed -i.bak '11,13   s/^/\/\/ /' $TEMP_FOLDER/ps.c
-		sed -i.bak '176,177 s/^/\/\/ /' $TEMP_FOLDER/ps.c
-		sed -i.bak '82,89   s/^/\/\/ /' $TEMP_FOLDER/ps.c
-		sed -i.bak '91,108  s/^/\/\/ /' $TEMP_FOLDER/ps.c
+  		sed -i.bak '92,98   s/^/\/\/ /' font.c
+ 		sed -i.bak '110,122 s/^/\/\/ /' ps.c
+ 		sed -i.bak '124,127 s/^/\/\/ /' ps.c
+ 		sed -i.bak '129,132 s/^/\/\/ /' ps.c
+ 		sed -i.bak '134,138 s/^/\/\/ /' ps.c
+ 		sed -i.bak '140,144 s/^/\/\/ /' ps.c
+ 		sed -i.bak '147,152 s/^/\/\/ /' ps.c
+ 		sed -i.bak '153,157 s/^/\/\/ /' ps.c
+ 		sed -i.bak '159,162 s/^/\/\/ /' ps.c
+ 		sed -i.bak '164,174 s/^/\/\/ /' ps.c
+ 		sed -i.bak '187,193 s/^/\/\/ /' ps.c
+ 		sed -i.bak '196,367 s/^/\/\/ /' ps.c
+ 		sed -i.bak '34,41   s/^/\/\/ /' ps.c
+ 		sed -i.bak '369,375 s/^/\/\/ /' ps.c
+ 		sed -i.bak '377,397 s/^/\/\/ /' ps.c
+ 		sed -i.bak '43,46   s/^/\/\/ /' ps.c
+ 		sed -i.bak '48,57   s/^/\/\/ /' ps.c
+ 		sed -i.bak '500,524 s/^/\/\/ /' ps.c
+ 		sed -i.bak '59,79   s/^/\/\/ /' ps.c
+ 		sed -i.bak '8       s/^/\/\/ /' ps.c
+ 		sed -i.bak '11,13   s/^/\/\/ /' ps.c
+ 		sed -i.bak '176,177 s/^/\/\/ /' ps.c
+ 		sed -i.bak '82,89   s/^/\/\/ /' ps.c
+ 		sed -i.bak '91,108  s/^/\/\/ /' ps.c
+		cd ../../
 	fi
 
 # remove go files from last transpilation

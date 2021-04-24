@@ -12,6 +12,12 @@ echo "" > $OUTPUT_FILE
 ./scripts/brainfuck.sh		2>&1 | grep -E 'warning|unsafe|Unsafe|lines|defer' | tee -a $OUTPUT_FILE
 echo "" >> $OUTPUT_FILE
 
+./scripts/gsl.sh 2>&1 | grep -E 'warning|unsafe|Unsafe|lines|defer' | tee -a $OUTPUT_FILE
+echo "" >> $OUTPUT_FILE
+
+./scripts/gtk.sh 2>&1 | grep -E 'warning|unsafe|Unsafe|lines|defer' | tee -a $OUTPUT_FILE
+echo "" >> $OUTPUT_FILE
+
 ./scripts/9wm.sh		2>&1 | grep -E 'warning|unsafe|Unsafe|lines|defer' | tee -a $OUTPUT_FILE
 echo "" >> $OUTPUT_FILE
 
