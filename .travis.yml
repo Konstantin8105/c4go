@@ -1,5 +1,5 @@
 language: go
-dist: focal
+dist: xenial
 
 go:
   - "1.16"
@@ -59,7 +59,7 @@ before_install:
       if [ "$TRAVIS_OS_NAME" = "linux" ]; then
         wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-        sudo apt-add-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-$CLANG main"
+        sudo apt-add-repository "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-$CLANG main"
         sudo apt-get install lzip ## Added for scripts/ed.sh
         sudo apt-get update
         sudo apt-cache search clang
