@@ -5,7 +5,6 @@ go:
 
 os:
   - linux
-    dist: xenial
   - osx
 
 env:
@@ -25,9 +24,11 @@ matrix:
 ####################################################
     - env: SCRIPT=test CLANG=3.5
       os: linux
+      dist: xenial
       if: branch = master
     - env: SCRIPT=scripts CLANG=7
       os: linux
+      dist: xenial
       if: branch = master
 ####################################################
 #       commented for minimaze build
@@ -45,10 +46,12 @@ matrix:
 ####################################################
     - env: SCRIPT=test CLANG=7
       os: linux
+      dist: xenial
     - env: SCRIPT=test CLANG=12
       os: linux
-    - env: SCRIPT=test
-      os: osx
+      dist: xenial
+#    - env: SCRIPT=test
+#      os: osx
 ####### lint checking ########
     - env: SCRIPT=lint CLANG=3.9
       os: linux
