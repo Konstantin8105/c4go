@@ -80,6 +80,8 @@ func Parse(fullline string) (returnNode Node, err error) {
 		return parseAttributedType(line), nil
 	case "AvailabilityAttr":
 		return parseAvailabilityAttr(line), nil
+	case "BuiltinAttr":
+		return parseBuiltinAttr(line), nil
 	case "BinaryConditionalOperator":
 		return parseBinaryConditionalOperator(line), nil
 	case "BinaryOperator":

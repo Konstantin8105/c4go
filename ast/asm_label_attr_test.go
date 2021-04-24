@@ -20,6 +20,14 @@ func TestAsmLabelAttr(t *testing.T) {
 			FunctionName: "_popen",
 			ChildNodes:   []Node{},
 		},
+		`0x1271fd0 <col:42> "__xpg_sigpause" IsLiteralLabel`: &AsmLabelAttr{
+			Addr:           0x1271fd0,
+			Pos:            NewPositionFromString("col:42"),
+			IsInherited:    false,
+			FunctionName:   "__xpg_sigpause",
+			IsLiteralLabel: true,
+			ChildNodes:     []Node{},
+		},
 	}
 
 	runNodeTests(t, nodes)
