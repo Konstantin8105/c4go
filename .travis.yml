@@ -1,5 +1,4 @@
 language: go
-dist: xenial
 
 go:
   - "1.16"
@@ -7,7 +6,6 @@ go:
 os:
   - linux
     dist: xenial
-    # Mac osx is too different clang
   - osx
 
 env:
