@@ -29,36 +29,31 @@ func if_1() {
 		return 5
 	}()
 	var r int32
-	r = func() int32 {
-		if 2 > 1 {
-			return -1
-		}
-		return 5
-	}()
-	r = func() int32 {
-		if 2 > 1 {
-			return -1
-		}
-		return 5
-	}()
-	r = func() int32 {
-		if w > 1 {
-			return -1
-		}
-		return 5
-	}()
-	r = func() int32 {
-		if w > 1 {
-			return -1
-		}
-		return 5
-	}()
-	r = func() int32 {
-		if noarch.BoolToInt(w > 1)+noarch.BoolToInt(r == 4) != 0 {
-			return -1
-		}
-		return 5
-	}()
+	if 2 > 1 {
+		r = -1
+	} else {
+		r = 5
+	}
+	if 2 > 1 {
+		r = -1
+	} else {
+		r = 5
+	}
+	if w > 1 {
+		r = -1
+	} else {
+		r = 5
+	}
+	if w > 1 {
+		r = -1
+	} else {
+		r = 5
+	}
+	if noarch.BoolToInt(w > 1)+noarch.BoolToInt(r == 4) != 0 {
+		r = -1
+	} else {
+		r = 5
+	}
 	if w > 0 {
 		r = 3
 	}

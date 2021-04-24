@@ -46,6 +46,9 @@ echo "Calculate warnings : $TEMP_FOLDER"
 # amount Go code lines
 	LINES=`wc $FILE`
 	echo "(lines,words,bytes)	 : $LINES"
+# defers
+	DEFER=`cat $FILE | grep "defer func" | wc -l`
+	echo "defer func           	 : $DEFER"
 
 # Arguments menu
 echo "    -s for show detail of Go build errors"
