@@ -31,6 +31,14 @@ int st2() {
 	return s;
 }
 
+int st2a() {
+	sstr_n++;
+	int s;
+	s = *sstr_s == sstr_bufs[sstr_n] ? 1: 0;
+	sstr_n--;
+	return s;
+}
+
 int st3() {
 	sstr_n++;
 	int s = (*sstr_s == sstr_bufs[sstr_n] ? sstr_n+1: sstr_n-1);

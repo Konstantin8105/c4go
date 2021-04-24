@@ -364,6 +364,114 @@ type simpleDefer struct {
 }
 
 func (s simpleDefer) Visit(node goast.Node) (w goast.Visitor) {
+	// 	var s int32 = func() int32 {
+	// 		if int32(sstr_s[0]) == int32(sstr_bufs[sstr_n]) {
+	// 			return 1
+	// 		}
+	// 		return 0
+	// 	}()
+
+	// from :
+	//		{
+	//			...
+	//			li = func() int32 {
+	//				if booled {
+	//					return result1
+	//				}
+	//				return result2
+	//			}()
+	//			...
+	//		}
+	// to   :
+	//		{
+	//			...
+	//			if booled {
+	//				li = result1
+	//			} else {
+	//				li = result2
+	//			}
+	//			...
+	//		}
+	if eb, ok := node.(*goast.BlockStmt); ok && 0 < len(eb.List) {
+		for i := range eb.List {
+			if eb.List[i] == nil {
+				continue
+			}
+			es, ok := eb.List[i].(*goast.ExprStmt)
+			if !ok {
+				continue
+			}
+			be, ok := es.X.(*goast.BinaryExpr)
+			if !ok {
+				continue
+			}
+
+			valueName := be.X
+			if be.Op != token.ASSIGN {
+				continue
+			}
+			cl, ok := be.Y.(*goast.CallExpr)
+			if !ok {
+				continue
+			}
+			fl, ok := cl.Fun.(*goast.FuncLit)
+			if !ok {
+				continue
+			}
+			b := fl.Body
+			if 2 != len(b.List) {
+				continue
+			}
+			ifd, ok := b.List[0].(*goast.IfStmt)
+			if !ok {
+				continue
+			}
+
+			condition := ifd.Cond
+
+			ifbod := ifd.Body
+			if 1 != len(ifbod.List) {
+				continue
+			}
+
+			ret1, ok := ifbod.List[0].(*goast.ReturnStmt)
+			if !ok {
+				continue
+			}
+
+			result1 := ret1.Results
+
+			ret2, ok := b.List[1].(*goast.ReturnStmt)
+			if !ok {
+				continue
+			}
+
+			result2 := ret2.Results
+
+			eb.List[i] = &goast.IfStmt{
+				Cond: condition,
+				Body: &goast.BlockStmt{
+					List: []goast.Stmt{
+						&goast.AssignStmt{
+							Lhs: []goast.Expr{valueName},
+							Tok: token.ASSIGN,
+							Rhs: result1,
+						},
+					},
+				},
+				Else: &goast.BlockStmt{
+					List: []goast.Stmt{
+						&goast.AssignStmt{
+							Lhs: []goast.Expr{valueName},
+							Tok: token.ASSIGN,
+							Rhs: result2,
+						},
+					},
+				},
+			}
+		}
+	}
+
 	// from :
 	//		if ... {
 	//			{

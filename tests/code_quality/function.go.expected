@@ -70,7 +70,20 @@ func st2() int32 {
 	return s
 }
 
-// st3 - transpiled function from  C4GO/tests/code_quality/function.c:34
+// st2a - transpiled function from  C4GO/tests/code_quality/function.c:34
+func st2a() int32 {
+	sstr_n++
+	var s int32
+	if int32(sstr_s[0]) == int32(sstr_bufs[sstr_n]) {
+		s = 1
+	} else {
+		s = 0
+	}
+	sstr_n--
+	return s
+}
+
+// st3 - transpiled function from  C4GO/tests/code_quality/function.c:42
 func st3() int32 {
 	sstr_n++
 	var s int32 = func() int32 {
@@ -83,7 +96,7 @@ func st3() int32 {
 	return s
 }
 
-// st4 - transpiled function from  C4GO/tests/code_quality/function.c:41
+// st4 - transpiled function from  C4GO/tests/code_quality/function.c:49
 func st4() int32 {
 	if int32(sstr_s[0]) == int32(sstr_bufs[sstr_n]) {
 		return sstr_n + 1
