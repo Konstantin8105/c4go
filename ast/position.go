@@ -248,6 +248,8 @@ func setPosition(node Node, position Position) {
 		n.Pos = position
 	case *AvailabilityAttr:
 		n.Pos = position
+	case *BuiltinAttr:
+		n.Pos = position
 	case *BinaryConditionalOperator:
 		n.Pos = position
 	case *BinaryOperator:

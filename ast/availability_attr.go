@@ -16,6 +16,7 @@ type AvailabilityAttr struct {
 	IsUnavailable bool
 	Message1      string
 	Message2      string
+	Message3      string
 	IsInherited   bool
 	ChildNodes    []Node
 }
@@ -30,7 +31,9 @@ func parseAvailabilityAttr(line string) *AvailabilityAttr {
 		 (?P<unknown2>[\d.]+)
 		(?P<unavalable> Unavailable)?
 		 "(?P<message1>.*?)"
-		(?P<message2> ".*?")?`,
+		(?P<message2> ".*?")?
+		(?P<message3> .*?)?
+		`,
 		line,
 	)
 
@@ -45,6 +48,7 @@ func parseAvailabilityAttr(line string) *AvailabilityAttr {
 		Message1:      removeQuotes(groups["message1"]),
 		Message2:      removeQuotes(groups["message2"]),
 		IsInherited:   len(groups["inherited"]) > 0,
+		Message3:      removeQuotes(groups["message3"]),
 		ChildNodes:    []Node{},
 	}
 }
