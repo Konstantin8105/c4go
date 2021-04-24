@@ -549,7 +549,7 @@ func (i *inputDataFlags) String() (s string) {
 }
 
 func (i *inputDataFlags) Set(value string) error {
-	*i = append(*i, value)
+	*i = append(*i, strings.Split(value, " ")...)
 	return nil
 }
 
