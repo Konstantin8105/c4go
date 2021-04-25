@@ -1,13 +1,11 @@
 language: go
-dist: xenial
 
 go:
   - "1.16"
 
 os:
   - linux
-    # Mac osx is too different clang
-    #  - osx
+  - osx
 
 env:
   global:
@@ -26,9 +24,11 @@ matrix:
 ####################################################
     - env: SCRIPT=test CLANG=3.5
       os: linux
+      dist: xenial
       if: branch = master
     - env: SCRIPT=scripts CLANG=7
       os: linux
+      dist: xenial
       if: branch = master
 ####################################################
 #       commented for minimaze build
@@ -46,10 +46,13 @@ matrix:
 ####################################################
     - env: SCRIPT=test CLANG=7
       os: linux
-    - env: SCRIPT=test CLANG=8
-      os: linux
+      dist: xenial
     - env: SCRIPT=test CLANG=12
       os: linux
+      dist: xenial
+    - env: SCRIPT=test
+      os: osx
+      osx_image: xcode12.2
 ####### lint checking ########
     - env: SCRIPT=lint CLANG=3.9
       os: linux
@@ -64,8 +67,8 @@ before_install:
         sudo apt-get update
         sudo apt-cache search clang
         sudo apt-get install -f -y --force-yes clang-$CLANG lldb-$CLANG libmad0-dev
-      # else
-      #   brew install llvm
+      else
+        brew install llvm
       fi
 
   # gocovmerge is used to merge all the separate unit/integration test coverage
