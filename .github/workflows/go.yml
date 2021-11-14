@@ -28,7 +28,8 @@ jobs:
           ./scripts/lint.sh
 
     - name: Coverage
-      env: CLANG=3.9
+      env: 
+          CLANG: 3.9
       run: |
           #sudo apt install -f -y --force-yes llvm
           wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
