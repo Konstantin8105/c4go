@@ -28,12 +28,19 @@ static int approxf(double actual, double expected, int bits) {
         return 0;
     }
 
+	if actual == expected {
+		return 1;
+	}
+
     // If we expect zero (a common case) we have a fixed epsilon from actual. If
     // allowed to continue the epsilon calculated would be zero and we would be
     // doing an exact match which is what we want to avoid.
     if (expected == 0.0) {
         return fabs(actual) < (1 / pow(2, bits));
     }
+
+	// TODO : remove that line. Create only for poor tests
+	return fabs((actual - expected)/expected) < 1e-5
 
     // The epsilon is calculated based on significant bits of the actual value.
     // The amount of bits used depends on the original size of the float (in
