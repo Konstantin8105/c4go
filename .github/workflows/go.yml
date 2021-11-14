@@ -31,12 +31,12 @@ jobs:
       run: |
           ./scripts/lint.sh
 
-          #     - name: Coverage
-          #       run: |
-          #           sudo apt install -f -y --force-yes llvm
-          #           go mod download
-          #           go get -u -v github.com/wadey/gocovmerge
-          #           go get -u -v github.com/Konstantin8105/cs
-          #           go get -u -v golang.org/x/sys/unix
-          #           ./scripts/test.sh
-          #           include_cov=coverage.txt bash <(curl -s https://codecov.io/bash)
+    - name: Coverage
+      run: |
+          sudo apt install -f -y --force-yes llvm
+          go mod download
+          go get -u -v github.com/wadey/gocovmerge
+          go get -u -v github.com/Konstantin8105/cs
+          go get -u -v golang.org/x/sys/unix
+          ./scripts/test.sh
+          include_cov=coverage.txt bash <(curl -s https://codecov.io/bash)
