@@ -13,6 +13,8 @@ unsigned long long ullmax = 18446744073709551615ull;
 int main()
 {
     plan(496);
+	
+	double mf = 1.229999999999999945619502e+300;
 
     {
         diag("modf");
@@ -186,7 +188,7 @@ int main()
     is_eq(ceil(1), 1);
     is_eq(ceil(-1), -1);
     is_eq(ceil(0.5), 1);
-    is_eq(ceil(1.23e300), 1.22999999999999994561950e300);
+    is_eq(ceil(1.23e300), mf);
     is_eq(ceil(-1.23e-300), 0);
     is_eq(ceil(M_PI), 4);
     is_eq(ceil(M_E), 3);
@@ -242,12 +244,14 @@ int main()
     is_eq(expl(1), 2.7182818284590450908);
     is_eq(expl(-1), 0.36787944117144233402);
 
+
+
     diag("fabs");
     is_eq(fabs(0), 0);
     is_eq(fabs(1), 1);
     is_eq(fabs(-1), 1);
     is_eq(fabs(0.5), 0.5);
-    is_eq(fabs(1.23e300), 1.22999999999999994561950e300);
+    is_eq(fabs(1.23e300), mf);
     is_eq(fabs(-1.23e-300), 1.23e-300);
     is_eq(fabs(M_PI), M_PI);
     is_eq(fabs(M_E), M_E);
@@ -260,7 +264,7 @@ int main()
     is_eq(floor(1), 1);
     is_eq(floor(-1), -1);
     is_eq(floor(0.5), 0);
-    is_eq(floor(1.23e300), 1.22999999999999994561950e300);
+    is_eq(floor(1.23e300), mf);
     is_eq(floor(-1.23e-300), -1);
     is_eq(floor(M_PI), 3);
     is_eq(floor(M_E), 2);
@@ -301,7 +305,7 @@ int main()
     is_eq(fmod(1, INFINITY), 1);
     is_negzero(fmod(-1, INFINITY));
     is_eq(fmod(0.5, INFINITY), 0.5);
-    is_eq(fmod(1.23e300, INFINITY), 1.22999999999999994561950e300);
+    is_eq(fmod(1.23e300, INFINITY), mf);
     is_negzero(fmod(-1.23e-300, INFINITY));
     is_eq(fmod(M_PI, INFINITY), M_PI);
     is_eq(fmod(M_E, INFINITY), M_E);
@@ -314,7 +318,7 @@ int main()
     is_eq(fmod(1, -INFINITY), 1);
     is_negzero(fmod(-1, -INFINITY));
     is_eq(fmod(0.5, -INFINITY), 0.5);
-    is_eq(fmod(1.23e300, -INFINITY), 1.22999999999999994561950e300);
+    is_eq(fmod(1.23e300, -INFINITY), mf);
     is_negzero(fmod(-1.23e-300, -INFINITY));
     is_eq(fmod(M_PI, -INFINITY), M_PI);
     is_eq(fmod(M_E, -INFINITY), M_E);
@@ -368,7 +372,7 @@ int main()
     is_eq(remainder(1, INFINITY), 1);
     is_negzero(remainder(-1, INFINITY));
     is_eq(remainder(0.5, INFINITY), 0.5);
-    is_eq(remainder(1.23e300, INFINITY), 1.229999999999999945619502e300);
+    is_eq(remainder(1.23e300, INFINITY), mf);
     is_negzero(remainder(-1.23e-300, INFINITY));
     is_eq(remainder(M_PI, INFINITY), M_PI);
     is_eq(remainder(M_E, INFINITY), M_E);
@@ -381,7 +385,7 @@ int main()
     is_eq(remainder(1, -INFINITY), 1);
     is_negzero(remainder(-1, -INFINITY));
     is_eq(remainder(0.5, -INFINITY), 0.5);
-    is_eq(remainder(1.23e300, -INFINITY), 1.229999999999999945619502e300);
+    is_eq(remainder(1.23e300, -INFINITY), mf);
     is_negzero(remainder(-1.23e-300, -INFINITY));
     is_eq(remainder(M_PI, -INFINITY), M_PI);
     is_eq(remainder(M_E, -INFINITY), M_E);
