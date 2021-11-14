@@ -1050,6 +1050,10 @@ func TestExamples(t *testing.T) {
 				scanner := bufio.NewScanner(file)
 				for scanner.Scan() {
 					line := scanner.Text()
+					line = strings.TrimSpace(line)
+					if strings.Contains(line, "//") {
+						continue
+					}
 					if !bytes.Contains(readme, []byte(line)) {
 						t.Errorf("Cannot found line : %s", line)
 					}
