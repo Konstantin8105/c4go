@@ -411,7 +411,7 @@ int main()
     is_eq(ldexp(1, 2), 4);
     is_eq(ldexp(-1, 2), -4);
     is_eq(ldexp(0.5, 2), 2);
-    is_eq(ldexp(mf, 2), 4.92e300);
+    is_eq(ldexp(mf, 2), 4.91999999999999978247801e300);
     is_negzero(ldexp(-1.23e-300, 2));
     is_eq(ldexp(M_PI, 2), 12.56637061435917246399);
     is_eq(ldexp(M_E, 2), 10.87312731383618036318);
@@ -556,7 +556,7 @@ int main()
     is_eq(sqrt(1), 1);
     is_nan(sqrt(-1));
     is_eq(sqrt(0.5), 0.70710678118654757274);
-    is_eq(sqrt(mf), 1.1090536506409417761e150);
+    is_eq(sqrt(mf), 1.109053650640941776055117e150);
     is_nan(sqrt(-1.23e-300));
     is_eq(sqrt(M_PI), 1.77245385090551588192);
     is_eq(sqrt(M_E), 1.64872127070012819416);
