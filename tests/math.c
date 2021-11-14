@@ -314,7 +314,7 @@ int main()
     is_eq(fmod(1, -INFINITY), 1);
     is_negzero(fmod(-1, -INFINITY));
     is_eq(fmod(0.5, -INFINITY), 0.5);
-    is_eq(fmod(1.23e300, -INFINITY), 1.23e300);
+    is_eq(fmod(1.23e300, -INFINITY), 1.22999999999999994561950e300);
     is_negzero(fmod(-1.23e-300, -INFINITY));
     is_eq(fmod(M_PI, -INFINITY), M_PI);
     is_eq(fmod(M_E, -INFINITY), M_E);
