@@ -29,7 +29,7 @@ jobs:
 
     - name: Coverage
       env: 
-          CLANG: 3.9
+          CLANG: 12
       run: |
           #sudo apt install -f -y --force-yes llvm
           wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
