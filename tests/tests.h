@@ -43,7 +43,8 @@ static int approxf(double actual, double expected, int bits) {
 
     // The numbers are considered equal if the absolute difference between them
     // is less than the relative epsilon.
-    return fabs(actual - expected) <= epsilon*2;
+    // Factor 2 added for avoid very small.
+    return fabs(actual - expected) <= fabs(epsilon*2);
 }
 
 // isnegzero tests if a value is a negative zero. Negative zeros are a special
@@ -162,8 +163,9 @@ static int last_test_was_ok = 1;
     }                                                                      \
     else                                                                   \
     {                                                                      \
-        fail("%s == %s # got %.25g != %.25g", #actual, #expected,          \
-				(double)(actual), (double)(expected)) \
+        fail("%s == %s # got %.25g != %.25g. delta = %.25g",               \
+                #actual, #expected, (double)(actual), (double)(expected),  \
+				(double)(actual-expected))                                 \
     }
 
 // This works in the opposite way as is_eq().
