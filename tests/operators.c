@@ -77,7 +77,7 @@ struct UUU000 {
 
 int main()
 {
-    plan(162);//6);
+    plan(161);//6);
 
     is_eq(valGlobInt, 42);
     is_eq(valGlobDouble, 45);
