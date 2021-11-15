@@ -14,7 +14,6 @@ int main()
 {
     plan(465);//496);
 	
-	// double mf = 1.229999999999999945619502e+300;
 
     {
         diag("modf");
@@ -73,7 +72,7 @@ int main()
     // Each of the tests are against these values:
     //
     // * Simple: 0, 1, -1, 0.5
-    // * Large and small: mf, -1.23e-300
+    // * Large and small: 1.23e300, -1.23e-300
     // * Constants: M_PI, M_E
     // * Special: INFINITY, -INFINITY, NAN
 
@@ -82,7 +81,7 @@ int main()
     is_eq(acos(1), 0);
     is_eq(acos(-1), M_PI);
     is_eq(acos(0.5), 1.04719755119659763132);
-//     is_nan(acos(mf));
+//     is_nan(acos(1.23e300));
     is_eq(acos(-1.23e-300), 1.57079632679489655800);
     is_nan(acos(M_PI));
     is_nan(acos(M_E));
@@ -95,7 +94,7 @@ int main()
     is_eq(asin(1), 1.57079632679489655800);
     is_eq(asin(-1), -1.57079632679489655800);
     is_eq(asin(0.5), 0.52359877559829881566);
-//     is_nan(asin(mf));
+//     is_nan(asin(1.23e300));
     is_negzero(asin(-1.23e-300));
     is_nan(asin(M_PI));
     is_nan(asin(M_E));
@@ -108,7 +107,7 @@ int main()
     is_eq(atan(1), 0.78539816339744827900);
     is_eq(atan(-1), -0.78539816339744827900);
     is_eq(atan(0.5), 0.46364760900080614903);
-//     is_eq(atan(mf), 1.57079632679489655800);
+//     is_eq(atan(1.23e300), 1.57079632679489655800);
     is_negzero(atan(-1.23e-300));
     is_eq(atan(M_PI), 1.26262725567891154199);
     is_eq(atan(M_E), 1.21828290501727765083);
@@ -123,7 +122,7 @@ int main()
     is_eq(atan2(1, 0), 1.57079632679489655800);
     is_eq(atan2(-1, 0), -1.57079632679489655800);
     is_eq(atan2(0.5, 0), 1.57079632679489655800);
-//     is_eq(atan2(mf, 0), 1.57079632679489655800);
+//     is_eq(atan2(1.23e300, 0), 1.57079632679489655800);
     is_negzero(atan2(-1.23e-300, 0));
     is_eq(atan2(M_PI, 0), 1.57079632679489655800);
     is_eq(atan2(M_E, 0), 1.57079632679489655800);
@@ -136,7 +135,7 @@ int main()
     is_eq(atan2(1, 1), 0.78539816339744827900);
     is_eq(atan2(-1, 1), -0.78539816339744827900);
     is_eq(atan2(0.5, 1), 0.46364760900080609352);
-//     is_eq(atan2(mf, 1), 1.57079632679489655800);
+//     is_eq(atan2(1.23e300, 1), 1.57079632679489655800);
     is_negzero(atan2(-1.23e-300, 1));
     is_eq(atan2(M_PI, 1), 1.262627255678911764);
     is_eq(atan2(M_E, 1), 1.2182829050172776508);
@@ -149,7 +148,7 @@ int main()
     is_eq(atan2(1, INFINITY), 0);
     is_negzero(atan2(-1, INFINITY));
     is_eq(atan2(0.5, INFINITY), 0);
-//     is_eq(atan2(mf, INFINITY), 0);
+//     is_eq(atan2(1.23e300, INFINITY), 0);
     is_negzero(atan2(-1.23e-300, INFINITY));
     is_eq(atan2(M_PI, INFINITY), 0);
     is_eq(atan2(M_E, INFINITY), 0);
@@ -162,7 +161,7 @@ int main()
     is_eq(atan2(1, -INFINITY), M_PI);
     is_negzero(atan2(-1, -INFINITY));
     is_eq(atan2(0.5, -INFINITY), M_PI);
-//     is_eq(atan2(mf, -INFINITY), M_PI);
+//     is_eq(atan2(1.23e300, -INFINITY), M_PI);
     is_negzero(atan2(-1.23e-300, -INFINITY));
     is_eq(atan2(M_PI, -INFINITY), M_PI);
     is_eq(atan2(M_E, -INFINITY), M_PI);
@@ -175,7 +174,7 @@ int main()
     is_nan(atan2(1, NAN));
     is_nan(atan2(-1, NAN));
     is_nan(atan2(0.5, NAN));
-//     is_nan(atan2(mf, NAN));
+//     is_nan(atan2(1.23e300, NAN));
     is_nan(atan2(-1.23e-300, NAN));
     is_nan(atan2(M_PI, NAN));
     is_nan(atan2(M_E, NAN));
@@ -188,7 +187,7 @@ int main()
     is_eq(ceil(1), 1);
     is_eq(ceil(-1), -1);
     is_eq(ceil(0.5), 1);
-//     is_eq(ceil(mf), mf);
+//     is_eq(ceil(1.23e300), 1.23e300);
     is_eq(ceil(-1.23e-300), 0);
     is_eq(ceil(M_PI), 4);
     is_eq(ceil(M_E), 3);
@@ -202,7 +201,7 @@ int main()
     is_eq(cos(-1), 0.54030230586813976501);
     is_eq(cos(0.5), 0.87758256189037275874);
     // https://github.com/golang/go/issues/20539
-//     disabled(is_eq(cos(mf), 0.251533));
+//     disabled(is_eq(cos(1.23e300), 0.251533));
     is_eq(cos(-1.23e-300), 1);
     is_eq(cos(M_PI), -1);
     is_eq(cos(M_E), -0.91173391478696508283);
@@ -216,7 +215,7 @@ int main()
     is_eq(cosh(-1), 1.5430806348152437124);
     is_eq(cosh(0.5), 1.1276259652063806982);
     // https://github.com/golang/go/issues/20539
-//     disabled(is_eq(cosh(mf), 1));
+//     disabled(is_eq(cosh(1.23e300), 1));
     is_eq(cosh(-1.23e-300), 1);
     is_eq(cosh(M_PI), 11.591953275521518663);
     is_eq(cosh(M_E), 7.6101251386622870143);
@@ -230,7 +229,7 @@ int main()
     is_eq(exp(-1), 0.36787944117144233402);
     is_eq(exp(0.5), 1.6487212707001281942);
     // https://github.com/golang/go/issues/20539
-//     disabled(is_inf(exp(mf), 1));
+//     disabled(is_inf(exp(1.23e300), 1));
     is_eq(exp(-1.23e-300), 1);
     is_eq(exp(M_PI), 23.140692632779266802);
     is_eq(exp(M_E), 15.154262241479262485);
@@ -251,7 +250,7 @@ int main()
     is_eq(fabs(1), 1);
     is_eq(fabs(-1), 1);
     is_eq(fabs(0.5), 0.5);
-//     is_eq(fabs(mf), mf);
+//     is_eq(fabs(1.23e300), 1.23e300);
     is_eq(fabs(-1.23e-300), 1.23e-300);
     is_eq(fabs(M_PI), M_PI);
     is_eq(fabs(M_E), M_E);
@@ -264,7 +263,7 @@ int main()
     is_eq(floor(1), 1);
     is_eq(floor(-1), -1);
     is_eq(floor(0.5), 0);
-//     is_eq(floor(mf), mf);
+//     is_eq(floor(1.23e300), 1.23e300);
     is_eq(floor(-1.23e-300), -1);
     is_eq(floor(M_PI), 3);
     is_eq(floor(M_E), 2);
@@ -279,7 +278,7 @@ int main()
     is_nan(fmod(1, 0));
     is_nan(fmod(-1, 0));
     is_nan(fmod(0.5, 0));
-//     is_nan(fmod(mf, 0));
+//     is_nan(fmod(1.23e300, 0));
     is_nan(fmod(-1.23e-300, 0));
     is_nan(fmod(M_PI, 0));
     is_nan(fmod(M_E, 0));
@@ -292,7 +291,7 @@ int main()
     is_eq(fmod(1, 0.5), 0);
     is_negzero(fmod(-1, 0.5));
     is_eq(fmod(0.5, 0.5), 0);
-//     is_eq(fmod(mf, 0.5), 0);
+//     is_eq(fmod(1.23e300, 0.5), 0);
     is_negzero(fmod(-1.23e-300, 0.5));
     is_eq(fmod(M_PI, 0.5), M_PI - 3);
     is_eq(fmod(M_E, 0.5), M_E - 2.5);
@@ -305,7 +304,7 @@ int main()
     is_eq(fmod(1, INFINITY), 1);
     is_negzero(fmod(-1, INFINITY));
     is_eq(fmod(0.5, INFINITY), 0.5);
-//     is_eq(fmod(mf, INFINITY), mf);
+//     is_eq(fmod(1.23e300, INFINITY), 1.23e300);
     is_negzero(fmod(-1.23e-300, INFINITY));
     is_eq(fmod(M_PI, INFINITY), M_PI);
     is_eq(fmod(M_E, INFINITY), M_E);
@@ -318,7 +317,7 @@ int main()
     is_eq(fmod(1, -INFINITY), 1);
     is_negzero(fmod(-1, -INFINITY));
     is_eq(fmod(0.5, -INFINITY), 0.5);
-//     is_eq(fmod(mf, -INFINITY), mf);
+//     is_eq(fmod(1.23e300, -INFINITY), 1.23e300);
     is_negzero(fmod(-1.23e-300, -INFINITY));
     is_eq(fmod(M_PI, -INFINITY), M_PI);
     is_eq(fmod(M_E, -INFINITY), M_E);
@@ -331,7 +330,7 @@ int main()
     is_nan(fmod(1, NAN));
     is_nan(fmod(-1, NAN));
     is_nan(fmod(0.5, NAN));
-//     is_nan(fmod(mf, NAN));
+//     is_nan(fmod(1.23e300, NAN));
     is_nan(fmod(-1.23e-300, NAN));
     is_nan(fmod(M_PI, NAN));
     is_nan(fmod(M_E, NAN));
@@ -346,7 +345,7 @@ int main()
     is_nan(remainder(1, 0));
     is_nan(remainder(-1, 0));
     is_nan(remainder(0.5, 0));
-//     is_nan(remainder(mf, 0));
+//     is_nan(remainder(1.23e300, 0));
     is_nan(remainder(-1.23e-300, 0));
     is_nan(remainder(M_PI, 0));
     is_nan(remainder(M_E, 0));
@@ -359,7 +358,7 @@ int main()
     is_eq(remainder(1, 0.5), 0);
     is_negzero(remainder(-1, 0.5));
     is_eq(remainder(0.5, 0.5), 0);
-//     is_eq(remainder(mf, 0.5), 0);
+//     is_eq(remainder(1.23e300, 0.5), 0);
     is_negzero(remainder(-1.23e-300, 0.5));
     is_eq(remainder(M_PI, 0.5), M_PI - 3);
     is_eq(remainder(M_E, 0.5), M_E - 2.5);
@@ -372,7 +371,7 @@ int main()
     is_eq(remainder(1, INFINITY), 1);
     is_negzero(remainder(-1, INFINITY));
     is_eq(remainder(0.5, INFINITY), 0.5);
-//     is_eq(remainder(mf, INFINITY), mf);
+//     is_eq(remainder(1.23e300, INFINITY), 1.23e300);
     is_negzero(remainder(-1.23e-300, INFINITY));
     is_eq(remainder(M_PI, INFINITY), M_PI);
     is_eq(remainder(M_E, INFINITY), M_E);
@@ -385,7 +384,7 @@ int main()
     is_eq(remainder(1, -INFINITY), 1);
     is_negzero(remainder(-1, -INFINITY));
     is_eq(remainder(0.5, -INFINITY), 0.5);
-//     is_eq(remainder(mf, -INFINITY), mf);
+//     is_eq(remainder(1.23e300, -INFINITY), 1.23e300);
     is_negzero(remainder(-1.23e-300, -INFINITY));
     is_eq(remainder(M_PI, -INFINITY), M_PI);
     is_eq(remainder(M_E, -INFINITY), M_E);
@@ -398,7 +397,7 @@ int main()
     is_nan(remainder(1, NAN));
     is_nan(remainder(-1, NAN));
     is_nan(remainder(0.5, NAN));
-//     is_nan(remainder(mf, NAN));
+//     is_nan(remainder(1.23e300, NAN));
     is_nan(remainder(-1.23e-300, NAN));
     is_nan(remainder(M_PI, NAN));
     is_nan(remainder(M_E, NAN));
@@ -411,7 +410,7 @@ int main()
     is_eq(ldexp(1, 2), 4);
     is_eq(ldexp(-1, 2), -4);
     is_eq(ldexp(0.5, 2), 2);
-//     is_eq(ldexp(mf, 2), 4.91999999999999978247801e300);
+//     is_eq(ldexp(1.23e300, 2), 4.91999999999999978247801e300);
     is_negzero(ldexp(-1.23e-300, 2));
     is_eq(ldexp(M_PI, 2), 12.56637061435917246399);
     is_eq(ldexp(M_E, 2), 10.87312731383618036318);
@@ -424,7 +423,7 @@ int main()
     is_eq(log(1), 0);
     is_nan(log(-1));
     is_eq(log(0.5), -0.69314718055994528623);
-//     is_eq(log(mf), 690.98254206759804674221);
+//     is_eq(log(1.23e300), 690.98254206759804674221);
     is_nan(log(-1.23e-300));
     is_eq(log(M_PI), 1.14472988584940016388);
     is_eq(log(M_E), 1);
@@ -437,7 +436,7 @@ int main()
     is_eq(log10(1), 0);
     is_nan(log10(-1));
     is_eq(log10(0.5), -0.30102999566398119802);
-//     is_eq(log10(mf), 300.08990511143940693728);
+//     is_eq(log10(1.23e300), 300.08990511143940693728);
     is_nan(log10(-1.23e-300));
     is_eq(log10(M_PI), 0.49714987269413385418);
     is_eq(log10(M_E), 0.43429448190325181667);
@@ -463,7 +462,7 @@ int main()
     is_eq(pow(1, 0), 1);
     is_eq(pow(-1, 0), 1);
     is_eq(pow(0.5, 0), 1);
-//     is_eq(pow(mf, 0), 1);
+//     is_eq(pow(1.23e300, 0), 1);
     is_eq(pow(-1.23e-300, 0), 1);
     is_eq(pow(M_PI, 0), 1);
     is_eq(pow(M_E, 0), 1);
@@ -476,7 +475,7 @@ int main()
     is_eq(pow(1, M_PI), 1);
     is_nan(pow(-1, M_PI));
     is_eq(pow(0.5, M_PI), 0.11331473229676088110);
-//     is_inf(pow(mf, M_PI), 1);
+//     is_inf(pow(1.23e300, M_PI), 1);
     is_nan(pow(-1.23e-300, M_PI));
     is_eq(pow(M_PI, M_PI), 36.46215960720790150162);
     is_eq(pow(M_E, M_PI), 23.14069263277926324918);
@@ -489,7 +488,7 @@ int main()
     is_eq(pow(1, INFINITY), 1);
     is_eq(pow(-1, INFINITY), 1);
     is_eq(pow(0.5, INFINITY), 0);
-//     is_inf(pow(mf, INFINITY), 1);
+//     is_inf(pow(1.23e300, INFINITY), 1);
     is_eq(pow(-1.23e-300, INFINITY), 0);
     is_inf(pow(M_PI, INFINITY), 1);
     is_inf(pow(M_E, INFINITY), 1);
@@ -502,7 +501,7 @@ int main()
     is_eq(pow(1, -INFINITY), 1);
     is_eq(pow(-1, -INFINITY), 1);
     is_inf(pow(0.5, -INFINITY), 1);
-//     is_eq(pow(mf, -INFINITY), 0);
+//     is_eq(pow(1.23e300, -INFINITY), 0);
     is_inf(pow(-1.23e-300, -INFINITY), 1);
     is_eq(pow(M_PI, -INFINITY), 0);
     is_eq(pow(M_E, -INFINITY), 0);
@@ -515,7 +514,7 @@ int main()
     is_eq(pow(1, NAN), 1);
     is_nan(pow(-1, NAN));
     is_nan(pow(0.5, NAN));
-//     is_nan(pow(mf, NAN));
+//     is_nan(pow(1.23e300, NAN));
     is_nan(pow(-1.23e-300, NAN));
     is_nan(pow(M_PI, NAN));
     is_nan(pow(M_E, NAN));
@@ -529,7 +528,7 @@ int main()
     is_eq(sin(-1), -0.84147098480789650488);
     is_eq(sin(0.5), 0.47942553860420300538);
     // https://github.com/golang/go/issues/20539
-//     disabled(is_eq(sin(mf), 0.967849));
+//     disabled(is_eq(sin(1.23e300), 0.967849));
     is_negzero(sin(-1.23e-300));
     is_eq(sin(M_PI), 0);
     is_eq(sin(M_E), 0.41078129050290879132);
@@ -543,7 +542,7 @@ int main()
     is_eq(sinh(-1), -1.1752011936438013784);
     is_eq(sinh(0.5), 0.52109530549374738495);
     // https://github.com/golang/go/issues/20539
-//     disabled(is_eq(sinh(mf), 1));
+//     disabled(is_eq(sinh(1.23e300), 1));
     is_negzero(sinh(-1.23e-300));
     is_eq(sinh(M_PI), 11.548739357257746363);
     is_eq(sinh(M_E), 7.5441371028169745827);
@@ -556,7 +555,7 @@ int main()
     is_eq(sqrt(1), 1);
     is_nan(sqrt(-1));
     is_eq(sqrt(0.5), 0.70710678118654757274);
-//     is_eq(sqrt(mf), 1.109053650640941776055117e150);
+//     is_eq(sqrt(1.23e300), 1.109053650640941776055117e150);
     is_nan(sqrt(-1.23e-300));
     is_eq(sqrt(M_PI), 1.77245385090551588192);
     is_eq(sqrt(M_E), 1.64872127070012819416);
@@ -570,7 +569,7 @@ int main()
     is_eq(tan(-1), -1.55740772465490207033);
     is_eq(tan(0.5), 0.54630248984379048416);
     // https://github.com/golang/go/issues/20539
-//     disabled(is_eq(tan(mf), 3.847798));
+//     disabled(is_eq(tan(1.23e300), 3.847798));
     is_negzero(tan(-1.23e-300));
     is_eq(tan(M_PI), 0);
     is_eq(tan(M_E), -0.45054953406980763342);
@@ -583,7 +582,7 @@ int main()
     is_eq(tanh(1), 0.76159415595576485103);
     is_eq(tanh(-1), -0.76159415595576485103);
     is_eq(tanh(0.5), 0.46211715726000973659);
-//     is_eq(tanh(mf), 1);
+//     is_eq(tanh(1.23e300), 1);
     is_negzero(tanh(-1.23e-300));
     is_eq(tanh(M_PI), 0.99627207622074998028);
     is_eq(tanh(M_E), 0.99132891580059978587);

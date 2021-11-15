@@ -129,10 +129,6 @@ func TestIntegrationScripts(t *testing.T) {
 							"Error for progs {%v,%v,%v,%v} function %d : %v",
 							file, subFolder, clangFlags, args,
 							i, errProgs[i])
-
-						// content, _ := ioutil.ReadFile(subFolder + "main.go")
-						// // error are ignore
-						// errProgs[i] = fmt.Errorf("%v\n%s", errProgs[i], string(content))
 						return
 					}
 					if out == "" {

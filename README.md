@@ -1,8 +1,9 @@
-[![Build Status](https://travis-ci.org/Konstantin8105/c4go.svg?branch=master)](https://travis-ci.org/Konstantin8105/c4go)
 [![Go Report Card](https://goreportcard.com/badge/github.com/Konstantin8105/c4go)](https://goreportcard.com/report/github.com/Konstantin8105/c4go)
 [![codecov](https://codecov.io/gh/Konstantin8105/c4go/branch/master/graph/badge.svg)](https://codecov.io/gh/Konstantin8105/c4go)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Konstantin8105/c4go/master/LICENSE)
-[![GoDoc](https://godoc.org/github.com/Konstantin8105/c4go?status.svg)](https://godoc.org/github.com/Konstantin8105/c4go)
+[![Go](https://github.com/Konstantin8105/c4go/actions/workflows/go.yml/badge.svg?branch=master)](https://github.com/Konstantin8105/c4go/actions/workflows/go.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/Konstantin8105/c4go.svg)](https://pkg.go.dev/github.com/Konstantin8105/c4go)
+
 
 A tool for [transpiling](https://en.wikipedia.org/wiki/Source-to-source_compiler) C code to Go code.
 
@@ -467,16 +468,16 @@ less vi.go
              float.h	          	    undefined
             iso646.h	          	    undefined
             limits.h	          	    undefined
-            locale.h	       3/3	         100%
+            locale.h	       0/3	           0%
               math.h	     22/22	         100%
             setjmp.h	       0/3	           0%
             signal.h	       3/3	         100%
             stdarg.h	       4/4	         100%
             stddef.h	       4/4	         100%
              stdio.h	     37/41	        90.2%
-            stdlib.h	     34/37	        91.9%
+            stdlib.h	     31/37	        83.8%
             string.h	     21/24	        87.5%
-              time.h	     14/15	        93.3%
+              time.h	      1/15	        6.67%
              wchar.h	      3/60	           5%
             wctype.h	      0/21	           0%
 ```

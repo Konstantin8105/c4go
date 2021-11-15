@@ -43,7 +43,7 @@ static int approxf(double actual, double expected, int bits) {
 
     // The numbers are considered equal if the absolute difference between them
     // is less than the relative epsilon.
-    return fabs(actual - expected) <= fabs(epsilon);
+    return fabs(actual - expected) <= epsilon;
 }
 
 // isnegzero tests if a value is a negative zero. Negative zeros are a special
