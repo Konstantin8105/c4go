@@ -40,7 +40,7 @@ static int approxf(double actual, double expected, int bits) {
     }
 
 	// TODO : remove that line. Create only for poor tests
-	return fabs((actual - expected)/expected) < 1e-5
+	return fabs((actual - expected)/expected) < 1e-5;
 
     // The epsilon is calculated based on significant bits of the actual value.
     // The amount of bits used depends on the original size of the float (in
