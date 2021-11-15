@@ -28,7 +28,7 @@ static int approxf(double actual, double expected, int bits) {
         return 0;
     }
 
-	if actual == expected {
+	if (actual == expected) {
 		return 1;
 	}
 
