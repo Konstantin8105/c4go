@@ -1,4 +1,4 @@
-// +build ignore
+//go:build ignore
 
 // The make_version program is run by go generate to compile a version stamp
 // to be compiled into the c4go binary.

@@ -233,6 +233,14 @@ func __isinf(x float64) int32 {
 	return BoolToInt(math.IsInf(x, 0))
 }
 
+//---
+// __builtin_isinf_sign from math.h
+// c function : int __builtin_isinf_sign(float)
+// dep pkg    : math
+// dep func   : BoolToInt
+func  __builtin_isinf_sign(x float32) int32 {
+	return BoolToInt(math.IsInf(float64(x), 0))
+}
 
 //---
 // __isinfl from math.h

@@ -383,6 +383,19 @@ func TestCSTD(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Cannot read file : %v\n", file)
 		}
+		body = bytes.Replace(body, []byte("\r"), []byte(""), -1)
+		// remove comments
+		{
+			lines := strings.Split(string(body), "\n")
+			for i := range lines {
+				index := strings.Index(lines[i], "//")
+				if index < 0 {
+					continue
+				}
+				lines[i] = lines[i][:index]
+			}
+			body = []byte(strings.Join(lines, "\n"))
+		}
 		// separate on parts
 		body = bytes.Replace(body, []byte("["), []byte(" "), -1)
 		body = bytes.Replace(body, []byte("]"), []byte(" "), -1)

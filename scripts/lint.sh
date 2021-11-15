@@ -7,7 +7,7 @@ mkdir -p ./testdata/
 file="./testdata/gofmt.list"
 eval "find ./ -name '*.go' | grep -v 'testdata' | grep -v 'vendor' > $file"
 
-while IFS= read -r line
+while read line
 do
 	# Check go fmt first
 	if [ -n "$(gofmt -l $line)" ]; then

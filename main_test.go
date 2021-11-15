@@ -1,4 +1,4 @@
-// +build integration
+//go:build integration
 
 package main
 
@@ -95,7 +95,7 @@ func TestIntegrationScripts(t *testing.T) {
 
 			// slice of program results
 			progs := []func(string, string, string, []string, []string) (string, error){
-				runCdebug,
+				// runCdebug,
 				runC,
 				runGo,
 			}
@@ -125,7 +125,10 @@ func TestIntegrationScripts(t *testing.T) {
 					var out string
 					out, errProgs[i] = progs[i](file, subFolder, stdin, clangFlags, args)
 					if errProgs[i] != nil {
-						errProgs[i] = fmt.Errorf("Error for function %d : %v", i, errProgs[i])
+						errProgs[i] = fmt.Errorf(
+							"Error for progs {%v,%v,%v,%v} function %d : %v",
+							file, subFolder, clangFlags, args,
+							i, errProgs[i])
 						return
 					}
 					if out == "" {
@@ -1050,6 +1053,10 @@ func TestExamples(t *testing.T) {
 				scanner := bufio.NewScanner(file)
 				for scanner.Scan() {
 					line := scanner.Text()
+					line = strings.TrimSpace(line)
+					if strings.Contains(line, "//") {
+						continue
+					}
 					if !bytes.Contains(readme, []byte(line)) {
 						t.Errorf("Cannot found line : %s", line)
 					}
