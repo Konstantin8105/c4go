@@ -35,9 +35,6 @@ static int approxf(double actual, double expected, int bits) {
         return fabs(actual) < (1 / pow(2, bits));
     }
 
-	// TODO : remove that line. Created only for poor tests
-	return fabs(actual - expected) <= fabs(1e-5*expected);
-
     // The epsilon is calculated based on significant bits of the actual value.
     // The amount of bits used depends on the original size of the float (in
     // terms of bits) subtracting a few to allow for very slight rounding
