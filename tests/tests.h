@@ -28,10 +28,6 @@ static int approxf(double actual, double expected, int bits) {
         return 0;
     }
 
-	if (actual == expected) {
-		return 1;
-	}
-
     // If we expect zero (a common case) we have a fixed epsilon from actual. If
     // allowed to continue the epsilon calculated would be zero and we would be
     // doing an exact match which is what we want to avoid.
@@ -39,8 +35,8 @@ static int approxf(double actual, double expected, int bits) {
         return fabs(actual) < (1 / pow(2, bits));
     }
 
-	// TODO : remove that line. Create only for poor tests
-	return fabs((actual - expected)/expected) < 1e-5;
+	// TODO : remove that line. Created only for poor tests
+	return fabs(actual - expected) <= fabs(1e-5*expected);
 
     // The epsilon is calculated based on significant bits of the actual value.
     // The amount of bits used depends on the original size of the float (in
@@ -50,8 +46,7 @@ static int approxf(double actual, double expected, int bits) {
 
     // The numbers are considered equal if the absolute difference between them
     // is less than the relative epsilon.
-    // Factor 2 added for avoid very small.
-    return fabs(actual - expected) <= fabs(epsilon*2);
+    return fabs(actual - expected) <= fabs(epsilon);
 }
 
 // isnegzero tests if a value is a negative zero. Negative zeros are a special
