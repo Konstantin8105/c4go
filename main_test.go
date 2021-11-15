@@ -125,7 +125,10 @@ func TestIntegrationScripts(t *testing.T) {
 					var out string
 					out, errProgs[i] = progs[i](file, subFolder, stdin, clangFlags, args)
 					if errProgs[i] != nil {
-						errProgs[i] = fmt.Errorf("Error for function %d : %v", i, errProgs[i])
+						errProgs[i] = fmt.Errorf(
+							"Error for progs {%v,%v,%v,%v} function %d : %v",
+							file, subFolder, clangFlags, args,
+							i, errProgs[i])
 						return
 					}
 					if out == "" {
