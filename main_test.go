@@ -95,7 +95,7 @@ func TestIntegrationScripts(t *testing.T) {
 
 			// slice of program results
 			progs := []func(string, string, string, []string, []string) (string, error){
-				runCdebug,
+				// runCdebug,
 				runC,
 				runGo,
 			}
@@ -130,9 +130,9 @@ func TestIntegrationScripts(t *testing.T) {
 							file, subFolder, clangFlags, args,
 							i, errProgs[i])
 
-						content, _ := ioutil.ReadFile(subFolder + "main.go")
-						// error are ignore
-						errProgs[i] = fmt.Errorf("%v\n%s", errProgs[i], string(content))
+						// content, _ := ioutil.ReadFile(subFolder + "main.go")
+						// // error are ignore
+						// errProgs[i] = fmt.Errorf("%v\n%s", errProgs[i], string(content))
 						return
 					}
 					if out == "" {
