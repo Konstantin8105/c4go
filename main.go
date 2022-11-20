@@ -64,6 +64,7 @@ const (
 	StateAst ProgramState = iota
 	StateTranspile
 	StateDebug
+	StateBinding
 )
 
 // DefaultProgramArgs default value of ProgramArgs
@@ -367,10 +368,16 @@ func Start(args ProgramArgs) (err error) {
 		fmt.Fprintln(astout)
 
 	case StateTranspile:
-		err = generateGoCode(args, lines, filePP)
+		p := program.NewProgram()
+		err = generateGoCode(p, args, lines, filePP)
 
 	case StateDebug:
 		err = generateDebugCCode(args, lines, filePP)
+
+	case StateBinding:
+		p := program.NewProgram()
+		p.Binding = true
+		err = generateGoCode(p, args, lines, filePP)
 
 	default:
 		err = fmt.Errorf("program state `%d` is not implemented", args.state)
@@ -474,10 +481,10 @@ func FromLinesToTree(verbose bool, lines []string, filePP preprocessor.FilePP) (
 	return
 }
 
-func generateGoCode(args ProgramArgs, lines []string, filePP preprocessor.FilePP) (
+func generateGoCode(p *program.Program, args ProgramArgs, lines []string, filePP preprocessor.FilePP) (
 	err error) {
 
-	p := program.NewProgram()
+	// p := program.NewProgram()
 	p.Verbose = args.verbose
 	p.PreprocessorFile = filePP
 
@@ -598,6 +605,13 @@ func runCommand() int {
 		debugHelpFlag = debugCommand.Bool(
 			"h", false, "print help information")
 
+		bindCommand = flag.NewFlagSet(
+			"bind", flag.ContinueOnError)
+		bindCppFlag = bindCommand.Bool(
+			"cpp", false, "transpile CPP code")
+		bindHelpFlag = bindCommand.Bool(
+			"h", false, "print help information")
+
 		unusedCommand = flag.NewFlagSet(
 			"unused", flag.ContinueOnError)
 		unusedHelpFlag = unusedCommand.Bool(
@@ -613,6 +627,9 @@ func runCommand() int {
 	debugCommand.Var(&clangFlags,
 		"clang-flag",
 		"Pass arguments to clang. You may provide multiple -clang-flag items.")
+	bindCommand.Var(&clangFlags,
+		"clang-flag",
+		"Pass arguments to clang. You may provide multiple -clang-flag items.")
 
 	// TODO : add example for starters
 
@@ -621,6 +638,7 @@ func runCommand() int {
 		usage += "Commands:\n"
 		usage += "  transpile\ttranspile an input C source file or files to Go\n"
 		usage += "  ast\t\tprint AST before translated Go code\n"
+		usage += "  bind\t\tpprepare binding Go code\n"
 		usage += "  debug\t\tadd debug information in C source\n"
 		usage += "  version\tprint version of c4go\n"
 		usage += "  unused\tshow and action for unused functions\n"
@@ -633,6 +651,7 @@ func runCommand() int {
 	transpileCommand.SetOutput(stderr)
 	astCommand.SetOutput(stderr)
 	debugCommand.SetOutput(stderr)
+	bindCommand.SetOutput(stderr)
 	unusedCommand.SetOutput(stderr)
 
 	flag.Parse()
@@ -718,6 +737,24 @@ func runCommand() int {
 		args.debugPrefix = *prefixDebugFlag
 		args.clangFlags = clangFlags
 		args.cppCode = *debugCppFlag
+
+	case "bind":
+		err := bindCommand.Parse(os.Args[2:])
+		if err != nil {
+			fmt.Fprintf(os.Stdout, "bind command cannot parse: %v", err)
+			return 24
+		}
+
+		if *bindHelpFlag || bindCommand.NArg() == 0 {
+			fmt.Fprintf(stderr, "Usage: %s bind [-cpp] [-clang-flag values] file.c\n", os.Args[0])
+			bindCommand.PrintDefaults()
+			return 43
+		}
+
+		args.state = StateBinding
+		args.inputFiles = bindCommand.Args()
+		args.clangFlags = clangFlags
+		args.cppCode = *bindCppFlag
 
 	case "unused":
 		err := unusedCommand.Parse(os.Args[2:])

@@ -85,6 +85,7 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 			Substitution:  "",
 			IncludeFile:   n.Pos.File,
 		})
+
 		return
 	}
 
@@ -92,6 +93,12 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 		if err = define(); err != nil {
 			return
 		}
+	}
+
+	if p.Binding {
+		// probably a few function in result with same names
+		decls, err = bindingFunctionDecl(n, p)
+		return
 	}
 
 	if n.IsExtern {
@@ -141,8 +148,7 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 	}
 
 	var fieldList = &goast.FieldList{}
-	fieldList, err = getFieldList(p, n,
-		p.GetFunctionDefinition(n.Name).ArgumentTypes)
+	fieldList, err = getFieldList(p, n, f.ArgumentTypes)
 	if err != nil {
 		return
 	}
@@ -256,6 +262,307 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 	return
 }
 
+// convert from:
+// |-FunctionDecl 0x55677bd48ee0 <line:924:7, col:63> col:12 InitWindow 'void (int, int, const char *)'
+// | |-ParmVarDecl 0x55677bd48d08 <col:23, col:27> col:27 width 'int'
+// | |-ParmVarDecl 0x55677bd48d80 <col:34, col:38> col:38 height 'int'
+// | `-ParmVarDecl 0x55677bd48df8 <col:46, col:58> col:58 title 'const char *'
+//
+// Go equal code:
+//
+//	// Initwindow is binding of function "InitWindow"
+//	func InitWindow(width int32, height int32, title string) {
+//		cwidth  := (C.int)(width)
+//		cheight := (C.int)(height)
+//		ctitle  := C.CString(title)
+//		defer C.free(unsafe.Pointer(ctitle))
+//		// run function
+//		C.InitWindow(cwidth, cheight, ctitle)
+//	}
+//
+func bindingFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
+	decls []goast.Decl, err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("cannot bindingFunctionDecl func `%s`. %v", n.Name, err)
+		}
+	}()
+
+	// generate names
+	n.Name = strings.TrimSpace(n.Name)
+	cName := n.Name
+	goName := func() string {
+		rs := []rune(n.Name)
+		name := strings.ToUpper(string(rs[0]))
+		if 1 < len(rs) {
+			name += string(rs[1:])
+		}
+		return name
+	}()
+	// parse variables
+	type variable struct {
+		cName, cType   string
+		valid          bool
+		cgoType        string
+		goName, goType string
+	}
+	var args []variable
+	for i := range n.ChildNodes {
+		switch n := n.ChildNodes[i].(type) {
+		case *ast.ParmVarDecl:
+			var cgoType, goType string
+			ok, cgoType, goType := cTypeToGoType(n.Type)
+			args = append(args, variable{
+				goName:  n.Name,
+				cType:   n.Type,
+				valid:   ok,
+				cgoType: cgoType,
+				goType:  goType,
+			})
+		default:
+			err = fmt.Errorf("not valid type:%T", n)
+			return
+		}
+	}
+	for i := range args {
+		args[i].cName = "c" + args[i].goName
+	}
+
+	f := p.GetFunctionDefinition(n.Name)
+
+	var fieldList = &goast.FieldList{}
+	fieldList, err = getFieldList(p, n, f.ArgumentTypes)
+	if err != nil {
+		return
+	}
+
+	// fix only for binding
+	for i := range fieldList.List {
+		name := fieldList.List[i].Type
+		id, ok := name.(*goast.Ident)
+		if !ok {
+			continue
+		}
+		if id.Name == "[]byte" || id.Name == "[] byte" {
+			fieldList.List[i].Type = goast.NewIdent("string")
+		}
+	}
+
+	t, err := types.ResolveType(p, f.ReturnType)
+	if err != nil {
+		err = fmt.Errorf("ReturnType: %s. %v", f.ReturnType, err)
+		p.AddMessage(p.GenerateWarningMessage(err, n))
+		err = nil
+	}
+
+	var fd goast.FuncDecl
+	fd.Name = goast.NewIdent(goName)
+
+	body := new(goast.BlockStmt)
+
+	for i := range args {
+		if !args[i].valid {
+			//	func Rect(r Rectangle, s int) {
+			//		var cr C.struct_Rectangle
+			//		cr.x = C.int(r.x)
+			//		cr.y = C.int(r.y)
+			//		cs = C.int(s)
+			//		C.Rect(cr, cs)
+			//	}
+			st := p.GetStruct(args[i].cType)
+			if st == nil {
+				tname := p.TypedefType[args[i].cType]
+				st = p.GetStruct(tname)
+				if st != nil {
+					args[i].cType = tname
+				}
+			}
+			if st != nil &&
+				!strings.Contains(args[i].cType, "*") &&
+				!strings.Contains(args[i].cType, "[") {
+				body.List = append(body.List, &goast.DeclStmt{Decl: &goast.GenDecl{
+					Tok: token.VAR,
+					Specs: []goast.Spec{&goast.ValueSpec{
+						Names: []*goast.Ident{goast.NewIdent(args[i].cName)},
+						Type: &goast.SelectorExpr{
+							X:   goast.NewIdent("C"),
+							Sel: goast.NewIdent("struct_" + args[i].cType),
+						},
+					}},
+				}})
+				for fname, ftype := range st.Fields {
+					ft := fmt.Sprintf("%v", ftype)
+					if strings.Contains(ft, "*") ||
+						strings.Contains(ft, "[") {
+						err = fmt.Errorf("field type is pointer: `%s`", ft)
+						return
+					}
+					_, cgot, _ := cTypeToGoType(ft)
+					body.List = append(body.List, &goast.AssignStmt{
+						Lhs: []goast.Expr{&goast.SelectorExpr{
+							X:   goast.NewIdent(args[i].cName),
+							Sel: goast.NewIdent(fname),
+						}},
+						Tok: token.ASSIGN,
+						Rhs: []goast.Expr{&goast.CallExpr{
+							Fun: goast.NewIdent(cgot),
+							Args: []goast.Expr{&goast.SelectorExpr{
+								X:   goast.NewIdent(args[i].goName),
+								Sel: goast.NewIdent(fname),
+							}},
+						}},
+					})
+				}
+				continue
+			}
+			err = fmt.Errorf("cannot parse C type: `%s`", args[i].cType)
+			return
+		}
+		body.List = append(body.List, &goast.AssignStmt{
+			Lhs: []goast.Expr{goast.NewIdent(args[i].cName)},
+			Tok: token.DEFINE,
+			Rhs: []goast.Expr{&goast.CallExpr{
+				Fun:  goast.NewIdent(args[i].cgoType),
+				Args: []goast.Expr{goast.NewIdent(args[i].goName)}},
+			},
+		})
+		// free memory
+		if strings.Contains(args[i].cType, "*") ||
+			strings.Contains(args[i].cType, "[") {
+			body.List = append(body.List, &goast.DeferStmt{
+				Call: &goast.CallExpr{
+					Fun: &goast.SelectorExpr{
+						X:   goast.NewIdent("C"),
+						Sel: goast.NewIdent("free"),
+					},
+					Args: []goast.Expr{
+						goast.NewIdent(fmt.Sprintf("unsafe.Pointer(%s)", args[i].cName)),
+					},
+				},
+			})
+		}
+	}
+
+	ce := &goast.CallExpr{
+		Fun: &goast.SelectorExpr{
+			X:   goast.NewIdent("C"),
+			Sel: goast.NewIdent(cName),
+		},
+	}
+	for i := range args {
+		ce.Args = append(ce.Args, goast.NewIdent(args[i].cName))
+	}
+
+	runC := false
+	if t == "" {
+		body.List = append(body.List, &goast.ExprStmt{X: ce})
+		runC = true
+	}
+	st := p.GetStruct(t)
+	if st == nil {
+		t2 := p.TypedefType[t]
+		st = p.GetStruct(t2)
+		if st != nil {
+			t = t2
+		}
+	}
+	if !runC && st != nil {
+		//	func Rect() Rectangle {
+		//		cResult := C.Rect()
+		//		var goRes Rectangle
+		//		goRes.x = int32(cResult.x)
+		//		goRes.y = int32(cResult.y)
+		//		return goRes
+		//	}
+		cResult := "cResult"
+		body.List = append(body.List, &goast.AssignStmt{
+			Lhs: []goast.Expr{goast.NewIdent(cResult)},
+			Tok: token.DEFINE,
+			Rhs: []goast.Expr{ce},
+		})
+		goRes := "goRes"
+		body.List = append(body.List, &goast.DeclStmt{Decl: &goast.GenDecl{
+			Tok: token.VAR,
+			Specs: []goast.Spec{&goast.ValueSpec{
+				Names: []*goast.Ident{goast.NewIdent(goRes)},
+				Type:  goast.NewIdent(t),
+			}},
+		}})
+		for fname, ftype := range st.Fields {
+			ft := fmt.Sprintf("%v", ftype)
+			if strings.Contains(ft, "*") ||
+				strings.Contains(ft, "[") {
+				err = fmt.Errorf("field type is pointer: `%s`", ft)
+				return
+			}
+			_, _, goType := cTypeToGoType(fmt.Sprintf("%v", ft))
+			body.List = append(body.List, &goast.AssignStmt{
+				Lhs: []goast.Expr{&goast.SelectorExpr{
+					X:   goast.NewIdent(goRes),
+					Sel: goast.NewIdent(fname),
+				}},
+				Tok: token.ASSIGN,
+				Rhs: []goast.Expr{&goast.CallExpr{
+					Fun: goast.NewIdent(goType),
+					Args: []goast.Expr{&goast.SelectorExpr{
+						X:   goast.NewIdent(cResult),
+						Sel: goast.NewIdent(fname),
+					}},
+				}},
+			})
+		}
+		body.List = append(body.List, &goast.ReturnStmt{
+			Results: []goast.Expr{goast.NewIdent(goRes)}})
+		runC = true
+	}
+	if !runC {
+		body.List = append(body.List, &goast.ReturnStmt{
+			Results: []goast.Expr{ce}})
+	}
+
+	addReturnName := false
+
+	decls = append(decls, &goast.FuncDecl{
+		Name: util.NewIdent(goName),
+		Type: util.NewFuncType(fieldList, t, addReturnName),
+		Body: body,
+	})
+
+	return
+}
+
+// C/C++ type      CGO type      Go type
+// C.char, C.schar (signed char), C.uchar (unsigned char), C.short, C.ushort (unsigned short), C.int, C.uint (unsigned int), C.long, C.ulong (unsigned long), C.longlong (long long), C.ulonglong (unsigned long long), C.float, C.double, C.complexfloat (complex float), and C.complexdouble (complex double)
+// {"bool", "C.int32", "bool"},
+var table = [][3]string{
+	{"char", "C.char", "byte"},
+	{"signed char", "C.schar", "int8"},
+	{"unsigned char", "C.uchar", "byte"},
+	{"short", "C.short", "int16"},
+	{"unsigned short", "C.ushort", "uint16"},
+	{"int", "C.int", "int"},
+	{"unsigned int", "C.uint", "uint"},
+	{"long", "C.long", "int64"},
+	{"unsigned long", "C.ulong", "uint64"},
+	{"long long", "C.longlong", "int64"},
+	{"unsigned long long", "C.ulonglong", "uint64"},
+	{"float", "C.float", "float32"},
+	{"double", "C.double", "float64"},
+	{"char *", "C.CString", "string"},
+	{"char []", "C.CString", "string"},
+}
+
+func cTypeToGoType(cType string) (ok bool, cgoType, goType string) {
+	cType = strings.ReplaceAll(cType, "const ", "")
+	cType = strings.TrimSpace(cType)
+	for i := range table {
+		if cType == table[i][0] {
+			return true, table[i][1], table[i][2]
+		}
+	}
+	return false, cType, cType
+}
+
 // getFieldList returns the parameters of a C function as a Go AST FieldList.
 func getFieldList(p *program.Program, f *ast.FunctionDecl, fieldTypes []string) (
 	_ *goast.FieldList, err error) {
@@ -266,6 +573,11 @@ func getFieldList(p *program.Program, f *ast.FunctionDecl, fieldTypes []string) 
 	}()
 	r := []*goast.Field{}
 	for i := range fieldTypes {
+		if len(f.Children()) <= i {
+			err = fmt.Errorf("not correct type/children: %d, %d",
+				len(f.Children()), len(fieldTypes))
+			return
+		}
 		n := f.Children()[i]
 		if v, ok := n.(*ast.ParmVarDecl); ok {
 			t, err := types.ResolveType(p, fieldTypes[i])

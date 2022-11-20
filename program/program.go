@@ -112,6 +112,9 @@ type Program struct {
 	IsHaveVaList bool
 
 	DoNotAddComments bool
+
+	// for binding parse FunctionDecl one time
+	Binding bool
 }
 
 type commentPos struct {
