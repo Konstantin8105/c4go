@@ -364,6 +364,65 @@ func bindingFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 	body := new(goast.BlockStmt)
 
 	for i := range args {
+		if cType := args[i].cType; cType == "char *" {
+			// for type `char *`
+			//
+			// 	bs := []byte(*text)
+			// 	if len(bs) == 0 {
+			// 		bs = []byte{byte(0)}
+			// 	}
+			// 	if 0 < len(bs) && bs[len(bs)-1] != byte(0) { // minimalize allocation
+			// 		bs = append(bs, byte(0)) // for next input symbols
+			// 	}
+			// 	ctext := (*C.char)(unsafe.Pointer(&bs[0]))
+			// 	defer func() {
+			// 		*text = string(bs)
+			// 		// no need : C.free(unsafe.Pointer(ctext))
+			// 	}()
+			src := `package main
+func main() {
+	{{ .GoName }}_bs := []byte(* {{ .GoName }})
+	if len({{ .GoName }}_bs) == 0 {
+		{{ .GoName }}_bs = []byte{byte(0)}
+	}
+	if 0 < len({{ .GoName }}_bs) && {{ .GoName }}_bs[len({{ .GoName }}_bs)-1] != byte(0) {
+		{{ .GoName }}_bs = append({{ .GoName }}_bs, byte(0))
+	}
+	{{ .CName }} := (*C.char)(unsafe.Pointer(&{{ .GoName }}_bs[0]))
+	defer func() {
+		*{{ .GoName }} = string({{ .GoName }}_bs)
+		// no need : C.free(unsafe.Pointer(ctext))
+	}()
+}`
+			tmpl := template.Must(template.New("").Parse(src))
+			var source bytes.Buffer
+			err = tmpl.Execute(&source, struct{ CName, GoName string }{
+				CName: args[i].cName, GoName: args[i].goName,
+			})
+			if err != nil {
+				err = fmt.Errorf("cannot execute template \"%s\" for data : %v",
+					source.String(), err)
+				return
+			}
+
+			// Create the AST by parsing src.
+			fset := token.NewFileSet() // positions are relative to fset
+			f, err := parser.ParseFile(fset, "", source.String(), 0)
+			if err != nil {
+				err = fmt.Errorf("cannot parse source \"%s\" : %v",
+					source.String(), err)
+				p.AddMessage(p.GenerateWarningMessage(err, n))
+				err = nil // ignore error
+				continue
+			}
+			if 0 < len(f.Decls) {
+				if fd, ok := f.Decls[0].(*goast.FuncDecl); ok {
+					body.List = append(body.List, fd.Body.List...)
+				}
+			}
+			continue
+		}
+		fmt.Println(">>>", args[i].cType)
 		if !args[i].valid {
 			//	func Rect(r Rectangle, s int) {
 			//		var cr C.struct_Rectangle
@@ -416,64 +475,6 @@ func bindingFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 							}},
 						}},
 					})
-				}
-				continue
-			}
-			if cType := args[i].cType; cType == "char *" {
-				// for type `char *`
-				//
-				// 	bs := []byte(*text)
-				// 	if len(bs) == 0 {
-				// 		bs = []byte{byte(0)}
-				// 	}
-				// 	if 0 < len(bs) && bs[len(bs)-1] != byte(0) { // minimalize allocation
-				// 		bs = append(bs, byte(0)) // for next input symbols
-				// 	}
-				// 	ctext := (*C.char)(unsafe.Pointer(&bs[0]))
-				// 	defer func() {
-				// 		*text = string(bs)
-				// 		// no need : C.free(unsafe.Pointer(ctext))
-				// 	}()
-				src := `package main
-func main() {
-	{{ .GoName }}_bs := []byte(* {{ .GoName }})
-	if len({{ .GoName }}_bs) == 0 {
-		{{ .GoName }}_bs = []byte{byte(0)}
-	}
-	if 0 < len({{ .GoName }}_bs) && {{ .GoName }}_bs[len({{ .GoName }}_bs)-1] != byte(0) {
-		{{ .GoName }}_bs = append({{ .GoName }}_bs, byte(0))
-	}
-	{{ .CName }} := (*C.char)(unsafe.Pointer(&{{ .GoName }}_bs[0]))
-	defer func() {
-		*{{ .GoName }} = string({{ .GoName }}_bs)
-		// no need : C.free(unsafe.Pointer(ctext))
-	}()
-}`
-				tmpl := template.Must(template.New("").Parse(src))
-				var source bytes.Buffer
-				err = tmpl.Execute(&source, struct{ CName, GoName string }{
-					CName: args[i].cName, GoName: args[i].goName,
-				})
-				if err != nil {
-					err = fmt.Errorf("cannot execute template \"%s\" for data : %v",
-						source.String(), err)
-					return
-				}
-
-				// Create the AST by parsing src.
-				fset := token.NewFileSet() // positions are relative to fset
-				f, err := parser.ParseFile(fset, "", source.String(), 0)
-				if err != nil {
-					err = fmt.Errorf("cannot parse source \"%s\" : %v",
-						source.String(), err)
-					p.AddMessage(p.GenerateWarningMessage(err, n))
-					err = nil // ignore error
-					continue
-				}
-				if 0 < len(f.Decls) {
-					if fd, ok := f.Decls[0].(*goast.FuncDecl); ok {
-						body.List = append(body.List, fd.Body.List...)
-					}
 				}
 				continue
 			}
