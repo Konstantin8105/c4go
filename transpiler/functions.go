@@ -395,7 +395,8 @@ func bindingFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 					if strings.Contains(ft, "*") ||
 						strings.Contains(ft, "[") {
 						err = fmt.Errorf("field type is pointer: `%s`", ft)
-						return
+						p.AddMessage(p.GenerateWarningMessage(err, n))
+						err = nil // ignore error
 					}
 					_, cgot, _ := cTypeToGoType(ft)
 					body.List = append(body.List, &goast.AssignStmt{
@@ -415,8 +416,111 @@ func bindingFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 				}
 				continue
 			}
-			err = fmt.Errorf("cannot parse C type: `%s`", args[i].cType)
-			return
+			if cType := args[i].cType; cType == "char *" {
+				// for type `char *`
+				//
+				// 	bs := []byte(*text)
+				// 	if len(bs) == 0 {
+				// 		bs = []byte{byte(0)}
+				// 	}
+				// 	if 0 < len(bs) && bs[len(bs)-1] != byte(0) { // minimalize allocation
+				// 		bs = append(bs, byte(0)) // for next input symbols
+				// 	}
+				// 	ctext := (*C.char)(unsafe.Pointer(&bs[0]))
+				// 	defer func() {
+				// 		*text = string(bs)
+				// 		// no need : C.free(unsafe.Pointer(ctext))
+				// 	}()
+				err = fmt.Errorf("cannot parse C type: `%s` and name `%s`",
+					args[i].cType, args[i].cName)
+				p.AddMessage(p.GenerateWarningMessage(err, n))
+				err = nil // ignore error
+				continue
+			}
+			if cType := args[i].cType; 2 < len(cType) &&
+				cType[len(cType)-1] == '*' &&
+				strings.Count(cType, "*") == 1 &&
+				strings.Count(cType, "[") == 0 {
+				cType = cType[:len(cType)-1]
+				if ok, cgoType, goType := cTypeToGoType(cType); ok {
+					//	if active == nil {
+					//		active = new(int32)
+					//	}
+					var ifs goast.IfStmt
+					ifs.Cond = &goast.BinaryExpr{
+						X:  goast.NewIdent(args[i].goName),
+						Op: token.EQL,
+						Y:  goast.NewIdent("nil"),
+					}
+					ifs.Body = &goast.BlockStmt{
+						List: []goast.Stmt{
+							&goast.AssignStmt{
+								Lhs: []goast.Expr{
+									goast.NewIdent(args[i].goName),
+								},
+								Tok: token.ASSIGN,
+								Rhs: []goast.Expr{
+									&goast.CallExpr{
+										Fun: goast.NewIdent("new"),
+										Args: []goast.Expr{
+											goast.NewIdent(goType),
+										},
+									},
+								},
+							},
+						},
+					}
+					body.List = append(body.List, &ifs)
+					//	cactive := C.int(*active)
+					body.List = append(body.List, &goast.AssignStmt{
+						Lhs: []goast.Expr{
+							goast.NewIdent(args[i].cName),
+						},
+						Tok: token.DEFINE,
+						Rhs: []goast.Expr{
+							&goast.CallExpr{
+								Fun: goast.NewIdent(cgoType),
+								Args: []goast.Expr{
+									&goast.StarExpr{
+										X: goast.NewIdent(args[i].goName),
+									},
+								},
+							},
+						},
+					})
+					//	defer func() {
+					//		*active = int32(cactive)
+					//	}()
+					body.List = append(body.List, &goast.DeferStmt{
+						Call: &goast.CallExpr{
+							Fun: &goast.FuncLit{
+								Type: &goast.FuncType{},
+								Body: &goast.BlockStmt{
+									List: []goast.Stmt{
+										&goast.AssignStmt{
+											Lhs: []goast.Expr{
+												&goast.StarExpr{
+													X: goast.NewIdent(args[i].goName),
+												},
+											},
+											Tok: token.ASSIGN,
+											Rhs: []goast.Expr{
+												goast.NewIdent(args[i].cName),
+											},
+										},
+									},
+								},
+							},
+						},
+					})
+					continue
+				}
+			}
+			err = fmt.Errorf("cannot parse C type: `%s` and name `%s`",
+				args[i].cType, args[i].cName)
+			p.AddMessage(p.GenerateWarningMessage(err, n))
+			err = nil // ignore error
+			continue
 		}
 		body.List = append(body.List, &goast.AssignStmt{
 			Lhs: []goast.Expr{goast.NewIdent(args[i].cName)},
@@ -493,6 +597,8 @@ func bindingFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 			if strings.Contains(ft, "*") ||
 				strings.Contains(ft, "[") {
 				err = fmt.Errorf("field type is pointer: `%s`", ft)
+				p.AddMessage(p.GenerateWarningMessage(err, n))
+				err = nil // ignore error
 				return
 			}
 			_, _, goType := cTypeToGoType(fmt.Sprintf("%v", ft))
@@ -548,12 +654,13 @@ var table = [][3]string{
 	{"unsigned long long", "C.ulonglong", "uint64"},
 	{"float", "C.float", "float32"},
 	{"double", "C.double", "float64"},
-	{"char *", "C.CString", "string"},
-	{"char []", "C.CString", "string"},
+	{"const char *", "C.CString", "string"},
+	// {"char *", "C.CString", "string"},
+	// {"char []", "C.CString", "string"},
+	{"_Bool", "C.bool", "bool"},
 }
 
 func cTypeToGoType(cType string) (ok bool, cgoType, goType string) {
-	cType = strings.ReplaceAll(cType, "const ", "")
 	cType = strings.TrimSpace(cType)
 	for i := range table {
 		if cType == table[i][0] {
