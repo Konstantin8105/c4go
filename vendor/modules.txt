@@ -12,5 +12,5 @@ github.com/davecgh/go-spew/spew
 github.com/pkg/term/termios
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
-# golang.org/x/sys v0.0.0-20190609082536-301114b31cce
+# golang.org/x/sys v0.1.0
 golang.org/x/sys/unix
