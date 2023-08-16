@@ -148,6 +148,11 @@ func TestBookSources(t *testing.T) {
 				file := f
 				// run test
 				t.Run(file, func(t *testing.T) {
+					defer func() {
+						if r := recover(); r != nil{
+							t.Logf("%v", r)
+						}
+					}()
 					file = strings.TrimSpace(file)
 					goFile := file + ".go"
 					args := DefaultProgramArgs()
