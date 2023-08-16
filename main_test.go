@@ -1007,7 +1007,7 @@ func TestCodeStyle(t *testing.T) {
 		name string
 		f    func(*testing.T)
 	}{
-		{"Todo",  cs.Todo},
+		{"Todo", cs.Todo},
 		{"Debug", cs.Debug},
 		// {"Os", cs.Os},
 	}
