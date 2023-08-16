@@ -135,13 +135,13 @@ func GenerateFuncType(fields, returns []string) *goast.FuncType {
 // Examples:
 //
 // -InitListExpr 0x3cea0f0 <col:29, line:54:1> 'char *[256]'
-//  |-array filler
-//  | `-ImplicitValueInitExpr 0x3cea488 <<invalid sloc>> 'char *'
-//  |-ImplicitCastExpr 0x3cea138 <line:51:10> 'char *' <ArrayToPointerDecay>
-//  | `-StringLiteral 0x3ce9f00 <col:10> 'char [3]' lvalue "fa"
-//  |-ImplicitValueInitExpr 0x3cea488 <<invalid sloc>> 'char *'
-//  |-ImplicitValueInitExpr 0x3cea488 <<invalid sloc>> 'char *'
 //
+//	|-array filler
+//	| `-ImplicitValueInitExpr 0x3cea488 <<invalid sloc>> 'char *'
+//	|-ImplicitCastExpr 0x3cea138 <line:51:10> 'char *' <ArrayToPointerDecay>
+//	| `-StringLiteral 0x3ce9f00 <col:10> 'char [3]' lvalue "fa"
+//	|-ImplicitValueInitExpr 0x3cea488 <<invalid sloc>> 'char *'
+//	|-ImplicitValueInitExpr 0x3cea488 <<invalid sloc>> 'char *'
 func transpileInitListExpr(e *ast.InitListExpr, p *program.Program) (
 	expr goast.Expr, exprType string, err error) {
 	defer func() {
@@ -556,7 +556,7 @@ Selector:
 //
 // Examples:
 //
-//  |-ImplicitValueInitExpr 0x3cea488 <<invalid sloc>> 'char *'
+//	|-ImplicitValueInitExpr 0x3cea488 <<invalid sloc>> 'char *'
 func transpileImplicitValueInitExpr(n *ast.ImplicitValueInitExpr, p *program.Program) (
 	expr goast.Expr, exprType string, _ []goast.Stmt, _ []goast.Stmt, err error) {
 

@@ -360,7 +360,6 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 //
 // returnValue := ...
 // return cast_from_C_to_Go_type(returnValue)
-//
 func bindFromCtoGo(p *program.Program, cType string, goType string, expr goast.Expr) (stmts []goast.Stmt) {
 
 	if expr == nil {
@@ -401,16 +400,16 @@ func bindFromCtoGo(p *program.Program, cType string, goType string, expr goast.E
 // add if`s for nil cases
 //
 // strtok - add c-binding for implementation function
-// func strtok(arg0 []byte, arg1 []byte) []byte {
-//	if arg0 == nil {
-//		return []byte{}
-//	}
-//	if arg1 == nil {
-//		return []byte{}
-//	}
-//	return (.....)
-//}
 //
+//	func strtok(arg0 []byte, arg1 []byte) []byte {
+//		if arg0 == nil {
+//			return []byte{}
+//		}
+//		if arg1 == nil {
+//			return []byte{}
+//		}
+//		return (.....)
+//	}
 func prepareIfForNilArgs(argType []string, returnType string) (stmts []goast.Stmt) {
 	var ret goast.Stmt
 	switch {

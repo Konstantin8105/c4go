@@ -44,12 +44,11 @@ var (
 // indicated by the build flags at the top of the file. To include integration
 // tests use:
 //
-//     go test -v -tags=integration
+//	go test -v -tags=integration
 //
 // You can also run a single file with:
 //
-//     go test -v -tags=integration -run=TestIntegrationScripts/tests/ctype.c
-//
+//	go test -v -tags=integration -run=TestIntegrationScripts/tests/ctype.c
 func TestIntegrationScripts(t *testing.T) {
 	testFiles, err := filepath.Glob("tests/" + "*.c")
 	if err != nil {
@@ -1087,7 +1086,6 @@ func TestExamples(t *testing.T) {
 // Example of run benchmark:
 //
 // go test -v -tags=integration -run=Benchmark -bench=. -benchmem
-//
 func BenchmarkTranspile(b *testing.B) {
 	// create subfolders for test
 	subFolder, err := ioutil.TempDir("", "c4go")

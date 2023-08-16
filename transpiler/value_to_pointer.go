@@ -170,12 +170,13 @@ func GetUnsafeConvertDecls(p *program.Program) {
 //
 
 // GetPointerAddress - return goast expression with pointer address.
-// 		pnt       - goast expression. Foe example: `&a`, `&a[11]`.
-//		sizeof    - sizeof of C type.
-//		rs        - result goast expression.
-//		postStmts - slice of goast.Stmt for runtime.KeepAlive of pointer,
-//		            the best way kept that stmts at the end of function.
-//		            Each stmt has `defer` functions.
+//
+//	pnt       - goast expression. Foe example: `&a`, `&a[11]`.
+//	sizeof    - sizeof of C type.
+//	rs        - result goast expression.
+//	postStmts - slice of goast.Stmt for runtime.KeepAlive of pointer,
+//	            the best way kept that stmts at the end of function.
+//	            Each stmt has `defer` functions.
 func GetPointerAddress(p *program.Program, expr goast.Expr, cType string, sizeof int) (
 	rs goast.Expr, postStmts []goast.Stmt, err error) {
 	defer func() {
@@ -355,7 +356,7 @@ func GetPointerAddress(p *program.Program, expr goast.Expr, cType string, sizeof
 	return
 }
 
-//	SubTwoPnts function for implementation : (pointer1 - pointer2)
+// SubTwoPnts function for implementation : (pointer1 - pointer2)
 func SubTwoPnts(
 	p *program.Program,
 	val1 goast.Expr, val1Type string,
@@ -389,9 +390,10 @@ func SubTwoPnts(
 	return
 }
 
-//		postStmts - slice of goast.Stmt for runtime.KeepAlive of pointer,
-//		            the best way kept that stmts at the end of function.
-//		            Each stmt has `defer` functions.
+// postStmts - slice of goast.Stmt for runtime.KeepAlive of pointer,
+//
+//	the best way kept that stmts at the end of function.
+//	Each stmt has `defer` functions.
 func PntCmpPnt(
 	p *program.Program,
 	val1 goast.Expr, val1Type string,
@@ -643,9 +645,11 @@ func CreateSliceFromReference(goType string, expr goast.Expr) goast.Expr {
 // Example C code : ptr += i
 // ptr = (*(*[1]int)(unsafe.Pointer(uintptr(unsafe.Pointer(&ptr[0])) + (i)*unsafe.Sizeof(ptr[0]))))[:]
 // , where i  - right
-//        '+' - operator
-//      'ptr' - left
-//      'int' - leftType transpiled in Go type
+//
+//	  '+' - operator
+//	'ptr' - left
+//	'int' - leftType transpiled in Go type
+//
 // Note:
 // 1) rightType MUST be 'int'
 // 2) pointerArithmetic - implemented ONLY right part of formula

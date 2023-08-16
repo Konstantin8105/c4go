@@ -161,14 +161,14 @@ func NewFuncClosure(returnType string, stmts ...goast.Stmt) *goast.CallExpr {
 //
 // Assignment operators in C can be nested inside other expressions, like:
 //
-//     a + (b += 3)
+//	a + (b += 3)
 //
 // In Go this is not allowed. Since the operators mutate variables it is not
 // possible in some cases to move the statements before or after. The only safe
 // (and generic) way around this is to create an immediately executing closure,
 // like:
 //
-//     a + (func () int { b += 3; return b }())
+//	a + (func () int { b += 3; return b }())
 //
 // In a lot of cases this may be unnecessary and obfuscate the Go output but
 // these will have to be optimised over time and be strict about the
@@ -340,13 +340,14 @@ func NewGoExpr(expr string) goast.Expr {
 
 // NewAnonymousFunction - create a new anonymous function.
 // Example:
-// func() returnType{
-//		defer func(){
-//			deferBody
-//		}()
-// 		body
-//		return returnValue
-// }
+//
+//	func() returnType{
+//			defer func(){
+//				deferBody
+//			}()
+//			body
+//			return returnValue
+//	}
 func NewAnonymousFunction(body, deferBody []goast.Stmt,
 	returnValue goast.Expr,
 	returnType string) *goast.CallExpr {
@@ -379,11 +380,12 @@ func NewAnonymousFunction(body, deferBody []goast.Stmt,
 }
 
 // ConvertToUnsigned - return convertion from signed to unsigned type
-// s := func() uint {
-//		var x int64
-//		x = -1
-//		return uint(x)
-//	}()
+//
+//	s := func() uint {
+//			var x int64
+//			x = -1
+//			return uint(x)
+//		}()
 func ConvertToUnsigned(expr goast.Expr, returnType string) goast.Expr {
 
 	varName := "c4go_temp_name"

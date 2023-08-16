@@ -557,12 +557,13 @@ func GetIncludeListWithUserSource(inputFiles, clangFlags []string, cppCode bool)
 // GetIncludeFullList - Get full list of include files
 // Example:
 // $ clang -M -c triangle.c
-// triangle.o: triangle.c /usr/include/stdio.h /usr/include/features.h \
-//   /usr/include/stdc-predef.h /usr/include/x86_64-linux-gnu/sys/cdefs.h \
-//   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
-//   /usr/include/x86_64-linux-gnu/gnu/stubs.h \
-//   /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
-//   / ........ and other
+//
+//	triangle.o: triangle.c /usr/include/stdio.h /usr/include/features.h \
+//	  /usr/include/stdc-predef.h /usr/include/x86_64-linux-gnu/sys/cdefs.h \
+//	  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
+//	  /usr/include/x86_64-linux-gnu/gnu/stubs.h \
+//	  /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
+//	  / ........ and other
 func GetIncludeFullList(inputFiles, clangFlags []string, cppCode bool) (
 	lines []string, err error) {
 	var out string

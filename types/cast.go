@@ -35,33 +35,33 @@ func GetArrayTypeAndSize(s string) (string, int) {
 // There are lots of rules about how an expression is cast, but here are some
 // main points:
 //
-// 1. If fromType == toType (casting to the same type) OR toType == "void *",
-//    the original expression is returned unmodified.
+//  1. If fromType == toType (casting to the same type) OR toType == "void *",
+//     the original expression is returned unmodified.
 //
-// 2. There is a special type called "null" which is not defined in C, but
-//    rather an estimate of the NULL macro which evaluates to: (0). We cannot
-//    guarantee that original C used the NULL macro but it is a safe assumption
-//    for now.
+//  2. There is a special type called "null" which is not defined in C, but
+//     rather an estimate of the NULL macro which evaluates to: (0). We cannot
+//     guarantee that original C used the NULL macro but it is a safe assumption
+//     for now.
 //
-//    The reason why NULL is special (or at least seemingly) is that it is often
-//    used in different value contexts. As a number, testing pointers and
-//    strings. Being able to better understand the original purpose of the code
-//    helps to generate cleaner and more Go-like output.
+//     The reason why NULL is special (or at least seemingly) is that it is often
+//     used in different value contexts. As a number, testing pointers and
+//     strings. Being able to better understand the original purpose of the code
+//     helps to generate cleaner and more Go-like output.
 //
-// 3. There is a set of known primitive number types like "int", "float", etc.
-//    These we know can be safely cast between each other by using the data type
-//    as a function. For example, 3 (int) to a float would produce:
-//    "float32(3)".
+//  3. There is a set of known primitive number types like "int", "float", etc.
+//     These we know can be safely cast between each other by using the data type
+//     as a function. For example, 3 (int) to a float would produce:
+//     "float32(3)".
 //
-//    There are also some platform specific types and types that are shared in
-//    Go packages that are common aliases kept in this list.
+//     There are also some platform specific types and types that are shared in
+//     Go packages that are common aliases kept in this list.
 //
-// 4. If all else fails the fallback is to cast using a function. For example,
-//    Foo -> Bar, would return an expression similar to "noarch.FooToBar(expr)".
-//    This code would certainly fail with custom types, but that would likely be
-//    a bug. It is most useful to do this when dealing with compound types like
-//    FILE where those function probably exist (or should exist) in the noarch
-//    package.
+//  4. If all else fails the fallback is to cast using a function. For example,
+//     Foo -> Bar, would return an expression similar to "noarch.FooToBar(expr)".
+//     This code would certainly fail with custom types, but that would likely be
+//     a bug. It is most useful to do this when dealing with compound types like
+//     FILE where those function probably exist (or should exist) in the noarch
+//     package.
 func CastExpr(p *program.Program, expr goast.Expr, cFromType, cToType string) (
 	_ goast.Expr, err2 error) {
 

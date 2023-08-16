@@ -41,7 +41,7 @@ func StringToCString(s string) []byte {
 
 // CStringIsNull will test if a C string is NULL. This is equivalent to:
 //
-//    s == NULL
+//	s == NULL
 func CStringIsNull(s []byte) bool {
 	if s == nil || len(s) < 1 {
 		return true

@@ -2,12 +2,11 @@
 //
 // Installation
 //
-//     go get -u github.com/Konstantin8105/c4go
+//	go get -u github.com/Konstantin8105/c4go
 //
 // Usage
 //
-//     c4go transpile myfile.c
-//
+//	c4go transpile myfile.c
 package main
 
 import (

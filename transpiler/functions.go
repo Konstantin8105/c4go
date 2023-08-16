@@ -282,7 +282,6 @@ func transpileFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 //		// run function
 //		C.InitWindow(cwidth, cheight, ctitle)
 //	}
-//
 func bindingFunctionDecl(n *ast.FunctionDecl, p *program.Program) (
 	decls []goast.Decl, err error) {
 	defer func() {

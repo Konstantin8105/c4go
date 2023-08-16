@@ -39,7 +39,7 @@ func (p *Program) AddImports(importPaths ...string) {
 // ImportType imports a package for a fully qualified type and returns the local
 // type name. For example:
 //
-//     t := p.ImportType("github.com/Konstantin8105/c4go/noarch.CtRuneT")
+//	t := p.ImportType("github.com/Konstantin8105/c4go/noarch.CtRuneT")
 //
 // Will import "github.com/Konstantin8105/c4go/noarch" and return (value of t)
 // "noarch.CtRuneT".

@@ -46,20 +46,20 @@ type DefinitionFunction struct {
 // Each of the predefined function have a syntax that allows them to be easy to
 // read (and maintain). For example:
 //
-//     double __builtin_fabs(double) -> noarch.Fabs
+//	double __builtin_fabs(double) -> noarch.Fabs
 //
 // Declares the prototype of __builtin_fabs (a low level function implemented
 // only on Mac) with a specific substitution provided. This means that it should
 // replace any instance of __builtin_fabs with:
 //
-//     github.com/Konstantin8105/c4go/noarch.Fabs
+//	github.com/Konstantin8105/c4go/noarch.Fabs
 //
 // The substitution is optional.
 //
 // The substituted function can also move the parameters and return value
 // positions. This is called a transformation. For example:
 //
-//     size_t fread(void*, size_t, size_t, FILE*) -> $0, $1 = noarch.Fread($2, $3, $4)
+//	size_t fread(void*, size_t, size_t, FILE*) -> $0, $1 = noarch.Fread($2, $3, $4)
 //
 // Where $0 represents the C return value and $1 and above are for each of the
 // parameters.
@@ -67,8 +67,7 @@ type DefinitionFunction struct {
 // Transformations can also be used to specify variable that need to be passed
 // by reference by using the prefix "&" instead of "$":
 //
-//     size_t fread(void*, size_t, size_t, FILE*) -> $0 = noarch.Fread(&1, $2, $3, $4)
-//
+//	size_t fread(void*, size_t, size_t, FILE*) -> $0 = noarch.Fread(&1, $2, $3, $4)
 var builtInFunctionDefinitions = map[string][]string{
 	"signal.h": {
 		// signal.h

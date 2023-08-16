@@ -334,9 +334,9 @@ func Strtold(str []byte, endptr [][]byte) float64 {
 // If the value of base is zero, the syntax expected is similar to that of
 // integer constants, which is formed by a succession of:
 //
-// - An optional sign character (+ or -)
-// - An optional prefix indicating octal or hexadecimal base ("0" or "0x"/"0X"
-//   respectively)
+//   - An optional sign character (+ or -)
+//   - An optional prefix indicating octal or hexadecimal base ("0" or "0x"/"0X"
+//     respectively)
 //
 // A sequence of decimal digits (if no base prefix was specified) or either
 // octal or hexadecimal digits if a specific prefix is present

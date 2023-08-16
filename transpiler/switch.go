@@ -20,14 +20,16 @@ import (
 // | `-IntegerLiteral 'int' 1
 // |-<<<NULL>>>
 // `-CaseStmt
-//   |-BinaryOperator 'int' '-'
-//   | |- ...
-//   |-<<<NULL>>>
-//   `-CaseStmt
-//     |- ...
-//     |-<<<NULL>>>
-//     `-DefaultStmt
-//       `- ...
+//
+//	|-BinaryOperator 'int' '-'
+//	| |- ...
+//	|-<<<NULL>>>
+//	`-CaseStmt
+//	  |- ...
+//	  |-<<<NULL>>>
+//	  `-DefaultStmt
+//	    `- ...
+//
 // To:
 // CaseStmt
 // |-UnaryOperator 'int' prefix '-'
@@ -43,7 +45,9 @@ import (
 // |- ...
 // |-<<<NULL>>>
 // `-DefaultStmt
-//   `- ...
+//
+//	`- ...
+//
 // <<<NULL>>>
 //
 // From:
@@ -75,7 +79,9 @@ import (
 // | |- ...
 // To:
 // `-CaseStmt
-//   `- ...
+//
+//	`- ...
+//
 // <<<NULL>>>
 // CompoundAssignOperator  'int' '+=' ComputeLHSTy='int' ComputeResultTy='int'
 // `-...
@@ -85,7 +91,6 @@ import (
 // CaseStmt
 // `- ...
 // <<<NULL>>>
-//
 func caseSplitter(nodes ...ast.Node) (cs []ast.Node) {
 
 	if nodes == nil {

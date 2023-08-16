@@ -123,8 +123,9 @@ func getName(p *program.Program, firstChild ast.Node) (name string, err error) {
 // |-ImplicitCastExpr <> 'int (*)(const char *, ...)' <FunctionToPointerDecay>
 // | `-DeclRefExpr <> 'int (const char *, ...)' Function 0x2fec178 'printf' 'int (const char *, ...)'
 // `-ImplicitCastExpr <> 'const char *' <BitCast>
-//   `-ImplicitCastExpr <> 'char *' <ArrayToPointerDecay>
-//     `-StringLiteral <> 'char [6]' lvalue "Hello"
+//
+//	`-ImplicitCastExpr <> 'char *' <ArrayToPointerDecay>
+//	  `-StringLiteral <> 'char [6]' lvalue "Hello"
 func simplificationCallExprPrintf(call *ast.CallExpr, p *program.Program) (
 	expr *goast.CallExpr, ok bool) {
 
@@ -196,7 +197,7 @@ func simplificationCallExprPrintf(call *ast.CallExpr, p *program.Program) (
 
 // transpileCallExpr transpiles expressions that calls a function, for example:
 //
-//     foo("bar")
+//	foo("bar")
 //
 // It returns three arguments; the Go AST expression, the C type (that is
 // returned by the function) and any error. If there is an error returned you
@@ -653,7 +654,6 @@ func findAndReplaceUnaryExprOrTypeTraitExpr(node *ast.Node) (
 	return
 }
 
-//
 // calloc nodes:
 // [0] - function identification
 // [1] - expression

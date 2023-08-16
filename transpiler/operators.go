@@ -57,7 +57,7 @@ func transpileBinaryConditionalOperator(n *ast.BinaryConditionalOperator, p *pro
 // transpileConditionalOperator transpiles a conditional (also known as a
 // ternary) operator:
 //
-//     a ? b : c
+//	a ? b : c
 //
 // We cannot simply convert these to an "if" statement because they by inside
 // another expression.
@@ -74,7 +74,8 @@ func transpileBinaryConditionalOperator(n *ast.BinaryConditionalOperator, p *pro
 // | `-DeclRefExpr 'int (*)(int)' lvalue Var 'v' 'int (*)(int)'
 // |-IntegerLiteral 'int' 1
 // `-CallExpr 'int'
-//   |-...
+//
+//	|-...
 //
 // ConditionalOperator 'int'
 // |-BinaryOperator 'int' '!='
@@ -82,7 +83,8 @@ func transpileBinaryConditionalOperator(n *ast.BinaryConditionalOperator, p *pro
 // |-BinaryOperator 'int' '-'
 // | |-...
 // `-BinaryOperator 'int' '-'
-//   |-...
+//
+//	|-...
 func transpileConditionalOperator(n *ast.ConditionalOperator, p *program.Program) (
 	_ *goast.CallExpr, theType string, preStmts []goast.Stmt, postStmts []goast.Stmt, err error) {
 	defer func() {
@@ -1081,7 +1083,8 @@ func atomicOperation(n ast.Node, p *program.Program) (
 // Examples of input ast trees:
 // UnaryOperator 0x2a23080 <col:8, col:9> 'int' lvalue prefix '*'
 // `-ImplicitCastExpr 0x2a23068 <col:9> 'int *' <LValueToRValue>
-//   `-DeclRefExpr 0x2a23040 <col:9> 'int *' lvalue Var 0x2a22f20 'a' 'int *'
+//
+//	`-DeclRefExpr 0x2a23040 <col:9> 'int *' lvalue Var 0x2a22f20 'a' 'int *'
 //
 // DeclRefExpr 0x328dd00 <col:25> 'int' lvalue Var 0x328dbd8 'c' 'int'
 func getDeclRefExprOrArraySub(n ast.Node) (ast.Node, bool) {
