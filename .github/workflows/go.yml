@@ -20,7 +20,7 @@ jobs:
 
     - name: Clang
       run: |
-          sudo apt-get install -f -y clang-10 llvm --install-suggests
+          sudo apt-get install -f -y clang-tidy10 llvm
           clang --version
           # TODO: add different clang versions
 
