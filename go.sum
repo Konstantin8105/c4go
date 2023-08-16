@@ -1,9 +1,12 @@
 github.com/Konstantin8105/cs v0.0.0-20190517091010-c069cc1cee1b h1:IZkvBy8TJTxpPHjOW1R5KqIgVF2lVk8isx9iQBHnOnw=
 github.com/Konstantin8105/cs v0.0.0-20190517091010-c069cc1cee1b/go.mod h1:NquwK4RWQZiMO4cVCacCuMklZ+bPxxHSR8h8Qc51EPk=
-github.com/Konstantin8105/errors v0.0.0-20190517083224-0667bfd7a9ac h1:syUV8/Mgzpj/lYevIbCnoIUawY6EoxTm+D07nPzZdr4=
 github.com/Konstantin8105/errors v0.0.0-20190517083224-0667bfd7a9ac/go.mod h1:7wvBaOU91dxvleBlg9MPy3B1DFY/JKnWeLTzPQKkRwE=
-github.com/Konstantin8105/tree v0.0.0-20190515202740-8a8e3df34a3b h1:FjXnLahgYDqBm8FeELONQ6+AoL/VYUQJOcexWqeAPM8=
+github.com/Konstantin8105/errors v0.1.0 h1:YlF98T37IPvBGzxbj6AhXrY4VdoFfW60KEibUOtOpkg=
+github.com/Konstantin8105/errors v0.1.0/go.mod h1:cKK/HtcfxJFe1RvnGzhWl8jcZpnTqZjKwvMBUrLsis4=
 github.com/Konstantin8105/tree v0.0.0-20190515202740-8a8e3df34a3b/go.mod h1:iuUpRQi7E+GDKbY/a5HBliYk4j+cW1Nmv1hXoCSwuVU=
+github.com/Konstantin8105/tree v0.1.0/go.mod h1:/KrCn6rMgf1uoXUY2HjVvML1LeLUULD1BDiHWJhJwII=
+github.com/Konstantin8105/tree v0.1.1 h1:EaEOLocAJ5IyQ+KisgY43X/TXoVyFXVd1nsykCleBxw=
+github.com/Konstantin8105/tree v0.1.1/go.mod h1:/KrCn6rMgf1uoXUY2HjVvML1LeLUULD1BDiHWJhJwII=
 github.com/bradleyjkemp/cupaloy v2.3.0+incompatible h1:UafIjBvWQmS9i/xRg+CamMrnLTKNzo+bdmT/oH34c2Y=
 github.com/bradleyjkemp/cupaloy v2.3.0+incompatible/go.mod h1:Au1Xw1sgaJ5iSFktEhYsS0dbQiS1B0/XMXl+42y9Ilk=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
