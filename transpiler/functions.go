@@ -421,7 +421,6 @@ func main() {
 			}
 			continue
 		}
-		fmt.Println(">>>", args[i].cType)
 		if !args[i].valid {
 			//	func Rect(r Rectangle, s int) {
 			//		var cr C.struct_Rectangle

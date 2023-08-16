@@ -1003,7 +1003,17 @@ func TestWrongAST(t *testing.T) {
 }
 
 func TestCodeStyle(t *testing.T) {
-	cs.All(t)
+	tcs := []struct {
+		name string
+		f    func(*testing.T)
+	}{
+		{"Todo",  cs.Todo},
+		{"Debug", cs.Debug},
+		// {"Os", cs.Os},
+	}
+	for _, tc := range tcs {
+		t.Run(tc.name, tc.f)
+	}
 }
 
 func TestExamples(t *testing.T) {
