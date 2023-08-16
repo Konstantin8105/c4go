@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	"github.com/Konstantin8105/c4go/preprocessor"
+	"github.com/Konstantin8105/c4go/program"
 	"github.com/Konstantin8105/c4go/util"
 	"github.com/Konstantin8105/cs"
 )
@@ -986,6 +987,8 @@ func TestWrongAST(t *testing.T) {
 		t.Error(err)
 	}
 
+	var p program.Program
+
 	basename := args.outputFile[:len(args.outputFile)-len(".go")]
 	for i = range lines {
 		if i == 0 {
@@ -995,7 +998,7 @@ func TestWrongAST(t *testing.T) {
 		copy(c, lines)
 		c[i] += "Wrong wrong AST line"
 		args.outputFile = basename + strconv.Itoa(i) + ".go"
-		_ = generateGoCode(args, c, filePP)
+		_ = generateGoCode(&p, args, c, filePP)
 	}
 }
 
@@ -1117,9 +1120,11 @@ func BenchmarkTranspile(b *testing.B) {
 
 	b.ResetTimer()
 
+	var p program.Program
+
 	b.Run("GoCode", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			err = generateGoCode(args, lines, filePP)
+			err = generateGoCode(&p, args, lines, filePP)
 			if err != nil {
 				panic(err)
 			}
