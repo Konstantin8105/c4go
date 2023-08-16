@@ -279,7 +279,18 @@ func transpileToExpr(node ast.Node, p *program.Program, exprIsStmt bool) (
 		case 1:
 			expr, exprType, preStmts, postStmts, err = transpileToExpr(n.Children()[0], p, exprIsStmt)
 		default:
-			err = fmt.Errorf("ConstantExpr: %v. has many nodes", err)
+			expr, exprType, preStmts, postStmts, err = transpileToExpr(
+				n.Children()[len(n.Children())-1],
+				p,
+				exprIsStmt,
+			)
+			// old code:
+			//
+			// err = fmt.Errorf("ConstantExpr: %v. has many nodes", err)
+			//
+			// ConstantExpr 0x1fa9498 <line:324:10, col:15> 'int'
+			// |-value: Int 1
+			// `-BinaryOperator 0x1fa9420 <col:10, col:15> 'int' '=='
 		}
 
 	case *ast.VisibilityAttr:

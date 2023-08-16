@@ -24,7 +24,7 @@ jobs:
           # sudo apt-get install -f -y clang llvm
           # TODO: add different clang versions
           sudo apt-get install -f -y llvm-11 clang-11
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-11 1000
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-11 2000
           # view priority
           sudo update-alternatives --config clang
           # view version
@@ -39,8 +39,8 @@ jobs:
           go get -u github.com/wadey/gocovmerge
           go get -u github.com/Konstantin8105/cs
           go get -u golang.org/x/sys/unix
-          # TRAVIS=true ./scripts/test.sh
-          TRAVIS=true go test -tags=integration -v -timeout=2h
+          TRAVIS=true ./scripts/test.sh
+          # TRAVIS=true go test -tags=integration -v -timeout=2h
 
     - name: Upload coverage to Codecov
       run: include_cov=coverage.txt bash <(curl -s https://codecov.io/bash)
