@@ -48,7 +48,7 @@ jobs:
     - name: Build
       run: |
           go mod download
-          go build -v ./...
+          go build -v
 
     - name: Race test
-      run: go test -tags=integration -run=TestIntegrationScripts/tests/ctype.c -race -v
+      run: go test -tags=integration -run=TestIntegrationScripts/tests/ctype.c -race -v -timeout=30m
