@@ -506,6 +506,17 @@ Integration tests work like this:
 3. Both binaries are executed and the output is compared. All C files will
 contain some output so the results can be verified.
 
+## Build & run from Docker
+
+```bash
+# Build a c4go image
+docker build -t c4go .
+
+# Run the container for the c4go image
+docker run --rm -it c4go
+
+```
+
 ## Note
 
 ### Use lastest version of clang.
