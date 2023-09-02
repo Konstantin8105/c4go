@@ -299,7 +299,9 @@ func ResolveCgoType(p *program.Program, goType string, expr goast.Expr) (a goast
 
 	t := goType
 
-	if strings.HasPrefix(goType, "[][]") {
+	if t == "*noarch.File" {
+		return util.NewCallExpr("*C.struct__IO_FILE", expr), nil
+	} else if strings.HasPrefix(goType, "[][]") {
 		t = "interface{}"
 	} else if strings.HasPrefix(goType, "[") {
 		// []int  -> * _Ctype_int
