@@ -13,32 +13,36 @@ Milestones of the project:
 2. Transpiling project [GTK+](https://www.gtk.org/).
 
 Notes:
-* Transpiler works on linux machines
-* Need to have installed `clang`. See [llvm download page](http://releases.llvm.org/download.html)
+* This transpiler works on all linux machines. Most likely, it will work on Unix and MacOS as well. Feedback is most welcome.
+* Installing the `clang` compiler is a prerequisite. See [llvm download page](http://releases.llvm.org/download.html)
 
 
 
 # Installation
 
-Installation with version generation.
+Using a terminal window, position into a working directory (E.g. $HOME/development). Then, execute the following shell commands:
 
 ```bash
-# get code
-go get -u github.com/Konstantin8105/c4go
+# Create a local c4go repository and position into it.
+git clone https://github.com/Konstantin8105/c4go
+cd c4go
 
-# move to project source
-cd $GOPATH/src/github.com/Konstantin8105/c4go
-
-# generate version
+# Update the Go source files.
 go generate ./...
 
-# install
+# Install the c4go executable in the standard Go bin directory: $HOME/go/bin.
 go install
 
-# testing
+# Make sure that $HOME/go/bin is in the path (good practice).
+# Then, verify that the c4go is available for use.
 c4go version
 ```
 
+Sample ```c4go``` version console output:
+```
+Build time: May  4 20:41:31 2024 UTC
+Git hash:   "c5400a76df0f5157f234547bef3ae8fb7b692685"
+```
 
 # Usage example
 
