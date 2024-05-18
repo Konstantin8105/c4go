@@ -38,13 +38,13 @@
 # See https://blog.golang.org/docker
 # See https://hub.docker.com/_/golang?tab=description
 
-FROM golang:1.12
+FROM golang:1.22
 
 RUN apk update
 
-RUN apk add --no-cache clang clang-dev alpine-sdk dpkg
+# RUN apk add --no-cache clang clang-dev alpine-sdk dpkg
 # WORKDIR /go/src/app
 
-RUN go install -v github.com/Konstantin8105/c4go
+# RUN go install -v github.com/Konstantin8105/c4go
 
-CMD ["c4go"]
+# CMD ["c4go"]
