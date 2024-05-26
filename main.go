@@ -89,6 +89,10 @@ func convertLinesToNodes(lines []string) (nodes []treeNode, errs []error) {
 		if strings.TrimSpace(line) == "" {
 			continue
 		}
+		// ignore nodes
+		if strings.Contains(line, "value: Int") {
+			continue
+		}
 
 		// It is tempting to discard null AST nodes, but these may
 		// have semantic importance: for example, they represent omitted
