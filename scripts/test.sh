@@ -18,7 +18,6 @@ echo "PKGS_DELIM : $PKGS_DELIM"
 go test                                 \
 				  -cover                \
 				  -timeout=30m          \
-				  -tags integration     \
 	              -coverpkg=$PKGS_DELIM \
 				  -coverprofile=./testdata/pkg.coverprofile $PKGS
 
@@ -36,6 +35,6 @@ fi
 echo "End of coverage"
 
 # check race
-go test -tags=integration                     \
+go test                                       \
 	-run=TestIntegrationScripts/tests/ctype.c \
 	-race -v

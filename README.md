@@ -493,17 +493,14 @@ Main information from: [en.cppreference.com](http://en.cppreference.com/w/c)
 
 ## Testing
 
-By default, only unit tests are run with `go test`. You can also include the
-integration tests:
+By default, only unit tests are run with `go test`. You can also include
+all tests:
 
 ```bash
-go test -tags=integration ./...
+go test ./...
 ```
 
-Integration tests in the form of complete C programs that can be found in the
-[tests](https://github.com/Konstantin8105/c4go/tree/master/tests) directory.
-
-Integration tests work like this:
+For tests work like this:
 
 1. `clang` compiles the C to a binary as normal.
 2. `c4go` converts the C file to Go.
@@ -524,7 +521,7 @@ sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-6.0 1000
 
 Main time of transpilation takes `clang`, for example run:
 ```bash
-go test -tags=integration -run=Benchmark -bench=. -benchmem
+go test -run=Benchmark -bench=. -benchmem
 ```
 Result looks for example:
 ```

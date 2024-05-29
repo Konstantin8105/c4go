@@ -256,8 +256,6 @@ func getLogs(goFile string) (logs []string, err error) {
 }
 
 func TestFrame3dd(t *testing.T) {
-	t.Skip() // ignore
-
 	folder := "./testdata/git-source/frame3dd/"
 
 	// Create build folder
@@ -321,8 +319,6 @@ func TestFrame3dd(t *testing.T) {
 }
 
 func TestCsparse(t *testing.T) {
-	t.Skip() // ignore
-
 	folder := "./testdata/git-source/csparse/"
 
 	//	Create build folder
@@ -630,8 +626,6 @@ func TestMultifiles(t *testing.T) {
 }
 
 func TestKiloEditor(t *testing.T) {
-	t.Skip() // ignore
-
 	prefix := "kilo editor"
 	gitSource := "https://github.com/antirez/kilo.git"
 
@@ -701,7 +695,6 @@ func TestKiloEditor(t *testing.T) {
 }
 
 func TestTinn(t *testing.T) {
-
 	prefix := "Tinn"
 	gitSource := "https://github.com/glouw/tinn.git"
 

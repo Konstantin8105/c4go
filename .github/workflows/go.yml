@@ -40,7 +40,7 @@ jobs:
           go get -u github.com/Konstantin8105/cs
           go get -u golang.org/x/sys/unix
           TRAVIS=true ./scripts/test.sh
-          # TRAVIS=true go test -tags=integration -v -timeout=2h
+          # TRAVIS=true go test -v -timeout=2h
 
     - name: Upload coverage to Codecov
       run: include_cov=coverage.txt bash <(curl -s https://codecov.io/bash)
@@ -51,4 +51,4 @@ jobs:
           go build -v
 
     - name: Race test
-      run: go test -tags=integration -run=TestIntegrationScripts/tests/ctype.c -race -v -timeout=30m
+      run: go test --run=TestIntegrationScripts/tests/ctype.c -race -v -timeout=30m

@@ -1,5 +1,3 @@
-//go:build integration
-
 package main
 
 import (
@@ -39,17 +37,6 @@ var (
 	separator   = string(os.PathSeparator)
 )
 
-// TestIntegrationScripts tests all programs in the tests directory.
-//
-// Integration tests are not run by default (only unit tests). These are
-// indicated by the build flags at the top of the file. To include integration
-// tests use:
-//
-//	go test -v -tags=integration
-//
-// You can also run a single file with:
-//
-//	go test -v -tags=integration -run=TestIntegrationScripts/tests/ctype.c
 func TestIntegrationScripts(t *testing.T) {
 	testFiles, err := filepath.Glob("tests/" + "*.c")
 	if err != nil {
@@ -1098,7 +1085,7 @@ func TestExamples(t *testing.T) {
 
 // Example of run benchmark:
 //
-// go test -v -tags=integration -run=Benchmark -bench=. -benchmem
+// go test -v -run=Benchmark -bench=. -benchmem
 func BenchmarkTranspile(b *testing.B) {
 	// create subfolders for test
 	subFolder, err := ioutil.TempDir("", "c4go")
