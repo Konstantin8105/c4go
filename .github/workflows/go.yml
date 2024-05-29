@@ -11,7 +11,7 @@ jobs:
   build:
     runs-on:  ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Set up Go
       uses: actions/setup-go@v2
@@ -43,6 +43,7 @@ jobs:
           # TRAVIS=true go test -v -timeout=2h
 
     - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4.2.0
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       run: include_cov=coverage.txt bash < (curl -s https://codecov.io/bash)
