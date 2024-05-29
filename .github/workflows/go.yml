@@ -45,7 +45,7 @@ jobs:
     - name: Upload coverage to Codecov
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      run: include_cov=coverage.txt bash <(curl -s https://codecov.io/bash)
+      run: include_cov=coverage.txt bash < (curl -s https://codecov.io/bash)
 
     - name: Build
       run: |
