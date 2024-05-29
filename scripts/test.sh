@@ -18,7 +18,6 @@ echo "PKGS_DELIM : $PKGS_DELIM"
 go test                                 \
 				  -cover                \
 				  -timeout=30m          \
-                  -covermode=atomic     \
 	              -coverpkg=$PKGS_DELIM \
 				  -coverprofile=./testdata/pkg.coverprofile $PKGS
 
