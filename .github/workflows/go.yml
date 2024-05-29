@@ -43,7 +43,8 @@ jobs:
           go build -v
 
     - name: Race test
-      run: go test -run=TestIntegrationScripts/tests/ctype.c -race -v -timeout=30m
+      run: |
+          go test -run=TestIntegrationScripts/tests/ctype.c -race -v -timeout=30m
 
     - name: Coverage
       run: |
@@ -54,7 +55,7 @@ jobs:
           # TRAVIS=true ./scripts/test.sh
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4.2.0
+      uses: codecov/codecov-action@v4.4.1
       with:
           file: coverage.txt
           verbose: true # optional (default = false)
