@@ -47,16 +47,15 @@ jobs:
 
     - name: Coverage
       run: |
-          go get -u github.com/wadey/gocovmerge
-          go get -u github.com/Konstantin8105/cs
-          go get -u golang.org/x/sys/unix
+          # go get -u github.com/wadey/gocovmerge
+          # go get -u github.com/Konstantin8105/cs
+          # go get -u golang.org/x/sys/unix
           go test -run=TestIntegrationScripts/tests/ctype.c -coverprofile=coverage.txt -covermode=atomic
           # TRAVIS=true ./scripts/test.sh
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v4.2.0
       with:
           file: coverage.txt
           verbose: true # optional (default = false)
           token: ${{ secrets.CODECOV_ORG_TOKEN }}
-          run: include_cov=coverage.txt bash < (curl -s https://codecov.io/bash)
