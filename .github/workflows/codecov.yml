@@ -47,10 +47,10 @@ jobs:
           go get -u github.com/wadey/gocovmerge
           go get -u github.com/Konstantin8105/cs
           go get -u golang.org/x/sys/unix
-          #TRAVIS=true ./scripts/test.sh
+          TRAVIS=true ./scripts/test.sh
           
-    - name: Run Tests
-      run: go test -run=TestIntegrationScripts/tests/ctype.c -coverprofile=coverage.out -covermode=atomic
+   # - name: Run Tests
+   #   run: go test -run=TestIntegrationScripts/tests/ctype.c -coverprofile=coverage.out -covermode=atomic
         
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
