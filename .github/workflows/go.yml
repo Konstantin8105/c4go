@@ -50,11 +50,11 @@ jobs:
           #TRAVIS=true ./scripts/test.sh
           
     - name: Run Tests
-      run: go test -run=TestIntegrationScripts/tests/ctype.c -coverprofile=coverage.txt -covermode=atomic
+      run: go test -run=TestIntegrationScripts/tests/ctype.c -coverprofile=coverage.out -covermode=atomic
         
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
           token: ${{ secrets.CODECOV_ORG_TOKEN }}
           verbose: true # optional (default = false)
-          file: coverage.txt
+          #file: coverage.txt
