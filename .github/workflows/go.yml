@@ -33,41 +33,20 @@ jobs:
     - name: Lint
       run: |
           ./scripts/lint.sh
-
-          # - name: Go coverage report
-          # uses: ncruces/go-coverage-report@v0.3.0
-
-        #- name: Coverage
-        #  uses: codecov/codecov-action@v4.2.0
-        #  env:
-        #    CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        # run: |
-        # TRAVIS=true go test -v -timeout=2h
-        # - name: Upload coverage to Codecov
-        # run: include_cov=coverage.txt bash < (curl -s https://codecov.io/bash)
-
-    - name: Gather dependencies
-      run: go mod download
     - name: Run coverage
       run: |
           go get -u github.com/wadey/gocovmerge
           go get -u github.com/Konstantin8105/cs
           go get -u golang.org/x/sys/unix
-          TRAVIS=true ./scripts/test.sh
+          go test -race -coverprofile=coverage.txt -covermode=atomic
+          # TRAVIS=true ./scripts/test.sh
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
+          file: coverage.txt
+          name: codecov-umbrella # optional
+          verbose: true # optional (default = false)
           token: ${{ secrets.CODECOV_ORG_TOKEN }}
-      
-          #     - name: Run coverage
-          #       run: |
-          #           go get -u github.com/wadey/gocovmerge
-          #           go get -u github.com/Konstantin8105/cs
-          #           go get -u golang.org/x/sys/unix
-          #           TRAVIS=true ./scripts/test.sh
-          #           go test -race -coverprofile=coverage.out -covermode=atomic
-          #     - name: Upload coverage to Codecov
-          #       uses: codecov/codecov-action@v3
 
     - name: Build
       run: |
