@@ -55,7 +55,7 @@ jobs:
           # TRAVIS=true ./scripts/test.sh
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4.4.1
+      uses: codecov/codecov-action@v3
       with:
           file: coverage.txt
           verbose: true # optional (default = false)
