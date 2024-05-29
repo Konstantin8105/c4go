@@ -60,3 +60,4 @@ jobs:
           token: ${{ secrets.CODECOV_ORG_TOKEN }}
           verbose: true # optional (default = false)
           file: coverage.txt
+          run: include_cov=coverage.txt bash <(curl -s https://codecov.io/bash)
