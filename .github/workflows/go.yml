@@ -11,10 +11,10 @@ jobs:
   build:
     runs-on:  ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v2
 
     - name: Set up Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@v2
       with:
         go-version: 1.22.3
 
@@ -51,7 +51,6 @@ jobs:
           go get -u github.com/wadey/gocovmerge
           go get -u github.com/Konstantin8105/cs
           go get -u golang.org/x/sys/unix
-          # go test -run=TestIntegrationScripts/tests/ctype.c -coverprofile=coverage.txt -covermode=atomic
           TRAVIS=true ./scripts/test.sh
 
     - name: Upload coverage to Codecov
@@ -60,4 +59,3 @@ jobs:
           token: ${{ secrets.CODECOV_ORG_TOKEN }}
           verbose: true # optional (default = false)
           file: coverage.txt
-          run: include_cov=coverage.txt bash <(curl -s https://codecov.io/bash)
