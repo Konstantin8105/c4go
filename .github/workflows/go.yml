@@ -30,9 +30,20 @@ jobs:
           # view version
           clang --version
 
+    - name: Download
+      run: |
+          go mod download
+
     - name: Lint
       run: |
           ./scripts/lint.sh
+
+    - name: Build
+      run: |
+          go build -v
+
+    - name: Race test
+      run: go test -run=TestIntegrationScripts/tests/ctype.c -race -v -timeout=30m
 
     - name: Coverage
       run: |
@@ -46,14 +57,6 @@ jobs:
       uses: codecov/codecov-action@v4
       with:
           file: coverage.txt
-          name: codecov-umbrella # optional
           verbose: true # optional (default = false)
           token: ${{ secrets.CODECOV_ORG_TOKEN }}
-
-    - name: Build
-      run: |
-          go mod download
-          go build -v
-
-    - name: Race test
-      run: go test -run=TestIntegrationScripts/tests/ctype.c -race -v -timeout=30m
+          run: include_cov=coverage.txt bash < (curl -s https://codecov.io/bash)
