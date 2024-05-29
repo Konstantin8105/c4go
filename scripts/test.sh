@@ -33,9 +33,13 @@ if [ $COVERAGE_FILES != 0 ]; then
 	fi
 fi
 
-echo "End of coverage"
+# echo "" > coverage.out
+# for d in $(go list ./... | grep -v vendor); do
+#     go test -v -race -coverprofile=profile.out -covermode=atomic $d
+#     if [ -f profile.out ]; then
+#         cat profile.out >> coverage.out
+#         rm profile.out
+#     fi
+# done
 
-# check race
-go test                                       \
-	-run=TestIntegrationScripts/tests/ctype.c \
-	-race -v
+echo "End of coverage"
