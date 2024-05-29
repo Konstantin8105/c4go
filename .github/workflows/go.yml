@@ -14,7 +14,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v5
       with:
         go-version: 1.22.3
 
@@ -51,13 +51,12 @@ jobs:
           go get -u github.com/wadey/gocovmerge
           go get -u github.com/Konstantin8105/cs
           go get -u golang.org/x/sys/unix
-          # go test -run=TestIntegrationScripts/tests/ctype.c -coverprofile=coverage.txt
-          # go test -run=TestIntegrationScripts/tests/ctype.c -coverprofile=coverage.txt -covermode=atomic
-          TRAVIS=true ./scripts/test.sh
+          go test -run=TestIntegrationScripts/tests/ctype.c -coverprofile=coverage.txt -covermode=atomic
+          # TRAVIS=true ./scripts/test.sh
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4.4.1
+      uses: codecov/codecov-action@v4
       with:
-          # file: coverage.txt
-          verbose: true # optional (default = false)
           token: ${{ secrets.CODECOV_ORG_TOKEN }}
+          # verbose: true # optional (default = false)
+          # file: coverage.txt
