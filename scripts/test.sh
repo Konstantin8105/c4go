@@ -2,6 +2,9 @@
 
 set -e
 
+# Initialize
+mkdir -p ./testdata/
+
 # github.com/Konstantin8105/c4go
 # github.com/Konstantin8105/c4go/ast
 # github.com/Konstantin8105/c4go/examples // ignore
@@ -17,12 +20,13 @@ set -e
 # github.com/Konstantin8105/c4go/version
 
 # Package list
-export PKGS=$(go list -e ./... | grep -v testdata | grep -v examples | grep -v tests | grep -v vendor | tr '\n' ' ')
+# export PKGS=$(go list -e ./... | grep -v testdata | grep -v examples | grep -v tests | grep -v vendor | tr '\n' ' ')
+export PKGS="github.com/Konstantin8105/c4go github.com/Konstantin8105/c4go/types"
+
 # View
 echo "PKGS       : $PKGS"
 
 # Initialize
-mkdir -p ./testdata/
 echo "" > coverage.txt
 touch ./coverage.tmp
 
