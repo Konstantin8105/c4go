@@ -33,7 +33,7 @@ touch ./coverage.tmp
 echo 'mode: atomic' > coverage.txt
 # go list -e ./... | grep -v testdata | grep -v examples | grep -v tests | grep -v vendor | grep -v cmd | xargs -n100 -I{} sh -c 'go test -covermode=atomic -coverprofile=coverage.tmp -coverpkg $(go list -e ./...  | grep -v testdata | grep -v examples | grep -v tests | grep -v vendor | grep -v cmd | tr "\n" ",") {} && tail -n +2 coverage.tmp >> coverage.txt || exit 255' && rm coverage.tmp
 
-echo "$PKGS" | xargs -n100 -I{} sh -c 'go test -covermode=atomic -coverprofile=coverage.tmp -coverpkg $(echo "$PKGS" | tr "\n" ",") {} && tail -n +2 coverage.tmp >> coverage.txt || exit 255' && rm coverage.tmp
+echo "$PKGS" | xargs -n100 -I{} sh -c 'go test -covermode=atomic -coverprofile=coverage.tmp -coverpkg $(echo "$PKGS" | tr " " ",") {} && tail -n +2 coverage.tmp >> coverage.txt || exit 255' && rm coverage.tmp
 
 # Finilize
 echo "End of coverage"
