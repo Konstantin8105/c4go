@@ -57,8 +57,10 @@ type ProgramArgs struct {
 	debugPrefix string
 }
 
+// ProgramState is state of program
 type ProgramState int
 
+// States of program
 const (
 	StateAst ProgramState = iota
 	StateTranspile
@@ -257,7 +259,7 @@ var goKeywords = [...]string{
 	"imag", "print", "println", "error", "Type", "Type1",
 	"IntegerType", "FloatType", "ComplexType",
 }
-var letters string = "_qwertyuiopasdfghjklzxcvbnm1234567890><"
+var letters = "_qwertyuiopasdfghjklzxcvbnm1234567890><"
 
 func isLetter(b byte) bool {
 	b = strings.ToLower(string(b))[0]
@@ -453,7 +455,7 @@ func generateAstLines(args ProgramArgs) (lines []string, filePP preprocessor.Fil
 	return
 }
 
-func FromLinesToTree(verbose bool, lines []string, filePP preprocessor.FilePP) (tree []ast.Node, errs []error) {
+func fromLinesToTree(verbose bool, lines []string, filePP preprocessor.FilePP) (tree []ast.Node, errs []error) {
 	// Converting to nodes
 	if verbose {
 		fmt.Fprintln(os.Stdout, "Converting to nodes...")
@@ -492,7 +494,7 @@ func generateGoCode(p *program.Program, args ProgramArgs, lines []string, filePP
 	p.PreprocessorFile = filePP
 
 	// convert lines to tree ast
-	tree, errs := FromLinesToTree(args.verbose, lines, filePP)
+	tree, errs := fromLinesToTree(args.verbose, lines, filePP)
 	for i := range errs {
 		fmt.Fprintf(os.Stderr, "AST error #%d:\n%v\n",
 			i, errs[i].Error())
