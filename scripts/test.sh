@@ -20,8 +20,8 @@ mkdir -p ./testdata/
 # github.com/Konstantin8105/c4go/version
 
 # Package list
-# export PKGS=$(go list -e ./... | grep -v testdata | grep -v examples | grep -v tests | grep -v vendor | tr '\n' ' ')
-export PKGS="github.com/Konstantin8105/c4go github.com/Konstantin8105/c4go/util"
+export PKGS=$(go list -e ./... | grep -v testdata | grep -v examples | grep -v tests | grep -v vendor | tr '\n' ' ')
+# export PKGS="github.com/Konstantin8105/c4go github.com/Konstantin8105/c4go/util"
 
 # View
 echo "PKGS       : $PKGS"
