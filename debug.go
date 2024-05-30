@@ -12,6 +12,7 @@ import (
 	"github.com/Konstantin8105/c4go/preprocessor"
 )
 
+// Positioner interface for walking
 type Positioner interface {
 	Position() ast.Position
 	Inject(lines [][]byte, filePP preprocessor.FilePP) error
@@ -159,16 +160,16 @@ func (v argument) Inject(lines [][]byte, filePP preprocessor.FilePP) error {
 		}
 	}
 
-	var index int = -1
-	for i := range FuncArgs {
-		if FuncArgs[i].cType == v.cType {
+	index := -1
+	for i := range funcArgs {
+		if funcArgs[i].cType == v.cType {
 			index = i
 		}
 	}
 	if index >= 0 {
 		// find argument type
 		function := fmt.Sprintf(";%s%s(%d,\"%s\",\"%s\",%s);",
-			debugArgument, FuncArgs[index].postfix,
+			debugArgument, funcArgs[index].postfix,
 			v.pos.Line, v.description, v.varName, v.varName)
 		lines[v.pos.Line-1] = append(lines[v.pos.Line-1][:v.pos.Column],
 			append([]byte(function), lines[v.pos.Line-1][v.pos.Column:]...)...)
@@ -190,7 +191,7 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 	}
 
 	// convert lines to tree ast
-	tree, errs := FromLinesToTree(args.verbose, lines, filePP)
+	tree, errs := fromLinesToTree(args.verbose, lines, filePP)
 	for i := range errs {
 		fmt.Fprintf(os.Stderr, "AST error #%d:\n%v\n",
 			i, errs[i].Error())
@@ -338,9 +339,9 @@ func generateDebugCCode(args ProgramArgs, lines []string, filePP preprocessor.Fi
 			if err2 != nil {
 				// error is ignored
 				_ = err2
-			} else {
-				// non error is ignored
+				continue
 			}
+			// non error is ignored
 		}
 
 		// add main debug function
@@ -427,15 +428,15 @@ void c4go_debug_function_arg_string(int line, const char * arg_pos, const char *
 
 `
 
-	for i := range FuncArgs {
+	for i := range funcArgs {
 		body += fmt.Sprintf("\nc4go_arg(%s,%s,\"%s\");\n",
-			FuncArgs[i].cType, FuncArgs[i].postfix, FuncArgs[i].format)
+			funcArgs[i].cType, funcArgs[i].postfix, funcArgs[i].format)
 	}
 
 	return body
 }
 
-var FuncArgs = []struct {
+var funcArgs = []struct {
 	cType   string
 	postfix string
 	format  string

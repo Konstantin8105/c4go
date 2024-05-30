@@ -48,6 +48,9 @@ func getFileList(prefix, gitSource string) (fileList []string, err error) {
 
 	// find all C source files
 	err = filepath.Walk(folder, func(path string, f os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
 		if strings.HasSuffix(strings.ToLower(f.Name()), ".c") {
 			fileList = append(fileList, path)
 		}

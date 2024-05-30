@@ -28,7 +28,7 @@ func unused(filenames ...string) {
 			decls := f.Decls[i]
 			if fd, ok := decls.(*ast.FuncDecl); ok {
 				name := fd.Name.Name
-				var cs CallSearcher
+				var cs callSearcher
 				ast.Walk(&cs, fd)
 				m[name] = cs.used
 			}
@@ -92,11 +92,11 @@ func unused(filenames ...string) {
 	}
 }
 
-type CallSearcher struct {
+type callSearcher struct {
 	used []string
 }
 
-var GoFuncs = []string{
+var goFuncs = []string{
 	"len", "make", "append",
 	"string",
 	"float64", "float32",
@@ -105,12 +105,13 @@ var GoFuncs = []string{
 	"panic",
 }
 
-func (c *CallSearcher) Visit(node ast.Node) (w ast.Visitor) {
+// Visit for walking by node tree
+func (c *callSearcher) Visit(node ast.Node) (w ast.Visitor) {
 	if call, ok := node.(*ast.CallExpr); ok {
 		if f, ok := call.Fun.(*ast.Ident); ok {
 			isFound := false
-			for i := range GoFuncs {
-				if f.Name == GoFuncs[i] {
+			for i := range goFuncs {
+				if f.Name == goFuncs[i] {
 					isFound = true
 				}
 			}
@@ -120,9 +121,4 @@ func (c *CallSearcher) Visit(node ast.Node) (w ast.Visitor) {
 		}
 	}
 	return c
-}
-
-func search(f *ast.FuncDecl) (used []string) {
-
-	return
 }
