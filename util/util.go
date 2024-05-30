@@ -87,10 +87,10 @@ func IsLastArray(s string) bool {
 // ParseFunction - parsing elements of C function
 func ParseFunction(s string) (prefix string, funcname string, f []string, r []string, err error) {
 	defer func() {
-		if len(f) == 1 && f[0] == "void" {
-			f = nil
-		}
-
+		// fix bug in tests:
+		// if len(f) == 1 && f[0] == "void" {
+		// 	f = nil
+		// }
 		if err != nil {
 			err = fmt.Errorf("cannot parse function '%s' : %v", s, err)
 		} else {
