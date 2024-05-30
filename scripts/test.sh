@@ -20,8 +20,8 @@ mkdir -p ./testdata/
 # github.com/Konstantin8105/c4go/version
 
 # Package list
-export PKGS=$(go list -e ./... | grep -v testdata | grep -v examples | grep -v tests | grep -v vendor | tr '\n' ' ')
-# export PKGS="github.com/Konstantin8105/c4go github.com/Konstantin8105/c4go/util"
+# export PKGS=$(go list -e ./... | grep -v testdata | grep -v examples | grep -v tests | grep -v vendor | tr '\n' ' ')
+export PKGS="github.com/Konstantin8105/c4go github.com/Konstantin8105/c4go/util"
 
 # View
 echo "PKGS       : $PKGS"
@@ -31,7 +31,9 @@ touch ./coverage.tmp
 
 # Run tests
 echo 'mode: atomic' > coverage.txt
-echo "$PKGS" | xargs -n100 -I{} sh -c 'go test -covermode=atomic -coverprofile=coverage.tmp -coverpkg $(go list ./... | grep -v /vendor | tr "\n" ",") {} && tail -n +2 coverage.tmp >> coverage.txt || exit 255' && rm coverage.tmp
- 
+# go list -e ./... | grep -v testdata | grep -v examples | grep -v tests | grep -v vendor | grep -v cmd | xargs -n100 -I{} sh -c 'go test -covermode=atomic -coverprofile=coverage.tmp -coverpkg $(go list -e ./...  | grep -v testdata | grep -v examples | grep -v tests | grep -v vendor | grep -v cmd | tr "\n" ",") {} && tail -n +2 coverage.tmp >> coverage.txt || exit 255' && rm coverage.tmp
+
+echo "$PKGS" | xargs -n100 -I{} sh -c 'go test -covermode=atomic -coverprofile=coverage.tmp -coverpkg $(echo "$PKGS" | tr "\n" ",") {} && tail -n +2 coverage.tmp >> coverage.txt || exit 255' && rm coverage.tmp
+
 # Finilize
 echo "End of coverage"
