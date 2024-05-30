@@ -29,8 +29,8 @@ mkdir -p ./testdata/
 
 # Package list
 # export PKGS="github.com/Konstantin8105/c4go github.com/Konstantin8105/c4go/ast github.com/Konstantin8105/c4go/noarch github.com/Konstantin8105/c4go/preprocessor github.com/Konstantin8105/c4go/program github.com/Konstantin8105/c4go/scripts github.com/Konstantin8105/c4go/transpiler github.com/Konstantin8105/c4go/types github.com/Konstantin8105/c4go/util github.com/Konstantin8105/c4go/version"
-export PKGS="c4go c4go/ast c4go/version"
-# $(go list ./... | grep -v c4go/testdata | grep -v c4go/examples | grep -v c4go/tests | grep -v /vendor/ | tr '\n' ' ')
+export PKGS='github.com/Konstantin8105/c4go github.com/Konstantin8105/c4go/ast'
+# export PKGS=$(go list -e ./... | grep -v c4go/testdata | grep -v c4go/examples | grep -v c4go/tests | grep -v /vendor/ | tr '\n' ' ')
 
 # Make comma-separated.
 export PKGS_DELIM=$(echo "$PKGS" | tr ' ' ',')
@@ -38,12 +38,12 @@ export PKGS_DELIM=$(echo "$PKGS" | tr ' ' ',')
 echo "PKGS       : $PKGS"
 echo "PKGS_DELIM : $PKGS_DELIM"
 
-go test                                 \
-				  -cover                \
-                  -covermode=atomic     \
-				  -timeout=30m          \
-	              -coverpkg=$PKGS_DELIM \
-				  -coverprofile=./testdata/pkg.coverprofile $PKGS
+go test \
+	-cover                \
+	-covermode=atomic     \
+	-timeout=30m          \
+	-coverpkg=$PKGS_DELIM \
+	-coverprofile=./testdata/pkg.coverprofile $PKGS
 
 # Merge coverage profiles.
 COVERAGE_FILES=`ls -1 ./testdata/*.coverprofile 2>/dev/null | wc -l`
