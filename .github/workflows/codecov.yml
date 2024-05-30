@@ -50,7 +50,12 @@ jobs:
           #TRAVIS=true ./scripts/test.sh
           
     - name: Run Tests
-      run: go test -coverprofile=coverage.txt -covermode=atomic .
+      run: |
+           echo "" > coverage.txt
+           go test -coverprofile=1.txt -covermode=atomic .
+           cat 1.txt > coverage.txt
+           go test -coverprofile=1.txt -covermode=atomic github.com/Konstantin8105/ast
+           cat 1.txt > coverage.txt
         
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
