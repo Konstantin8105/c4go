@@ -29,7 +29,7 @@ mkdir -p ./testdata/
 
 # Package list
 # export PKGS="github.com/Konstantin8105/c4go github.com/Konstantin8105/c4go/ast github.com/Konstantin8105/c4go/noarch github.com/Konstantin8105/c4go/preprocessor github.com/Konstantin8105/c4go/program github.com/Konstantin8105/c4go/scripts github.com/Konstantin8105/c4go/transpiler github.com/Konstantin8105/c4go/types github.com/Konstantin8105/c4go/util github.com/Konstantin8105/c4go/version"
-export PKGS="github.com/Konstantin8105/c4go github.com/Konstantin8105/c4go/ast github.com/Konstantin8105/c4go/version"
+export PKGS="c4go c4go/ast c4go/version"
 # $(go list ./... | grep -v c4go/testdata | grep -v c4go/examples | grep -v c4go/tests | grep -v /vendor/ | tr '\n' ' ')
 
 # Make comma-separated.
