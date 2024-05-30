@@ -1,7 +1,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/Konstantin8105/c4go)](https://goreportcard.com/report/github.com/Konstantin8105/c4go)
 [![codecov](https://codecov.io/gh/Konstantin8105/c4go/branch/master/graph/badge.svg)](https://codecov.io/gh/Konstantin8105/c4go)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Konstantin8105/c4go/master/LICENSE)
-[![Go](https://github.com/Konstantin8105/c4go/actions/workflows/go.yml/badge.svg?branch=master)](https://github.com/Konstantin8105/c4go/actions/workflows/go.yml)
+[![Go](https://github.com/Konstantin8105/c4go/actions/workflows/go.yml/badge.svg?branch=master)](https://github.com/Konstantin8105/c4go/actions/workflows/codecov.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/Konstantin8105/c4go.svg)](https://pkg.go.dev/github.com/Konstantin8105/c4go)
 
 
