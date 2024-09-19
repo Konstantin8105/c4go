@@ -708,6 +708,59 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 	preStmts, postStmts = combinePreAndPostStmts(preStmts, postStmts, newPre, newPost)
 
 	// Allocate slice so that it operates like a fixed size array.
+	// 	if baseType, baseSizes := types.GetArrayMartix(n.Type); 1 < len(baseSizes) {
+	// 		var goArrayType string
+	// 		goArrayType, err = types.ResolveType(p, baseType)
+	// 		if err != nil {
+	// 			p.AddMessage(p.GenerateWarningMessage(err, n))
+	// 			err = nil // Error is ignored
+	// 		}
+	// 		if len(baseSizes) == 1 {
+	// 			defaultValue = []goast.Expr{
+	// 				util.NewCallExpr(
+	// 					"make",
+	// 					&goast.ArrayType{
+	// 						Elt: util.NewTypeIdent(goArrayType),
+	// 					},
+	// 					util.NewIntLit(baseSizes[0]),
+	// 				),
+	// 			}
+	// 		} else if strings.Contains(goArrayType, "["){
+	// 			src := fmt.Sprintf(`package main
+	// func main() {
+	// 	x := func() [][]%s {
+	// 		as := make([][]%s, %d)
+	// 		for i := range as {
+	// 			as[i] = make([]%s, %d)
+	// 		}
+	// 	}()
+	// }`,
+	// 				goArrayType,
+	// 				goArrayType, baseSizes[0],
+	// 				goArrayType, baseSizes[1],
+	// 			)
+	//
+	// 			// Create the AST by parsing src.
+	// 			fset := token.NewFileSet() // positions are relative to fset
+	// 			f, err := parser.ParseFile(fset, "", src, 0)
+	// 			if err != nil {
+	// 				err = fmt.Errorf("cannot parse source \"%s\" : %v",
+	// 					src, err)
+	// 				p.AddMessage(p.GenerateWarningMessage(err, n))
+	// 				err = nil // ignore error
+	// 			}
+	// 			if 0 < len(f.Decls) {
+	// 				if fd, ok := f.Decls[0].(*goast.FuncDecl); ok {
+	// 					if 0 < len(fd.Body.List) {
+	// 						if s, ok := fd.Body.List[0].(*goast.AssignStmt); ok {
+	// 							defaultValue = s.Rhs
+	// 						}
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+
 	arrayType, arraySize := types.GetArrayTypeAndSize(n.Type)
 
 	if arraySize != -1 && defaultValue == nil {
@@ -717,7 +770,6 @@ func transpileVarDecl(p *program.Program, n *ast.VarDecl) (
 			p.AddMessage(p.GenerateWarningMessage(err, n))
 			err = nil // Error is ignored
 		}
-
 		defaultValue = []goast.Expr{
 			util.NewCallExpr(
 				"make",

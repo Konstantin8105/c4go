@@ -827,6 +827,13 @@ void test_array_nil()
     }
 }
 
+// void test_array_init2d() {
+//     int array2D[30][50];
+//     array2D[29][49] = 42;
+//     int (*pArray2D)[50] = array2D;
+//     is_eq(pArray2D[29][49], 42);
+// }
+
 int main()
 {
     plan(222);
@@ -1370,6 +1377,7 @@ int main()
     START_TEST(matrix_init);
     START_TEST(post_pointer);
     START_TEST(array_nil);
+    // TODO: START_TEST(array_init2d);
 
     done_testing();
 }

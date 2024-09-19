@@ -13,16 +13,30 @@ import (
 	"github.com/Konstantin8105/c4go/util"
 )
 
+func GetArrayMartix(matrixType string) (baseType string, sizes []int) {
+	for {
+		inType, inSize := GetArrayTypeAndSize(matrixType)
+		matrixType= inType
+		if inSize < 0 {
+			break
+		}
+		sizes = append(sizes, inSize)
+	}
+	return matrixType, sizes
+}
+
 // GetArrayTypeAndSize returns the size and type of a fixed array. If the type
 // is not an array with a fixed size then the the size will be -1 and the
 // returned type should be ignored.
-func GetArrayTypeAndSize(s string) (string, int) {
+func GetArrayTypeAndSize(s string) (t string, size int) {
 	s = strings.Replace(s, "(", "", -1)
 	s = strings.Replace(s, ")", "", -1)
 	match := util.GetRegex(`([\w\* ]*)\[(\d+)\]((\[\d+\])*)`).FindStringSubmatch(s)
-	if len(match) > 0 {
+	if 0 < len(match) {
 		var t = fmt.Sprintf("%s%s", match[1], match[3])
-		return strings.Trim(t, " "), util.Atoi(match[2])
+		t = strings.Trim(t, " ")
+		size = util.Atoi(match[2])
+		return t, size
 	}
 
 	return s, -1
