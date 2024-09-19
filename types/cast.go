@@ -16,7 +16,7 @@ import (
 func GetArrayMartix(matrixType string) (baseType string, sizes []int) {
 	for {
 		inType, inSize := GetArrayTypeAndSize(matrixType)
-		matrixType= inType
+		matrixType = inType
 		if inSize < 0 {
 			break
 		}
